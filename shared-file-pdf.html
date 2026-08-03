@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Shared with you — SubSub</title>
+  <link rel="stylesheet" href="css/tokens.css" />
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <!-- Публичная страница получателя шаренной ссылки (незалогиненный), тип: PDF.
+       Net-new — в реальном продукте такой страницы нет. Один тип файла на страницу. -->
+  <div class="pub">
+
+    <!-- Лёгкий брендированный шелл: только лого + «Sign up free» (без сайдбара/меню) -->
+    <header class="pub__header">
+      <a class="pub__logo" href="#" aria-label="SubSub"><img src="icons/subsublogo.webp" alt="SubSub" /></a>
+      <a class="pub-signup" href="#">Sign up free</a>
+    </header>
+
+    <main class="pub__main">
+
+      <!-- Атрибуция: кто и из какой организации поделился -->
+      <div class="pub__attr">
+        <span>Shared by</span>
+        <span class="pub__attr-avatar" style="background:var(--color-avatar-0)">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 12.2a3.6 3.6 0 1 0 0-7.2 3.6 3.6 0 0 0 0 7.2Z"/><path d="M4.8 19.2c0-3.05 3.23-4.9 7.2-4.9s7.2 1.85 7.2 4.9V20H4.8v-.8Z"/></svg>
+        </span>
+        <span><strong>Yevhenii Zemskov</strong> from GenTech</span>
+      </div>
+
+      <!-- PDF: светлый хедер превьюера + нативная читалка (iframe) -->
+      <div class="pub-card" data-type="pdf">
+        <div class="ml-viewer__head">
+          <span class="ml-viewer__badge ml-viewer__badge--pdf">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/></svg>
+          </span>
+          <span class="ml-viewer__title">Yevhenii Z. Portfolio PDF.pdf</span>
+          <div class="ml-viewer__actions">
+            <a class="pub-download" href="files/portfolio.pdf" download>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v10m0 0l-4-4m4 4l4-4M5 19h14"/></svg>Download
+            </a>
+          </div>
+        </div>
+        <div class="pub-doc-body"><iframe class="pub-pdf" src="files/portfolio.pdf" title="PDF preview"></iframe></div>
+      </div>
+
+      <!-- Промо-баннер: приглашение зарегистрироваться -->
+      <div class="pub-cta">
+        <p class="pub-cta__text">Want your own creator tools? Get started with SubSub for free</p>
+        <a class="pub-cta__btn" href="#">Sign up</a>
+      </div>
+
+    </main>
+  </div>
+</body>
+</html>

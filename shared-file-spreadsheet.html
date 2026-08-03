@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Shared with you — SubSub</title>
+  <link rel="stylesheet" href="css/tokens.css" />
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <!-- Публичная страница получателя шаренной ссылки (незалогиненный), тип: SPREADSHEET.
+       Net-new — в реальном продукте такой страницы нет. Один тип файла на страницу. -->
+  <div class="pub">
+
+    <!-- Лёгкий брендированный шелл: только лого + «Sign up free» (без сайдбара/меню) -->
+    <header class="pub__header">
+      <a class="pub__logo" href="#" aria-label="SubSub"><img src="icons/subsublogo.webp" alt="SubSub" /></a>
+      <a class="pub-signup" href="#">Sign up free</a>
+    </header>
+
+    <main class="pub__main">
+
+      <!-- Атрибуция: кто и из какой организации поделился -->
+      <div class="pub__attr">
+        <span>Shared by</span>
+        <span class="pub__attr-avatar" style="background:var(--color-avatar-0)">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 12.2a3.6 3.6 0 1 0 0-7.2 3.6 3.6 0 0 0 0 7.2Z"/><path d="M4.8 19.2c0-3.05 3.23-4.9 7.2-4.9s7.2 1.85 7.2 4.9V20H4.8v-.8Z"/></svg>
+        </span>
+        <span><strong>Yevhenii Zemskov</strong> from GenTech</span>
+      </div>
+
+      <!-- SPREADSHEET: светлый хедер превьюера + статичная сетка (браузер xlsx не рендерит) -->
+      <div class="pub-card" data-type="spreadsheet">
+        <div class="ml-viewer__head">
+          <span class="ml-viewer__badge ml-viewer__badge--spreadsheet">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M4 10h16M4 15h16M10 4v16" stroke-linecap="round"/></svg>
+          </span>
+          <span class="ml-viewer__title">revenue-report.xlsx</span>
+          <div class="ml-viewer__actions">
+            <a class="pub-download" href="files/revenue-report.xlsx" download>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v10m0 0l-4-4m4 4l4-4M5 19h14"/></svg>Download
+            </a>
+          </div>
+        </div>
+        <div class="pub-doc-body pub-sheet-body">
+          <div class="ml-sheet"><table>
+            <thead><tr><th></th><th>A</th><th>B</th><th>C</th><th>D</th><th>E</th></tr></thead>
+            <tbody>
+              <tr><th>1</th><td></td><td></td><td></td><td></td><td></td></tr>
+              <tr><th>2</th><td></td><td></td><td></td><td></td><td></td></tr>
+              <tr><th>3</th><td></td><td></td><td></td><td></td><td></td></tr>
+              <tr><th>4</th><td></td><td></td><td></td><td></td><td></td></tr>
+              <tr><th>5</th><td></td><td></td><td></td><td></td><td></td></tr>
+              <tr><th>6</th><td></td><td></td><td></td><td></td><td></td></tr>
+              <tr><th>7</th><td></td><td></td><td></td><td></td><td></td></tr>
+              <tr><th>8</th><td></td><td></td><td></td><td></td><td></td></tr>
+              <tr><th>9</th><td></td><td></td><td></td><td></td><td></td></tr>
+              <tr><th>10</th><td></td><td></td><td></td><td></td><td></td></tr>
+              <tr><th>11</th><td></td><td></td><td></td><td></td><td></td></tr>
+              <tr><th>12</th><td></td><td></td><td></td><td></td><td></td></tr>
+            </tbody>
+          </table></div>
+        </div>
+      </div>
+
+      <!-- Промо-баннер: приглашение зарегистрироваться -->
+      <div class="pub-cta">
+        <p class="pub-cta__text">Want your own creator tools? Get started with SubSub for free</p>
+        <a class="pub-cta__btn" href="#">Sign up</a>
+      </div>
+
+    </main>
+  </div>
+</body>
+</html>

@@ -1,0 +1,91 @@
+/* Дизайн-токены SubSub — взяты 1:1 из
+   subsub_platform_front/layers/core/assets/css/main.css (блок @theme).
+   Не редактировать вручную под прототип — это источник истины по цветам/типографике. */
+
+:root {
+  /* Шрифты */
+  --font-inter: "Inter", sans-serif;
+  --font-mulish: "Mulish", sans-serif;
+
+  /* Тени */
+  --shadow: 0 4px 15px 0 rgba(0, 0, 0, 0.06);
+  --shadow-table-column: 0 8px 14px 0 rgba(0, 0, 0, 0.05);
+
+  /* Цвета */
+  --color-black: #19191a;
+  --color-white: #fff;
+  --color-shade-90: #fafafa;
+  --color-shade-100: #f3f3f3;
+  --color-shade-200: #e6e6e6;
+  --color-shade-300: #cfcfcf;
+  --color-shade-500: #a9a9a9;
+  --color-shade-600: #8c8c8c;
+  --color-shade-700: #707070;
+  --color-shade-800: #424242;
+
+  --color-lemon: #d6fc00;
+  --color-lavender: #edd1ff; /* поздний токен main.css побеждает ранний #dbc3f7 */
+  --color-purple-900: #b351f6;
+  --color-purple-100: #f7eefe;
+  --color-purple-200: #edd5ff;
+  --color-dark-blue: #12141e;
+
+  --color-green-dark: #389838;
+  --color-green: #1bbc40;
+  --color-green-20: #dcf1e1;
+  --color-green-10: #eaffea;
+  --color-red: #e92929;
+  --color-red-shade-300: #ffb8b8;
+  --color-red-shade-100: #ffebeb;
+
+  --color-yellow: #edb627;
+  --color-yellow-20: #fdf7d5;
+  --color-orange: #bd6414;
+  --color-orange-20: #fbead7;
+  --color-blue: #3a56b2;
+  --color-blue-20: #e1e8ff;
+  --color-brick-orange: #ff8215;
+  --color-indigo: #5766f0;
+  --color-violet: #786df2;
+  --color-accent: #6c5ce7;
+  --color-telegram: #229ed9;
+
+  /* Цвета аватаров (из main.css @theme) */
+  --color-avatar-0: #6c5ce7;
+  --color-avatar-1: #e17055;
+  --color-avatar-2: #00b894;
+  --color-avatar-3: #0984e3;
+  --color-avatar-4: #fdcb6e;
+  --color-avatar-5: #e84393;
+  --color-avatar-6: #00cec9;
+
+  /* Layout-переменные (из apps/app.subsub main.css и layout) */
+  --header-height-desktop: 72px;
+  --header-height-mobile: 56px;
+  --header-height: 72px;
+  --spaces-menu-width: 72px; /* w-18 — ширина узкого сайдбара */
+}
+
+/* ---- Типографика (имя токена → size / line-height / weight), из main.css ---- */
+
+.text-title-semi-32 { font-size: 32px; line-height: 130%; font-weight: 500; }
+.text-title-semi-26 { font-size: 26px; line-height: 130%; font-weight: 500; }
+.text-title-semi-24 { font-size: 24px; line-height: 130%; font-weight: 500; }
+.text-title-semi-20 { font-size: 20px; line-height: 26px; font-weight: 500; }
+.text-title-semi-18 { font-size: 18px; line-height: 130%; font-weight: 500; }
+.text-title-med-20  { font-size: 20px; line-height: 26px; font-weight: 400; }
+
+.text-body-semi-24  { font-size: 24px; line-height: 130%; font-weight: 500; }
+.text-body-semi-18  { font-size: 18px; line-height: 130%; font-weight: 500; }
+.text-body-semi-16  { font-size: 16px; line-height: 140%; font-weight: 500; }
+.text-body-med-16   { font-size: 16px; line-height: 140%; font-weight: 400; }
+.text-body-med-16-140 { font-size: 16px; line-height: 140%; font-weight: 400; }
+.text-body-med-14   { font-size: 14px; line-height: 140%; font-weight: 400; }
+.text-body-med-12   { font-size: 12px; line-height: 140%; font-weight: 400; }
+.text-body-reg-16   { font-size: 16px; line-height: 130%; font-weight: 300; }
+.text-body-reg-14   { font-size: 14px; line-height: 130%; font-weight: 300; }
+.text-body-reg-12   { font-size: 12px; line-height: 130%; font-weight: 300; }
+
+.text-callout-reg-16 { font-size: 16px; line-height: 24px; font-weight: 300; }
+.text-callout-reg-14 { font-size: 14px; line-height: 24px; font-weight: 300; }
+.text-footnote-reg-12 { font-size: 12px; line-height: 16px; font-weight: 300; }
