@@ -76,6 +76,43 @@
       updateFooter();
       return;
     }
+    // --- P1.5: сортировка ---
+    var sortEl = e.target.closest("[data-an-sort]");
+    if (sortEl) {
+      var sKey = tblKeyOf(sortEl);
+      if (sKey) { tblSort(sKey, sortEl.getAttribute("data-an-sort")); return; }
+    }
+    // --- P1.5: пагинация ---
+    var prevEl = e.target.closest("[data-an-prev]"), nextEl = e.target.closest("[data-an-next]");
+    if (prevEl || nextEl) {
+      var pKey = tblKeyOf(prevEl || nextEl);
+      if (pKey) {
+        TBL[pKey].page += prevEl ? -1 : 1;
+        if (TBL[pKey].page < 1) TBL[pKey].page = 1;
+        tblApply(pKey);
+        return;
+      }
+    }
+    // --- P1.5: размер страницы ---
+    var ppTrig = e.target.closest("[data-an-perpage-trig]");
+    if (ppTrig) {
+      var ppKey = tblKeyOf(ppTrig);
+      var menuEl = ppTrig.parentNode.querySelector("[data-an-perpage-menu]");
+      tblPerPageMenu(ppKey, menuEl ? menuEl.hidden : true);
+      return;
+    }
+    var ppOpt = e.target.closest("[data-an-perpage]");
+    if (ppOpt) {
+      var oKey = tblKeyOf(ppOpt);
+      TBL[oKey].per = parseInt(ppOpt.getAttribute("data-an-perpage"), 10) || 30;
+      TBL[oKey].page = 1;
+      tblPerPageMenu(oKey, false);
+      tblApply(oKey);
+      return;
+    }
+    if (!e.target.closest("[data-an-perpage-wrap]")) {
+      ["basic", "deep", "coll"].forEach(function (k) { tblPerPageMenu(k, false); });
+    }
     // очистка поиска
     if (e.target.closest("[data-an-search-clear]")) {
       var inp = document.querySelector("[data-an-search]");
@@ -90,6 +127,138 @@
     var cl = document.querySelector("[data-an-search-clear]");
     if (cl) cl.hidden = input.value.length === 0;
   });
+
+
+  // ================= P1.5: клиентская сортировка + пагинация =================
+  // Работает по статическим строкам в DOM: сортировка переставляет узлы, пагинация
+  // скрывает лишние. Строки, скрытые другими фильтрами (data-filtered), в выборку не попадают.
+  var TBL = {
+    basic: { per: 30, sizes: [30, 50, 100], sort: null, page: 1 },
+    deep:  { per: 30, sizes: [30, 50, 100], sort: null, page: 1 },
+    coll:  { per: 15, sizes: [15, 30, 50],  sort: null, page: 1 }
+  };
+  function tblBody(key) { return document.querySelector('[data-an-table-body="' + key + '"]'); }
+  function tblPagi(key) { return document.querySelector('[data-an-table="' + key + '"]'); }
+  function tblAllRows(key) {
+    var b = tblBody(key);
+    return b ? [].slice.call(b.querySelectorAll(".an-tbody > .an-tr")) : [];
+  }
+  // строки, доступные для показа (не отфильтрованные), без сводной строки Average/Total
+  function tblRows(key) {
+    return tblAllRows(key).filter(function (r) {
+      return !r.hasAttribute("data-filtered") && !r.classList.contains("an-tr--avg");
+    });
+  }
+  function tblColIndex(key, colId) {
+    var b = tblBody(key);
+    if (!b) return -1;
+    var cells = [].slice.call(b.querySelectorAll(".an-thead .an-tr--head > [data-col]"));
+    for (var i = 0; i < cells.length; i++) if (cells[i].getAttribute("data-col") === colId) return i;
+    return -1;
+  }
+  // «314m» → 314000000, «+3.6m» → 3600000, «19.11.2005» → таймстемп, иначе строка
+  function tblVal(row, idx) {
+    var cell = row.children[idx];
+    var t = cell ? String(cell.textContent || "").trim() : "";
+    if (!t || t === "—" || t === "–") return -Infinity;
+    var d = t.match(/^(\d{2})\.(\d{2})\.(\d{4})$/);
+    if (d) return new Date(+d[3], +d[2] - 1, +d[1]).getTime();
+    var n = t.replace(/[+,\s]/g, "").match(/^([\d.]+)(bn|m|k)?$/i);
+    if (n) {
+      var v = parseFloat(n[1]) || 0, u = (n[2] || "").toLowerCase();
+      if (u === "bn") v *= 1e9; else if (u === "m") v *= 1e6; else if (u === "k") v *= 1e3;
+      return v;
+    }
+    return t.toLowerCase();
+  }
+  function tblSort(key, colId) {
+    var st = TBL[key]; if (!st) return;
+    // первый клик — desc, дальше переключаем (как на проде)
+    st.sort = (st.sort && st.sort.col === colId)
+      ? { col: colId, dir: st.sort.dir === "desc" ? "asc" : "desc" }
+      : { col: colId, dir: "desc" };
+    st.page = 1;
+    var idx = tblColIndex(key, colId);
+    if (idx < 0) return;
+    var body = tblBody(key).querySelector(".an-tbody");
+    var rows = tblAllRows(key).filter(function (r) { return !r.classList.contains("an-tr--avg"); });
+    var dir = st.sort.dir === "asc" ? 1 : -1;
+    rows.map(function (r, i) { return { r: r, i: i, v: tblVal(r, idx) }; })
+      .sort(function (a, b) {
+        if (a.v === b.v) return a.i - b.i;                 // стабильность
+        if (typeof a.v === "string" || typeof b.v === "string")
+          return String(a.v).localeCompare(String(b.v)) * dir;
+        return (a.v > b.v ? 1 : -1) * dir;
+      })
+      .forEach(function (o) { body.appendChild(o.r); });
+    tblMarkSort(key);
+    tblApply(key);
+  }
+  function tblMarkSort(key) {
+    var b = tblBody(key); if (!b) return;
+    var st = TBL[key];
+    [].slice.call(b.querySelectorAll("[data-an-sort]")).forEach(function (el) {
+      var on = st.sort && st.sort.col === el.getAttribute("data-an-sort");
+      el.classList.toggle("is-sorted", !!on);
+      el.classList.toggle("is-asc", !!on && st.sort.dir === "asc");
+      el.setAttribute("aria-sort", on ? (st.sort.dir === "asc" ? "ascending" : "descending") : "none");
+    });
+  }
+  // показ страницы + пересчёт счётчиков
+  function tblApply(key) {
+    var st = TBL[key]; if (!st) return;
+    var rows = tblRows(key);
+    var pages = Math.max(1, Math.ceil(rows.length / st.per));
+    if (st.page > pages) st.page = pages;
+    var from = (st.page - 1) * st.per, to = from + st.per;
+    tblAllRows(key).forEach(function (r) {
+      if (r.classList.contains("an-tr--avg")) return;      // сводная строка всегда видна
+      r.hidden = true;
+    });
+    rows.slice(from, to).forEach(function (r) { r.hidden = false; });
+    var pagi = tblPagi(key);
+    if (pagi) {
+      var pagesEl = pagi.querySelector(".an-pagi__pages");
+      if (pagesEl) pagesEl.textContent = "Pages: " + pages.toLocaleString("en-US");
+      var input = pagi.querySelector("[data-an-page]");
+      if (input) input.value = String(st.page);
+      var prev = pagi.querySelector("[data-an-prev]"), next = pagi.querySelector("[data-an-next]");
+      if (prev) prev.disabled = st.page <= 1;
+      if (next) next.disabled = st.page >= pages;
+      var trig = pagi.querySelector("[data-an-perpage-trig]");
+      if (trig) trig.childNodes[0].nodeValue = st.per + " ";
+    }
+    tblUpdateTotal(key, rows.length);
+  }
+  // счётчик рядом с лейблом: на Basic оставляем «2.2m» (это размер базы), в остальных — число строк
+  function tblUpdateTotal(key, n) {
+    if (key === "basic") return;
+    var pagi = tblPagi(key); if (!pagi) return;
+    var tot = pagi.querySelector(".an-pagi__total");
+    if (tot) tot.textContent = String(n);
+  }
+  function tblPerPageMenu(key, open) {
+    var pagi = tblPagi(key); if (!pagi) return;
+    var wrap = pagi.querySelector("[data-an-perpage-wrap]"), menu = pagi.querySelector("[data-an-perpage-menu]");
+    if (!wrap || !menu) return;
+    if (open) {
+      menu.innerHTML = TBL[key].sizes.map(function (n) {
+        return '<button class="an-perpage__opt' + (n === TBL[key].per ? " is-selected" : "") +
+               '" type="button" role="option" data-an-perpage="' + n + '">' + n + "</button>";
+      }).join("");
+    }
+    menu.hidden = !open;
+    wrap.classList.toggle("is-open", !!open);
+  }
+  function tblKeyOf(el) {
+    var host = el.closest("[data-an-table]") || el.closest("[data-an-table-body]");
+    return host ? (host.getAttribute("data-an-table") || host.getAttribute("data-an-table-body")) : null;
+  }
+  function tblInitAll() {
+    ["basic", "deep", "coll"].forEach(function (key) {
+      if (tblBody(key)) tblApply(key);
+    });
+  }
 
   // ================= MY COLLECTIONS: флоу действий =================
   var mcRow = null;      // строка, для которой открыто меню/диалог
@@ -562,6 +731,7 @@
       tbody.insertBefore(row, tbody.firstChild);
     }
     aiPaintTargets();
+    if (typeof tblApply === "function" && tblBody("coll")) tblApply("coll");
     var tot = document.querySelector(".an-pagi__total");
     if (tot && document.querySelector("[data-mc-tbody]")) tot.textContent = String(document.querySelectorAll("[data-mc-row]").length);
   }
@@ -1300,6 +1470,7 @@
 
   aiTick();
   aiRenderCollections();
+  tblInitAll();                      // P1.5: первая отрисовка страниц
   aiRenderCollectionView();
   ceInit();
 })();

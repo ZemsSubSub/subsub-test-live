@@ -1800,7 +1800,35 @@ body.is-open:not(.is-collapsed) .main { margin-left: 306px; }
 .an-tbody .an-tr:last-child { border-bottom: 0; }
 .an-td { display: flex; align-items: center; flex-shrink: 0; box-sizing: border-box; padding: 8px 24px 8px 0; font-size: 14px; font-weight: 300; color: var(--color-black); background: #fff; }
 .an-td--check, .an-td--name { background: #fff; }
+/* --- P1.5: состояние сортировки и меню размера страницы --- */
+.an-sort { cursor: pointer; }
+.an-sort.is-sorted { color: var(--color-black); font-weight: 600; }
+.an-sort.is-sorted svg { color: var(--color-black); }
+.an-sort.is-sorted.is-asc svg { transform: rotate(180deg); }
+.an-pagi__arrow[disabled] { opacity: .35; cursor: not-allowed; }
+.an-perpage-wrap { position: relative; }
+.an-perpage__menu {
+  position: absolute; bottom: calc(100% + 6px); right: 0; z-index: 30; min-width: 88px; padding: 4px;
+  background: #fff; border: 1px solid var(--color-shade-200); border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(34,41,47,.12);
+}
+.an-perpage__menu[hidden] { display: none; }
+.an-perpage__opt {
+  display: block; width: 100%; padding: 6px 10px; border: 0; border-radius: 6px; background: none;
+  cursor: pointer; font-family: inherit; font-size: 14px; color: var(--color-black); text-align: left;
+}
+.an-perpage__opt:hover { background: var(--color-shade-100); }
+.an-perpage__opt.is-selected { background: var(--color-shade-100); font-weight: 600; }
+
 .an-topic { text-decoration: underline; text-underline-offset: 3px; }
+/* до 2 топиков + «+N» в 140px-ячейке (P1.3): переносим, колонку не растягиваем */
+.an-topics { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 8px; min-width: 0; }
+.an-topics .an-topic { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%; }
+.an-topic__more {
+  flex-shrink: 0; padding: 1px 6px; border-radius: 4px; background: var(--color-shade-100);
+  font-size: 12px; font-weight: 500; color: var(--color-shade-800); cursor: pointer;
+}
+.an-topic__more:hover { background: var(--color-shade-200); }
 .an-delta--pos { color: var(--color-green); }
 .an-delta--neg { color: var(--color-red); }
 .an-muted { color: var(--color-shade-500); }

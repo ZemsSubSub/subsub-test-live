@@ -79,6 +79,136 @@ const IC = {
   trash: '<svg viewBox="0 0 24 24" fill="none"><path d="M3.00146 6.75033H21.0003" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M5.25098 6.75033H18.7501V20.2495C18.7501 20.6473 18.592 21.0288 18.3108 21.3101C18.0296 21.5913 17.648 21.7494 17.2502 21.7494H6.75088C6.35308 21.7494 5.97158 21.5913 5.69028 21.3101C5.40901 21.0288 5.25098 20.6473 5.25098 20.2495V6.75033Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M8.25098 6.75033V6.00038C8.25098 5.00588 8.64604 4.0521 9.34925 3.34889C10.0525 2.64567 11.0062 2.25061 12.0007 2.25061C12.9952 2.25061 13.949 2.64567 14.6522 3.34889C15.3555 4.0521 15.7505 5.00588 15.7505 6.00038V6.75033" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M9.75049 11.2523V17.2542" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M14.251 11.2523V17.2542" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>',
 };
 
+
+// ================= МОКИ ФАЗЫ 1: базовый слой =================
+// Значения храним ЧИСЛАМИ и форматируем на выводе. Это нужно, чтобы Growth period (P1.2)
+// и срезы по типу контента (P1.6) вычислялись из одной базы, а не дублировались руками.
+// Генерация детерминированная: одинаковый результат при каждой сборке.
+function prng(seed) {                       // mulberry32
+  let a = seed >>> 0;
+  return function () {
+    a = (a + 0x6D2B79F5) >>> 0;
+    let t = a;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+// 1234567 → «1.2m», 26800 → «26.8k»; целые до 1000 — как есть
+function fmt(n) {
+  n = Number(n) || 0;
+  const s1 = (v, u) => (v >= 100 ? Math.round(v) : Math.round(v * 10) / 10) + u;
+  if (n >= 1e9) return s1(n / 1e9, "bn");
+  if (n >= 1e6) return s1(n / 1e6, "m");
+  if (n >= 1e3) return s1(n / 1e3, "k");
+  return String(Math.round(n));
+}
+function fmtDelta(n) { return (n > 0 ? "+" : "") + fmt(n); }
+function dmy(d, m, y) { return ("0" + d).slice(-2) + "." + ("0" + m).slice(-2) + "." + y; }
+
+// справочники для фильтров (P1.13)
+const TOPIC_LIST = ["Music", "Music of Asia", "Pop music", "Hip hop music", "Electronic music",
+  "Entertainment", "TV shows", "Film", "Comedy", "Lifestyle (sociology)", "Children's music",
+  "Action game", "Sport", "Professional wrestling", "Vehicle", "Science", "Education",
+  "Technology", "Hobby", "News", "Politics", "Finance", "Business"];
+const COUNTRY_LIST = ["India", "United States", "South Korea", "Ukraine", "United Kingdom",
+  "Canada", "Germany", "Poland", "Sweden", "Cyprus", "Puerto Rico"];
+const LANG_LIST = ["English", "Hindi", "Korean", "Ukrainian", "Russian", "Spanish", "Polish", "German"];
+
+// каталог каналов: [имя, инициал, subs, views, vids, топики[], страна, язык]
+const CH = [
+  ["T-Series","T",314e6,349.6e9,26800,["Music","Music of Asia","Pop music"],"India","Hindi"],
+  ["Cocomelon - Nursery Rhymes","C",202e6,224.9e9,2100,["Entertainment","Children's music"],"United States","English"],
+  ["SET India","S",189e6,190.6e9,173800,["Entertainment","TV shows","Film"],"India","Hindi"],
+  ["김프로KIMPRO","김",134e6,150.5e9,4300,["Music of Asia"],"South Korea","Korean"],
+  ["Sony SAB","S",106e6,146e9,113800,["Entertainment","TV shows"],"India","Hindi"],
+  ["MrBeast","M",510e6,134.7e9,994,["Lifestyle (sociology)","Entertainment","Action game"],"United States","English"],
+  ["✿ Kids Diana Show","K",138e6,125.3e9,1700,["Lifestyle (sociology)","Children's music"],"United States","English"],
+  ["Vlad and Niki","V",150e6,122.3e9,764,["Lifestyle (sociology)","Entertainment"],"United States","English"],
+  ["Like Nastya","L",133e6,122.2e9,1100,["Lifestyle (sociology)"],"United States","Russian"],
+  ["Toys and Colors","T",82.8e6,120.6e9,1900,["Lifestyle (sociology)","Entertainment"],"United States","English"],
+  ["Zee TV","Z",98.5e6,119.3e9,241200,["Entertainment","TV shows"],"India","Hindi"],
+  ["WWE","W",113e6,105.8e9,95200,["Professional wrestling","Sport","Entertainment"],"United States","English"],
+  ["Zee Music Company","Z",118e6,98.4e9,12400,["Music","Music of Asia"],"India","Hindi"],
+  ["Goldmines","G",100e6,42.7e9,8600,["Film","Entertainment"],"India","Hindi"],
+  ["Sony Music India","S",71.9e6,43.5e9,14300,["Music","Music of Asia"],"India","Hindi"],
+  ["BLACKPINK","B",96e6,38.2e9,570,["Music","Music of Asia","Pop music"],"South Korea","Korean"],
+  ["HYBE LABELS","H",79.6e6,33.4e9,2100,["Music","Music of Asia"],"South Korea","Korean"],
+  ["Taylor Swift","T",60.4e6,34.8e9,520,["Music","Pop music"],"United States","English"],
+  ["Justin Bieber","J",74.5e6,32.1e9,245,["Music","Pop music"],"Canada","English"],
+  ["Ed Sheeran","E",55.8e6,30.2e9,412,["Music","Pop music"],"United Kingdom","English"],
+  ["PewDiePie","P",110e6,29.5e9,4700,["Action game","Entertainment"],"Sweden","English"],
+  ["Ariana Grande","A",55.2e6,28.4e9,340,["Music","Pop music"],"United States","English"],
+  ["5-Minute Crafts","5",80.1e6,27.9e9,8200,["Lifestyle (sociology)","Hobby","Education"],"Cyprus","English"],
+  ["Bad Bunny","B",45.6e6,27.1e9,189,["Music","Hip hop music"],"Puerto Rico","Spanish"],
+  ["Zach King","Z",42.7e6,24.9e9,1400,["Entertainment","Hobby"],"United States","English"],
+  ["Marshmello","M",57.1e6,21.3e9,610,["Music","Electronic music"],"United States","English"],
+  ["Alan Chikin Chow","A",76.3e6,62.5e9,3100,["Entertainment","Comedy","Lifestyle (sociology)"],"United States","English"],
+  ["Dude Perfect","D",61.2e6,17.8e9,1500,["Sport","Entertainment","Hobby"],"United States","English"],
+  ["Mark Rober","M",68.4e6,12.1e9,240,["Science","Hobby"],"United States","English"],
+  ["Linus Tech Tips","L",16.4e6,8.2e9,7400,["Technology","Hobby","Science"],"Canada","English"],
+  ["MKBHD","M",20.1e6,4.6e9,1800,["Technology","Hobby"],"United States","English"],
+  ["Kurzgesagt","K",23.8e6,3.1e9,210,["Science","Education"],"Germany","English"],
+  ["Veritasium","V",17.6e6,2.9e9,380,["Science","Education"],"Canada","English"],
+  ["24 Канал","24",9e6,17.5e9,68400,["News","Politics","Business"],"Ukraine","Ukrainian"],
+  ["ТСН","Т",5.9e6,8.7e9,96800,["News","Politics"],"Ukraine","Ukrainian"],
+  ["Телеканал 1+1","1",5.5e6,5.8e9,52300,["Entertainment","TV shows"],"Ukraine","Ukrainian"],
+  ["Факти ICTV","Ф",3.7e6,4.2e9,88100,["News"],"Ukraine","Ukrainian"],
+  ["Новини.LIVE","Н",2.9e6,3.9e9,41200,["News"],"Ukraine","Ukrainian"],
+  ["5 канал","5",3.5e6,3.8e9,74600,["News","Politics"],"Ukraine","Ukrainian"],
+  ["Фабрика новин","Ф",4.3e6,6.6e9,39400,["News","Politics"],"Ukraine","Ukrainian"],
+  ["Телеканал Прямий","П",2.1e6,2.4e9,58200,["News","Politics"],"Ukraine","Ukrainian"],
+  ["GadgetLab","G",4.8e6,1.2e9,2600,["Technology"],"Ukraine","Ukrainian"],
+  ["TechNova","T",3.2e6,0.9e9,1900,["Technology"],"Poland","Polish"],
+  ["Crypto Moon","C",1.4e6,0.42e9,3100,["Finance","Business"],"United States","English"],
+  ["Smart Risk","S",860e3,0.21e9,1800,["Finance"],"United States","English"],
+  ["Zems Racing","Z",1.1e6,0.34e9,900,["Sport","Vehicle"],"Ukraine","Ukrainian"],
+  ["Hunt Squad","H",740e3,0.19e9,1200,["Action game"],"Ukraine","Ukrainian"],
+];
+
+// Growth period: множители к 30-дневной базе (P1.2). Данные под 7/30/90 считаются из одной базы,
+// поэтому переключение периода видно во всех колонках прироста.
+const PERIODS = ["7", "30", "90"];
+const PERIOD_K = { "7": 0.22, "30": 1, "90": 2.68 };
+const PERIOD_LABEL = { "7": "Last 7 days", "30": "Last 30 days", "90": "Last 90 days" };
+
+// базовый прирост за 30 дней + даты — детерминированно из индекса канала
+const CH_META = CH.map(function (c, i) {
+  const r = prng(1000 + i);
+  const subsG30 = Math.max(200, c[2] * (0.002 + r() * 0.012));
+  const viewsG30 = Math.max(1e5, c[3] * (0.004 + r() * 0.016));
+  const created = dmy(1 + Math.floor(r() * 27), 1 + Math.floor(r() * 12), 2005 + Math.floor(r() * 14));
+  const added = dmy(1 + Math.floor(r() * 27), 1 + Math.floor(r() * 12), 2023 + Math.floor(r() * 3));
+  const lastUpd = dmy(24 + Math.floor(r() * 4), 7, 2026);
+  return { subsG30: subsG30, viewsG30: viewsG30, created: created, added: added, lastUpd: lastUpd };
+});
+
+// строки Basic data под конкретный период (формат — как ждёт bodyRow)
+function basicRows(period) {
+  const k = PERIOD_K[period] || 1;
+  return CH.map(function (c, i) {
+    const m = CH_META[i];
+    const subsG = m.subsG30 * k, viewsG = m.viewsG30 * k;
+    return [
+      c[0], c[1], c[5], m.created, m.lastUpd, m.added,
+      fmt(c[2]), fmt(c[3]), fmt(c[4]),
+      fmtDelta(subsG), fmtDelta(viewsG),
+      fmt(c[3] / Math.max(1, c[4])),          // AVV — среднее число просмотров на видео
+      fmt(viewsG / Math.max(1, subsG)),       // Views+/Subs+
+      c[6], c[7]                              // страна, язык (для фильтров)
+    ];
+  });
+}
+// прирост по всем периодам — уходит в window, клиент подменяет ячейки при смене периода
+const GROWTH_BY_PERIOD = PERIODS.reduce(function (acc, pd) {
+  const k = PERIOD_K[pd];
+  acc[pd] = CH.map(function (c, i) {
+    const m = CH_META[i], subsG = m.subsG30 * k, viewsG = m.viewsG30 * k;
+    return [fmtDelta(subsG), fmtDelta(viewsG), fmt(viewsG / Math.max(1, subsG))];
+  });
+  return acc;
+}, {});
+
 // ---- колонки paid-таблицы (enterprise): порядок и ширины из useChannelsTable ----
 const COLS = [
   { id:"check",  w:40,  pin:"check" },
@@ -99,20 +229,7 @@ const COLS = [
 
 // ---- данные-примеры (реальные каналы/значения с прода app.subsub.io/analytics/basic-data) ----
 const AVA = ["--color-avatar-1","--color-avatar-3","--color-avatar-5","--color-avatar-1","--color-avatar-3"];
-const ROWS = [
-  ["T-Series","T","Music","13.03.2006","27.07.2026","14.07.2024","314m","349.6bn","26.8k","+1m","+3.4bn","13.1m","3.4k"],
-  ["Cocomelon - Nursery Rhymes","C","Entertainment","01.09.2006","27.07.2026","23.05.2023","202m","224.9bn","2.1k","+1m","+1.3bn","108.5m","1.3k"],
-  ["SET India","S","Entertainment","20.09.2006","27.07.2026","14.07.2024","189m","190.6bn","173.8k","+900k","+1bn","1.1m","1.1k"],
-  ["김프로KIMPRO","김","Music of Asia","11.11.2017","26.07.2026","12.09.2024","134m","150.5bn","4.3k","+500k","+2.7bn","34.9m","5.4k"],
-  ["Sony SAB","S","Entertainment","04.08.2007","27.07.2026","13.09.2024","106m","146bn","113.8k","+1m","+1.2bn","1.3m","1.2k"],
-  ["MrBeast","M","Lifestyle (sociology)","20.02.2012","25.07.2026","29.06.2023","510m","134.7bn","994","+6m","+3.6bn","135.5m","596"],
-  ["✿ Kids Diana Show","K","Lifestyle (sociology)","12.05.2015","26.07.2026","06.04.2023","138m","125.3bn","1.7k","+200k","+403.7m","74.3m","2k"],
-  ["Vlad and Niki","V","Lifestyle (sociology)","23.04.2018","25.07.2026","06.04.2023","150m","122.3bn","764","+300k","+603.8m","117.4m","2k"],
-  ["Like Nastya","L","Lifestyle (sociology)","06.12.2016","25.07.2026","23.05.2023","133m","122.2bn","1.1k","+1m","+580.6m","111.9m","581"],
-  ["Toys and Colors","T","Lifestyle (sociology)","17.03.2016","26.07.2026","17.07.2024","82.8m","120.6bn","1.9k","+100k","+817.6m","63.6m","8.2k"],
-  ["Zee TV","Z","Entertainment","11.12.2005","27.07.2026","31.10.2023","98.5m","119.3bn","241.2k","+300k","+1.2bn","494.9k","4k"],
-  ["WWE","W","Professional wrestling","11.05.2007","26.07.2026","29.06.2023","113m","105.8bn","95.2k","+400k","+690.3m","1.1m","1.7k"],
-];
+const ROWS = basicRows("30");   // дефолтный период — 30 дней (P1.2)
 
 function headCell(c){
   let cls = "an-th";
@@ -123,9 +240,9 @@ function headCell(c){
   let inner = "";
   if (c.pin === "check") inner = '<button class="an-check" type="button" data-an-check-all aria-label="Select all"></button>';
   else if (c.stub) inner = "";
-  else if (c.sort) inner = '<span class="an-sort" role="button" tabindex="0">' + c.label + IC.sort + '</span>';
+  else if (c.sort) inner = '<span class="an-sort" role="button" tabindex="0" data-an-sort="' + c.id + '">' + c.label + IC.sort + '</span>';
   else inner = c.label;
-  return '<div class="' + cls + '" style="' + style + '">' + inner + '</div>';
+  return '<div class="' + cls + '" style="' + style + '" data-col="' + c.id + '">' + inner + '</div>';
 }
 
 function delta(v){
@@ -153,7 +270,13 @@ function bodyRow(r, i){
         '<span class="an-chan__open" aria-hidden="true">' + IC.channelPage + '</span>' +
       '</a></div>');
   cells.push('<div class="an-td an-td--stub" style="width:20px"></div>');
-  cells.push('<div class="an-td" style="width:140px"><span class="an-topic">' + esc(r[2]) + '</span></div>');
+  // топики: до 2 баджей + «+N» (P1.3). Кликабельными их делает A5 в Фазе 2.
+  const tops = Array.isArray(r[2]) ? r[2] : [r[2]];
+  const topHtml = tops.slice(0, 2).map(function (t) {
+    return '<span class="an-topic" data-an-topic="' + esc(t) + '">' + esc(t) + '</span>';
+  }).join("") +
+  (tops.length > 2 ? '<span class="an-topic__more" data-an-topics-more="' + esc(tops.join("|")) + '">+' + (tops.length - 2) + '</span>' : "");
+  cells.push('<div class="an-td an-td--topics" style="width:140px"><span class="an-topics">' + topHtml + '</span></div>');
   cells.push('<div class="an-td" style="width:120px">' + esc(r[3]) + '</div>');
   cells.push('<div class="an-td" style="width:150px">' + esc(r[4]) + '</div>');
   cells.push('<div class="an-td" style="width:150px">' + esc(r[5]) + '</div>');
@@ -351,7 +474,7 @@ const mainInner = `
         </div>
       </section>
 
-      <section class="an-pagi">
+      <section class="an-pagi" data-an-table="basic">
         <div class="an-pagi__label">
           <span class="an-pagi__name">Channels</span>
           <button class="an-collsel" type="button"><span class="an-collsel__txt an-collsel__txt--ph">Select colleciton</span>${IC.chevSelect}</button>
@@ -361,16 +484,19 @@ const mainInner = `
         <div class="an-pagi__ctrls">
           <span class="an-pagi__pages">Pages: 74,046</span>
           <div class="an-pagi__nav">
-            <button class="an-pagi__arrow" type="button" aria-label="Previous Page">${IC.arrowL}</button>
-            <input class="an-pagi__page" type="text" value="1" aria-label="Page number" />
-            <button class="an-pagi__arrow" type="button" aria-label="Next Page">${IC.arrowR}</button>
+            <button class="an-pagi__arrow" type="button" data-an-prev aria-label="Previous Page">${IC.arrowL}</button>
+            <input class="an-pagi__page" type="text" value="1" aria-label="Page number" data-an-page />
+            <button class="an-pagi__arrow" type="button" data-an-next aria-label="Next Page">${IC.arrowR}</button>
           </div>
-          <button class="an-perpage" type="button">30 ${IC.arrowDown}</button>
+          <div class="an-perpage-wrap" data-an-perpage-wrap>
+            <button class="an-perpage" type="button" data-an-perpage-trig>30 ${IC.arrowDown}</button>
+            <div class="an-perpage__menu" data-an-perpage-menu hidden role="listbox"></div>
+          </div>
         </div>
       </section>
 
-      <section class="an-tablewrap">
-        <div class="an-table">
+      <section class="an-tablewrap" data-an-tablewrap="basic">
+        <div class="an-table" data-an-table-body="basic">
           <div class="an-thead">${headHtml}</div>
           <div class="an-tbody">
           ${rowsHtml}
@@ -431,11 +557,11 @@ function deepHeadCell(c){
   if (c.stub) cls += " an-th--stub";
   let inner = "";
   if (c.stub) inner = "";
-  else if (c.kind === "channel") inner = '<span class="an-sort" role="button" tabindex="0">' + c.label + IC.sort + '</span>';
-  else if (c.metric) inner = '<span class="an-sort an-sort--metric" role="button" tabindex="0">' + c.label + IC.sort + '<span class="and-colx" aria-hidden="true">' + IC.closeBold + '</span></span>';
-  else if (c.sort) inner = '<span class="an-sort" role="button" tabindex="0">' + c.label + IC.sort + '</span>';
+  else if (c.kind === "channel") inner = '<span class="an-sort" role="button" tabindex="0" data-an-sort="' + c.id + '">' + c.label + IC.sort + '</span>';
+  else if (c.metric) inner = '<span class="an-sort an-sort--metric" role="button" tabindex="0" data-an-sort="' + c.id + '">' + c.label + IC.sort + '<span class="and-colx" aria-hidden="true">' + IC.closeBold + '</span></span>';
+  else if (c.sort) inner = '<span class="an-sort" role="button" tabindex="0" data-an-sort="' + c.id + '">' + c.label + IC.sort + '</span>';
   else inner = c.label;
-  return '<div class="' + cls + '" style="' + style + '">' + inner + '</div>';
+  return '<div class="' + cls + '" style="' + style + '" data-col="' + c.id + '">' + inner + '</div>';
 }
 function deepMetricCell(val, avg, isDelta){
   const tint = toNum(val) >= toNum(avg) ? "pos" : "neg";
@@ -496,7 +622,7 @@ const deepInner = `
         <button class="an-btn an-btn--secondary" type="button">${IC.export}Export</button>
       </section>
 
-      <section class="an-pagi">
+      <section class="an-pagi" data-an-table="deep">
         <div class="an-pagi__label">
           <span class="an-pagi__name">Channels in collection</span>
           <button class="an-collsel" type="button"><span class="an-collsel__txt" data-ai-collname>News UA - Big Media</span>${IC.chevSelect}</button>
@@ -507,11 +633,14 @@ const deepInner = `
         <div class="an-pagi__ctrls">
           <span class="an-pagi__pages">Pages: 1</span>
           <div class="an-pagi__nav">
-            <button class="an-pagi__arrow" type="button" aria-label="Previous Page">${IC.arrowL}</button>
-            <input class="an-pagi__page" type="text" value="1" aria-label="Page number" />
-            <button class="an-pagi__arrow" type="button" aria-label="Next Page">${IC.arrowR}</button>
+            <button class="an-pagi__arrow" type="button" data-an-prev aria-label="Previous Page">${IC.arrowL}</button>
+            <input class="an-pagi__page" type="text" value="1" aria-label="Page number" data-an-page />
+            <button class="an-pagi__arrow" type="button" data-an-next aria-label="Next Page">${IC.arrowR}</button>
           </div>
-          <button class="an-perpage" type="button">30 ${IC.arrowDown}</button>
+          <div class="an-perpage-wrap" data-an-perpage-wrap>
+            <button class="an-perpage" type="button" data-an-perpage-trig>30 ${IC.arrowDown}</button>
+            <div class="an-perpage__menu" data-an-perpage-menu hidden role="listbox"></div>
+          </div>
         </div>
       </section>
 
@@ -527,8 +656,8 @@ const deepInner = `
         </div>
       </section>
 
-      <section class="an-tablewrap">
-        <div class="an-table">
+      <section class="an-tablewrap" data-an-tablewrap="deep">
+        <div class="an-table" data-an-table-body="deep">
           <div class="an-thead">${deepHead}</div>
           <div class="an-tbody">
           ${deepBody}
@@ -566,8 +695,8 @@ const COLL_ROWS = [
 
 function collHeadCell(c){
   let cls = "an-th" + (c.grow ? " an-th--grow" : "");
-  let inner = c.sort ? '<span class="an-sort" role="button" tabindex="0">' + c.label + IC.sort + '</span>' : c.label;
-  return '<div class="' + cls + '" style="width:' + c.w + 'px">' + inner + '</div>';
+  let inner = c.sort ? '<span class="an-sort" role="button" tabindex="0" data-an-sort="' + c.id + '">' + c.label + IC.sort + '</span>' : c.label;
+  return '<div class="' + cls + '" style="width:' + c.w + 'px" data-col="' + c.id + '">' + inner + '</div>';
 }
 function ava(a, cls){ return '<span class="' + (cls || "mc-ava") + '" style="background:var(' + a.c + ')">' + esc(a.i) + '</span>'; }
 function collRow(r){
@@ -617,7 +746,7 @@ const collInner = `
         <button class="an-btn an-btn--secondary" type="button">${IC.filter}Filters</button>
       </section>
 
-      <section class="an-pagi">
+      <section class="an-pagi" data-an-table="coll">
         <div class="an-pagi__label">
           <span class="an-pagi__name">Collections</span>
           <span class="an-pagi__dot"></span>
@@ -626,16 +755,19 @@ const collInner = `
         <div class="an-pagi__ctrls">
           <span class="an-pagi__pages">Pages: 1</span>
           <div class="an-pagi__nav">
-            <button class="an-pagi__arrow" type="button" aria-label="Previous Page">${IC.arrowL}</button>
-            <input class="an-pagi__page" type="text" value="1" aria-label="Page number" />
-            <button class="an-pagi__arrow" type="button" aria-label="Next Page">${IC.arrowR}</button>
+            <button class="an-pagi__arrow" type="button" data-an-prev aria-label="Previous Page">${IC.arrowL}</button>
+            <input class="an-pagi__page" type="text" value="1" aria-label="Page number" data-an-page />
+            <button class="an-pagi__arrow" type="button" data-an-next aria-label="Next Page">${IC.arrowR}</button>
           </div>
-          <button class="an-perpage" type="button">15 ${IC.arrowDown}</button>
+          <div class="an-perpage-wrap" data-an-perpage-wrap>
+            <button class="an-perpage" type="button" data-an-perpage-trig>15 ${IC.arrowDown}</button>
+            <div class="an-perpage__menu" data-an-perpage-menu hidden role="listbox"></div>
+          </div>
         </div>
       </section>
 
       <section class="an-tablewrap an-tablewrap--surface">
-        <div class="an-table an-table--fill">
+        <div class="an-table an-table--fill" data-an-table-body="coll">
           <div class="an-thead">${collHead}</div>
           <div class="an-tbody" data-mc-tbody>
           ${collBody}
@@ -820,13 +952,25 @@ function buildPage(src, title, inner, current){
   const seed = JSON.stringify(COLL_ROWS.map(function (r) {
     return { name: r.name, status: r.status, qty: r.qty, channels: r.includes.slice() };
   }));
-  // каналы для подсказок в поле «Add channel» (референсы) — те же, что в таблице Basic data
+  // каналы: подсказки для референсов + источник для фильтров и поиска по базе (P1.13, D2)
   const chSeed = JSON.stringify(ROWS.map(function (r, i) {
-    return { name: r[0], initial: r[1], color: AVA[i % AVA.length] };
+    return {
+      name: r[0], initial: r[1], color: AVA[i % AVA.length],
+      topics: r[2], country: r[13], language: r[14],
+      subs: r[6], views: r[7]
+    };
   }));
+  // справочники + прирост по периодам (P1.2): клиент подменяет ячейки при смене периода
+  const dictSeed = JSON.stringify({
+    topics: TOPIC_LIST, countries: COUNTRY_LIST, languages: LANG_LIST,
+    periods: PERIODS, periodLabels: PERIOD_LABEL, defaultPeriod: "30"
+  });
+  const growthSeed = JSON.stringify(GROWTH_BY_PERIOD);
   h = h.replace('<script src="js/nav.js"></script>',
     '<script src="js/nav.js"></script>\n  <script>window.SUBSUB_BASE_COLLECTIONS = ' + seed + ';' +
-    'window.SUBSUB_CHANNELS = ' + chSeed + ';</script>' +
+    'window.SUBSUB_CHANNELS = ' + chSeed + ';' +
+    'window.SUBSUB_DICT = ' + dictSeed + ';' +
+    'window.SUBSUB_GROWTH = ' + growthSeed + ';</script>' +
     '\n  <script src="js/analytics.js"></script>');
   const ms = h.indexOf('<main class="main">');
   const me = h.indexOf("</main>", ms);
