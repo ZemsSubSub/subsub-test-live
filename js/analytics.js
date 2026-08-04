@@ -4,6 +4,8 @@
   function updateFooter() {
     // на Deep data у футера другая роль (B2: удаление из коллекции)
     if (document.querySelector("[data-dp-remove]")) { dpFooter(); return; }
+    // на странице коллекции — своё массовое удаление (D1)
+    if (document.querySelector("[data-ce-bulk-remove]")) { ceFooter(); return; }
     var n = document.querySelectorAll("[data-an-check].is-checked").length;
     var footer = document.querySelector("[data-an-footer]");
     if (!footer) return;
@@ -138,6 +140,13 @@
     }
     var pSet = e.target.closest("[data-an-period-set]");
     if (pSet) { flSetPeriod(pSet.getAttribute("data-an-period-set")); return; }
+    // --- D1/D3: массовые действия и футер страницы коллекции ---
+    if (e.target.closest("[data-ce-bulk-remove]")) { ceConfirm("remove"); return; }
+    if (e.target.closest("[data-ce-delete]")) { ceConfirm("delete"); return; }
+    if (e.target.closest("[data-ce-deactivate]")) { ceConfirm("deactivate"); return; }
+    if (e.target.closest("[data-ce-close]")) { closeModal(document.getElementById("ceConfirm")); return; }
+    if (e.target.closest("[data-ce-c-confirm]")) { ceDoConfirm(); return; }
+    if (e.target.closest("[data-ce-save]")) { toast("Collection saved successfully"); return; }
     // --- B1: один переключатель типа контента на все метрики ---
     var ctB = e.target.closest("[data-an-ctype-set]");
     if (ctB) { ctSet(ctB.getAttribute("data-an-ctype-set")); return; }
@@ -175,6 +184,15 @@
     if (e.target.closest("[data-nc-new-cancel]")) { ncNewForm(false); return; }
     if (e.target.closest("[data-nc-new-submit]")) { ncCreate(); return; }
     if (e.target.closest("[data-nc-submit]")) { ncSubmit(); return; }
+    var ncTb = e.target.closest("[data-nc-tab]");
+    if (ncTb) { ncSetTab(ncTb.getAttribute("data-nc-tab")); return; }        // D2
+    var ncBi = e.target.closest("[data-nc-base-item]");
+    if (ncBi) {
+      var bn = ncBi.getAttribute("data-nc-base-item");
+      if (ncBaseSel[bn]) delete ncBaseSel[bn]; else ncBaseSel[bn] = true;
+      ncBaseRender();
+      return;
+    }
     var ncIt = e.target.closest("[data-nc-item]");
     if (ncIt) {
       var ncNm = ncIt.getAttribute("data-nc-item");
@@ -320,6 +338,8 @@
   if (ncTa) ncTa.addEventListener("input", ncSync);
   var ncSq = document.querySelector("[data-nc-search]");
   if (ncSq) ncSq.addEventListener("input", ncRender);
+  var ncBq = document.querySelector("[data-nc-base-search]");
+  if (ncBq) ncBq.addEventListener("input", ncBaseRender);
   var ncNi = document.querySelector("[data-nc-new-name]");
   if (ncNi) ncNi.addEventListener("keyup", function (e) { if (e.key === "Enter") ncCreate(); });
   // C3: поиск по коллекциям — мгновенно
@@ -1562,10 +1582,41 @@
       "</button>";
     }).join("") || '<div class="nc-empty">You have no collection yet.</div>';
   }
+  // D2: второй вход — поиск канала в базе (те же каналы, что в каталоге страницы)
+  var ncBaseSel = {}, ncTab = "links";
+  function ncBaseRender() {
+    var box = ncEl("[data-nc-base]");
+    if (!box) return;
+    var q = ((ncEl("[data-nc-base-search]") || {}).value || "").trim().toLowerCase();
+    var pool = (typeof aiChannelPool === "function" ? aiChannelPool() : []);
+    var list = pool.filter(function (c) { return !q || c.name.toLowerCase().indexOf(q) !== -1; }).slice(0, 40);
+    box.innerHTML = list.map(function (c) {
+      var on = !!ncBaseSel[c.name];
+      return '<button class="nc-baseitem' + (on ? " is-on" : "") + '" type="button" data-nc-base-item="' + escHtml(c.name) + '">' +
+        (on ? NC_ICON_ON : NC_ICON_OFF) +
+        '<span class="mc-ava nc-baseava" style="background:var(' + (c.color || "--color-avatar-3") + ')">' + escHtml(c.initial || c.name.charAt(0)) + "</span>" +
+        '<span class="nc-item__name">' + escHtml(c.name) + "</span>" +
+        '<span class="nc-item__qty">' + escHtml(c.subs || "") + " subs</span>" +
+      "</button>";
+    }).join("") || '<div class="nc-empty">No channels found</div>';
+    var cnt = ncEl("[data-nc-base-count]");
+    if (cnt) cnt.textContent = String(Object.keys(ncBaseSel).length);
+    ncSync();
+  }
+  function ncSetTab(tab) {
+    ncTab = tab;
+    [].slice.call(document.querySelectorAll("[data-nc-tab]")).forEach(function (b) {
+      b.classList.toggle("is-active", b.getAttribute("data-nc-tab") === tab);
+    });
+    [].slice.call(document.querySelectorAll("[data-nc-pane]")).forEach(function (pane) {
+      pane.hidden = pane.getAttribute("data-nc-pane") !== tab;
+    });
+    ncSync();
+  }
   function ncSync() {
-    var n = ncLinks().length;
-    var cnt = ncEl("[data-nc-count]"); if (cnt) cnt.textContent = String(n);
-    var lim = ncEl("[data-nc-limit]"); if (lim) lim.hidden = n <= NC_MAX;
+    var n = ncTab === "base" ? Object.keys(ncBaseSel).length : ncLinks().length;
+    var cnt = ncEl("[data-nc-count]"); if (cnt) cnt.textContent = String(ncLinks().length);
+    var lim = ncEl("[data-nc-limit]"); if (lim) lim.hidden = ncLinks().length <= NC_MAX;
     var sub = ncEl("[data-nc-submit]"); if (sub) sub.disabled = n === 0 || n > NC_MAX;
     ncRender();
   }
@@ -1587,6 +1638,9 @@
       if (t) t.textContent = nm ? "Add channels to " + nm : "Add channels";
     }
     ncNewForm(false);
+    ncBaseSel = {};
+    var bq = ncEl("[data-nc-base-search]"); if (bq) bq.value = "";
+    if (document.querySelector("[data-nc-tab]")) { ncSetTab("links"); ncBaseRender(); }
     ncSync();
     openModal("ncModal");
     if (ta) ta.focus();
@@ -1625,20 +1679,30 @@
     if (touched) aiSave(list);
   }
   function ncSubmit() {
-    var links = ncLinks();
-    if (!links.length || links.length > NC_MAX) return;
-    var names = links.map(ncNameFromLink);
+    // D2: из таба «Find in base» берём выбранные каналы, иначе — разобранные ссылки
+    var names;
+    if (ncTab === "base") {
+      names = Object.keys(ncBaseSel).filter(function (n) { return ncBaseSel[n]; });
+      if (!names.length) return;
+    } else {
+      var links = ncLinks();
+      if (!links.length || links.length > NC_MAX) return;
+      names = links.map(ncNameFromLink);
+    }
     // на странице коллекции добавляем в неё же и дорисовываем строки таблицы
     if (ncCollPage()) {
       var coll = ncPageColl();
       if (coll) ncAppend(coll, names);
       if (typeof ceAddRows === "function") ceAddRows(names);
+      ncBaseSel = {};
       closeModal(document.getElementById("ncModal"));
       toast("Channels added successfully");
       return;
     }
     var targets = Object.keys(ncSel).filter(function (n) { return ncSel[n]; });
     targets.forEach(function (t) { ncAppend(t, names); });
+    // повторное открытие — с чистого листа
+    ncBaseSel = {};
     closeModal(document.getElementById("ncModal"));
     toast(targets.length
       ? "Channels added successfully"
@@ -2607,6 +2671,85 @@
       '</div>';
       body.insertAdjacentHTML("beforeend", html);
     });
+  }
+  // ================= D1/D3: массовые действия и футер страницы коллекции =================
+  function ceRows() { return [].slice.call(document.querySelectorAll("[data-ce-row]")); }
+  function ceChecked() {
+    return ceRows().filter(function (r) {
+      var b = r.querySelector("[data-an-check]");
+      return b && b.classList.contains("is-checked");
+    });
+  }
+  function ceFooter() {
+    var footer = document.querySelector("[data-an-footer]");
+    if (!footer) return;
+    var n = ceChecked().length;
+    footer.hidden = !n;
+    var lbl = footer.querySelector("[data-ce-bulk-lbl]");
+    if (lbl) lbl.textContent = "Remove " + n + (n === 1 ? " channel" : " channels");
+    var allBtn = document.querySelector("[data-an-check-all]");
+    if (allBtn) allBtn.classList.toggle("is-checked", ceRows().length > 0 && n === ceRows().length);
+  }
+  var ceAsk = null;            // что подтверждаем: remove | delete | deactivate
+  function ceConfirm(kind) {
+    var t = document.querySelector("[data-ce-c-title]"), x = document.querySelector("[data-ce-c-text]");
+    var btn = document.querySelector("[data-ce-c-confirm]");
+    var nm = (document.querySelector("[data-ce-name]") || {}).value || "collection";
+    ceAsk = kind;
+    if (kind === "remove") {
+      var picked = ceChecked();
+      if (!picked.length) return;
+      if (t) t.textContent = picked.length === 1 ? "Remove channel from collection?" : "Remove channels from collection?";
+      if (x) x.textContent = picked.length === 1
+        ? "«" + picked[0].querySelector(".ce-chan__name").textContent.trim() + "» will be removed from «" + nm + "»."
+        : picked.length + " channels will be removed from «" + nm + "».";
+      if (btn) btn.textContent = "Remove";
+    } else if (kind === "delete") {
+      if (t) t.textContent = "Delete collection?";
+      if (x) x.textContent = "This action cannot be undone. «" + nm + "» will be permanently deleted.";
+      if (btn) btn.textContent = "Delete";
+    } else {
+      if (t) t.textContent = "Deactivate collection?";
+      if (x) x.textContent = "Deep data of «" + nm + "» will be deactivated and no longer available.";
+      if (btn) btn.textContent = "Deactivate";
+    }
+    openModal("ceConfirm");
+  }
+  function ceDoConfirm() {
+    var nm = (document.querySelector("[data-ce-name]") || {}).value || "";
+    if (ceAsk === "remove") {
+      var picked = ceChecked();
+      var names = picked.map(function (r) { return r.querySelector(".ce-chan__name").textContent.trim(); });
+      picked.forEach(function (r) { r.remove(); });
+      if (nm) {
+        var extra = aiExtraLoad();
+        if (extra[nm] && extra[nm].channels) {
+          extra[nm].channels = extra[nm].channels.filter(function (n) { return names.indexOf(n) === -1; });
+          aiExtraSave(extra);
+        }
+        var removed = aiRemovedLoad();
+        removed[nm] = (removed[nm] || []).concat(names);
+        aiRemovedSave(removed);
+      }
+      closeModal(document.getElementById("ceConfirm"));
+      ceFooter();
+      toast(names.length + (names.length === 1 ? " channel" : " channels") + " removed from collection");
+      return;
+    }
+    if (ceAsk === "delete") {
+      var list = aiLoad().filter(function (c) { return c.name !== nm; });
+      aiSave(list);
+      closeModal(document.getElementById("ceConfirm"));
+      toast("Collection deleted successfully");
+      setTimeout(function () { window.location.href = "analytics-collections.html"; }, 600);
+      return;
+    }
+    // deactivate
+    var l2 = aiLoad();
+    l2.forEach(function (c) { if (c.name === nm) c.status = "inactive"; });
+    aiSave(l2);
+    closeModal(document.getElementById("ceConfirm"));
+    toast("Collection deactivated successfully");
   }
   function ceInit() {
     var inp = document.querySelector("[data-ce-name]");

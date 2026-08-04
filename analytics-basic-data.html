@@ -624,13 +624,27 @@
           <h2 class="an-modal__title" data-nc-title>New channels</h2>
           <button class="an-modal__x" type="button" data-nc-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none"><path d="M19.172 6.42187C19.6126 5.98124 19.6126 5.26874 19.172 4.83281C18.7314 4.39687 18.0189 4.39218 17.583 4.83281L12.0048 10.4109L6.42202 4.82812C5.9814 4.38749 5.2689 4.38749 4.83296 4.82812C4.39702 5.26874 4.39233 5.98124 4.83296 6.41718L10.4111 11.9953L4.82827 17.5781C4.38765 18.0187 4.38765 18.7312 4.82827 19.1672C5.2689 19.6031 5.9814 19.6078 6.41733 19.1672L11.9955 13.5891L17.5783 19.1719C18.0189 19.6125 18.7314 19.6125 19.1673 19.1719C19.6033 18.7312 19.608 18.0187 19.1673 17.5828L13.5892 12.0047L19.172 6.42187Z" fill="currentColor"/></svg></button>
         </header>
+        <!-- D2: два входа — вставить ссылки или найти канал в базе -->
+        <nav class="nc-tabs" data-nc-tabs>
+          <button class="nc-tab is-active" type="button" data-nc-tab="links">Paste links</button>
+          <button class="nc-tab" type="button" data-nc-tab="base">Find in base</button>
+        </nav>
         <div class="an-modal__body nc-body">
+          <div class="nc-pane" data-nc-pane="base" hidden>
+            <div class="an-search nc-search nc-search--base">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M10.6154 18.2307C14.8212 18.2307 18.2307 14.8212 18.2307 10.6154C18.2307 6.40951 14.8212 3 10.6154 3C6.40951 3 3 6.40951 3 10.6154C3 14.8212 6.40951 18.2307 10.6154 18.2307Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M21.0004 20.9985L16.1543 16.1523" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg><input class="an-search__input" type="text" placeholder="Search by channel title" data-nc-base-search />
+            </div>
+            <div class="nc-base" data-nc-base></div>
+            <p class="nc-count">Selected:&nbsp;<span class="nc-count__n" data-nc-base-count>0</span></p>
+          </div>
+          <div class="nc-pane" data-nc-pane="links">
           <div class="nc-links">
             <label class="an-label" for="ncLinks">YouTube channels links</label>
             <textarea class="an-input nc-textarea" id="ncLinks" rows="4" data-nc-links
               placeholder="https://www.youtube.com/@AZOV_Brigade&#10;https://www.youtube.com/@SuspilneNews"></textarea>
             <p class="nc-count">One-time addition of channels:&nbsp;<span class="nc-count__n"><span data-nc-count>0</span>/30</span></p>
             <p class="nc-limit" data-nc-limit hidden>The limit has been reached: 30</p>
+          </div>
           </div>
           
           <!-- создание коллекции прямо из модалки: кнопка → форма с именем -->

@@ -526,13 +526,27 @@ function ncModal(opts) {
           <h2 class="an-modal__title" data-nc-title>${esc(opts.title)}</h2>
           <button class="an-modal__x" type="button" data-nc-close aria-label="Close">${IC.closeBold}</button>
         </header>
+        <!-- D2: два входа — вставить ссылки или найти канал в базе -->
+        <nav class="nc-tabs" data-nc-tabs>
+          <button class="nc-tab is-active" type="button" data-nc-tab="links">Paste links</button>
+          <button class="nc-tab" type="button" data-nc-tab="base">Find in base</button>
+        </nav>
         <div class="an-modal__body nc-body">
+          <div class="nc-pane" data-nc-pane="base" hidden>
+            <div class="an-search nc-search nc-search--base">
+              ${IC.search}<input class="an-search__input" type="text" placeholder="Search by channel title" data-nc-base-search />
+            </div>
+            <div class="nc-base" data-nc-base></div>
+            <p class="nc-count">Selected:&nbsp;<span class="nc-count__n" data-nc-base-count>0</span></p>
+          </div>
+          <div class="nc-pane" data-nc-pane="links">
           <div class="nc-links">
             <label class="an-label" for="ncLinks">YouTube channels links</label>
             <textarea class="an-input nc-textarea" id="ncLinks" rows="4" data-nc-links
               placeholder="https://www.youtube.com/@AZOV_Brigade&#10;https://www.youtube.com/@SuspilneNews"></textarea>
             <p class="nc-count">One-time addition of channels:&nbsp;<span class="nc-count__n"><span data-nc-count>0</span>/${NC_MAX_LINKS}</span></p>
             <p class="nc-limit" data-nc-limit hidden>The limit has been reached: ${NC_MAX_LINKS}</p>
+          </div>
           </div>
           ${withColls ? `
           <!-- создание коллекции прямо из модалки: кнопка → форма с именем -->
@@ -1530,6 +1544,7 @@ const collInner = `
 // Перенос app.subsub.io/analytics/collections/channels/<id>: форма (Name/Shared with/поиск),
 // таблица каналов коллекции и фиксированный футер с действиями.
 const CE_COLS = [
+  { w: 40, check: true },
   { w: 240, label: "Channel" },
   { w: 120, label: "Views" },
   { w: 120, label: "Subs" },
@@ -1544,10 +1559,13 @@ const CE_ROWS = [
   ["SET India", "S", "--color-avatar-3", "190.6bn", "189m"],
 ];
 const ceHead = '<div class="an-tr an-tr--head">' + CE_COLS.map(function (c) {
+  if (c.check) return '<div class="an-th an-th--check" style="width:40px">' +
+    '<button class="an-check" type="button" data-an-check-all aria-label="Select all"></button></div>';
   return '<div class="an-th" style="width:' + c.w + 'px">' + c.label + '</div>';
 }).join("") + '</div>';
 const ceBody = CE_ROWS.map(function (r) {
   return '<div class="an-tr" data-ce-row>' +
+    '<div class="an-td an-td--check" style="width:40px"><button class="an-check" type="button" data-an-check aria-label="Select"></button></div>' +
     '<div class="an-td" style="width:240px"><span class="ce-chan"><span class="mc-ava ce-ava" style="background:var(' + r[2] + ')">' + esc(r[1]) + '</span>' +
       '<span class="ce-chan__name">' + esc(r[0]) + '</span></span></div>' +
     '<div class="an-td ce-num" style="width:120px">' + esc(r[3]) + '</div>' +
@@ -1598,13 +1616,38 @@ const editInner = `
       </div>
     </section>
 
+    <!-- D3: деструктивные действия отделены разделителем, обычные — справа -->
     <div class="ce-footer">
       <div class="ce-footer__inner">
-        <button class="an-btn an-btn--danger an-btn--huge" type="button">${IC.trash}Delete</button>
-        <button class="an-btn an-btn--danger an-btn--huge" type="button">Deactivate</button>
+        <button class="an-btn an-btn--danger an-btn--huge" type="button" data-ce-delete>${IC.trash}Delete</button>
+        <button class="an-btn an-btn--plain an-btn--huge ce-footer__deact" type="button" data-ce-deactivate>${IC.archive}Deactivate</button>
+        <span class="ce-footer__sep"></span>
         <span class="ce-footer__spacer"></span>
-        <button class="an-btn an-btn--secondary an-btn--huge" type="button" data-nc-open>Add channels</button>
-        <button class="an-btn an-btn--secondary an-btn--huge" type="button">Save</button>
+        <button class="an-btn an-btn--secondary an-btn--huge" type="button" data-nc-open>${IC.plus}Add channels</button>
+        <button class="an-btn an-btn--primary an-btn--huge" type="button" data-ce-save>Save</button>
+      </div>
+    </div>
+
+    <!-- D1: массовое удаление выбранных каналов -->
+    <div class="an-footer" data-an-footer hidden>
+      <div class="an-footer__inner">
+        <button class="an-btn an-btn--danger an-btn--small" type="button" data-ce-bulk-remove>${IC.trash}<span data-ce-bulk-lbl>Remove 1 channel</span></button>
+        <button class="an-footer__close" type="button" data-an-footer-close aria-label="Clear channels selection">${IC.closeBold}</button>
+      </div>
+    </div>
+
+    <!-- подтверждения страницы коллекции (D1/D3) -->
+    <div class="an-modal" id="ceConfirm"><div class="an-modal__overlay" data-ce-close></div>
+      <div class="an-modal__dialog an-modal__dialog--sm">
+        <div class="an-modal__head">
+          <h2 class="an-modal__title" data-ce-c-title>Remove channels?</h2>
+          <button class="an-modal__x" type="button" data-ce-close aria-label="Close">${IC.closeBold}</button>
+        </div>
+        <div class="an-modal__body"><p class="an-modal__text" data-ce-c-text></p></div>
+        <div class="an-modal__foot">
+          <button class="an-btn an-btn--secondary an-btn--small" type="button" data-ce-close>Cancel</button>
+          <button class="an-btn an-btn--danger an-btn--small" type="button" data-ce-c-confirm>Remove</button>
+        </div>
       </div>
     </div>
 
