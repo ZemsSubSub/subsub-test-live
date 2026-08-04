@@ -1798,6 +1798,9 @@ body.is-open:not(.is-collapsed) .main { margin-left: 306px; }
    ::-webkit-scrollbar и подставляют свою «тонкую» полосу ~14px. */
 .an-tablewrap::-webkit-scrollbar { width: 8px; height: 8px; }
 .an-tablewrap::-webkit-scrollbar-track { background: transparent; }
+/* слева у горизонтальной полосы такой же упор (8px), как справа от вертикальной */
+.an-tablewrap::-webkit-scrollbar-track:horizontal { margin-left: 8px; }
+.an-tablewrap::-webkit-scrollbar-track:vertical { margin-top: 8px; }
 .an-tablewrap::-webkit-scrollbar-thumb { background: var(--color-shade-300); border-radius: 8px; }
 .an-tablewrap::-webkit-scrollbar-thumb:hover { background: var(--color-shade-500); }
 .an-tablewrap::-webkit-scrollbar-corner { background: transparent; }
