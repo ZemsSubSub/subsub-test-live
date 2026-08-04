@@ -139,7 +139,27 @@
       return;
     }
     var pSet = e.target.closest("[data-an-period-set]");
-    if (pSet) { flSetPeriod(pSet.getAttribute("data-an-period-set")); return; }
+    if (pSet) {
+      var pv = pSet.getAttribute("data-an-period-set");
+      if (pv === "custom") { drOpen(true); return; }          // A4: Custom → календарь
+      flSetPeriod(pv);
+      return;
+    }
+    // --- A4: календарь диапазона ---
+    if (e.target.closest("[data-an-period-trig]")) {
+      var drW = document.querySelector("[data-an-dr]");
+      drOpen(drW ? drW.querySelector("[data-an-dr-pop]").hidden : true);
+      return;
+    }
+    var drDay = e.target.closest("[data-an-dr-day]");
+    if (drDay) { drPickDay(drDay.getAttribute("data-an-dr-day")); return; }
+    var drP = e.target.closest("[data-an-dr-preset]");
+    if (drP) { drUsePreset(drP.getAttribute("data-an-dr-preset")); return; }
+    if (e.target.closest("[data-an-dr-prev]")) { drShift(-1); return; }
+    if (e.target.closest("[data-an-dr-next]")) { drShift(1); return; }
+    if (e.target.closest("[data-an-dr-cancel]")) { drOpen(false); return; }
+    if (e.target.closest("[data-an-dr-apply]")) { drApply(); return; }
+    if (!e.target.closest("[data-an-dr]")) drOpen(false);
     // --- D1/D3: массовые действия и футер страницы коллекции ---
     if (e.target.closest("[data-ce-bulk-remove]")) { ceConfirm("remove"); return; }
     if (e.target.closest("[data-ce-delete]")) { ceConfirm("delete"); return; }
@@ -1003,6 +1023,164 @@
     for (var i = 0; i < pool.length; i++) if (pool[i].name === name) return pool[i];
     return null;
   }
+  // ================= A4: календарь диапазона (Custom) =================
+  // «Сегодня» берём из сида, чтобы даты не плыли между сборками. Прирост для
+  // произвольного диапазона масштабируем от 30-дневной базы (dict.growthBase).
+  function drDict() { return window.SUBSUB_DICT || {}; }
+  function drToday() {
+    var t = (drDict().today || "2026-08-03").split("-");
+    return new Date(+t[0], +t[1] - 1, +t[2]);
+  }
+  function drFmt(d) {
+    return ("0" + d.getDate()).slice(-2) + "." + ("0" + (d.getMonth() + 1)).slice(-2) + "." + d.getFullYear();
+  }
+  function drParse(str) {
+    var m = String(str).trim().match(/^(\d{2})\.(\d{2})\.(\d{4})$/);
+    return m ? new Date(+m[3], +m[2] - 1, +m[1]) : null;
+  }
+  function drKey(d) { return d.getFullYear() + "-" + d.getMonth() + "-" + d.getDate(); }
+  function drDays(a, b) { return Math.round((b - a) / 86400000) + 1; }
+  var drFrom = null, drTo = null, drView = null, drPresetName = "";
+  // пресеты слева — считаются от «сегодня»
+  function drPresets() {
+    var t = drToday(), y = t.getFullYear(), m = t.getMonth();
+    function shift(d, n) { var x = new Date(d.getTime()); x.setDate(x.getDate() + n); return x; }
+    function weekStart(d) { var x = new Date(d.getTime()); var wd = (x.getDay() + 6) % 7; x.setDate(x.getDate() - wd); return x; }
+    var ws = weekStart(t), lws = shift(ws, -7);
+    return [
+      { id: "today", label: "Today", from: t, to: t },
+      { id: "yesterday", label: "Yesterday", from: shift(t, -1), to: shift(t, -1) },
+      { id: "thisweek", label: "This week", from: ws, to: t },
+      { id: "lastweek", label: "Last week", from: lws, to: shift(ws, -1) },
+      { id: "thismonth", label: "This month", from: new Date(y, m, 1), to: t },
+      { id: "lastmonth", label: "Last month", from: new Date(y, m - 1, 1), to: new Date(y, m, 0) },
+      { id: "thisyear", label: "This year", from: new Date(y, 0, 1), to: t },
+      { id: "lastyear", label: "Last year", from: new Date(y - 1, 0, 1), to: new Date(y - 1, 11, 31) },
+      { id: "alltime", label: "All time", from: new Date(2005, 0, 1), to: t }
+    ];
+  }
+  function drOpen(open) {
+    var wrap = document.querySelector("[data-an-dr]");
+    if (!wrap) return;
+    var pop = wrap.querySelector("[data-an-dr-pop]");
+    if (open) {
+      // открываем на диапазоне, который сейчас в поле
+      var val = (document.querySelector("[data-an-period-val]") || {}).textContent || "";
+      var parts = val.split(/\s*[–-]\s*/);
+      drFrom = drParse(parts[0]) || drToday();
+      drTo = drParse(parts[1]) || drFrom;
+      drView = new Date(drTo.getFullYear(), drTo.getMonth() - 1, 1);
+      drRender();
+    }
+    pop.hidden = !open;
+    wrap.classList.toggle("is-open", !!open);
+  }
+  function drRender() {
+    var wrap = document.querySelector("[data-an-dr]");
+    if (!wrap || !drView) return;
+    var d = drDict(), months = d.months || [], wds = d.weekdays || [];
+    // пресеты
+    var box = wrap.querySelector("[data-an-dr-presets]");
+    box.innerHTML = drPresets().map(function (p) {
+      return '<button class="an-dr__preset' + (p.id === drPresetName ? " is-on" : "") + '" type="button" data-an-dr-preset="' + p.id + '">' + p.label + "</button>";
+    }).join("");
+    // два месяца
+    [0, 1].forEach(function (i) {
+      var mv = new Date(drView.getFullYear(), drView.getMonth() + i, 1);
+      wrap.querySelector('[data-an-dr-mon="' + i + '"]').textContent = (months[mv.getMonth()] || "") + " " + mv.getFullYear();
+      var grid = wrap.querySelector('[data-an-dr-grid="' + i + '"]');
+      var html = wds.map(function (w) { return '<span class="an-dr__wd">' + w + "</span>"; }).join("");
+      var first = new Date(mv.getFullYear(), mv.getMonth(), 1);
+      var lead = (first.getDay() + 6) % 7;                    // неделя с понедельника
+      var startDay = new Date(mv.getFullYear(), mv.getMonth(), 1 - lead);
+      var todayK = drKey(drToday());
+      for (var c = 0; c < 42; c++) {
+        var day = new Date(startDay.getFullYear(), startDay.getMonth(), startDay.getDate() + c);
+        var out = day.getMonth() !== mv.getMonth();
+        var isEdge = (drFrom && drKey(day) === drKey(drFrom)) || (drTo && drKey(day) === drKey(drTo));
+        var inRange = drFrom && drTo && day > drFrom && day < drTo;
+        html += '<button class="an-dr__day' + (out ? " an-dr__day--out" : "") +
+          (inRange ? " an-dr__day--in" : "") + (isEdge ? " an-dr__day--edge" : "") +
+          (drKey(day) === todayK ? " an-dr__day--today" : "") +
+          '" type="button" data-an-dr-day="' + drFmt(day) + '">' + day.getDate() + "</button>";
+      }
+      grid.innerHTML = html;
+    });
+    wrap.querySelector("[data-an-dr-from]").value = drFrom ? drFmt(drFrom) : "";
+    wrap.querySelector("[data-an-dr-to]").value = drTo ? drFmt(drTo) : "";
+  }
+  function drPickDay(str) {
+    var day = drParse(str);
+    if (!day) return;
+    // первый клик после готового диапазона начинает новый выбор
+    if (!drFrom || (drFrom && drTo)) { drFrom = day; drTo = null; }
+    else if (day < drFrom) { drTo = drFrom; drFrom = day; }
+    else drTo = day;
+    drPresetName = "";
+    drRender();
+  }
+  function drUsePreset(id) {
+    var p = drPresets().filter(function (x) { return x.id === id; })[0];
+    if (!p) return;
+    drFrom = p.from; drTo = p.to; drPresetName = id;
+    drView = new Date(drTo.getFullYear(), drTo.getMonth() - 1, 1);
+    drRender();
+  }
+  function drShift(n) {
+    if (!drView) return;
+    drView = new Date(drView.getFullYear(), drView.getMonth() + n, 1);
+    drRender();
+  }
+  function drApply() {
+    var wrap = document.querySelector("[data-an-dr]");
+    var f = drParse(wrap.querySelector("[data-an-dr-from]").value) || drFrom;
+    var t = drParse(wrap.querySelector("[data-an-dr-to]").value) || drTo || f;
+    if (!f) return;
+    if (t < f) { var sw = f; f = t; t = sw; }
+    drFrom = f; drTo = t;
+    flSetCustom(f, t);
+    drOpen(false);
+  }
+  // числа за произвольный период: масштаб от 30-дневной базы
+  function jsFmt(n) {
+    n = Number(n) || 0;
+    function s1(v, u) { return (v >= 100 ? Math.round(v) : Math.round(v * 10) / 10) + u; }
+    if (n >= 1e9) return s1(n / 1e9, "bn");
+    if (n >= 1e6) return s1(n / 1e6, "m");
+    if (n >= 1e3) return s1(n / 1e3, "k");
+    return String(Math.round(n));
+  }
+  function flSetCustom(from, to) {
+    var base = drDict().growthBase || [];
+    var k = drDays(from, to) / 30;
+    flPeriod = "custom";
+    [].slice.call(document.querySelectorAll("[data-an-period-val]")).forEach(function (el) {
+      el.textContent = drFmt(from) + " – " + drFmt(to);
+    });
+    [].slice.call(document.querySelectorAll("[data-an-period-set]")).forEach(function (b) {
+      var on = b.getAttribute("data-an-period-set") === "custom";
+      b.classList.toggle("is-on", on);
+      b.setAttribute("aria-checked", on ? "true" : "false");
+    });
+    var idxByName = {};
+    (window.SUBSUB_CHANNELS || []).forEach(function (c, i) { idxByName[c.name] = i; });
+    var iSubsG = tblColIndex("basic", "subsg"), iViewsG = tblColIndex("basic", "viewsg"), iVps = tblColIndex("basic", "vps");
+    tblAllRows("basic").forEach(function (row) {
+      var nameEl = row.querySelector(".an-chan__name");
+      var i = nameEl ? idxByName[nameEl.textContent.trim()] : undefined;
+      if (i == null || !base[i]) return;
+      var subsG = base[i][0] * k, viewsG = base[i][1] * k;
+      function put(idx, val) {
+        var cell = row.children[idx]; if (!cell) return;
+        var tag = cell.querySelector("[class*='an-delta']");
+        if (tag) tag.textContent = val; else cell.textContent = val;
+      }
+      if (iSubsG >= 0) put(iSubsG, "+" + jsFmt(subsG));
+      if (iViewsG >= 0) put(iViewsG, "+" + jsFmt(viewsG));
+      if (iVps >= 0) put(iVps, jsFmt(viewsG / Math.max(1, subsG)));
+    });
+  }
+
   function flApplyBasic(v) {
     var rows = tblAllRows("basic");
     var collChannels = null;

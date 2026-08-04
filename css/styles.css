@@ -1806,11 +1806,70 @@ body.filters-open .an-tablewrap::-webkit-scrollbar { width: 0; height: 0; }
 .an-tbody .an-tr.is-selected .an-td { background: var(--color-blue-20, #e1e8ff); }
 .an-tbody .an-tr.is-selected .an-chan { background: var(--color-blue-20, #e1e8ff); }
 .an-tbody .an-tr.is-selected .an-chan__fade { background: linear-gradient(to left, var(--color-blue-20, #e1e8ff), var(--color-blue-20, #e1e8ff), transparent); }
-/* A4: Growth period в тулбаре */
-.an-periodbar { display: flex; align-items: center; gap: 12px; }
+/* A4: Growth period в заголовке страницы: поле-диапазон + сегмент периодов */
+.an-periodbar { position: relative; display: flex; align-items: center; gap: 12px; user-select: none; }
 .an-periodbar__lbl { font-size: 14px; font-weight: 500; color: var(--color-black); }
-.an-periodbar__val { font-size: 14px; font-weight: 300; color: var(--color-shade-800); }
-.an-periodbar__chips { padding-top: 0; }
+.an-periodbar .anf-chips { padding-top: 0; }
+
+/* поле с диапазоном дат */
+.an-dr { position: static; }
+.an-dr__field {
+  display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 16px; box-sizing: border-box;
+  border: 1px solid var(--color-shade-300); border-radius: 10px; background: #fff; cursor: pointer;
+  font-family: inherit; font-size: 14px; font-weight: 500; color: var(--color-black); white-space: nowrap;
+}
+.an-dr__field:hover { border-color: var(--color-shade-500); }
+.an-dr.is-open .an-dr__field { border-color: var(--color-black); box-shadow: 0 0 0 1px var(--color-black); }
+.an-dr__ico { display: inline-flex; }
+.an-dr__ico svg { width: 20px; height: 20px; color: var(--color-shade-700); }
+
+/* сегмент периодов: активный — белая пилюля на серой подложке */
+.an-periodseg { display: inline-flex; align-items: center; gap: 4px; padding: 4px; border-radius: 10px; background: var(--color-shade-100); }
+.an-periodseg__btn {
+  height: 32px; padding: 0 14px; border: 0; border-radius: 8px; background: none; cursor: pointer;
+  font-family: inherit; font-size: 14px; font-weight: 500; color: var(--color-shade-700); white-space: nowrap;
+}
+.an-periodseg__btn:hover { color: var(--color-black); }
+.an-periodseg__btn.is-on { background: #fff; color: var(--color-black); box-shadow: 0 0 4px 0 rgba(0,0,0,.1); }
+
+/* попап календаря: слева пресеты, справа два месяца и футер с полями */
+.an-dr__pop {
+  position: absolute; top: calc(100% + 8px); right: 0; z-index: 80; display: flex;
+  background: #fff; border: 1px solid var(--color-shade-200); border-radius: 12px;
+  box-shadow: 0 16px 40px rgba(34,41,47,.16); overflow: hidden;
+}
+.an-dr__pop[hidden] { display: none; }
+.an-dr__presets { flex: 0 0 148px; display: flex; flex-direction: column; padding: 12px 8px; gap: 2px; border-right: 1px solid var(--color-shade-200); }
+.an-dr__preset { padding: 10px 12px; border: 0; border-radius: 8px; background: none; cursor: pointer;
+  font-family: inherit; font-size: 14px; font-weight: 400; color: var(--color-black); text-align: left; white-space: nowrap; }
+.an-dr__preset:hover { background: var(--color-shade-90); }
+.an-dr__preset.is-on { background: var(--color-shade-100); font-weight: 500; }
+.an-dr__main { display: flex; flex-direction: column; }
+.an-dr__nav { display: grid; grid-template-columns: 32px 1fr 1fr 32px; align-items: center; padding: 16px 20px 4px; }
+.an-dr__arrow { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px;
+  border: 0; border-radius: 8px; background: none; color: var(--color-black); cursor: pointer; }
+.an-dr__arrow:hover { background: var(--color-shade-100); }
+.an-dr__arrow svg { width: 20px; height: 20px; }
+.an-dr__mon { text-align: center; font-size: 16px; font-weight: 500; color: var(--color-black); }
+.an-dr__grids { display: flex; gap: 20px; padding: 8px 16px 16px; }
+.an-dr__grid { display: grid; grid-template-columns: repeat(7, 34px); gap: 2px 2px; }
+.an-dr__wd { display: flex; align-items: center; justify-content: center; height: 28px; font-size: 12px; font-weight: 500; color: var(--color-shade-700); }
+.an-dr__day {
+  position: relative; display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 32px;
+  border: 0; background: none; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 400; color: var(--color-black); border-radius: 8px;
+}
+.an-dr__day:hover { background: var(--color-shade-100); }
+.an-dr__day--out { color: var(--color-shade-500); }
+.an-dr__day--in { background: var(--color-shade-100); border-radius: 0; }
+.an-dr__day--edge { background: var(--color-black); color: #fff; border-radius: 8px; }
+.an-dr__day--edge:hover { background: var(--color-black); }
+.an-dr__day--today::after { content: ""; position: absolute; bottom: 4px; left: 50%; transform: translateX(-50%);
+  width: 4px; height: 4px; border-radius: 50%; background: var(--color-black); }
+.an-dr__day--edge.an-dr__day--today::after { background: #fff; }
+.an-dr__foot { display: flex; align-items: center; gap: 8px; padding: 12px 20px; border-top: 1px solid var(--color-shade-200); }
+.an-dr__inp { width: 116px; height: 40px; font-size: 14px; text-align: center; }
+.an-dr__dash { color: var(--color-shade-700); }
+.an-dr__spacer { flex: 1; }
 /* A7: счётчик показанного диапазона */
 .an-pagi__sep { color: var(--color-shade-500); }
 .an-pagi__shown { font-size: 16px; font-weight: 400; color: var(--color-shade-700); }
@@ -1932,8 +1991,8 @@ body.filters-open .an-tablewrap::-webkit-scrollbar { width: 0; height: 0; }
 .and-rowact { flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border: 0; background: transparent; color: var(--color-shade-500); cursor: pointer; padding: 0; }
 .and-rowact:hover { color: var(--color-black); }
 .and-rowact svg { width: 20px; height: 20px; } /* прод: 20×20 */
-/* закладка на проде чёрная, пин — shade-500 (закреплённый становится чёрным) */
-.and-chan .and-rowact:nth-of-type(2) { color: var(--color-black); }
+/* пин из строки убран по просьбе — осталась только закладка (на проде она чёрная) */
+.and-chan .and-rowact { color: var(--color-black); }
 .and-rowact.is-on { color: var(--color-black); }
 .and-chan__link { display: flex; align-items: center; gap: 8px; min-width: 0; text-decoration: none; }
 /* «открыть канал» — тот же компонент, что на Basic data: синяя плашка 32px, иконка 16 */
