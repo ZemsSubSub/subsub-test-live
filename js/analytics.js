@@ -12,10 +12,21 @@
     } else {
       footer.hidden = true;
     }
-    // состояние «select all»
-    var all = document.querySelectorAll("[data-an-check]").length;
+    // состояние «select all» — считаем по видимым строкам страницы
+    var vis = [].slice.call(document.querySelectorAll("[data-an-check]")).filter(function (b) {
+      var r = b.closest(".an-tr");
+      return !(r && r.hidden);
+    });
     var allBtn = document.querySelector("[data-an-check-all]");
-    if (allBtn) allBtn.classList.toggle("is-checked", all > 0 && n === all);
+    var visOn = vis.filter(function (b) { return b.classList.contains("is-checked"); }).length;
+    if (allBtn) allBtn.classList.toggle("is-checked", vis.length > 0 && visOn === vis.length);
+  }
+  // A3: подсветка выбранных строк
+  function markSelected() {
+    [].slice.call(document.querySelectorAll("[data-an-check]")).forEach(function (b) {
+      var row = b.closest(".an-tr");
+      if (row) row.classList.toggle("is-selected", b.classList.contains("is-checked"));
+    });
   }
 
   document.addEventListener("click", function (e) {
@@ -58,14 +69,20 @@
 
     // чекбоксы строк
     var cb = e.target.closest("[data-an-check]");
-    if (cb) { cb.classList.toggle("is-checked"); updateFooter(); return; }
+    if (cb) { cb.classList.toggle("is-checked"); markSelected(); updateFooter(); return; }
     // select all
     var cbAll = e.target.closest("[data-an-check-all]");
     if (cbAll) {
       var on = !cbAll.classList.contains("is-checked");
       cbAll.classList.toggle("is-checked", on);
+      // выделяем только видимые строки текущей страницы — как на проде
       var boxes = document.querySelectorAll("[data-an-check]");
-      for (var j = 0; j < boxes.length; j++) boxes[j].classList.toggle("is-checked", on);
+      for (var j = 0; j < boxes.length; j++) {
+        var r = boxes[j].closest(".an-tr");
+        if (r && r.hidden) continue;
+        boxes[j].classList.toggle("is-checked", on);
+      }
+      markSelected();
       updateFooter();
       return;
     }
@@ -73,6 +90,7 @@
     if (e.target.closest("[data-an-footer-close]")) {
       var all = document.querySelectorAll("[data-an-check], [data-an-check-all]");
       for (var k = 0; k < all.length; k++) all[k].classList.remove("is-checked");
+      markSelected();
       updateFooter();
       return;
     }
@@ -175,9 +193,46 @@
       csOpen(csW, csM.hidden);
       return;
     }
+    if (e.target.closest("[data-an-collsel-all]")) {           // A3: All channels
+      csPickAll(e.target.closest("[data-an-collsel]"));
+      return;
+    }
     var csOpt = e.target.closest("[data-an-collsel-opt]");
     if (csOpt) {
       csPick(csOpt.closest("[data-an-collsel]"), csOpt.getAttribute("data-an-collsel-opt"));
+      return;
+    }
+    // --- A5: топики кликабельны, «+N» раскрывает остальные ---
+    var tMore = e.target.closest("[data-an-topics-more]");
+    if (tMore) {
+      var all = (tMore.getAttribute("data-an-topics-more") || "").split("|").filter(Boolean);
+      var box = tMore.parentNode;
+      box.innerHTML = all.map(function (t) {
+        return '<span class="an-topic" data-an-topic="' + escHtml(t) + '">' + escHtml(t) + "</span>";
+      }).join("");
+      box.classList.add("is-expanded");
+      return;
+    }
+    var tOne = e.target.closest("[data-an-topic]");
+    if (tOne) {
+      var act2 = flActive();
+      var tf = act2 && act2.querySelector('[data-anf-field="topic"] [data-anf-val]');
+      if (tf) { tf.textContent = tOne.getAttribute("data-an-topic"); tf.classList.remove("is-ph"); }
+      flApply();
+      return;
+    }
+    // --- A8: футер «Add N channels to collection» ---
+    if (e.target.closest("[data-an-footer-btn]")) { acOpen(); return; }
+    if (e.target.closest("[data-ac-close]")) { closeModal(document.getElementById("acModal")); return; }
+    if (e.target.closest("[data-ac-new-open]")) { acNewForm(true); return; }
+    if (e.target.closest("[data-ac-new-cancel]")) { acNewForm(false); return; }
+    if (e.target.closest("[data-ac-new-submit]")) { acCreate(); return; }
+    if (e.target.closest("[data-ac-submit]")) { acSubmit(); return; }
+    var acIt = e.target.closest("[data-ac-item]");
+    if (acIt) {
+      var acNm = acIt.getAttribute("data-ac-item");
+      if (acSel[acNm]) delete acSel[acNm]; else acSel[acNm] = true;
+      acRender();
       return;
     }
     if (!e.target.closest("[data-an-collsel]")) csWraps().forEach(function (w) { csOpen(w, false); });
@@ -233,6 +288,32 @@
     }
   });
 
+  // ================= A6: авто-переключение режима поиска =================
+  // Ссылка/UC-id — это точный поиск, свободный текст — семантический. Ручной выбор
+  // пользователя уважаем: после явного клика в меню авто-переключение отключаем.
+  var modeManual = false, modeAutoRunning = false;
+  document.addEventListener("click", function (e) {
+    if (!modeAutoRunning && e.target.closest("[data-an-mode-opt]")) modeManual = true;
+  }, true);
+  function modeSet(mode) {
+    var root = document.querySelector("[data-an-mode]");
+    if (!root) return;
+    var cur = root.querySelector("[data-an-mode-opt].is-selected");
+    if (cur && cur.getAttribute("data-an-mode-opt") === mode) return;
+    var opt = root.querySelector('[data-an-mode-opt="' + mode + '"]');
+    if (!opt) return;
+    modeAutoRunning = true;          // свой же клик не считаем ручным выбором
+    opt.click();
+    modeAutoRunning = false;
+  }
+  function modeAuto(val) {
+    if (modeManual) return;
+    var v = String(val || "").trim();
+    if (!v) return;
+    var exact = /^(https?:\/\/|www\.|youtube\.com|youtu\.be|@|UC[\w-]{10,})/i.test(v) || /youtube\.com|youtu\.be/i.test(v);
+    modeSet(exact ? "traditional" : "semantic");
+  }
+
   // P1.9: поиск по видео — мгновенно
   var vidSq = document.querySelector("[data-vid-search]");
   if (vidSq) vidSq.addEventListener("input", vidApply);
@@ -244,11 +325,17 @@
   if (ncSq) ncSq.addEventListener("input", ncRender);
   var ncNi = document.querySelector("[data-nc-new-name]");
   if (ncNi) ncNi.addEventListener("keyup", function (e) { if (e.key === "Enter") ncCreate(); });
+  // A8: поиск и Enter в модалке «Add channels to collection»
+  var acSq = document.querySelector("[data-ac-search]");
+  if (acSq) acSq.addEventListener("input", acRender);
+  var acNi = document.querySelector("[data-ac-new-name]");
+  if (acNi) acNi.addEventListener("keyup", function (e) { if (e.key === "Enter") acCreate(); });
 
   var input = document.querySelector("[data-an-search]");
   if (input) input.addEventListener("input", function () {
     var cl = document.querySelector("[data-an-search-clear]");
     if (cl) cl.hidden = input.value.length === 0;
+    modeAuto(input.value);          // A6
   });
 
 
@@ -413,14 +500,32 @@
   function csFill(wrap, q) {
     var box = wrap.querySelector("[data-an-collsel-opts]");
     if (!box) return;
+    var key = wrap.getAttribute("data-an-collsel");
     var cur = csCurrent(wrap), s = (q || "").toLowerCase();
-    var list = csList(wrap.getAttribute("data-an-collsel")).filter(function (c) {
+    var list = csList(key).filter(function (c) {
       return !s || c.name.toLowerCase().indexOf(s) !== -1;
     });
-    box.innerHTML = list.map(function (c) {
+    // A3: на Basic data первым пунктом «All channels» — сброс фильтра по коллекции
+    var head = (key === "basic" && !s)
+      ? '<button class="anf-opt' + (cur ? "" : " is-selected") + '" type="button" role="option" data-an-collsel-all>All channels</button>'
+      : "";
+    box.innerHTML = head + (list.map(function (c) {
       return '<button class="anf-opt' + (c.name === cur ? " is-selected" : "") + '" type="button" role="option" ' +
              'data-an-collsel-opt="' + escHtml(c.name) + '">' + escHtml(c.name) + "</button>";
-    }).join("") || '<div class="anf-empty">No collections</div>';
+    }).join("") || (head ? "" : '<div class="anf-empty">No collections</div>'));
+  }
+  // A3: сброс к «All channels» — снимаем и поле Collection в панели
+  function csPickAll(wrap) {
+    csSetLabel(wrap, "");
+    csOpen(wrap, false);
+    var act = flActive();
+    var f = act && act.querySelector('[data-anf-field="collection"] [data-anf-val]');
+    if (f) {
+      var ph = f.getAttribute("data-anf-ph");
+      if (ph) f.textContent = ph;
+      f.classList.add("is-ph");
+    }
+    flApply();
   }
   function csOpen(wrap, open) {
     csWraps().forEach(function (w) {
@@ -612,6 +717,7 @@
       r.hidden = true;
     });
     rows.slice(from, to).forEach(function (r) { r.hidden = false; });
+    if (typeof markSelected === "function") markSelected();
     var pagi = tblPagi(key);
     if (pagi) {
       var pagesEl = pagi.querySelector(".an-pagi__pages");
@@ -626,8 +732,18 @@
     }
     tblUpdateTotal(key, rows.length);
   }
+  // A7: «2.2m channels · showing 1–30» — какой диапазон видно на текущей странице
+  function tblUpdateShown(key, rows) {
+    var pagi = tblPagi(key); if (!pagi) return;
+    var el = pagi.querySelector("[data-an-shown]"); if (!el) return;
+    var st = TBL[key];
+    if (!rows) { el.textContent = "nothing to show"; return; }
+    var from = (st.page - 1) * st.per + 1, to = Math.min(rows, st.page * st.per);
+    el.textContent = "showing " + from.toLocaleString("en-US") + "–" + to.toLocaleString("en-US");
+  }
   // счётчик рядом с лейблом: на Basic оставляем «2.2m» (это размер базы), в остальных — число строк
   function tblUpdateTotal(key, n) {
+    tblUpdateShown(key, n);
     if (key === "basic") return;
     var pagi = tblPagi(key); if (!pagi) return;
     var tot = pagi.querySelector(".an-pagi__total");
@@ -844,7 +960,9 @@
     var ranges = (window.SUBSUB_DICT || {}).periodRanges || {};
     var labels = (window.SUBSUB_DICT || {}).periodLabels || {};
     [].slice.call(document.querySelectorAll("[data-an-period-val]")).forEach(function (el) {
-      el.textContent = ranges[pd] || labels[pd] || ("Last " + pd + " days");
+      // в тулбаре (A4) показываем «Last 30 days», в панели фильтров — диапазон дат
+      var wantLabel = el.hasAttribute("data-an-period-label");
+      el.textContent = (wantLabel ? labels[pd] : ranges[pd]) || labels[pd] || ("Last " + pd + " days");
     });
     [].slice.call(document.querySelectorAll("[data-an-period-set]")).forEach(function (b) {
       b.classList.toggle("is-on", b.getAttribute("data-an-period-set") === pd);
@@ -1354,6 +1472,82 @@
       ? "Channels added successfully"
       : links.length + (links.length === 1 ? " channel" : " channels") + " sent to base");
     if (typeof aiRenderCollections === "function") aiRenderCollections();
+  }
+
+  // ================= A8: «Add N channels to collection» из футера выбора =================
+  var acSel = {};
+  function acEl(sel) { var m = document.getElementById("acModal"); return m ? m.querySelector(sel) : null; }
+  function acChecked() {
+    return [].slice.call(document.querySelectorAll("[data-an-check].is-checked")).map(function (b) {
+      var row = b.closest(".an-tr"), n = row && row.querySelector(".an-chan__name");
+      return n ? n.textContent.trim() : "";
+    }).filter(Boolean);
+  }
+  function acRender() {
+    var box = acEl("[data-ac-items]");
+    if (!box) return;
+    var picked = acChecked().length;
+    var q = (acEl("[data-ac-search]") || {}).value || "";
+    var all = (typeof aiAllColls === "function" ? aiAllColls() : []);
+    var wrap = acEl("[data-ac-search-wrap]");
+    if (wrap) wrap.hidden = all.length < 10;
+    var list = all.filter(function (c) { return !q || c.name.toLowerCase().indexOf(q.toLowerCase()) !== -1; });
+    box.innerHTML = list.map(function (c) {
+      var on = !!acSel[c.name];
+      return '<button class="nc-item' + (on ? " is-on" : "") + '" type="button" data-ac-item="' + escHtml(c.name) + '">' +
+        (on ? NC_ICON_ON : NC_ICON_OFF) +
+        '<span class="nc-item__name">' + escHtml(c.name) + "</span>" +
+        '<span class="nc-item__qty">Channels in collection:&nbsp;' + (aiChannelsOf(c.name).length + (on ? picked : 0)) + "</span>" +
+      "</button>";
+    }).join("") || '<div class="nc-empty">You have no collection yet.</div>';
+    var sub = acEl("[data-ac-submit]");
+    if (sub) {
+      var n = Object.keys(acSel).length;
+      sub.disabled = !n || !picked;
+      sub.textContent = picked ? "Add " + picked + (picked === 1 ? " channel" : " channels") : "Add channels";
+    }
+  }
+  function acNewForm(open) {
+    var f = acEl("[data-ac-new-form]"), b = acEl("[data-ac-new-open]");
+    if (f) f.hidden = !open;
+    if (b) b.hidden = !!open;
+    var i = acEl("[data-ac-new-name]");
+    if (i) { i.value = ""; if (open) i.focus(); }
+  }
+  function acCreate() {
+    var i = acEl("[data-ac-new-name]"), name = i ? i.value.trim() : "";
+    if (!name) return;
+    if (aiAllColls().some(function (c) { return c.name === name; })) { toast("Collection with this name already exists"); return; }
+    aiCreatePlain(name);
+    acSel[name] = true;
+    acNewForm(false);
+    acRender();
+    toast("Collection created successfully");
+  }
+  function acOpen() {
+    var picked = acChecked();
+    if (!picked.length) return;
+    acSel = {};
+    var t = acEl("[data-ac-title]");
+    if (t) t.textContent = "Add " + picked.length + (picked.length === 1 ? " channel" : " channels") + " to collection";
+    var sq = acEl("[data-ac-search]"); if (sq) sq.value = "";
+    acNewForm(false);
+    acRender();
+    openModal("acModal");
+  }
+  function acSubmit() {
+    var picked = acChecked();
+    var targets = Object.keys(acSel).filter(function (n) { return acSel[n]; });
+    if (!picked.length || !targets.length) return;
+    targets.forEach(function (t) { ncAppend(t, picked); });
+    closeModal(document.getElementById("acModal"));
+    // выбор снимаем — как на проде после успешного добавления
+    [].slice.call(document.querySelectorAll("[data-an-check], [data-an-check-all]")).forEach(function (b) { b.classList.remove("is-checked"); });
+    markSelected();
+    updateFooter();
+    if (typeof aiRenderCollections === "function") aiRenderCollections();
+    toast(picked.length + (picked.length === 1 ? " channel" : " channels") + " added to " +
+          (targets.length === 1 ? targets[0] : targets.length + " collections"));
   }
 
   // допись найденных каналов в существующую коллекцию: дубликаты не добавляем

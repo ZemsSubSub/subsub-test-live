@@ -350,7 +350,8 @@ function filtersPanel(key, inner) {
 const FILTERS_BASIC = filtersPanel("basic",
   fGroup("Collection", "collections", fSelect("collection", "Collection", "Select collection", [])) +
   fGroup("Channel", "chartPie",
-    fGrowthPeriod(true) +
+    // A4: Growth period переехал в тулбар страницы
+
     fSelect("topic", "YouTube topic", "Select topic", TOPIC_LIST) +
     fText("title", "YouTube channel title", "Select channel") +
     fSelect("country", "YouTube country", "Select country", COUNTRY_LIST) +
@@ -394,18 +395,34 @@ const COLS = [
   { id:"check",  w:40,  pin:"check" },
   { id:"name",   w:280, pin:"name", label:"Channel", sort:true },
   { id:"stub",   w:20,  stub:true },
-  { id:"topics", w:140, label:"Youtube topics" },
-  { id:"created",w:120, label:"Created" },
-  { id:"lastupd",w:150, label:"Last upd" },
-  { id:"added",  w:150, label:"Added to base" },
-  { id:"subs",   w:110, label:"Subs", sort:true },
-  { id:"views",  w:100, label:"Views", sort:true },
-  { id:"vids",   w:110, label:"Vids", sort:true },
-  { id:"subsg",  w:110, label:"Subs+", sort:true },
-  { id:"viewsg", w:120, label:"Views+", sort:true },
-  { id:"avv",    w:80,  label:"AVV", sort:true },
-  { id:"vps",    w:150, label:"Views+/Subs+", sort:true },
+  { id:"topics", w:140, label:"Youtube topics", group:"Content" },
+  { id:"created",w:120, label:"Created", group:"Dates" },
+  { id:"lastupd",w:150, label:"Last upd", group:"Dates" },
+  { id:"added",  w:150, label:"Added to base", group:"Dates" },
+  { id:"subs",   w:110, label:"Subs", sort:true, group:"Audience" },
+  { id:"views",  w:100, label:"Views", sort:true, group:"Audience" },
+  { id:"vids",   w:110, label:"Vids", sort:true, group:"Audience" },
+  // A1: AVV — это средние просмотры на видео, место рядом с объёмами, а не в приросте
+  { id:"avv",    w:80,  label:"AVV", sort:true, group:"Audience" },
+  { id:"subsg",  w:110, label:"Subs+", sort:true, group:"Growth" },
+  { id:"viewsg", w:120, label:"Views+", sort:true, group:"Growth" },
+  { id:"vps",    w:150, label:"Views+/Subs+", sort:true, group:"Growth" },
 ];
+// A1: строка групп над шапкой — колонки одной темы объединены подписью
+function groupRow(cols) {
+  const cells = [];
+  let i = 0;
+  while (i < cols.length) {
+    const g = cols[i].group || "";
+    let w = 0, j = i;
+    while (j < cols.length && (cols[j].group || "") === g) { w += cols[j].w; j++; }
+    const pin = !g;   // служебная зона (чекбокс + канал + stub) — закреплена
+    cells.push('<div class="an-thg' + (pin ? " an-thg--pin" : "") + '" style="width:' + w + 'px' + (pin ? ";left:0" : "") + '">' +
+      (g ? '<span>' + esc(g) + '</span>' : "") + '</div>');
+    i = j;
+  }
+  return '<div class="an-tr an-tr--groups">' + cells.join("") + '</div>';
+}
 
 // ---- данные-примеры (реальные каналы/значения с прода app.subsub.io/analytics/basic-data) ----
 const AVA = ["--color-avatar-1","--color-avatar-3","--color-avatar-5","--color-avatar-1","--color-avatar-3"];
@@ -461,14 +478,14 @@ function bodyRow(r, i){
   cells.push('<div class="an-td" style="width:110px">' + esc(r[6]) + '</div>');
   cells.push('<div class="an-td" style="width:100px">' + esc(r[7]) + '</div>');
   cells.push('<div class="an-td" style="width:110px">' + esc(r[8]) + '</div>');
+  cells.push('<div class="an-td" style="width:80px">' + esc(r[11]) + '</div>');    // AVV (A1)
   cells.push(deltaCell(r[9], 110));
   cells.push(deltaCell(r[10], 120));
-  cells.push('<div class="an-td" style="width:80px">' + esc(r[11]) + '</div>');
   cells.push('<div class="an-td" style="width:150px">' + esc(r[12]) + '</div>');
   return '<div class="an-tr">' + cells.join("") + '</div>';
 }
 
-const headHtml = '<div class="an-tr an-tr--head">' + COLS.map(headCell).join("") + '</div>';
+const headHtml = groupRow(COLS) + '<div class="an-tr an-tr--head">' + COLS.map(headCell).join("") + '</div>';
 const rowsHtml = ROWS.map(bodyRow).join("\n          ");
 
 // Модалка «Create collection» — общий фрагмент: используется и как самостоятельный флоу
@@ -541,6 +558,37 @@ function ncModal(opts) {
       </div>
     </div>`;
 }
+// A8: выбор коллекции для отмеченных каналов (из футера выбора)
+const acModalHtml = `
+    <div class="an-modal" id="acModal"><div class="an-modal__overlay" data-ac-close></div>
+      <div class="an-modal__dialog an-modal__dialog--lg">
+        <header class="nc-head">
+          <h2 class="an-modal__title" data-ac-title>Add channels to collection</h2>
+          <button class="an-modal__x" type="button" data-ac-close aria-label="Close">${IC.closeBold}</button>
+        </header>
+        <div class="an-modal__body nc-body">
+          <button class="an-btn an-btn--tertiary an-btn--small nc-newbtn" type="button" data-ac-new-open>${IC.plus}Create new collection</button>
+          <div class="nc-newform" data-ac-new-form hidden>
+            <label class="an-label" for="acNewName">Collection name</label>
+            <input class="an-input" id="acNewName" type="text" placeholder="Collection name" data-ac-new-name />
+            <div class="nc-newform__foot">
+              <button class="an-btn an-btn--link an-btn--small" type="button" data-ac-new-cancel>Cancel</button>
+              <button class="an-btn an-btn--secondary an-btn--small" type="button" data-ac-new-submit>Create</button>
+            </div>
+          </div>
+          <section class="nc-list">
+            <h3 class="nc-list__title">Add to collection</h3>
+            <div class="an-search nc-search" data-ac-search-wrap hidden>
+              ${IC.search}<input class="an-search__input" type="text" placeholder="Search collection" data-ac-search />
+            </div>
+            <div class="nc-items" data-ac-items></div>
+          </section>
+        </div>
+        <div class="an-modal__foot nc-foot">
+          <button class="an-btn an-btn--primary an-btn--huge" type="button" data-ac-submit disabled>Add channels</button>
+        </div>
+      </div>
+    </div>`;
 const ncModalHtml = ncModal({ title: "New channels", colls: true });
 // заголовок дописывается на клиенте: имя коллекции берётся из поля Name (P1.11)
 const ceAddModalHtml = ncModal({ title: "Add channels" });
@@ -706,12 +754,23 @@ const mainInner = `
         </div>
       </section>
 
+      <!-- A4: Growth period в тулбаре: значение + чипы 7/30/90 с состоянием выбора -->
+      <section class="an-periodbar" data-an-period>
+        <span class="an-periodbar__lbl">Growth period</span>
+        <span class="an-periodbar__val" data-an-period-val>${PERIOD_LABEL["30"]}</span>
+        <span class="anf-chips an-periodbar__chips" data-an-period-chips>${PERIODS.map(function (pd) {
+          return '<button class="anf-chip' + (pd === "30" ? " is-on" : "") + '" type="button" data-an-period-set="' + pd + '">' + pd + ' days</button>';
+        }).join("")}</span>
+      </section>
+
       <section class="an-pagi" data-an-table="basic">
         <div class="an-pagi__label">
           <span class="an-pagi__name">Channels</span>
-          ${collSel("basic", "", "Select colleciton")}
+          ${collSel("basic", "", "Select collection")}
           <span class="an-pagi__dot"></span>
-          <span class="an-pagi__total">2.2m</span>
+          <span class="an-pagi__total">2.2m channels</span>
+          <span class="an-pagi__sep">·</span>
+          <span class="an-pagi__shown" data-an-shown>showing 1–30</span>
         </div>
         <div class="an-pagi__ctrls">
           <span class="an-pagi__pages">Pages: 74,046</span>
@@ -727,7 +786,7 @@ const mainInner = `
         </div>
       </section>
 
-      <section class="an-tablewrap" data-an-tablewrap="basic">
+      <section class="an-tablewrap an-tablewrap--stick" data-an-tablewrap="basic">
         <div class="an-table" data-an-table-body="basic">
           <div class="an-thead">${headHtml}</div>
           <div class="an-tbody">
@@ -751,6 +810,8 @@ const mainInner = `
     ${mcCreateModalHtml}
 
     ${ncModalHtml}
+
+    ${acModalHtml}
 
     ${FILTERS_BASIC}
 
