@@ -1793,6 +1793,10 @@ body.is-open:not(.is-collapsed) .main { margin-left: 306px; }
 /* A2: у таблицы свой скролл-бокс — шапка липкая, горизонтальный скроллбар всегда под рукой
    (в проде шапка не липкая, а скроллбар лежит в самом низу страницы) */
 .an-tablewrap--stick { max-height: calc(100vh - 320px); min-height: 320px; overflow: auto; }
+/* при открытой панели фильтров скроллбар таблицы не показываем — скролл остаётся
+   (колесо + shift-колесо), но полоса не режет и без того сжатую таблицу */
+body.filters-open .an-tablewrap { scrollbar-width: none; -ms-overflow-style: none; }
+body.filters-open .an-tablewrap::-webkit-scrollbar { width: 0; height: 0; }
 .an-tablewrap--stick .an-thead { position: sticky; top: 0; z-index: 6; }
 .an-tablewrap--stick .an-thead .an-th--pin, .an-tablewrap--stick .an-thead .an-thg--pin { z-index: 8; }
 /* A1: строка групп колонок */
