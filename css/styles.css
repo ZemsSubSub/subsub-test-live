@@ -1789,7 +1789,13 @@ body.is-open:not(.is-collapsed) .main { margin-left: 306px; }
 .an-collsel__txt--ph { color: var(--color-shade-500); } /* плейсхолдер «Select colleciton» */
 .an-collsel svg { width: 16px; height: 16px; color: var(--color-black); flex-shrink: 0; }
 /* P1.1: дропдаун выбора коллекции — меню переиспользует стили полей панели фильтров */
-.an-collsel-wrap { position: relative; display: inline-flex; }
+.an-collsel-wrap { position: relative; display: inline-flex; align-items: center; gap: 2px; }
+/* × сбрасывает выбранную коллекцию */
+.an-collsel__x { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px;
+  padding: 0; border: 0; border-radius: 50%; background: none; color: var(--color-shade-700); cursor: pointer; flex-shrink: 0; }
+.an-collsel__x:hover { background: var(--color-shade-200); color: var(--color-black); }
+.an-collsel__x svg { width: 12px; height: 12px; }
+.an-collsel__x[hidden] { display: none; }
 .an-collsel-wrap.is-open .an-collsel { background: var(--color-shade-200); }
 .an-collsel-wrap.is-open .an-collsel svg { transform: rotate(180deg); }
 .an-collsel__menu { left: 0; right: auto; z-index: 40; width: 280px; }

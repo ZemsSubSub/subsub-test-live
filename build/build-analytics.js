@@ -337,6 +337,7 @@ function collSel(key, val, ph) {
       '<span class="an-collsel__txt' + (val ? "" : " an-collsel__txt--ph") + '" data-an-collsel-val data-an-collsel-ph="' + esc(ph) + '"' +
       (key === "deep" ? " data-ai-collname" : "") + '>' + esc(val || ph) + '</span>' + IC.chevSelect +
     '</button>' +
+    '<button class="an-collsel__x" type="button" data-an-collsel-clear aria-label="Clear collection"' + (val ? '' : ' hidden') + '>' + IC.closeBold + '</button>' +
     '<div class="anf-menu an-collsel__menu" data-an-collsel-menu hidden role="listbox">' +
       '<div class="anf-search">' + IC.search + '<input type="text" placeholder="Search" data-an-collsel-search /></div>' +
       '<div class="anf-opts" data-an-collsel-opts></div>' +
@@ -1235,10 +1236,10 @@ const videosPanel = `
 
       <section class="an-pagi" data-an-table="video">
         <div class="an-pagi__label">
-          <span class="an-pagi__name">Videos in collection</span>
+          <span class="an-pagi__name">Videos</span>
           ${collSel("video", DEEP_DEFAULT_COLL, "Select collection")}
           <span class="an-pagi__dot"></span>
-          <span class="an-pagi__total">${VID_DEFAULT_COUNT}</span>
+          <span class="an-pagi__total">${VID_DEFAULT_COUNT} videos</span>
         </div>
         <div class="an-pagi__ctrls">
           <span class="an-pagi__pages">Pages: 1</span>
@@ -1330,11 +1331,11 @@ const deepInner = `
 
       <section class="an-pagi" data-an-table="deep">
         <div class="an-pagi__label">
-          <span class="an-pagi__name">Channels in collection</span>
+          <span class="an-pagi__name">Channels</span>
           ${collSel("deep", DEEP_DEFAULT_COLL, "Select collection")}
           <span class="ai-badge" data-ai-badge hidden>${IC.aiStarsSolid}${AI_BADGE}</span>
           <span class="an-pagi__dot"></span>
-          <span class="an-pagi__total">15</span>
+          <span class="an-pagi__total">8 channels</span>
         </div>
         <div class="an-pagi__ctrls">
           <span class="an-pagi__pages">Pages: 1</span>
@@ -1480,7 +1481,7 @@ const collInner = `
         <div class="an-pagi__label">
           <span class="an-pagi__name">Collections</span>
           <span class="an-pagi__dot"></span>
-          <span class="an-pagi__total">${COLL_ROWS.length}</span>
+          <span class="an-pagi__total">${COLL_ROWS.length} collections</span>
         </div>
         <div class="an-pagi__ctrls">
           <span class="an-pagi__pages">Pages: 1</span>

@@ -228,6 +228,10 @@
       csOpen(csW, csM.hidden);
       return;
     }
+    if (e.target.closest("[data-an-collsel-clear]")) {         // × в пилюле — сбросить коллекцию
+      csClear(e.target.closest("[data-an-collsel]"));
+      return;
+    }
     if (e.target.closest("[data-an-collsel-all]")) {           // A3: All channels
       csPickAll(e.target.closest("[data-an-collsel]"));
       return;
@@ -684,6 +688,33 @@
     if (!v) return;
     if (name) { v.textContent = name; v.classList.remove("an-collsel__txt--ph"); }
     else { v.textContent = v.getAttribute("data-an-collsel-ph") || ""; v.classList.add("an-collsel__txt--ph"); }
+    // × показываем только когда коллекция выбрана
+    var x = wrap.querySelector("[data-an-collsel-clear]");
+    if (x) x.hidden = !name;
+  }
+  // сброс выбранной коллекции: на Basic это «вся база», на Deep/Videos — пустое состояние
+  function csClear(wrap) {
+    var key = wrap.getAttribute("data-an-collsel");
+    if (key === "basic") { csPickAll(wrap); return; }
+    csSetLabel(wrap, "");
+    csOpen(wrap, false);
+    var act = flActive();
+    var f = act && act.querySelector('[data-anf-field="collection"] [data-anf-val]');
+    if (f) {
+      var ph = f.getAttribute("data-anf-ph");
+      if (ph) f.textContent = ph;
+      f.classList.add("is-ph");
+    }
+    var badge = document.querySelector("[data-ai-badge]");
+    if (badge) badge.hidden = true;
+    if (key === "video") { vidApply(); flDot(); return; }
+    // deep: без коллекции показывать нечего
+    var dBody = tblBody("deep");
+    if (dBody) dBody.setAttribute("data-empty-msg", "Select a collection to see deep data");
+    tblAllRows("deep").forEach(function (row) { row.setAttribute("data-filtered", ""); });
+    TBL.deep.page = 1;
+    tblApply("deep");
+    flDot();
   }
   function csPick(wrap, name) {
     var key = wrap.getAttribute("data-an-collsel");
@@ -707,6 +738,8 @@
   }
   // Deep: коллекция задаёт набор строк — пишем её в панель и применяем панель целиком
   function csApplyDeep(name) {
+    var dBody = tblBody("deep");
+    if (dBody) dBody.setAttribute("data-empty-msg", "");     // коллекция снова выбрана
     var act = flActive();
     var f = act && act.querySelector('[data-anf-field="collection"] [data-anf-val]');
     if (f) { f.textContent = name; f.classList.remove("is-ph"); }
@@ -723,8 +756,11 @@
     var coll = w ? csCurrent(w) : "";
     var q = (document.querySelector("[data-vid-search]") || {}).value || "";
     q = q.trim().toLowerCase();
+    // без выбранной коллекции показывать нечего — своё пустое состояние
+    var vBody = tblBody("video");
+    if (vBody) vBody.setAttribute("data-empty-msg", coll ? "" : "Select a collection to see videos");
     tblAllRows("video").forEach(function (row) {
-      var ok = !coll || (row.getAttribute("data-coll") || "") === coll;
+      var ok = !!coll && (row.getAttribute("data-coll") || "") === coll;
       if (ok && q) {
         var t = row.querySelector(".vid-title__t"), ch = row.querySelector(".vid-title__chan");
         var hay = ((t ? t.textContent : "") + " " + (ch ? ch.textContent : "")).toLowerCase();
@@ -878,19 +914,22 @@
     var body = b.querySelector(".an-tbody"); if (!body) return;
     var el = body.querySelector(".an-empty");
     if (n > 0) { if (el) el.remove(); return; }
-    if (!el) {
-      el = document.createElement("div");
-      el.className = "an-empty";
-      el.textContent = TBL_EMPTY[key] || "Nothing found";
-      body.appendChild(el);
-    }
+    var msg = b.getAttribute("data-empty-msg") || TBL_EMPTY[key] || "Nothing found";
+    if (el) { el.textContent = msg; return; }
+    el = document.createElement("div");
+    el.className = "an-empty";
+    el.textContent = msg;
+    body.appendChild(el);
   }
-  // счётчик рядом с лейблом: на Basic оставляем «2.2m» (это размер базы), в остальных — число строк
+  // счётчик рядом с лейблом: единый формат «N единиц» на всех страницах.
+  // На Basic число не трогаем — там показан размер всей базы (2.2m channels).
+  var TBL_UNIT = { deep: "channel", video: "video", coll: "collection" };
   function tblUpdateTotal(key, n) {
     if (key === "basic") return;
     var pagi = tblPagi(key); if (!pagi) return;
     var tot = pagi.querySelector(".an-pagi__total");
-    if (tot) tot.textContent = String(n);
+    var unit = TBL_UNIT[key] || "";
+    if (tot) tot.textContent = n.toLocaleString("en-US") + " " + unit + (n === 1 ? "" : "s");
   }
   function tblPerPageMenu(key, open) {
     var pagi = tblPagi(key); if (!pagi) return;
