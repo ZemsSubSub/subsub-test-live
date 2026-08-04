@@ -322,6 +322,9 @@
   if (ncSq) ncSq.addEventListener("input", ncRender);
   var ncNi = document.querySelector("[data-nc-new-name]");
   if (ncNi) ncNi.addEventListener("keyup", function (e) { if (e.key === "Enter") ncCreate(); });
+  // C3: поиск по коллекциям — мгновенно
+  var mcSq = document.querySelector("[data-mc-search]");
+  if (mcSq) mcSq.addEventListener("input", mcSearchApply);
   // A8: поиск и Enter в модалке «Add channels to collection»
   var acSq = document.querySelector("[data-ac-search]");
   if (acSq) acSq.addEventListener("input", acRender);
@@ -1036,8 +1039,11 @@
         var shared = (row.getAttribute("data-shared") || "").split("|");
         if (shared.indexOf(v.shared) === -1) ok = false;
       }
-      if (ok) row.removeAttribute("data-filtered"); else row.setAttribute("data-filtered", "");
-      if (!nm) row.removeAttribute("data-filtered");
+      // C3: фильтры панели и поиск живут вместе — храним причины отдельно
+      if (ok) row.removeAttribute("data-filter-off"); else row.setAttribute("data-filter-off", "");
+      if (row.hasAttribute("data-filter-off") || row.hasAttribute("data-search-off")) row.setAttribute("data-filtered", "");
+      else row.removeAttribute("data-filtered");
+      if (!nm) { row.removeAttribute("data-filtered"); row.removeAttribute("data-filter-off"); }
     });
   }
   // ---- Clear all: сбрасываем всё, включая сегменты (в проде Collection type не сбрасывается — баг, не воспроизводим) ----
@@ -1208,6 +1214,13 @@
       // View deep data + Deactivate — только у активной коллекции
       menu.querySelector('[data-mc-act="view"]').hidden = st !== "activated";
       menu.querySelector('[data-mc-act="deactivate"]').hidden = st !== "activated";
+      // C1: чужую (sample) коллекцию нельзя менять — остаются просмотр и Duplicate
+      var mine = !(mcRow && mcRow.hasAttribute("data-sample"));
+      menu.querySelector('[data-mc-act="edit"]').hidden = !mine;
+      menu.querySelector('[data-mc-act="share"]').hidden = !mine;
+      menu.querySelector('[data-mc-act="delete"]').hidden = !mine;
+      if (!mine) menu.querySelector('[data-mc-act="deactivate"]').hidden = true;
+      menu.querySelector("[data-mc-note]").hidden = mine;
       menu.hidden = false;
       var r = moreBtn.getBoundingClientRect();
       var mw = menu.offsetWidth || 200;
@@ -1225,6 +1238,8 @@
         window.location.href = mcCollectionUrl(mcRow);
         return;
       }
+      if (type === "open") { window.location.href = mcCollectionUrl(mcRow); return; }
+      if (type === "duplicate") { mcDuplicate(mcRow); return; }         // C2
       if (type === "share") { openModal("mcModal-share"); return; }
       if (type === "deactivate") { openModal("mcModal-deactivate"); return; }
       if (type === "delete") { openModal("mcModal-delete"); return; }
@@ -1286,10 +1301,22 @@
       closeModals(); toast("Collection deactivated successfully");
       return;
     }
-    // Activate deep data (в пилюле статуса) → pending → activated
+    // C4: Activate deep data — сначала подтверждение (это расход лимитов плана)
     var actBtn = e.target.closest("[data-mc-activate]");
     if (actBtn) {
-      var row = actBtn.closest("[data-mc-row]");
+      mcRow = actBtn.closest("[data-mc-row]");
+      var nm = mcRow ? (mcRow.getAttribute("data-name") || "") : "";
+      var qtyCell = mcRow ? mcRow.children[2] : null;
+      var qty = qtyCell ? qtyCell.textContent.trim() : "";
+      var txt = document.querySelector("[data-mc-activate-text]");
+      if (txt) txt.textContent = "Deep data will be collected for " + (qty && qty !== "—" ? qty + " channels of " : "") +
+        "«" + nm + "». Collecting takes a few minutes and counts against your plan limits.";
+      openModal("mcModal-activate");
+      return;
+    }
+    if (e.target.closest("[data-mc-activate-confirm]")) {
+      var row = mcRow;
+      closeModals();
       setRowStatus(row, "pending");
       toast("Deep data activated successfully");
       // AI collection: статус живёт в localStorage, иначе после перезагрузки откатится
@@ -1316,6 +1343,41 @@
     // закрытие модалок
     if (e.target.closest("[data-mc-close]")) { closeModal(e.target.closest(".an-modal")); return; }
   });
+
+  // C2: дубликат коллекции — копия состава под именем «<имя> (copy)»
+  function mcDuplicate(row) {
+    if (!row) return;
+    var src = row.getAttribute("data-name") || "";
+    var base = src + " (copy)", name = base, i = 2;
+    while (aiAllColls().some(function (c) { return c.name === name; })) { name = base + " " + i; i++; }
+    var list = aiLoad();
+    list.push({ id: "c" + Date.now(), name: name, isAi: false, mode: "new", status: "created",
+                channels: aiChannelsOf(src), created: aiToday(), query: "",
+                filters: { subs: 0, videos: 0, views: 0, avg: 0, lastDays: 0 } });
+    aiSave(list);
+    aiRenderCollections();
+    mcSearchApply();
+    toast("Collection duplicated as «" + name + "»");
+  }
+
+  // C3: поиск по списку коллекций (раньше поле было декоративным)
+  function mcSearchApply() {
+    var inp = document.querySelector("[data-mc-search]");
+    if (!inp) return;
+    var q = inp.value.trim().toLowerCase();
+    tblAllRows("coll").forEach(function (row) {
+      var nm = (row.getAttribute("data-name") || "").toLowerCase();
+      if (!nm) return;
+      var chips = [].slice.call(row.querySelectorAll(".mc-chip")).map(function (c) { return c.textContent.toLowerCase(); }).join(" ");
+      var ok = !q || nm.indexOf(q) !== -1 || chips.indexOf(q) !== -1;
+      if (ok) row.removeAttribute("data-search-off"); else row.setAttribute("data-search-off", "");
+      // сводим с фильтрами панели: строка видна, если прошла и поиск, и фильтры
+      if (row.hasAttribute("data-search-off") || row.hasAttribute("data-filter-off")) row.setAttribute("data-filtered", "");
+      else row.removeAttribute("data-filtered");
+    });
+    TBL.coll.page = 1;
+    tblApply("coll");
+  }
 
   // новая строка коллекции (после Create)
   function addCollectionRow(name) {

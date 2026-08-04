@@ -29,6 +29,8 @@ const IC = {
   ytShorts: '<svg viewBox="0 0 24 24" fill="none"><path d="M19.0181 11.1693L19.0164 11.1667C18.6305 10.601 18.1151 10.1342 17.511 9.80959C18.485 9.27655 19.2168 8.38443 19.5437 7.32015C19.8769 6.24182 19.7654 5.0751 19.239 4.07898C18.7121 3.08203 17.8119 2.33531 16.7345 2.00216L16.733 2.00172C15.6563 1.67115 14.4916 1.77961 13.4943 2.30664L13.494 2.30679L5.5351 6.51678C4.82504 6.88876 4.23526 7.45304 3.83191 8.14416C3.4272 8.83761 3.22925 9.63121 3.25518 10.4304L3.25526 10.4326C3.28358 11.2327 3.53611 12.0095 3.98486 12.6731L3.98589 12.6746C4.37109 13.2414 4.88474 13.7056 5.48556 14.0295C4.53479 14.5761 3.83002 15.4682 3.52091 16.5229C3.20655 17.5889 3.32265 18.7342 3.83936 19.7157L3.83971 19.7164C4.35708 20.6968 5.23795 21.4382 6.29368 21.7807C7.3492 22.1231 8.49732 22.0406 9.49244 21.549L9.51123 21.5394L17.4679 17.3256C18.178 16.9536 18.7677 16.3893 19.1711 15.6983C19.5758 15.0048 19.7737 14.2112 19.7478 13.412L19.7477 13.4098C19.7194 12.6097 19.4669 11.833 19.0181 11.1693Z" stroke="currentColor" stroke-width="1.5"/><path d="M9.71311 13.0963C9.71311 13.7188 10.3681 14.1237 10.9249 13.8454L13.3224 12.6471C13.9397 12.3386 13.9398 11.4578 13.3226 11.1491L10.9252 9.94986C10.3684 9.67134 9.71311 10.0762 9.71311 10.6988V13.0963Z" stroke="currentColor" stroke-width="1.2"/></svg>',
   ytStream: '<svg viewBox="0 0 24 24" fill="none"><path d="M19.1414 5C20.9097 6.80375 22 9.27455 22 12C22 14.7578 20.8836 17.2549 19.0782 19.064M5 19.1414C3.14864 17.3265 2 14.7974 2 12C2 9.23497 3.12222 6.73205 4.93603 4.92184" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M16.2849 8.04397C17.3458 9.05877 18 10.4488 18 11.9822C18 13.5338 17.3302 14.9386 16.2469 15.9564M7.8 16C6.68918 14.9789 6 13.556 6 11.9822C6 10.4266 6.67333 9.01843 7.76162 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M13.6563 10.4511C14.5521 11.1088 15 11.4376 15 12C15 12.5624 14.5521 12.8913 13.6563 13.5489C13.4091 13.7305 13.1638 13.9014 12.9384 14.0438C12.7407 14.1688 12.5168 14.298 12.2849 14.4249C11.3913 14.914 10.9444 15.1586 10.5437 14.8878C10.1429 14.6171 10.1065 14.0503 10.0337 12.9166C10.0131 12.596 10 12.2818 10 12C10 11.7183 10.0131 11.404 10.0337 11.0834C10.1065 9.94979 10.1429 9.38298 10.5437 9.11222C10.9444 8.84146 11.3913 9.08602 12.2849 9.57512C12.5168 9.702 12.7407 9.83125 12.9384 9.95621C13.1638 10.0986 13.4091 10.2696 13.6563 10.4511Z" stroke="currentColor" stroke-width="1.5"/></svg>',
   circleDown: '<svg viewBox="0 0 24 24" fill="none"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 22.75C6.063 22.75 1.25 17.937 1.25 12C1.25 6.063 6.063 1.25 12 1.25C17.937 1.25 22.75 6.063 22.75 12C22.75 17.937 17.937 22.75 12 22.75ZM16.03 13.03L12.53 16.53C12.3894 16.6705 12.1988 16.7493 12 16.7493C11.8012 16.7493 11.6106 16.6705 11.47 16.53L7.97 13.03C7.89631 12.9613 7.83721 12.8785 7.79622 12.7865C7.75523 12.6945 7.73319 12.5952 7.73141 12.4945C7.72963 12.3938 7.74816 12.2938 7.78588 12.2004C7.8236 12.107 7.87974 12.0222 7.95096 11.951C8.02218 11.8797 8.10701 11.8236 8.2004 11.7859C8.29379 11.7482 8.39382 11.7296 8.49452 11.7314C8.59522 11.7332 8.69454 11.7552 8.78654 11.7962C8.87854 11.8372 8.96134 11.8963 9.03 11.97L11.25 14.19V8C11.25 7.80109 11.329 7.61032 11.4697 7.46967C11.6103 7.32902 11.8011 7.25 12 7.25C12.1989 7.25 12.3897 7.32902 12.5303 7.46967C12.671 7.61032 12.75 7.80109 12.75 8V14.19L14.97 11.97C15.0387 11.8963 15.1215 11.8372 15.2135 11.7962C15.3055 11.7552 15.4048 11.7332 15.5055 11.7314C15.6062 11.7296 15.7062 11.7482 15.7996 11.7859C15.893 11.8236 15.9778 11.8797 16.049 11.951C16.1203 12.0222 16.1764 12.107 16.2141 12.2004C16.2518 12.2938 16.2704 12.3938 16.2686 12.4945C16.2668 12.5952 16.2448 12.6945 16.2038 12.7865C16.1628 12.8785 16.1037 12.9613 16.03 13.03Z" fill="currentColor"/></svg>',
+  // дубликат коллекции (C2)
+  copy: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2.5"/><path d="M15 5.5A2.5 2.5 0 0 0 12.5 3H6.5A3.5 3.5 0 0 0 3 6.5v6A2.5 2.5 0 0 0 5.5 15"/></svg>',
   // «Not shared» — перечёркнутый share в колонке Shared with
   shareOff: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8.7 13.3l6.6 3.9M15.2 6.8L8.7 10.7"/><circle cx="17.5" cy="5.5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="17.5" cy="18.5" r="2.5"/><path d="M3 21L21 3"/></svg>',
   // × в кружке — закрытие панели фильтров (FilledIconClose)
@@ -1396,7 +1398,7 @@ const collInner = `
       </header>
 
       <section class="an-toolbar">
-        <div class="mc-search">${IC.search}<input type="text" placeholder="Search..." /></div>
+        <div class="mc-search">${IC.search}<input type="text" placeholder="Search..." data-mc-search /></div>
         <button class="an-btn an-btn--secondary" type="button" data-an-filters-toggle>${IC.filter}Filters<span class="an-btn__dot" data-an-filters-dot hidden></span></button>
       </section>
 
@@ -1430,13 +1432,34 @@ const collInner = `
       </section>
     </section>
 
+    <!-- C4: подтверждение активации deep data (списываются лимиты плана) -->
+    <div class="an-modal" id="mcModal-activate"><div class="an-modal__overlay" data-mc-close></div>
+      <div class="an-modal__dialog an-modal__dialog--sm">
+        <div class="an-modal__head">
+          <h2 class="an-modal__title">Activate deep data?</h2>
+          <button class="an-modal__x" type="button" data-mc-close aria-label="Close">${IC.closeBold}</button>
+        </div>
+        <div class="an-modal__body">
+          <p class="an-modal__text" data-mc-activate-text></p>
+        </div>
+        <div class="an-modal__foot">
+          <button class="an-btn an-btn--secondary an-btn--small" type="button" data-mc-close>Cancel</button>
+          <button class="an-btn an-btn--primary an-btn--small" type="button" data-mc-activate-confirm>Activate</button>
+        </div>
+      </div>
+    </div>
+
     <!-- меню действий строки (⋮) -->
+    <!-- меню действий строки (⋮): состав зависит от владельца (C1) + Duplicate (C2) -->
     <div class="mc-menu" id="mcMenu" hidden>
       <button class="mc-menu__item" type="button" data-mc-act="view">${IC.graph}View deep data</button>
+      <button class="mc-menu__item" type="button" data-mc-act="open">${IC.collections}View collection</button>
       <button class="mc-menu__item" type="button" data-mc-act="edit">${IC.edit}Edit collection</button>
+      <button class="mc-menu__item" type="button" data-mc-act="duplicate">${IC.copy}Duplicate collection</button>
       <button class="mc-menu__item" type="button" data-mc-act="share">${IC.share}Share collection</button>
       <button class="mc-menu__item mc-menu__item--danger" type="button" data-mc-act="deactivate">${IC.archive}Deactivate collection</button>
       <button class="mc-menu__item mc-menu__item--danger" type="button" data-mc-act="delete">${IC.trash}Delete collection</button>
+      <p class="mc-menu__note" data-mc-note hidden>You cannot edit this collection. Please ask the owner to make changes.</p>
     </div>
 
     ${mcCreateModalHtml}

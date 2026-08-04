@@ -350,7 +350,7 @@
       </header>
 
       <section class="an-toolbar">
-        <div class="mc-search"><svg viewBox="0 0 24 24" fill="none"><path d="M10.6154 18.2307C14.8212 18.2307 18.2307 14.8212 18.2307 10.6154C18.2307 6.40951 14.8212 3 10.6154 3C6.40951 3 3 6.40951 3 10.6154C3 14.8212 6.40951 18.2307 10.6154 18.2307Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M21.0004 20.9985L16.1543 16.1523" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg><input type="text" placeholder="Search..." /></div>
+        <div class="mc-search"><svg viewBox="0 0 24 24" fill="none"><path d="M10.6154 18.2307C14.8212 18.2307 18.2307 14.8212 18.2307 10.6154C18.2307 6.40951 14.8212 3 10.6154 3C6.40951 3 3 6.40951 3 10.6154C3 14.8212 6.40951 18.2307 10.6154 18.2307Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M21.0004 20.9985L16.1543 16.1523" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg><input type="text" placeholder="Search..." data-mc-search /></div>
         <button class="an-btn an-btn--secondary" type="button" data-an-filters-toggle><svg viewBox="0 0 24 24" fill="none"><path d="M3 7H21" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M6 12H18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M10 17H14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>Filters<span class="an-btn__dot" data-an-filters-dot hidden></span></button>
       </section>
 
@@ -387,13 +387,34 @@
       </section>
     </section>
 
+    <!-- C4: подтверждение активации deep data (списываются лимиты плана) -->
+    <div class="an-modal" id="mcModal-activate"><div class="an-modal__overlay" data-mc-close></div>
+      <div class="an-modal__dialog an-modal__dialog--sm">
+        <div class="an-modal__head">
+          <h2 class="an-modal__title">Activate deep data?</h2>
+          <button class="an-modal__x" type="button" data-mc-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none"><path d="M19.172 6.42187C19.6126 5.98124 19.6126 5.26874 19.172 4.83281C18.7314 4.39687 18.0189 4.39218 17.583 4.83281L12.0048 10.4109L6.42202 4.82812C5.9814 4.38749 5.2689 4.38749 4.83296 4.82812C4.39702 5.26874 4.39233 5.98124 4.83296 6.41718L10.4111 11.9953L4.82827 17.5781C4.38765 18.0187 4.38765 18.7312 4.82827 19.1672C5.2689 19.6031 5.9814 19.6078 6.41733 19.1672L11.9955 13.5891L17.5783 19.1719C18.0189 19.6125 18.7314 19.6125 19.1673 19.1719C19.6033 18.7312 19.608 18.0187 19.1673 17.5828L13.5892 12.0047L19.172 6.42187Z" fill="currentColor"/></svg></button>
+        </div>
+        <div class="an-modal__body">
+          <p class="an-modal__text" data-mc-activate-text></p>
+        </div>
+        <div class="an-modal__foot">
+          <button class="an-btn an-btn--secondary an-btn--small" type="button" data-mc-close>Cancel</button>
+          <button class="an-btn an-btn--primary an-btn--small" type="button" data-mc-activate-confirm>Activate</button>
+        </div>
+      </div>
+    </div>
+
     <!-- меню действий строки (⋮) -->
+    <!-- меню действий строки (⋮): состав зависит от владельца (C1) + Duplicate (C2) -->
     <div class="mc-menu" id="mcMenu" hidden>
       <button class="mc-menu__item" type="button" data-mc-act="view"><svg viewBox="0 0 24 24" fill="none"><path d="M4 4V19.9999H19.9999" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M7.69238 11.3846L10.7693 14.4615L15.6923 7.07693L20 10.1538" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>View deep data</button>
+      <button class="mc-menu__item" type="button" data-mc-act="open"><svg viewBox="0 0 24 24" fill="none"><path d="M6 4.5H18" stroke="currentColor" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 2H15" stroke="currentColor" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/><path fill-rule="evenodd" clip-rule="evenodd" d="M7 22H17C20 22 22 20.5 22 17V12C22 8.5 20 7 17 7H7C4 7 2 8.5 2 12V17C2 20.5 4 22 7 22ZM9.75 13.2501V14.4501V15.6501C9.75 17.1901 10.84 17.8201 12.17 17.0501L13.21 16.4501L14.25 15.8501C15.58 15.0801 15.58 13.8201 14.25 13.0501L13.21 12.4501L12.17 11.8501C10.84 11.0801 9.75 11.7101 9.75 13.2501Z" fill="currentColor"/></svg>View collection</button>
       <button class="mc-menu__item" type="button" data-mc-act="edit"><svg viewBox="0 0 24 24" fill="none"><path fill-rule="evenodd" clip-rule="evenodd" d="M15.9268 1.96627C17.0637 1.82561 18.2138 2.27541 19.3825 3.33935L19.3838 3.34058C20.5564 4.41352 21.0902 5.50192 21.0101 6.61048C20.9327 7.68168 20.2909 8.58834 19.5591 9.33646L11.5635 17.5249C11.3381 17.7624 11.0346 17.9635 10.7469 18.1124C10.4555 18.2631 10.1184 18.3922 9.80192 18.4466L9.79706 18.4474L6.66074 18.9657C5.90019 19.0926 5.17088 18.9087 4.65135 18.432C4.13255 17.956 3.9033 17.2618 3.98823 16.5222L3.98848 16.5201L4.35055 13.4523C4.3926 13.1472 4.50974 12.8169 4.64781 12.5305C4.78539 12.245 4.9731 11.9423 5.19524 11.7135L5.19667 11.7121L13.1962 3.51957C13.9284 2.77115 14.8283 2.10219 15.9268 1.96627ZM14.258 4.49124L6.26048 12.6818C6.18061 12.7642 6.07089 12.9238 5.9724 13.1281C5.87568 13.3288 5.81759 13.5144 5.80018 13.6338L5.44083 16.6784C5.39941 17.0413 5.51586 17.2764 5.65706 17.4059C5.79766 17.5349 6.04271 17.6339 6.41242 17.5722L9.54816 17.0539C9.67022 17.0326 9.85829 16.9685 10.0578 16.8653C10.2601 16.7607 10.4122 16.6478 10.4884 16.567L10.4971 16.5577L18.4967 8.36531C19.1482 7.69941 19.5102 7.0926 19.5521 6.51188C19.5914 5.96842 19.3605 5.26583 18.3804 4.36876C17.4057 3.48164 16.6707 3.29988 16.1122 3.36897C15.5155 3.4428 14.9092 3.82577 14.258 4.49124Z" fill="currentColor"/></svg>Edit collection</button>
+      <button class="mc-menu__item" type="button" data-mc-act="duplicate"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2.5"/><path d="M15 5.5A2.5 2.5 0 0 0 12.5 3H6.5A3.5 3.5 0 0 0 3 6.5v6A2.5 2.5 0 0 0 5.5 15"/></svg>Duplicate collection</button>
       <button class="mc-menu__item" type="button" data-mc-act="share"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3V17M12 3L19 9.42857M12 3L5 9.42857" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M20 18V19.8C20 20.4627 19.3488 21 18.5455 21H5.45455C4.65122 21 4 20.4627 4 19.8V18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Share collection</button>
       <button class="mc-menu__item mc-menu__item--danger" type="button" data-mc-act="deactivate"><svg viewBox="0 0 24 24" fill="none"><path d="M2.375 2.375H21.625C22.3855 2.375 23 2.98945 23 3.75V5.125C23 5.88555 22.3855 6.5 21.625 6.5H2.375C1.61445 6.5 1 5.88555 1 5.125V3.75C1 2.98945 1.61445 2.375 2.375 2.375ZM2.375 7.875H21.625V18.875C21.625 20.3918 20.3918 21.625 18.875 21.625H5.125C3.6082 21.625 2.375 20.3918 2.375 18.875V7.875ZM7.875 11.3125C7.875 11.6906 8.18437 12 8.5625 12H15.4375C15.8156 12 16.125 11.6906 16.125 11.3125C16.125 10.9344 15.8156 10.625 15.4375 10.625H8.5625C8.18437 10.625 7.875 10.9344 7.875 11.3125Z" fill="currentColor"/></svg>Deactivate collection</button>
       <button class="mc-menu__item mc-menu__item--danger" type="button" data-mc-act="delete"><svg viewBox="0 0 24 24" fill="none"><path d="M3.00146 6.75033H21.0003" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M5.25098 6.75033H18.7501V20.2495C18.7501 20.6473 18.592 21.0288 18.3108 21.3101C18.0296 21.5913 17.648 21.7494 17.2502 21.7494H6.75088C6.35308 21.7494 5.97158 21.5913 5.69028 21.3101C5.40901 21.0288 5.25098 20.6473 5.25098 20.2495V6.75033Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M8.25098 6.75033V6.00038C8.25098 5.00588 8.64604 4.0521 9.34925 3.34889C10.0525 2.64567 11.0062 2.25061 12.0007 2.25061C12.9952 2.25061 13.949 2.64567 14.6522 3.34889C15.3555 4.0521 15.7505 5.00588 15.7505 6.00038V6.75033" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M9.75049 11.2523V17.2542" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M14.251 11.2523V17.2542" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Delete collection</button>
+      <p class="mc-menu__note" data-mc-note hidden>You cannot edit this collection. Please ask the owner to make changes.</p>
     </div>
 
     
