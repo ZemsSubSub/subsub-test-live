@@ -913,7 +913,27 @@
     ["basic", "deep", "coll", "video"].forEach(function (key) {
       if (tblBody(key)) tblApply(key);
     });
+    tblFit();
   }
+  // высота скролл-бокса считается от реального положения таблицы, иначе страница
+  // получает свой вертикальный скролл вдобавок к скроллу таблицы
+  function tblFit() {
+    var main = document.querySelector(".main");
+    var reserve = main ? parseFloat(getComputedStyle(main).paddingBottom) || 24 : 24;
+    var fixedFoot = document.querySelector(".ce-footer");   // на странице коллекции футер прибит снизу
+    if (fixedFoot) reserve += Math.round(fixedFoot.getBoundingClientRect().height);
+    [].slice.call(document.querySelectorAll(".an-tablewrap--stick")).forEach(function (w) {
+      if (w.offsetParent === null) return;              // скрытый таб не трогаем
+      var top = w.getBoundingClientRect().top;
+      var h = window.innerHeight - top - reserve;
+      w.style.maxHeight = Math.max(240, Math.round(h)) + "px";
+    });
+  }
+  var tblFitT = null;
+  window.addEventListener("resize", function () {
+    clearTimeout(tblFitT);
+    tblFitT = setTimeout(tblFit, 100);
+  });
 
   // ================= P1.9: табы Channels / Videos (?tab=) =================
   function tabCurrent() {
@@ -928,6 +948,7 @@
     // на табе Videos прирост не при чём — контрол периода скрываем
     var bar = document.querySelector(".an-periodbar");
     if (bar) bar.hidden = cur === "videos";
+    if (typeof tblFit === "function") tblFit();
     [].slice.call(document.querySelectorAll("[data-an-tab]")).forEach(function (a) {
       a.classList.toggle("is-active", a.getAttribute("data-an-tab") === cur);
     });

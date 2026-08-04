@@ -1496,7 +1496,7 @@ const collInner = `
         </div>
       </section>
 
-      <section class="an-tablewrap an-tablewrap--surface">
+      <section class="an-tablewrap an-tablewrap--surface an-tablewrap--stick" data-an-tablewrap="coll">
         <div class="an-table an-table--fill" data-an-table-body="coll">
           <div class="an-thead">${collHead}</div>
           <div class="an-tbody" data-mc-tbody>

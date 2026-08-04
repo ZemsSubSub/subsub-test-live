@@ -1719,7 +1719,10 @@ body.is-open:not(.is-collapsed) .main { margin-left: 306px; }
 /* активный подпункт сабменю (Basic data) — только фиолетовый текст, без пилюли (как на проде) */
 .m-group__items .m-item.is-current { background: transparent; color: var(--color-purple-900); }
 
-.main:has(.an-page) { padding-top: calc(var(--header-height) + 24px); }
+/* на страницах аналитики отступы от навбара и до низа страницы — 24px */
+.main:has(.an-page) { padding-top: calc(var(--header-height) + 24px); padding-bottom: 24px; }
+/* страница коллекции скроллится как форма: снизу оставляем место под прибитый футер */
+.main:has(.ce-page) { padding-bottom: 144px; }
 .an-page { display: flex; flex-direction: column; gap: 24px; }
 .an-head { min-height: 48px; display: flex; align-items: center; gap: 16px; } /* gap — отступ бейджа (напр. AI collection) от заголовка */
 .an-title { margin: 0; font-size: 32px; line-height: 1.3; font-weight: 500; color: var(--color-black); } /* text-title-semi-32 */
@@ -1763,6 +1766,19 @@ body.is-open:not(.is-collapsed) .main { margin-left: 306px; }
 .an-btn--primary { background: var(--color-black); color: #fff; }
 .an-btn--small { height: 40px; padding: 0 16px; font-size: 14px; }
 .an-btn--small svg { width: 20px; height: 20px; }
+/* DS-размер tiny: h-8 / px-3 / текст 14 / иконка 16 */
+.an-btn--tiny { height: 32px; padding: 0 12px; font-size: 14px; }
+.an-btn--tiny svg { width: 16px; height: 16px; }
+/* кнопки на самих страницах аналитики — DS small (в модалках размеры не трогаем) */
+.an-page .an-toolbar .an-btn,
+.an-page .an-searchbtns .an-btn,
+.an-page .an-head__btns .an-btn { height: 40px; padding: 0 16px; font-size: 14px; }
+.an-page .an-toolbar .an-btn svg,
+.an-page .an-searchbtns .an-btn svg,
+.an-page .an-head__btns .an-btn svg { width: 20px; height: 20px; }
+/* поиск и сегменты периода — та же высота 40px */
+.an-page .an-search { height: 40px; }
+.an-page .mc-search { height: 40px; }
 
 /* --- пагинация --- */
 .an-pagi { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; }
@@ -2128,7 +2144,7 @@ body.is-open:not(.is-collapsed) .main { margin-left: 306px; }
 /* обёртка таба не должна ломать вертикальные отступы .an-page */
 [data-an-tab-panel] { display: flex; flex-direction: column; gap: 24px; }
 [data-an-tab-panel][hidden] { display: none; }
-.vid-search { flex: 0 1 420px; gap: 12px; }
+.vid-search { flex: 0 1 420px; gap: 12px; height: 40px; }
 .vid-search > svg { width: 24px; height: 24px; color: var(--color-black); flex-shrink: 0; }
 /* превью 230×129 (aspect-video, radius 4) с длительностью — как на проде;
    реальных картинок YouTube в статике нет, поэтому плейсхолдер с иконкой типа */
@@ -2153,10 +2169,10 @@ body.is-open:not(.is-collapsed) .main { margin-left: 306px; }
 /* --- B1: единый переключатель типа контента в тулбаре Deep data --- */
 .an-ctype { display: inline-flex; align-items: center; gap: 4px; padding: 4px; margin-right: auto; border-radius: 8px; background: var(--color-shade-100); }
 .an-ctype__btn {
-  display: inline-flex; align-items: center; gap: 6px; height: 40px; padding: 0 14px; border: 0; border-radius: 4px;
+  display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 12px; border: 0; border-radius: 6px;
   background: none; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 400; color: var(--color-shade-700); white-space: nowrap;
 }
-.an-ctype__btn svg { width: 20px; height: 20px; }
+.an-ctype__btn svg { width: 16px; height: 16px; }
 .an-ctype__btn.is-on { background: #fff; color: var(--color-black); box-shadow: 0 0 4px 0 rgba(0,0,0,.1); }
 /* B3: объём коллекции в дропдауне и пустое состояние таблицы */
 .anf-opt { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
