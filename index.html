@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SubSub — кликабельный прототип</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/tokens.css" />
+  <style>
+    /* Точка входа в прототип. Отдельные стили: страница не часть продуктового UI,
+       поэтому не тянет styles.css и не зависит от его правок. */
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; padding: 48px 24px 64px;
+      font-family: Inter, system-ui, sans-serif;
+      color: var(--color-black, #19191a); background: var(--color-shade-90, #fafafa);
+    }
+    .wrap { max-width: 880px; margin: 0 auto; }
+    h1 { margin: 0 0 8px; font-size: 32px; font-weight: 600; letter-spacing: -.02em; }
+    .sub { margin: 0 0 8px; font-size: 16px; font-weight: 300; color: var(--color-shade-800, #4a4a4a); }
+    .note {
+      margin: 0 0 40px; padding: 12px 16px; border-radius: 10px;
+      background: var(--color-orange-20, #fbead7); color: var(--color-orange, #bd6414);
+      font-size: 14px; line-height: 1.45;
+    }
+    h2 {
+      margin: 32px 0 12px; font-size: 12px; font-weight: 600; letter-spacing: .06em;
+      text-transform: uppercase; color: var(--color-shade-700, #707070);
+    }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+    a.card {
+      display: block; padding: 16px 18px; border-radius: 12px; text-decoration: none;
+      background: #fff; border: 1px solid var(--color-shade-200, #e6e6e6);
+      transition: border-color .15s ease, transform .15s ease;
+    }
+    a.card:hover { border-color: var(--color-black, #19191a); transform: translateY(-1px); }
+    .card__t { font-size: 16px; font-weight: 500; color: var(--color-black, #19191a); }
+    .card__d { margin-top: 4px; font-size: 13px; font-weight: 300; color: var(--color-shade-700, #707070); }
+    footer { margin-top: 48px; font-size: 13px; color: var(--color-shade-700, #707070); }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>SubSub — кликабельный прототип</h1>
+    <p class="sub">Статический прототип интерфейса: HTML + vanilla JS, без бэкенда.</p>
+    <p class="note">Данные захардкожены, асинхронность имитируется таймерами, состояние живёт в localStorage.
+      Часть контролов ещё не подключена — это рабочая версия для обсуждения флоу, а не готовый продукт.</p>
+
+    <h2>Analytics</h2>
+    <div class="grid">
+      <a class="card" href="analytics-basic-data.html">
+        <div class="card__t">Basic data</div>
+        <div class="card__d">Скрининг каналов, AI-подбор коллекции, поиск похожих</div>
+      </a>
+      <a class="card" href="analytics-deep-data.html">
+        <div class="card__t">Deep data</div>
+        <div class="card__d">Глубокие метрики по коллекции, табы Channels / Videos</div>
+      </a>
+      <a class="card" href="analytics-collections.html">
+        <div class="card__t">My collections</div>
+        <div class="card__d">Список коллекций, статусы, действия над коллекцией</div>
+      </a>
+      <a class="card" href="analytics-collection-edit.html">
+        <div class="card__t">Страница коллекции</div>
+        <div class="card__d">Состав коллекции, шаринг, добавление каналов</div>
+      </a>
+    </div>
+
+    <h2>Media Library</h2>
+    <div class="grid">
+      <a class="card" href="media-library-files.html">
+        <div class="card__t">Files</div>
+        <div class="card__d">Файлы, превью, транскрибация и перевод субтитров</div>
+      </a>
+    </div>
+
+    <h2>Live</h2>
+    <div class="grid">
+      <a class="card" href="live-streams.html">
+        <div class="card__t">Streams</div>
+        <div class="card__d">Список трансляций</div>
+      </a>
+      <a class="card" href="live-stream-create.html">
+        <div class="card__t">Создание трансляции</div>
+        <div class="card__d">Форма настройки стрима</div>
+      </a>
+    </div>
+
+    <h2>Прочее</h2>
+    <div class="grid">
+      <a class="card" href="home.html">
+        <div class="card__t">Home</div>
+        <div class="card__d">Главная и общая навигация</div>
+      </a>
+      <a class="card" href="shared-file.html">
+        <div class="card__t">Публичная ссылка на файл</div>
+        <div class="card__d">Как расшаренный файл видит внешний получатель</div>
+      </a>
+    </div>
+
+    <footer>Ширина под 1440–1700px, Chrome. Навигация между разделами работает через левый сайдбар.</footer>
+  </div>
+</body>
+</html>
