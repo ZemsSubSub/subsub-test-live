@@ -512,6 +512,16 @@
     var si = w.querySelector("[data-an-collsel-search]");
     if (si) si.addEventListener("input", function () { csFill(w, si.value); });
   });
+  // на Deep коллекция выбрана всегда — поле Collection в панели показывает её же
+  function csSyncToPanel() {
+    var w = document.querySelector('[data-an-collsel="deep"]') || document.querySelector('[data-an-collsel="video"]');
+    if (!w) return;
+    var name = csCurrent(w);
+    if (!name) return;
+    var act = flActive();
+    var f = act && act.querySelector('[data-anf-field="collection"] [data-anf-val]');
+    if (f) { f.textContent = name; f.classList.remove("is-ph"); }
+  }
 
   // ================= P1.5: клиентская сортировка + пагинация =================
   // Работает по статическим строкам в DOM: сортировка переставляет узлы, пагинация
@@ -716,9 +726,12 @@
   // непустой фильтр → красная точка на кнопке Filters (как на проде)
   function flDot() {
     var v = flValues(), dirty = false;
+    var act = flActive(), key = act ? FL_TABLE[act.getAttribute("data-an-filters")] : null;
     for (var k in v) {
       if (k === "highlight") continue;                       // визуальный элемент
       if (k === "ctype" && v[k] === "All") continue;          // дефолт сегмента
+      if (k === "period") continue;                           // период всегда заполнен
+      if (k === "collection" && key === "deep") continue;      // на Deep коллекция выбрана всегда
       dirty = true;
     }
     var dot = document.querySelector("[data-an-filters-dot]");
@@ -827,9 +840,11 @@
     var G = window.SUBSUB_GROWTH || {};
     if (!G[pd]) return;
     flPeriod = pd;
+    // в поле показываем диапазон дат — как на проде (BaseDateRangePicker)
+    var ranges = (window.SUBSUB_DICT || {}).periodRanges || {};
     var labels = (window.SUBSUB_DICT || {}).periodLabels || {};
     [].slice.call(document.querySelectorAll("[data-an-period-val]")).forEach(function (el) {
-      el.textContent = labels[pd] || ("Last " + pd + " days");
+      el.textContent = ranges[pd] || labels[pd] || ("Last " + pd + " days");
     });
     [].slice.call(document.querySelectorAll("[data-an-period-set]")).forEach(function (b) {
       b.classList.toggle("is-on", b.getAttribute("data-an-period-set") === pd);
@@ -860,6 +875,7 @@
     if (!flPanels().length) return;
     flSyncActive();
     flFillCollections();
+    csSyncToPanel();                           // на Deep поле Collection = текущая коллекция
     flOpen(true);                              // как на проде — открыт по умолчанию
     flDot();
   }
@@ -1095,7 +1111,7 @@
     var chips = row.children[3].querySelector(".mc-chips"); if (chips) chips.innerHTML = '<span class="mc-chip">No channels</span>';
     row.children[4].textContent = "28.07.2026";
     var own = row.children[5].querySelector(".mc-owner__name"); if (own) own.textContent = "You";
-    var shared = row.children[6].querySelector(".mc-shared"); if (shared) shared.innerHTML = "";
+    row.children[6].innerHTML = noShareHtml();
     tbody.insertBefore(row, tbody.firstChild);
     updateCollCount();
     row.classList.remove("ml-row--flash"); void row.offsetWidth; row.classList.add("ml-row--flash");
@@ -1179,6 +1195,11 @@
                (i < pending.length - 1 ? '<hr class="dd__sep" />' : '') + '</li>';
       }).join("");
     }
+  }
+  // «Not shared» для строк, которые рисует клиент: иконку копируем из серверной разметки
+  function noShareHtml() {
+    var proto = document.querySelector(".mc-noshare");
+    return proto ? proto.outerHTML : '<span class="mc-noshare">Not shared</span>';
   }
   function escHtml(s) {
     return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
@@ -1449,7 +1470,8 @@
           aiChipsHtml(c) + '</div></div>' +
         '<div class="an-td" style="width:140px">' + escHtml(c.created) + '</div>' +
         '<div class="an-td" style="width:160px"><span class="mc-owner"><span class="mc-ava" style="background:var(--color-avatar-1)">Y</span><span class="mc-owner__name">You</span></span></div>' +
-        '<div class="an-td" style="width:120px"><span class="mc-shared"></span></div>' +
+        // «Not shared» — как в сборке: иконку берём из уже отрисованной строки
+        '<div class="an-td" style="width:120px">' + noShareHtml() + '</div>' +
         '<div class="an-td" style="width:120px"><button class="mc-more" type="button" aria-label="Actions" data-mc-more data-status="' +
           escHtml(c.status) + '" data-name="' + escHtml(c.name) + '">' +
           (document.querySelector("[data-mc-more]") ? document.querySelector("[data-mc-more]").innerHTML : "") + '</button></div>';

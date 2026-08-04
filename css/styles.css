@@ -1800,7 +1800,7 @@ body.is-open:not(.is-collapsed) .main { margin-left: 306px; }
 .an-th--check, .an-th--name { background: var(--color-shade-90); }
 .an-th--check, .an-td--check { justify-content: flex-start; padding-right: 0; }
 .an-th--stub, .an-td--stub { padding: 0; }
-.an-sort { display: inline-flex; align-items: center; gap: 4px; cursor: pointer; height: 100%; }
+.an-sort { display: inline-flex; align-items: center; gap: 4px; cursor: pointer; height: 100%; white-space: nowrap; }
 .an-sort svg { width: 16px; height: 16px; color: var(--color-shade-300); flex-shrink: 0; }
 .an-tbody .an-tr { height: 64px; border-bottom: 1px solid var(--color-shade-200); }
 .an-tbody .an-tr:last-child { border-bottom: 0; }
@@ -1827,14 +1827,10 @@ body.is-open:not(.is-collapsed) .main { margin-left: 306px; }
 .an-perpage__opt.is-selected { background: var(--color-shade-100); font-weight: 600; }
 
 .an-topic { text-decoration: underline; text-underline-offset: 3px; }
-/* до 2 топиков + «+N» в 140px-ячейке (P1.3): переносим, колонку не растягиваем */
-.an-topics { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 8px; min-width: 0; }
-.an-topics .an-topic { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%; }
-.an-topic__more {
-  flex-shrink: 0; padding: 1px 6px; border-radius: 4px; background: var(--color-shade-100);
-  font-size: 12px; font-weight: 500; color: var(--color-shade-800); cursor: pointer;
-}
-.an-topic__more:hover { background: var(--color-shade-200); }
+/* топики — 1:1 с продом: первый топик подчёркнут, дальше «+N» обычным текстом, одна строка */
+.an-topics { display: inline-flex; flex-wrap: nowrap; align-items: center; gap: 4px; min-width: 0; font-size: 14px; font-weight: 300; }
+.an-topics .an-topic { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.an-topic__more { flex-shrink: 0; cursor: pointer; color: inherit; }
 .an-delta--pos { color: var(--color-green); }
 .an-delta--neg { color: var(--color-red); }
 .an-muted { color: var(--color-shade-500); }
@@ -1877,19 +1873,22 @@ body.is-open:not(.is-collapsed) .main { margin-left: 306px; }
 .and-colx { display: inline-flex; margin-left: 2px; color: var(--color-shade-500); }
 .and-colx svg { width: 12px; height: 12px; }
 
-/* average-строка */
-.an-tr--avg { height: 48px !important; border-bottom: 1px solid var(--color-shade-200); background: var(--color-shade-90); }
-.an-tr--avg .an-td { background: var(--color-shade-90); font-weight: 400; }
-.an-tr--avg .an-td--name { background: var(--color-shade-90); }
+/* average-строка — на проде 36px на белом фоне (отдельная general stats таблица) */
+.an-tr--avg { height: 36px !important; border-bottom: 1px solid var(--color-shade-200); background: #fff; }
+.an-tr--avg .an-td { background: #fff; font-weight: 300; padding: 0 24px 0 0; }
+.an-tr--avg .an-td--name { background: #fff; padding-left: 8px; }
 .and-avg { font-weight: 500; color: var(--color-black); padding: 0; }
 .and-avg svg { width: 16px; height: 16px; color: var(--color-shade-700); }
 
-/* хитмап-заливка ячеек метрик (чип с закруглением, относительно среднего по коллекции) */
-.an-td--metric { padding: 8px 8px 8px 0; }
-.an-heat { display: flex; align-items: center; width: 100%; height: 100%; padding: 0 12px; border-radius: 6px; box-sizing: border-box; }
-.an-heat--pos { background: rgba(155, 230, 153, 0.16); }
-.an-heat--neg { background: rgba(255, 153, 153, 0.16); }
-.an-heat--zero { background: #fbead7; } /* orange-20 (нулевая динамика) */
+/* хитмап-заливка ячеек метрик — метрики прода: ячейка py-2 pr-6, плашка padding 12/8,
+   без закругления, цвет ТЕКСТА тоже меняется (зелёный/красный/оранжевый) */
+.an-td--metric { padding: 8px 24px 8px 0; }
+.an-heat { display: flex; align-items: center; width: 100%; padding: 12px 8px; box-sizing: border-box; }
+.an-heat--pos { background: rgba(155, 230, 153, 0.16); color: #1bbc40; }
+.an-heat--neg { background: rgba(255, 153, 153, 0.16); color: #e92929; }
+.an-heat--flat { background: var(--color-shade-90); color: var(--color-black); }
+.an-heat--zero { background: #fbead7; color: #bd6414; } /* orange-20 (нулевая динамика) */
+.an-heat--pos .an-delta--pos, .an-heat--neg .an-delta--pos { color: inherit; }
 .an-delta--zero { color: var(--color-orange); }
 
 /* ячейка канала deep-data: pin + bookmark + аватар + имя + open */
@@ -1916,16 +1915,21 @@ body.is-open:not(.is-collapsed) .main { margin-left: 306px; }
 
 /* серфейс-обёртка таблицы — как `.ml-table-wrap` в Media Library */
 .an-tablewrap--surface {
-  overflow: hidden;
+  overflow-x: auto;          /* при открытой панели фильтров таблица должна скроллиться, а не слипаться */
+  overflow-y: hidden;
   background: var(--color-white);
   border: 1px solid var(--color-shade-200);
   border-radius: 12px;
 }
+/* лейблы шапки не должны вылезать на соседнюю колонку, когда grow-колонка сжата */
+[data-an-table-body="coll"] .an-th { overflow: hidden; }
 /* внутри серфейса верхняя inset-линия шапки дублировала бы рамку — оставляем только нижнюю */
 .an-tablewrap--surface .an-th { box-shadow: inset 0 -1px 0 var(--color-shade-300); }
-.an-th--grow, .an-td--grow { flex: 1 1 auto; min-width: 0; }
+.an-th--grow, .an-td--grow { flex: 1 1 auto; min-width: 200px; }
 .an-table--fill .an-tbody .an-tr { height: 72px; }
 
+.mc-noshare { display: inline-flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 300; color: var(--color-shade-700); }
+.mc-noshare svg { width: 20px; height: 20px; flex-shrink: 0; }
 .mc-search { display: flex; align-items: center; gap: 8px; width: 280px; height: 48px; padding: 0 16px; border: 1px solid var(--color-shade-300); border-radius: 8px; background: #fff; box-sizing: border-box; }
 .mc-search:focus-within { border-color: var(--color-black); }
 .mc-search svg { width: 20px; height: 20px; color: var(--color-shade-700); flex-shrink: 0; }
@@ -2008,23 +2012,30 @@ body.is-open:not(.is-collapsed) .main { margin-left: 306px; }
 .mc-shareitem .mc-owner__name { flex: 1; }
 
 /* --- P1.9: таб Videos --- */
+/* обёртка таба не должна ломать вертикальные отступы .an-page */
+[data-an-tab-panel] { display: flex; flex-direction: column; gap: 24px; }
 [data-an-tab-panel][hidden] { display: none; }
 .vid-search { flex: 0 1 420px; gap: 12px; }
 .vid-search > svg { width: 24px; height: 24px; color: var(--color-black); flex-shrink: 0; }
-.vid-thumb { position: relative; display: block; width: 200px; height: 56px; border-radius: 6px;
-  background: linear-gradient(135deg, var(--color-shade-200), var(--color-shade-100)); }
+/* превью 230×129 (aspect-video, radius 4) с длительностью — как на проде;
+   реальных картинок YouTube в статике нет, поэтому плейсхолдер с иконкой типа */
+.vid-thumb { position: relative; display: block; width: 230px; }
+.vid-thumb__img { display: flex; align-items: center; justify-content: center; width: 230px; height: 129px;
+  border-radius: 4px; background: linear-gradient(135deg, var(--color-shade-200), var(--color-shade-100)); }
+.vid-thumb__img svg { width: 32px; height: 32px; color: var(--color-shade-500); }
 .vid-thumb__dur { position: absolute; right: 6px; bottom: 6px; padding: 1px 5px; border-radius: 4px;
-  background: rgba(15,23,42,.72); color: #fff; font-size: 11px; font-weight: 400; }
-.vid-thumb__type { position: absolute; left: 6px; top: 6px; display: inline-flex; color: var(--color-shade-800); }
-.vid-thumb__type svg { width: 16px; height: 16px; }
-.vid-title { display: flex; flex-direction: column; gap: 4px; min-width: 0; padding: 0 12px; box-sizing: border-box; width: 100%; }
-.vid-title__t { font-size: 14px; font-weight: 400; color: var(--color-black); text-decoration: none;
-  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  background: rgba(15,23,42,.8); color: #fff; font-size: 12px; font-weight: 400; }
+.vid-title { display: flex; flex-direction: column; gap: 4px; min-width: 0; padding: 4px 24px 4px 0; box-sizing: border-box; width: 100%; }
+.vid-title__t { font-size: 14px; font-weight: 600; line-height: 20px; color: var(--color-black); text-decoration: none;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .vid-title__t:hover { text-decoration: underline; }
-.vid-title__chan { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 300; color: var(--color-shade-700); }
+.vid-title__chan { display: flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 300; color: var(--color-shade-800); }
 .vid-ava { width: 20px; height: 20px; font-size: 10px; }
+.vid-date { display: flex; flex-direction: column; gap: 2px; }
+.vid-time { color: var(--color-shade-700); }
 [data-an-table-body="video"] .an-tr { align-items: center; }
-[data-an-table-body="video"] .an-tbody > .an-tr { height: 72px; }
+[data-an-table-body="video"] .an-tbody > .an-tr { height: 146px; }
+[data-an-table-body="video"] .an-td { padding: 8px 0; box-sizing: border-box; }
 
 /* --- P1.6: селектор среза по типу контента в шапке метрики --- */
 .an-slice-wrap { position: relative; display: inline-flex; }
@@ -2074,9 +2085,12 @@ body.is-open:not(.is-collapsed) .main { margin-left: 306px; }
 .an-btn--tertiary:hover { background: var(--color-shade-100); }
 .an-btn--link { background: transparent; color: var(--color-shade-800); padding: 0 8px; }
 .an-btn--link:hover { color: var(--color-black); text-decoration: underline; }
-.nc-head { flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 28px 32px 20px; border-bottom: 1px solid var(--color-shade-200); }
-.nc-head .an-modal__title { font-size: 24px; line-height: 1.25; font-weight: 600; }
-.nc-body { flex: 1; min-height: 0; gap: 16px; padding: 24px 32px; overflow-y: auto; }
+/* размеры прод-диалога BaseAddChannelDialog: 700px, паддинги 48px, футер с бордером */
+#ncModal .an-modal__dialog { width: min(700px, 94vw); max-width: 736px; }
+.nc-head { flex-shrink: 0; display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; padding: 48px 48px 32px; }
+.nc-head .an-modal__title { font-size: 24px; line-height: 1.25; font-weight: 500; }
+.nc-body { flex: 1; min-height: 0; gap: 16px; padding: 0 48px 16px; overflow-y: auto; }
+.nc-foot { padding: 24px 48px 32px; }
 .nc-links { display: flex; flex-direction: column; gap: 8px; }
 .nc-textarea { height: auto; min-height: 104px; padding: 12px 16px; line-height: 1.5; resize: vertical; font-family: inherit; }
 .nc-count { margin: 0; font-size: 14px; font-weight: 300; color: var(--color-black); }
@@ -2408,52 +2422,64 @@ body.is-open:not(.is-collapsed) .main { margin-left: 306px; }
 .an-filters {
   position: fixed; top: 72px; right: 0; bottom: 0; width: 417px; z-index: 60;
   display: none; flex-direction: column;
-  background: #fff; border-left: 1px solid var(--color-shade-200);
+  background: #fff; border-left: 1px solid var(--color-shade-300);
 }
 body.filters-open .an-filters.is-active { display: flex; }
 body.filters-open .main { padding-right: 417px; }
+/* шапка: заголовок «Filters» + × справа (BasePanelHeader: pt-25, h-60, без бордера) */
 .an-filters__head {
   display: flex; align-items: center; justify-content: space-between; gap: 12px;
-  flex-shrink: 0; padding: 16px 20px; border-bottom: 1px solid var(--color-shade-200);
+  flex-shrink: 0; height: 60px; margin-top: 25px; padding: 0 24px;
 }
-.an-filters__close,
+.an-filters__title {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 24px; font-weight: 400; color: var(--color-black);
+}
+.an-filters__title svg { width: 32px; height: 32px; }
+.an-filters__x { display: inline-flex; padding: 0; border: 0; background: none; cursor: pointer; color: var(--color-shade-300); }
+.an-filters__x svg { width: 32px; height: 32px; }
+.an-filters__x:hover { color: var(--color-shade-500); }
+/* «Clear all» — отдельной строкой справа под шапкой */
+.an-filters__clearrow { flex-shrink: 0; display: flex; justify-content: flex-end; padding: 0 24px; }
 .an-filters__clear {
-  display: inline-flex; align-items: center; gap: 8px; padding: 0;
-  border: 0; background: none; cursor: pointer; font-family: inherit; font-size: 14px;
+  display: inline-flex; align-items: center; gap: 4px; padding: 0; height: 24px;
+  border: 0; background: none; cursor: pointer; font-family: inherit;
+  font-size: 16px; font-weight: 400; color: var(--color-black);
 }
-.an-filters__close { color: var(--color-black); }
-.an-filters__close svg { width: 14px; height: 14px; }
-.an-filters__clear { color: var(--color-shade-700); }
-.an-filters__clear:hover { color: var(--color-black); }
-.an-filters__body { flex: 1; min-height: 0; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 20px; }
+.an-filters__clear svg { width: 20px; height: 20px; }
+.an-filters__clear:hover { text-decoration: underline; }
+.an-filters__body { flex: 1; min-height: 0; overflow-y: auto; padding: 16px 24px 110px; display: flex; flex-direction: column; gap: 32px; }
 
 /* красная точка на кнопке Filters при непустых фильтрах */
 .an-btn__dot { width: 6px; height: 6px; margin-left: 2px; border-radius: 50%; background: var(--color-red); }
 .an-btn__dot[hidden] { display: none; }
 
-.anf-group { display: flex; flex-direction: column; gap: 16px; }
+/* группы на Basic data — аккордеоны Collection / Channel (иконка + подпись 16px) */
+.anf-group { display: flex; flex-direction: column; gap: 32px; }
 .anf-group__title {
-  display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; color: var(--color-black);
+  display: flex; align-items: center; gap: 8px; font-size: 16px; font-weight: 400; color: var(--color-black);
 }
-.anf-group__title svg { width: 18px; height: 18px; }
-.anf-field { display: flex; flex-direction: column; gap: 6px; }
-.anf-lbl { font-size: 13px; font-weight: 500; color: var(--color-shade-800); }
-.anf-input { height: 44px; }
+.anf-group__title svg { width: 24px; height: 24px; }
+/* поле: label (14/500) + контрол 48px, зазор 8px — как в BasePopoverButton */
+.anf-field { display: flex; flex-direction: column; gap: 8px; }
+.anf-lbl { display: inline-flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 500; line-height: 16px; color: var(--color-black); }
+.anf-mark { width: 12px; height: 12px; border-radius: 3px; background: var(--color-brick-orange, #e2703a); flex-shrink: 0; }
+.anf-input { height: 48px; }
 .anf-row { display: flex; align-items: center; gap: 8px; }
 .anf-row .anf-input { flex: 1; min-width: 0; }
 .anf-dash { color: var(--color-shade-700); }
 
 .anf-select { position: relative; }
 .anf-trig {
-  display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%;
-  height: 44px; padding: 0 14px; box-sizing: border-box; text-align: left;
+  display: flex; align-items: center; justify-content: space-between; gap: 16px; width: 100%;
+  min-height: 48px; padding: 8px 16px 8px 8px; box-sizing: border-box; text-align: left;
   border: 1px solid var(--color-shade-300); border-radius: 8px; background: #fff; cursor: pointer;
-  font-family: inherit; font-size: 15px; font-weight: 300; color: var(--color-black);
+  font-family: inherit; font-size: 16px; font-weight: 400; color: var(--color-black);
 }
 .anf-trig:hover { border-color: var(--color-shade-500); }
 .anf-select.is-open .anf-trig { border-color: var(--color-black); }
 .anf-val { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.anf-val.is-ph { color: var(--color-shade-500); }
+.anf-val.is-ph { color: var(--color-shade-700); } /* placeholder:text-shade-700 */
 .anf-chev { display: inline-flex; flex-shrink: 0; }
 .anf-chev svg { width: 18px; height: 18px; }
 .anf-menu {
@@ -2477,21 +2503,29 @@ body.filters-open .main { padding-right: 417px; }
 
 /* Growth period (P1.2): значение + календарь + чипы 7/30/90 */
 .anf-period { display: flex; flex-direction: column; gap: 8px; }
-.anf-chips { display: flex; gap: 8px; }
+/* чипы периода — PeriodFilterOption: пилюли shade-100, 14px, padding 6/16, gap 8, отступ сверху 6 */
+.anf-chips { display: flex; align-items: center; gap: 8px; padding-top: 6px; }
 .anf-chip {
-  flex: 1; height: 34px; border: 1px solid var(--color-shade-300); border-radius: 8px; background: #fff;
-  cursor: pointer; font-family: inherit; font-size: 13px; color: var(--color-black);
+  padding: 6px 16px; border: 0; border-radius: 999px; background: var(--color-shade-100);
+  cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 300; color: var(--color-black);
 }
-.anf-chip:hover { border-color: var(--color-shade-500); }
-.anf-chip.is-on { border-color: var(--color-black); background: var(--color-black); color: #fff; }
+.anf-chip:hover { background: var(--color-shade-200); }
+/* выбранное состояние — наша добавка (в проде чип только применяет период) */
+.anf-chip.is-on { background: var(--color-black); color: #fff; }
 
-/* сегментированный переключатель */
-.anf-seg { display: flex; padding: 3px; border-radius: 8px; background: var(--color-shade-100); }
+/* сегментированный переключатель — BaseRadioTabRoot/Item size=lg */
+.anf-seg { display: flex; align-items: center; justify-content: center; gap: 4px; padding: 4px; border-radius: 8px; background: var(--color-shade-100); }
 .anf-seg__btn {
-  flex: 1; height: 34px; border: 0; border-radius: 6px; background: none; cursor: pointer;
-  font-family: inherit; font-size: 13px; color: var(--color-shade-800);
+  flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 4px;
+  height: 40px; padding: 8px 16px; border: 0; border-radius: 4px; background: none; cursor: pointer;
+  font-family: inherit; font-size: 16px; font-weight: 500; color: var(--color-shade-700);
 }
-.anf-seg__btn.is-on { background: #fff; color: var(--color-black); font-weight: 500; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+.anf-seg__btn.is-on { background: #fff; color: var(--color-black); box-shadow: 0 0 4px 0 rgba(0,0,0,.1); }
+/* две точки у «Enable mode» */
+.anf-dots { display: inline-flex; align-items: center; }
+.anf-dot { width: 16px; height: 16px; border-radius: 50%; box-shadow: 0 0 0 2px #fff; display: inline-block; }
+.anf-dot--g { background: var(--color-green, #1bbc40); }
+.anf-dot--r { background: var(--color-red, #e92929); margin-left: -4px; }
 
 /* Performance range — только визуально (логика ждёт юзер-интервью) */
 .anf-slider { position: relative; height: 24px; display: flex; align-items: center; }

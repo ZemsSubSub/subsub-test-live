@@ -29,6 +29,12 @@ const IC = {
   ytShorts: '<svg viewBox="0 0 24 24" fill="none"><path d="M19.0181 11.1693L19.0164 11.1667C18.6305 10.601 18.1151 10.1342 17.511 9.80959C18.485 9.27655 19.2168 8.38443 19.5437 7.32015C19.8769 6.24182 19.7654 5.0751 19.239 4.07898C18.7121 3.08203 17.8119 2.33531 16.7345 2.00216L16.733 2.00172C15.6563 1.67115 14.4916 1.77961 13.4943 2.30664L13.494 2.30679L5.5351 6.51678C4.82504 6.88876 4.23526 7.45304 3.83191 8.14416C3.4272 8.83761 3.22925 9.63121 3.25518 10.4304L3.25526 10.4326C3.28358 11.2327 3.53611 12.0095 3.98486 12.6731L3.98589 12.6746C4.37109 13.2414 4.88474 13.7056 5.48556 14.0295C4.53479 14.5761 3.83002 15.4682 3.52091 16.5229C3.20655 17.5889 3.32265 18.7342 3.83936 19.7157L3.83971 19.7164C4.35708 20.6968 5.23795 21.4382 6.29368 21.7807C7.3492 22.1231 8.49732 22.0406 9.49244 21.549L9.51123 21.5394L17.4679 17.3256C18.178 16.9536 18.7677 16.3893 19.1711 15.6983C19.5758 15.0048 19.7737 14.2112 19.7478 13.412L19.7477 13.4098C19.7194 12.6097 19.4669 11.833 19.0181 11.1693Z" stroke="currentColor" stroke-width="1.5"/><path d="M9.71311 13.0963C9.71311 13.7188 10.3681 14.1237 10.9249 13.8454L13.3224 12.6471C13.9397 12.3386 13.9398 11.4578 13.3226 11.1491L10.9252 9.94986C10.3684 9.67134 9.71311 10.0762 9.71311 10.6988V13.0963Z" stroke="currentColor" stroke-width="1.2"/></svg>',
   ytStream: '<svg viewBox="0 0 24 24" fill="none"><path d="M19.1414 5C20.9097 6.80375 22 9.27455 22 12C22 14.7578 20.8836 17.2549 19.0782 19.064M5 19.1414C3.14864 17.3265 2 14.7974 2 12C2 9.23497 3.12222 6.73205 4.93603 4.92184" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M16.2849 8.04397C17.3458 9.05877 18 10.4488 18 11.9822C18 13.5338 17.3302 14.9386 16.2469 15.9564M7.8 16C6.68918 14.9789 6 13.556 6 11.9822C6 10.4266 6.67333 9.01843 7.76162 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M13.6563 10.4511C14.5521 11.1088 15 11.4376 15 12C15 12.5624 14.5521 12.8913 13.6563 13.5489C13.4091 13.7305 13.1638 13.9014 12.9384 14.0438C12.7407 14.1688 12.5168 14.298 12.2849 14.4249C11.3913 14.914 10.9444 15.1586 10.5437 14.8878C10.1429 14.6171 10.1065 14.0503 10.0337 12.9166C10.0131 12.596 10 12.2818 10 12C10 11.7183 10.0131 11.404 10.0337 11.0834C10.1065 9.94979 10.1429 9.38298 10.5437 9.11222C10.9444 8.84146 11.3913 9.08602 12.2849 9.57512C12.5168 9.702 12.7407 9.83125 12.9384 9.95621C13.1638 10.0986 13.4091 10.2696 13.6563 10.4511Z" stroke="currentColor" stroke-width="1.5"/></svg>',
   circleDown: '<svg viewBox="0 0 24 24" fill="none"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 22.75C6.063 22.75 1.25 17.937 1.25 12C1.25 6.063 6.063 1.25 12 1.25C17.937 1.25 22.75 6.063 22.75 12C22.75 17.937 17.937 22.75 12 22.75ZM16.03 13.03L12.53 16.53C12.3894 16.6705 12.1988 16.7493 12 16.7493C11.8012 16.7493 11.6106 16.6705 11.47 16.53L7.97 13.03C7.89631 12.9613 7.83721 12.8785 7.79622 12.7865C7.75523 12.6945 7.73319 12.5952 7.73141 12.4945C7.72963 12.3938 7.74816 12.2938 7.78588 12.2004C7.8236 12.107 7.87974 12.0222 7.95096 11.951C8.02218 11.8797 8.10701 11.8236 8.2004 11.7859C8.29379 11.7482 8.39382 11.7296 8.49452 11.7314C8.59522 11.7332 8.69454 11.7552 8.78654 11.7962C8.87854 11.8372 8.96134 11.8963 9.03 11.97L11.25 14.19V8C11.25 7.80109 11.329 7.61032 11.4697 7.46967C11.6103 7.32902 11.8011 7.25 12 7.25C12.1989 7.25 12.3897 7.32902 12.5303 7.46967C12.671 7.61032 12.75 7.80109 12.75 8V14.19L14.97 11.97C15.0387 11.8963 15.1215 11.8372 15.2135 11.7962C15.3055 11.7552 15.4048 11.7332 15.5055 11.7314C15.6062 11.7296 15.7062 11.7482 15.7996 11.7859C15.893 11.8236 15.9778 11.8797 16.049 11.951C16.1203 12.0222 16.1764 12.107 16.2141 12.2004C16.2518 12.2938 16.2704 12.3938 16.2686 12.4945C16.2668 12.5952 16.2448 12.6945 16.2038 12.7865C16.1628 12.8785 16.1037 12.9613 16.03 13.03Z" fill="currentColor"/></svg>',
+  // «Not shared» — перечёркнутый share в колонке Shared with
+  shareOff: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8.7 13.3l6.6 3.9M15.2 6.8L8.7 10.7"/><circle cx="17.5" cy="5.5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="17.5" cy="18.5" r="2.5"/><path d="M3 21L21 3"/></svg>',
+  // × в кружке — закрытие панели фильтров (FilledIconClose)
+  closeCircle: '<svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="currentColor"/><path d="M15 9L9 15M9 9l6 6" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/></svg>',
+  // «Clear all» (OutlineIconClear)
+  clear: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19.5 5.5 12 13M9.5 20.5h9M4.2 15.3l4.5-4.5 5 5-2.6 2.6a2 2 0 0 1-2.8 0l-4.1-4.1a.7.7 0 0 1 0-1Z"/></svg>',
   // календарь — Growth period
   calendar: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><rect x="3.5" y="5" width="17" height="16" rx="2.5"/><path d="M8 3v4M16 3v4M3.5 10h17"/></svg>',
   // плюс — «Create new collection» (кнопка и пункт списка)
@@ -192,6 +198,17 @@ const CH = [
 const PERIODS = ["7", "30", "90"];
 const PERIOD_K = { "7": 0.22, "30": 1, "90": 2.68 };
 const PERIOD_LABEL = { "7": "Last 7 days", "30": "Last 30 days", "90": "Last 90 days" };
+// на проде в поле показывается сам диапазон дат, а не «Last N days»
+const PERIOD_RANGE = (function () {
+  const out = {}, to = new Date(2026, 7, 3);
+  const d2 = function (n) { return ("0" + n).slice(-2); };
+  const f = function (d) { return d2(d.getDate()) + "." + d2(d.getMonth() + 1) + "." + d.getFullYear(); };
+  PERIODS.forEach(function (pd) {
+    const from = new Date(to.getTime() - (parseInt(pd, 10) - 1) * 86400000);
+    out[pd] = f(from) + " - " + f(to);
+  });
+  return out;
+})();
 
 // базовый прирост за 30 дней + даты — детерминированно из индекса канала
 const CH_META = CH.map(function (c, i) {
@@ -275,8 +292,10 @@ function fSegment(id, label, opts, def) {
   return '<div class="anf-field" data-anf-field="' + id + '">' +
     '<label class="anf-lbl">' + esc(label) + '</label>' +
     '<div class="anf-seg" role="radiogroup">' + opts.map(function (v) {
+      // «Enable mode» на проде помечен двумя точками (зелёная/красная) — это про хитмап
+      const dots = v === "Enable mode" ? '<span class="anf-dots"><i class="anf-dot anf-dot--g"></i><i class="anf-dot anf-dot--r"></i></span>' : "";
       return '<button class="anf-seg__btn' + (v === def ? " is-on" : "") + '" type="button" role="radio" ' +
-             'aria-checked="' + (v === def ? "true" : "false") + '" data-anf-seg="' + esc(v) + '">' + esc(v) + '</button>';
+             'aria-checked="' + (v === def ? "true" : "false") + '" data-anf-seg="' + esc(v) + '">' + dots + esc(v) + '</button>';
     }).join("") + '</div>' +
   '</div>';
 }
@@ -284,10 +303,10 @@ function fSegment(id, label, opts, def) {
 // монтирования — в Фазе 2 (A4) он переезжает в тулбар без переписывания.
 function fGrowthPeriod(withChips) {
   return '<div class="anf-field" data-anf-field="period">' +
-    '<label class="anf-lbl">Growth period</label>' +
+    '<label class="anf-lbl">' + (withChips ? "" : '<span class="anf-mark" aria-hidden="true"></span>') + 'Growth period</label>' +
     '<div class="anf-period" data-an-period>' +
       '<button class="anf-trig" type="button" data-an-period-trig>' +
-        '<span data-an-period-val>' + PERIOD_LABEL["30"] + '</span>' +
+        '<span data-an-period-val>' + PERIOD_RANGE["30"] + '</span>' +
         '<span class="anf-chev" aria-hidden="true">' + IC.calendar + '</span>' +
       '</button>' +
       (withChips ? '<div class="anf-chips" data-an-period-chips>' + PERIODS.map(function (pd) {
@@ -317,8 +336,11 @@ function fGroup(title, iconKey, inner) {
 function filtersPanel(key, inner) {
   return '<aside class="an-filters" data-an-filters="' + key + '">' +
     '<div class="an-filters__head">' +
-      '<button class="an-filters__close" type="button" data-an-filters-close>' + IC.closeBold + 'Close panel</button>' +
-      '<button class="an-filters__clear" type="button" data-an-filters-clear>Clear all</button>' +
+      '<span class="an-filters__title">' + IC.filter + 'Filters</span>' +
+      '<button class="an-filters__x" type="button" data-an-filters-close aria-label="Close panel">' + IC.closeCircle + '</button>' +
+    '</div>' +
+    '<div class="an-filters__clearrow">' +
+      '<button class="an-filters__clear" type="button" data-an-filters-clear>' + IC.clear + 'Clear all</button>' +
     '</div>' +
     '<div class="an-filters__body">' + inner + '</div>' +
   '</aside>';
@@ -430,10 +452,8 @@ function bodyRow(r, i){
   cells.push('<div class="an-td an-td--stub" style="width:20px"></div>');
   // топики: до 2 баджей + «+N» (P1.3). Кликабельными их делает A5 в Фазе 2.
   const tops = Array.isArray(r[2]) ? r[2] : [r[2]];
-  const topHtml = tops.slice(0, 2).map(function (t) {
-    return '<span class="an-topic" data-an-topic="' + esc(t) + '">' + esc(t) + '</span>';
-  }).join("") +
-  (tops.length > 2 ? '<span class="an-topic__more" data-an-topics-more="' + esc(tops.join("|")) + '">+' + (tops.length - 2) + '</span>' : "");
+  const topHtml = '<span class="an-topic" data-an-topic="' + esc(tops[0]) + '">' + esc(tops[0]) + '</span>' +
+    (tops.length > 1 ? '<span class="an-topic__more" data-an-topics-more="' + esc(tops.join("|")) + '">+' + (tops.length - 1) + '</span>' : "")
   cells.push('<div class="an-td an-td--topics" style="width:140px"><span class="an-topics">' + topHtml + '</span></div>');
   cells.push('<div class="an-td" style="width:120px">' + esc(r[3]) + '</div>');
   cells.push('<div class="an-td" style="width:150px">' + esc(r[4]) + '</div>');
@@ -1029,10 +1049,10 @@ const deepBody = DEEP_COLL_SETS.map(function (c) {
 // Размер страницы 10 (как на проде), у таба свой тулбар, своя пагинация и своя панель фильтров.
 const VID_COLS = [
   { id:"thumb", w:240, label:"Video" },
-  { id:"title", w:420, label:"Video title", sort:true },
-  { id:"published", w:140, label:"Published at", sort:true },
-  { id:"views", w:120, label:"Views", sort:true },
-  { id:"reactions", w:140, label:"Reactions", sort:true },
+  { id:"title", w:580, label:"Video title", sort:true },
+  { id:"published", w:120, label:"Published at", sort:true },
+  { id:"views", w:100, label:"Views", sort:true },
+  { id:"reactions", w:100, label:"Reactions", sort:true },
   { id:"vs", w:80, label:"V/S", sort:true },
   { id:"er", w:80, label:"ER", sort:true },
 ];
@@ -1043,6 +1063,7 @@ const VID_TITLES = [
   "Підсумки дня за 10 хвилин", "Що далі: три сценарії"
 ];
 const VID_TYPES = ["Video", "Shorts", "Stream"];
+function fmtUp(n) { return fmt(n).replace("k", "K").replace("m", "M").replace("bn", "B"); }
 function vidDur(sec) {
   const m = Math.floor(sec / 60), s = sec % 60;
   return m + ":" + ("0" + s).slice(-2);
@@ -1063,9 +1084,10 @@ function vidRowsFor(coll) {
         title: VID_TITLES[(i + k) % VID_TITLES.length] + (k ? " — частина " + (k + 1) : ""),
         chan: name, ini: c[1], color: AVA[i % AVA.length], type: type,
         dur: vidDur(type === "Shorts" ? 15 + Math.floor(r() * 45) : 240 + Math.floor(r() * 2400)),
-        published: dmy(1 + Math.floor(r() * 27), 1 + Math.floor(r() * 7), 2026),
-        views: fmt(views), reactions: fmt(reactions),
-        vs: (0.2 + r() * 2.4).toFixed(1), er: (0.6 + r() * 7).toFixed(1) + "%"
+        published: dmy(1 + Math.floor(r() * 27), 1 + Math.floor(r() * 7), 26),
+        time: ("0" + Math.floor(r() * 24)).slice(-2) + ":" + ("0" + Math.floor(r() * 12) * 5).slice(-2),
+        views: fmtUp(views), reactions: fmtUp(reactions),
+        vs: (0.1 + r() * 2.4).toFixed(1) + "%", er: (0.6 + r() * 7).toFixed(1) + "%"
       });
     }
   });
@@ -1084,16 +1106,21 @@ function vidHeadCell(c) {
 function vidRow(v, coll, off) {
   return '<div class="an-tr" data-coll="' + esc(coll) + '"' + off + '>' +
     '<div class="an-td" style="width:240px" data-col="thumb">' +
-      '<span class="vid-thumb"><span class="vid-thumb__dur">' + esc(v.dur) + '</span>' +
-      '<span class="vid-thumb__type">' + (v.type === "Shorts" ? IC.ytShorts : v.type === "Stream" ? IC.ytStream : IC.ytVideo) + '</span></span>' +
+      '<span class="vid-thumb">' +
+        '<span class="vid-thumb__img">' + (v.type === "Shorts" ? IC.ytShorts : v.type === "Stream" ? IC.ytStream : IC.ytVideo) + '</span>' +
+        '<span class="vid-thumb__dur">' + esc(v.dur) + '</span>' +
+      '</span>' +
     '</div>' +
-    '<div class="an-td" style="width:420px" data-col="title">' +
-      '<span class="vid-title"><a class="vid-title__t" href="#" tabindex="-1">' + esc(v.title) + '</a>' +
-      '<span class="vid-title__chan"><span class="mc-ava vid-ava" style="background:var(' + v.color + ')">' + esc(v.ini) + '</span>' + esc(v.chan) + '</span></span>' +
+    '<div class="an-td" style="width:580px" data-col="title">' +
+      '<span class="vid-title">' +
+        '<a class="vid-title__t" href="#" tabindex="-1">' + esc(v.title) + '</a>' +
+        '<span class="vid-title__chan"><span class="mc-ava vid-ava" style="background:var(' + v.color + ')">' + esc(v.ini) + '</span>' + esc(v.chan) + '</span>' +
+      '</span>' +
     '</div>' +
-    '<div class="an-td an-td--plain" style="width:140px" data-col="published">' + esc(v.published) + '</div>' +
-    '<div class="an-td an-td--plain" style="width:120px" data-col="views">' + esc(v.views) + '</div>' +
-    '<div class="an-td an-td--plain" style="width:140px" data-col="reactions">' + esc(v.reactions) + '</div>' +
+    '<div class="an-td an-td--plain" style="width:120px" data-col="published">' +
+      '<span class="vid-date">' + esc(v.published) + '<span class="vid-time">' + esc(v.time) + '</span></span></div>' +
+    '<div class="an-td an-td--plain" style="width:100px" data-col="views">' + esc(v.views) + '</div>' +
+    '<div class="an-td an-td--plain" style="width:100px" data-col="reactions">' + esc(v.reactions) + '</div>' +
     '<div class="an-td an-td--plain" style="width:80px" data-col="vs">' + esc(v.vs) + '</div>' +
     '<div class="an-td an-td--plain" style="width:80px" data-col="er">' + esc(v.er) + '</div>' +
   '</div>';
@@ -1256,7 +1283,11 @@ function collRow(r){
   cells.push('<div class="an-td an-td--grow" style="width:350px"><div class="mc-chips">' + chips + '</div></div>');
   cells.push('<div class="an-td" style="width:140px">' + esc(r.created) + '</div>');
   cells.push('<div class="an-td" style="width:160px"><span class="mc-owner">' + ava(r.owner) + '<span class="mc-owner__name">' + esc(r.owner.name) + '</span></span></div>');
-  cells.push('<div class="an-td" style="width:120px"><span class="mc-shared">' + r.shared.map(function (a) { return ava(a); }).join("") + '</span></div>');
+  // пустая колонка Shared with на проде показывает «Not shared» с иконкой
+  const sharedCell = r.shared.length
+    ? '<span class="mc-shared">' + r.shared.map(function (a) { return ava(a); }).join("") + '</span>'
+    : '<span class="mc-noshare">' + IC.shareOff + 'Not shared</span>';
+  cells.push('<div class="an-td" style="width:120px">' + sharedCell + '</div>');
   cells.push('<div class="an-td" style="width:120px"><button class="mc-more" type="button" aria-label="Actions" data-mc-more data-status="' + r.status + '" data-name="' + esc(r.name) + '">' + IC.dots + '</button></div>');
   return '<div class="an-tr" data-mc-row data-name="' + esc(r.name) + '"' +
     (r.sample ? ' data-sample="1"' : '') + ' data-owner="' + esc(r.owner.name) + '"' +
@@ -1502,7 +1533,7 @@ function buildPage(src, title, inner, current){
   // справочники + прирост по периодам (P1.2): клиент подменяет ячейки при смене периода
   const dictSeed = JSON.stringify({
     topics: TOPIC_LIST, countries: COUNTRY_LIST, languages: LANG_LIST,
-    periods: PERIODS, periodLabels: PERIOD_LABEL, defaultPeriod: "30"
+    periods: PERIODS, periodLabels: PERIOD_LABEL, periodRanges: PERIOD_RANGE, defaultPeriod: "30"
   });
   const growthSeed = JSON.stringify(GROWTH_BY_PERIOD);
   h = h.replace('<script src="js/nav.js"></script>',
