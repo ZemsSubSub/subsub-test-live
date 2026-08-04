@@ -26,7 +26,9 @@ const TYPES = {
 http
   .createServer((req, res) => {
     let urlPath = decodeURIComponent(req.url.split("?")[0]);
-    if (urlPath === "/") urlPath = "/home.html";
+    // «/» отдаёт index.html — так же, как GitHub Pages, чтобы локально и на Pages
+    // точка входа совпадала (home.html доступен по прямой ссылке)
+    if (urlPath === "/") urlPath = "/index.html";
     const filePath = path.join(ROOT, urlPath);
     fs.stat(filePath, (err, stat) => {
       if (err || !stat.isFile()) {

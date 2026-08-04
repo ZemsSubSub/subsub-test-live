@@ -23,6 +23,14 @@ const IC = {
   // FilledAiStarsIcon — опция «AI semantic search» (градиент), viewBox 16
   aiStars: '<svg viewBox="0 0 16 16" fill="none"><path d="M6.65952 6.11513L7.24284 4.07484C7.46142 3.31113 8.54378 3.31113 8.76236 4.07484L9.34502 6.11513C9.38191 6.2442 9.45108 6.36173 9.54599 6.45665C9.64091 6.55157 9.75845 6.62074 9.88751 6.65763L11.9278 7.24029C12.6915 7.45887 12.6915 8.54123 11.9278 8.75981L9.88751 9.34246C9.75845 9.37935 9.64091 9.44852 9.54599 9.54344C9.45108 9.63836 9.38191 9.7559 9.34502 9.88496L8.76236 11.9253C8.54378 12.689 7.46142 12.689 7.24284 11.9253L6.66018 9.88496C6.62329 9.7559 6.55412 9.63836 6.4592 9.54344C6.36429 9.44852 6.24675 9.37935 6.11768 9.34246L4.07739 8.75981C3.31368 8.54123 3.31368 7.45887 4.07739 7.24029L6.11768 6.65763C6.24675 6.62074 6.36429 6.55157 6.4592 6.45665C6.55412 6.36173 6.62329 6.2442 6.66018 6.11513M12.0213 10.9673C12.2116 10.4123 13.0115 10.4117 13.2011 10.9673L13.2182 11.0246L13.4131 11.8067L14.1952 12.0023C14.8273 12.1603 14.8273 13.057 14.1952 13.215L13.4131 13.4105L13.2182 14.1927C13.0602 14.8241 12.1628 14.8241 12.0048 14.1927L11.8093 13.4105L11.0272 13.215C10.3951 13.057 10.3951 12.1596 11.0272 12.0023L11.8093 11.8067L12.0048 11.0246L12.0213 10.9673ZM12.6112 12.475C12.5733 12.5257 12.5283 12.5708 12.4775 12.6086C12.5283 12.6465 12.5733 12.6915 12.6112 12.7423C12.6491 12.6915 12.6941 12.6465 12.7448 12.6086C12.6941 12.5706 12.649 12.5253 12.6112 12.4743M2.8041 1.74947C3.0003 1.17603 3.84762 1.19513 4.00102 1.80675L4.1959 2.5889L4.97804 2.78443C5.61008 2.94244 5.61008 3.83914 4.97804 3.99715L4.1959 4.19269L4.00102 4.97483C3.84301 5.60621 2.94565 5.60621 2.78764 4.97483L2.59211 4.19269L1.80996 3.99715C1.17793 3.83914 1.17793 2.94178 1.80996 2.78443L2.59211 2.5889L2.78764 1.80675L2.8041 1.74947ZM3.394 3.2578C3.35607 3.30831 3.31105 3.3531 3.26036 3.39079C3.31115 3.42888 3.35616 3.47412 3.394 3.5251C3.43185 3.47412 3.47686 3.42888 3.52765 3.39079C3.47691 3.3529 3.43189 3.30855 3.394 3.2578Z" fill="url(#aiStar0)"/><defs><linearGradient id="aiStar0" x1="1.89149" y1="4.66649" x2="18.9317" y2="7.11893" gradientUnits="userSpaceOnUse"><stop stop-color="#F567FF"/><stop offset="0.403337" stop-color="#B351F6"/><stop offset="0.889423" stop-color="#5951F6"/></linearGradient></defs></svg>',
   // FilledIconLink — иконка ссылки в поле «Paste Channel Reference Link»
+  // P1.6: срезы метрик по типу контента — иконки DS (OutlineIconYoutube/Video/YoutubeShorts/Stream)
+  ytAll: '<svg viewBox="0 0 24 24" fill="none"><path d="M17 20H7C4 20 2 18 2 15V9C2 6 4 4 7 4H17C20 4 22 6 22 9V15C22 18 20 20 17 20Z" stroke="currentColor" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/><path d="M11.4 9.5L13.9 11C14.8 11.6 14.8 12.5 13.9 13.1L11.4 14.6C10.4 15.2 9.59998 14.7 9.59998 13.6V10.6C9.59998 9.3 10.4 8.9 11.4 9.5Z" stroke="currentColor" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  ytVideo: '<svg viewBox="0 0 24 24" fill="none"><path d="M2 12C2 7.28595 2 4.92893 3.46447 3.46447C4.92893 2 7.28595 2 12 2C16.714 2 19.0711 2 20.5355 3.46447C22 4.92893 22 7.28595 22 12C22 16.714 22 19.0711 20.5355 20.5355C19.0711 22 16.714 22 12 22C7.28595 22 4.92893 22 3.46447 20.5355C2 19.0711 2 16.714 2 12Z" stroke="currentColor" stroke-width="1.5"/><path d="M17 2.5L17 21.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M7 2.5L7 21.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M2.5 7L7 7M21.5 7L17 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M2.5 17L7 17M21.5 17L17 17" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M2 12H22" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>',
+  ytShorts: '<svg viewBox="0 0 24 24" fill="none"><path d="M19.0181 11.1693L19.0164 11.1667C18.6305 10.601 18.1151 10.1342 17.511 9.80959C18.485 9.27655 19.2168 8.38443 19.5437 7.32015C19.8769 6.24182 19.7654 5.0751 19.239 4.07898C18.7121 3.08203 17.8119 2.33531 16.7345 2.00216L16.733 2.00172C15.6563 1.67115 14.4916 1.77961 13.4943 2.30664L13.494 2.30679L5.5351 6.51678C4.82504 6.88876 4.23526 7.45304 3.83191 8.14416C3.4272 8.83761 3.22925 9.63121 3.25518 10.4304L3.25526 10.4326C3.28358 11.2327 3.53611 12.0095 3.98486 12.6731L3.98589 12.6746C4.37109 13.2414 4.88474 13.7056 5.48556 14.0295C4.53479 14.5761 3.83002 15.4682 3.52091 16.5229C3.20655 17.5889 3.32265 18.7342 3.83936 19.7157L3.83971 19.7164C4.35708 20.6968 5.23795 21.4382 6.29368 21.7807C7.3492 22.1231 8.49732 22.0406 9.49244 21.549L9.51123 21.5394L17.4679 17.3256C18.178 16.9536 18.7677 16.3893 19.1711 15.6983C19.5758 15.0048 19.7737 14.2112 19.7478 13.412L19.7477 13.4098C19.7194 12.6097 19.4669 11.833 19.0181 11.1693Z" stroke="currentColor" stroke-width="1.5"/><path d="M9.71311 13.0963C9.71311 13.7188 10.3681 14.1237 10.9249 13.8454L13.3224 12.6471C13.9397 12.3386 13.9398 11.4578 13.3226 11.1491L10.9252 9.94986C10.3684 9.67134 9.71311 10.0762 9.71311 10.6988V13.0963Z" stroke="currentColor" stroke-width="1.2"/></svg>',
+  ytStream: '<svg viewBox="0 0 24 24" fill="none"><path d="M19.1414 5C20.9097 6.80375 22 9.27455 22 12C22 14.7578 20.8836 17.2549 19.0782 19.064M5 19.1414C3.14864 17.3265 2 14.7974 2 12C2 9.23497 3.12222 6.73205 4.93603 4.92184" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M16.2849 8.04397C17.3458 9.05877 18 10.4488 18 11.9822C18 13.5338 17.3302 14.9386 16.2469 15.9564M7.8 16C6.68918 14.9789 6 13.556 6 11.9822C6 10.4266 6.67333 9.01843 7.76162 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M13.6563 10.4511C14.5521 11.1088 15 11.4376 15 12C15 12.5624 14.5521 12.8913 13.6563 13.5489C13.4091 13.7305 13.1638 13.9014 12.9384 14.0438C12.7407 14.1688 12.5168 14.298 12.2849 14.4249C11.3913 14.914 10.9444 15.1586 10.5437 14.8878C10.1429 14.6171 10.1065 14.0503 10.0337 12.9166C10.0131 12.596 10 12.2818 10 12C10 11.7183 10.0131 11.404 10.0337 11.0834C10.1065 9.94979 10.1429 9.38298 10.5437 9.11222C10.9444 8.84146 11.3913 9.08602 12.2849 9.57512C12.5168 9.702 12.7407 9.83125 12.9384 9.95621C13.1638 10.0986 13.4091 10.2696 13.6563 10.4511Z" stroke="currentColor" stroke-width="1.5"/></svg>',
+  circleDown: '<svg viewBox="0 0 24 24" fill="none"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 22.75C6.063 22.75 1.25 17.937 1.25 12C1.25 6.063 6.063 1.25 12 1.25C17.937 1.25 22.75 6.063 22.75 12C22.75 17.937 17.937 22.75 12 22.75ZM16.03 13.03L12.53 16.53C12.3894 16.6705 12.1988 16.7493 12 16.7493C11.8012 16.7493 11.6106 16.6705 11.47 16.53L7.97 13.03C7.89631 12.9613 7.83721 12.8785 7.79622 12.7865C7.75523 12.6945 7.73319 12.5952 7.73141 12.4945C7.72963 12.3938 7.74816 12.2938 7.78588 12.2004C7.8236 12.107 7.87974 12.0222 7.95096 11.951C8.02218 11.8797 8.10701 11.8236 8.2004 11.7859C8.29379 11.7482 8.39382 11.7296 8.49452 11.7314C8.59522 11.7332 8.69454 11.7552 8.78654 11.7962C8.87854 11.8372 8.96134 11.8963 9.03 11.97L11.25 14.19V8C11.25 7.80109 11.329 7.61032 11.4697 7.46967C11.6103 7.32902 11.8011 7.25 12 7.25C12.1989 7.25 12.3897 7.32902 12.5303 7.46967C12.671 7.61032 12.75 7.80109 12.75 8V14.19L14.97 11.97C15.0387 11.8963 15.1215 11.8372 15.2135 11.7962C15.3055 11.7552 15.4048 11.7332 15.5055 11.7314C15.6062 11.7296 15.7062 11.7482 15.7996 11.7859C15.893 11.8236 15.9778 11.8797 16.049 11.951C16.1203 12.0222 16.1764 12.107 16.2141 12.2004C16.2518 12.2938 16.2704 12.3938 16.2686 12.4945C16.2668 12.5952 16.2448 12.6945 16.2038 12.7865C16.1628 12.8785 16.1037 12.9613 16.03 13.03Z" fill="currentColor"/></svg>',
+  // календарь — Growth period
+  calendar: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><rect x="3.5" y="5" width="17" height="16" rx="2.5"/><path d="M8 3v4M16 3v4M3.5 10h17"/></svg>',
   // плюс — «Create new collection» (кнопка и пункт списка)
   plus: '<svg viewBox="0 0 24 24" fill="none"><path d="M12 5V19M5 12H19" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>',
   link: '<svg viewBox="0 0 24 24" fill="none"><path fill-rule="evenodd" clip-rule="evenodd" d="M13.0552 5.30971L11.5397 6.82533C10.9261 7.43904 9.93107 7.43911 9.31734 6.82546C8.70363 6.2118 8.70356 5.21681 9.31721 4.60308L10.8327 3.08747C13.6161 0.304056 18.1289 0.303993 20.9124 3.08741C23.6958 5.8708 23.6958 10.3836 20.9124 13.167L19.3969 14.6826C18.7832 15.2963 17.7884 15.2964 17.1746 14.6827C16.5609 14.069 16.5608 13.0741 17.1746 12.4603L18.6899 10.9447C20.246 9.3887 20.246 6.86581 18.6899 5.30977C17.134 3.75377 14.6112 3.75374 13.0552 5.30971ZM6.82506 9.31731C7.43878 9.93096 7.43884 10.926 6.82519 11.5397L5.30974 13.0553C3.75371 14.6113 3.75365 17.1343 5.30968 18.6903C6.8657 20.2462 9.38846 20.2462 10.9445 18.6903L12.4599 17.1746C13.0736 16.561 14.0686 16.5609 14.6823 17.1746C15.296 17.7883 15.2961 18.7832 14.6824 19.397L13.167 20.9125C10.3836 23.6959 5.87072 23.696 3.08732 20.9127C0.303922 18.1291 0.303902 13.6165 3.08726 10.8331L4.60269 9.31743C5.21634 8.70372 6.21133 8.70365 6.82506 9.31731ZM15.4683 10.754C16.082 10.1403 16.082 9.14534 15.4683 8.53164C14.8546 7.91796 13.8596 7.91796 13.2459 8.53164L8.53155 13.246C7.91787 13.8597 7.91787 14.8547 8.53155 15.4684C9.14525 16.0821 10.1402 16.0821 10.7539 15.4684L15.4683 10.754Z" fill="currentColor"/></svg>',
@@ -113,6 +121,8 @@ const TOPIC_LIST = ["Music", "Music of Asia", "Pop music", "Hip hop music", "Ele
   "Technology", "Hobby", "News", "Politics", "Finance", "Business"];
 const COUNTRY_LIST = ["India", "United States", "South Korea", "Ukraine", "United Kingdom",
   "Canada", "Germany", "Poland", "Sweden", "Cyprus", "Puerto Rico"];
+// P1.12: пользователи организации — фильтр «Shared with» выбирает из них
+const USER_LIST = ["Oleh", "Nick Rohynets", "Olena Bakhtii", "Anna Kovalenko"];
 const LANG_LIST = ["English", "Hindi", "Korean", "Ukrainian", "Russian", "Spanish", "Polish", "German"];
 
 // каталог каналов: [имя, инициал, subs, views, vids, топики[], страна, язык]
@@ -164,6 +174,17 @@ const CH = [
   ["Smart Risk","S",860e3,0.21e9,1800,["Finance"],"United States","English"],
   ["Zems Racing","Z",1.1e6,0.34e9,900,["Sport","Vehicle"],"Ukraine","Ukrainian"],
   ["Hunt Squad","H",740e3,0.19e9,1200,["Action game"],"Ukraine","Ukrainian"],
+  // крипто/финансы — состав коллекции «Crypto»
+  ["Coin Bureau","C",2.6e6,0.29e9,940,["Finance","Business"],"United Kingdom","English"],
+  ["Altcoin Daily","A",1.5e6,0.31e9,4200,["Finance"],"United States","English"],
+  ["Benjamin Cowen","B",800e3,0.12e9,1600,["Finance","Science"],"United States","English"],
+  ["Crypto Banter","C",720e3,0.18e9,3800,["Finance","Business"],"United Kingdom","English"],
+  // техника — состав «Tech Reviews»
+  ["Unbox Therapy","U",24.3e6,5.4e9,2300,["Technology","Hobby"],"Canada","English"],
+  ["Dave2D","D",4.1e6,0.68e9,860,["Technology"],"Canada","English"],
+  // гейминг — состав «Gaming UA»
+  ["Clutch Moments","C",1.9e6,0.44e9,2700,["Action game"],"Ukraine","Ukrainian"],
+  ["Squad Highlights","S",980e3,0.26e9,3100,["Action game","Sport"],"Ukraine","Ukrainian"],
 ];
 
 // Growth period: множители к 30-дневной базе (P1.2). Данные под 7/30/90 считаются из одной базы,
@@ -208,6 +229,143 @@ const GROWTH_BY_PERIOD = PERIODS.reduce(function (acc, pd) {
   });
   return acc;
 }, {});
+
+
+// ================= P1.13: панель фильтров (перенос из прода как есть) =================
+// Прод-поведение: правый drawer 417px, ОТКРЫТ по умолчанию, применение мгновенное,
+// кнопки Apply нет; сверху «Close panel» и «Clear all»; при непустых фильтрах на кнопке
+// Filters — красная точка. Известно, что открытый drawer сжимает таблицу и режет правые
+// колонки — это дефект прода, переносим как есть (база для отдельного трека редизайна).
+function fSelect(id, label, ph, opts, extra) {
+  const o = (opts || []).map(function (v) {
+    return '<button class="anf-opt" type="button" role="option" data-anf-opt="' + esc(v) + '">' + esc(v) + '</button>';
+  }).join("");
+  return '<div class="anf-field" data-anf-field="' + id + '">' +
+    '<label class="anf-lbl">' + esc(label) + '</label>' +
+    '<div class="anf-select" data-anf-select>' +
+      '<button class="anf-trig" type="button" data-anf-trig aria-haspopup="listbox" aria-expanded="false">' +
+        '<span class="anf-val is-ph" data-anf-val data-anf-ph="' + esc(ph) + '">' + esc(ph) + '</span>' +
+        '<span class="anf-chev" aria-hidden="true">' + IC.chevSelect + '</span>' +
+      '</button>' +
+      '<div class="anf-menu" data-anf-menu hidden role="listbox">' +
+        '<div class="anf-search">' + IC.search + '<input type="text" placeholder="Search" data-anf-search /></div>' +
+        '<div class="anf-opts" data-anf-opts>' + o + '</div>' +
+      '</div>' +
+    '</div>' +
+    (extra || "") +
+  '</div>';
+}
+function fText(id, label, ph) {
+  return '<div class="anf-field" data-anf-field="' + id + '">' +
+    '<label class="anf-lbl">' + esc(label) + '</label>' +
+    '<input class="an-input anf-input" type="text" placeholder="' + esc(ph) + '" data-anf-text />' +
+  '</div>';
+}
+function fRange(id, label, phFrom, phTo) {
+  return '<div class="anf-field" data-anf-field="' + id + '">' +
+    '<label class="anf-lbl">' + esc(label) + '</label>' +
+    '<div class="anf-row">' +
+      '<input class="an-input anf-input" type="number" min="0" placeholder="' + esc(phFrom) + '" data-anf-from />' +
+      '<span class="anf-dash">—</span>' +
+      '<input class="an-input anf-input" type="number" min="0" placeholder="' + esc(phTo) + '" data-anf-to />' +
+    '</div>' +
+  '</div>';
+}
+function fSegment(id, label, opts, def) {
+  return '<div class="anf-field" data-anf-field="' + id + '">' +
+    '<label class="anf-lbl">' + esc(label) + '</label>' +
+    '<div class="anf-seg" role="radiogroup">' + opts.map(function (v) {
+      return '<button class="anf-seg__btn' + (v === def ? " is-on" : "") + '" type="button" role="radio" ' +
+             'aria-checked="' + (v === def ? "true" : "false") + '" data-anf-seg="' + esc(v) + '">' + esc(v) + '</button>';
+    }).join("") + '</div>' +
+  '</div>';
+}
+// Growth period (P1.2): значение + календарь + чипы 7/30/90. Один компонент, две точки
+// монтирования — в Фазе 2 (A4) он переезжает в тулбар без переписывания.
+function fGrowthPeriod(withChips) {
+  return '<div class="anf-field" data-anf-field="period">' +
+    '<label class="anf-lbl">Growth period</label>' +
+    '<div class="anf-period" data-an-period>' +
+      '<button class="anf-trig" type="button" data-an-period-trig>' +
+        '<span data-an-period-val>' + PERIOD_LABEL["30"] + '</span>' +
+        '<span class="anf-chev" aria-hidden="true">' + IC.calendar + '</span>' +
+      '</button>' +
+      (withChips ? '<div class="anf-chips" data-an-period-chips>' + PERIODS.map(function (pd) {
+        return '<button class="anf-chip' + (pd === "30" ? " is-on" : "") + '" type="button" data-an-period-set="' + pd + '">' + pd + ' days</button>';
+      }).join("") + '</div>' : "") +
+    '</div>' +
+  '</div>';
+}
+// P1.1: селектор коллекции у счётчика — один компонент на Basic и Deep.
+// Список наполняется на клиенте (часть коллекций создана в localStorage).
+function collSel(key, val, ph) {
+  return '<span class="an-collsel-wrap" data-an-collsel="' + key + '">' +
+    '<button class="an-collsel" type="button" data-an-collsel-trig aria-haspopup="listbox" aria-expanded="false">' +
+      '<span class="an-collsel__txt' + (val ? "" : " an-collsel__txt--ph") + '" data-an-collsel-val data-an-collsel-ph="' + esc(ph) + '"' +
+      (key === "deep" ? " data-ai-collname" : "") + '>' + esc(val || ph) + '</span>' + IC.chevSelect +
+    '</button>' +
+    '<div class="anf-menu an-collsel__menu" data-an-collsel-menu hidden role="listbox">' +
+      '<div class="anf-search">' + IC.search + '<input type="text" placeholder="Search" data-an-collsel-search /></div>' +
+      '<div class="anf-opts" data-an-collsel-opts></div>' +
+    '</div>' +
+  '</span>';
+}
+function fGroup(title, iconKey, inner) {
+  return '<div class="anf-group"><div class="anf-group__title">' + (IC[iconKey] || "") + esc(title) + '</div>' + inner + '</div>';
+}
+// сам drawer
+function filtersPanel(key, inner) {
+  return '<aside class="an-filters" data-an-filters="' + key + '">' +
+    '<div class="an-filters__head">' +
+      '<button class="an-filters__close" type="button" data-an-filters-close>' + IC.closeBold + 'Close panel</button>' +
+      '<button class="an-filters__clear" type="button" data-an-filters-clear>Clear all</button>' +
+    '</div>' +
+    '<div class="an-filters__body">' + inner + '</div>' +
+  '</aside>';
+}
+
+// наборы полей: на каждой странице свой (P1.13)
+const FILTERS_BASIC = filtersPanel("basic",
+  fGroup("Collection", "collections", fSelect("collection", "Collection", "Select collection", [])) +
+  fGroup("Channel", "chartPie",
+    fGrowthPeriod(true) +
+    fSelect("topic", "YouTube topic", "Select topic", TOPIC_LIST) +
+    fText("title", "YouTube channel title", "Select channel") +
+    fSelect("country", "YouTube country", "Select country", COUNTRY_LIST) +
+    fSelect("language", "Detected Language", "Select language", LANG_LIST)
+  )
+);
+// Deep data, таб Channels — плоский список без групп; Growth period без чипов (только календарь)
+const FILTERS_DEEP = filtersPanel("deep",
+  fSelect("collection", "Collection", "Select collection", []) +
+  fGrowthPeriod(false) +
+  fSelect("topic", "YouTube topic", "Select topic", TOPIC_LIST) +
+  fText("title", "YouTube channel title", "Select channel") +
+  fSelect("country", "YouTube country", "Select country", COUNTRY_LIST) +
+  fSelect("language", "Detected Language", "Select language", LANG_LIST) +
+  // ниже — визуальные элементы без логики: на проде «Disable mode» тоже ничего не переключает,
+  // судьба обоих решается после юзер-интервью (Highlight performance / Performance range)
+  fSegment("highlight", "Highlight performance", ["Enable mode", "Disable mode"], "Enable mode") +
+  '<div class="anf-field" data-anf-field="range"><label class="anf-lbl">Performance range</label>' +
+    '<div class="anf-slider"><span class="anf-slider__track"></span><span class="anf-slider__knob"></span></div></div>'
+);
+// Deep data, таб Videos — другой набор
+const FILTERS_DEEP_VIDEOS = filtersPanel("deepVideos",
+  fText("published", "Published at", "Last 30 days") +
+  fSelect("collection", "Collection", "Select collection", []) +
+  fText("channels", "Channels", "Start typing channel name") +
+  fSelect("vtype", "Video type", "Select the required type", ["Video", "Shorts", "Stream"]) +
+  fText("video", "Video", "Start typing name or ID") +
+  fRange("duration", "Video duration", "Min (sec.)", "Max (sec.)")
+);
+const FILTERS_COLL = filtersPanel("coll",
+  fSegment("ctype", "Collection type", ["All", "Samples", "Own"], "All") +
+  fSelect("status", "Status", "Select status", ["Created", "Activated", "Collecting data"]) +
+  fSelect("shared", "Shared with", "Select user", USER_LIST) +
+  fText("channels", "Channels", "Select channel") +
+  fRange("qty", "Channels quantity", "From", "To")
+);
+
 
 // ---- колонки paid-таблицы (enterprise): порядок и ширины из useChannelsTable ----
 const COLS = [
@@ -312,6 +470,60 @@ const mcCreateModalHtml = `
         </div>
       </div>
     </div>`;
+
+// ================= P1.4: модалка «New channels» (Add to base) =================
+// Перенос с прода (AddChannelsToBaseDialog): textarea со ссылками + счётчик одноразового
+// добавления, кнопка «Create new collection» с раскрывающейся формой и список коллекций
+// с мультивыбором. Коллекции не выбраны → каналы уходят только в базу.
+const NC_MAX_LINKS = 30;
+// title/кнопка отличаются: «New channels»/«Add channels» на Basic data и
+// «Add channels to <коллекция>»/«Add channels» на странице коллекции (P1.11)
+function ncModal(opts) {
+  const withColls = !!opts.colls;
+  return `
+    <div class="an-modal" id="ncModal"${withColls ? "" : " data-nc-collpage"}><div class="an-modal__overlay" data-nc-close></div>
+      <div class="an-modal__dialog an-modal__dialog--lg">
+        <header class="nc-head">
+          <h2 class="an-modal__title" data-nc-title>${esc(opts.title)}</h2>
+          <button class="an-modal__x" type="button" data-nc-close aria-label="Close">${IC.closeBold}</button>
+        </header>
+        <div class="an-modal__body nc-body">
+          <div class="nc-links">
+            <label class="an-label" for="ncLinks">YouTube channels links</label>
+            <textarea class="an-input nc-textarea" id="ncLinks" rows="4" data-nc-links
+              placeholder="https://www.youtube.com/@AZOV_Brigade&#10;https://www.youtube.com/@SuspilneNews"></textarea>
+            <p class="nc-count">One-time addition of channels:&nbsp;<span class="nc-count__n"><span data-nc-count>0</span>/${NC_MAX_LINKS}</span></p>
+            <p class="nc-limit" data-nc-limit hidden>The limit has been reached: ${NC_MAX_LINKS}</p>
+          </div>
+          ${withColls ? `
+          <!-- создание коллекции прямо из модалки: кнопка → форма с именем -->
+          <button class="an-btn an-btn--tertiary an-btn--small nc-newbtn" type="button" data-nc-new-open>${IC.plus}Create new collection</button>
+          <div class="nc-newform" data-nc-new-form hidden>
+            <label class="an-label" for="ncNewName">Collection name</label>
+            <input class="an-input" id="ncNewName" type="text" placeholder="Collection name" data-nc-new-name />
+            <div class="nc-newform__foot">
+              <button class="an-btn an-btn--link an-btn--small" type="button" data-nc-new-cancel>Cancel</button>
+              <button class="an-btn an-btn--secondary an-btn--small" type="button" data-nc-new-submit>Create</button>
+            </div>
+          </div>
+
+          <section class="nc-list">
+            <h3 class="nc-list__title">Add to collection</h3>
+            <div class="an-search nc-search" data-nc-search-wrap hidden>
+              ${IC.search}<input class="an-search__input" type="text" placeholder="Search collection" data-nc-search />
+            </div>
+            <div class="nc-items" data-nc-items></div>
+          </section>` : ""}
+        </div>
+        <div class="an-modal__foot nc-foot">
+          <button class="an-btn an-btn--primary an-btn--huge" type="button" data-nc-submit disabled>Add channels</button>
+        </div>
+      </div>
+    </div>`;
+}
+const ncModalHtml = ncModal({ title: "New channels", colls: true });
+// заголовок дописывается на клиенте: имя коллекции берётся из поля Name (P1.11)
+const ceAddModalHtml = ncModal({ title: "Add channels" });
 
 // Модалка AI-коллекции — общий фрагмент (Basic data + My collections).
 // Вёрстка по референсу «Setup Collection Sourcing»: заголовок с подзаголовком, имя коллекции,
@@ -468,8 +680,8 @@ const mainInner = `
           <button class="an-search__clear" type="button" data-an-search-clear hidden>${IC.close}</button>
         </div>
         <div class="an-searchbtns">
-          <button class="an-btn an-btn--secondary" type="button">Add to base</button>
-          <button class="an-btn an-btn--secondary" type="button">${IC.filter}Filters</button>
+          <button class="an-btn an-btn--secondary" type="button" data-nc-open>Add to base</button>
+          <button class="an-btn an-btn--secondary" type="button" data-an-filters-toggle>${IC.filter}Filters<span class="an-btn__dot" data-an-filters-dot hidden></span></button>
           <button class="an-btn an-btn--ai" type="button" data-ai-open>${IC.aiStarsSolid}${AI_LABEL}</button>
         </div>
       </section>
@@ -477,7 +689,7 @@ const mainInner = `
       <section class="an-pagi" data-an-table="basic">
         <div class="an-pagi__label">
           <span class="an-pagi__name">Channels</span>
-          <button class="an-collsel" type="button"><span class="an-collsel__txt an-collsel__txt--ph">Select colleciton</span>${IC.chevSelect}</button>
+          ${collSel("basic", "", "Select colleciton")}
           <span class="an-pagi__dot"></span>
           <span class="an-pagi__total">2.2m</span>
         </div>
@@ -518,114 +730,439 @@ const mainInner = `
 
     ${mcCreateModalHtml}
 
+    ${ncModalHtml}
+
+    ${FILTERS_BASIC}
+
     <div class="an-toast" data-an-toast hidden></div>`;
 
 // ================= DEEP DATA =================
-// Видимые по умолчанию колонки (Channels tab); остальные скрыты (управляются «Columns»).
+// ---- колонки Deep data: 24 штуки в порядке прод-DEEP_DATA_TABLE_COLUMNS ----
+// off:true  — скрыта по умолчанию (видимых 12 = прод-DEFAULT_VISIBLE_COLUMNS);
+// text:true — не число: без хитмапа и без значения в сводной строке;
+// metric:true — метрика «all», у неё в шапке есть × (переключатель среза, P1.6/B1).
 const DEEP_COLS = [
   { id:"name", w:280, label:"Channel", pin:true, sort:true, kind:"channel" },
   { id:"stub", w:20, stub:true },
+  { id:"topics", w:160, label:"Youtube topics", off:true, text:true },
+  { id:"added", w:150, label:"Added to base", off:true, text:true, sort:true },
+  { id:"activated", w:120, label:"Activated", off:true, text:true, sort:true },
+  { id:"created", w:120, label:"Created", off:true, text:true, sort:true },
+  { id:"lastupd", w:120, label:"Last upd", off:true, text:true, sort:true },
+  { id:"country", w:120, label:"Country", off:true, text:true },
+  { id:"language", w:140, label:"Detected Language", off:true, text:true },
   { id:"subs", w:120, label:"Subs", sort:true },
   { id:"views", w:120, label:"Views", sort:true },
+  { id:"vids", w:120, label:"Vids", sort:true, off:true },
+  { id:"avv", w:120, label:"AVV", sort:true, off:true },
   { id:"subsg", w:120, label:"Subs+", sort:true, delta:true },
   { id:"viewsg", w:120, label:"Views+", sort:true, delta:true },
+  { id:"vps", w:140, label:"Views+/Subs+", sort:true, off:true },
   { id:"pvco", w:160, label:"PVCO", sort:true, delta:true },
   { id:"pvn", w:150, label:"PVN all", metric:true },
   { id:"pvc", w:150, label:"PVC all", metric:true },
   { id:"pec", w:150, label:"PEC all", metric:true },
   { id:"mev", w:150, label:"MEV all", metric:true },
   { id:"meer", w:160, label:"MEER all", metric:true },
+  { id:"min", w:150, label:"MIN all", metric:true, off:true },
+  { id:"max", w:150, label:"MAX all", metric:true, off:true },
 ];
-// средние по коллекции (пороги для хитмапа); порядок = метрики после Channel/stub
-const DEEP_AVG = ["3.5m","4.6bn","9.1k","54.1m","9.6m","1k","44.5m","1.1m","16.1k","964.7k"];
-// строки: [имя, инициал, subs, views, subs+, views+, pvco, pvn, pvc, pec, mev, meer] — реальная коллекция «News UA - Big Media» с прода
+// средние по коллекции «News UA - Big Media» — значения с прода (по ним настроен хитмап)
+const DEEP_AVG_PROD = { subs:"3.5m", views:"4.6bn", subsg:"9.1k", viewsg:"54.1m", pvco:"9.6m",
+  pvn:"1k", pvc:"44.5m", pec:"1.1m", mev:"16.1k", meer:"964.7k" };
+// метрики каналов прод-коллекции — как на проде, остальные поля берутся из каталога
 const DEEP_ROWS = [
-  ["24 Канал","24","9m","17.5bn","+30k","+283.5m","+41.5m","2.8k","242m","5.6m","41.4k","1.1m"],
-  ["Новини.LIVE","Н","2.9m","3.9bn","+20k","+117.7m","+30.1m","1.9k","87.7m","1.3m","8.9k","760k"],
-  ["ТСН","Т","5.9m","8.7bn","+15.9k","+114.8m","+19.4m","2.4k","95.4m","1.7m","13.1k","900k"],
-  ["Телеканал 1+1","1","5.5m","5.8bn","+20k","+70m","+18.1m","788","51.9m","1.4m","14.5k","700k"],
-  ["Фабрика новин","Ф","4.3m","6.6bn","+4.3k","+42.1m","+139.5k","1.1k","42m","1.5m","23.2k","850k"],
-  ["Факти ICTV","Ф","3.7m","4.2bn","+10k","+30.7m","+7.5m","1.1k","23.2m","503k","8.7k","600k"],
-  ["5 канал","5","3.5m","3.8bn","+5.7k","+29.2m","+5.4m","1.1k","23.8m","934.6k","8.6k","620k"],
+  { name:"24 Канал", i:"24", subs:"9m", views:"17.5bn", subsg:"+30k", viewsg:"+283.5m", pvco:"+41.5m", pvn:"2.8k", pvc:"242m", pec:"5.6m", mev:"41.4k", meer:"1.1m" },
+  { name:"Новини.LIVE", i:"Н", subs:"2.9m", views:"3.9bn", subsg:"+20k", viewsg:"+117.7m", pvco:"+30.1m", pvn:"1.9k", pvc:"87.7m", pec:"1.3m", mev:"8.9k", meer:"760k" },
+  { name:"ТСН", i:"Т", subs:"5.9m", views:"8.7bn", subsg:"+15.9k", viewsg:"+114.8m", pvco:"+19.4m", pvn:"2.4k", pvc:"95.4m", pec:"1.7m", mev:"13.1k", meer:"900k" },
+  { name:"Телеканал 1+1", i:"1", subs:"5.5m", views:"5.8bn", subsg:"+20k", viewsg:"+70m", pvco:"+18.1m", pvn:"788", pvc:"51.9m", pec:"1.4m", mev:"14.5k", meer:"700k" },
+  { name:"Фабрика новин", i:"Ф", subs:"4.3m", views:"6.6bn", subsg:"+4.3k", viewsg:"+42.1m", pvco:"+139.5k", pvn:"1.1k", pvc:"42m", pec:"1.5m", mev:"23.2k", meer:"850k" },
+  { name:"Факти ICTV", i:"Ф", subs:"3.7m", views:"4.2bn", subsg:"+10k", viewsg:"+30.7m", pvco:"+7.5m", pvn:"1.1k", pvc:"23.2m", pec:"503k", mev:"8.7k", meer:"600k" },
+  { name:"5 канал", i:"5", subs:"3.5m", views:"3.8bn", subsg:"+5.7k", viewsg:"+29.2m", pvco:"+5.4m", pvn:"1.1k", pvc:"23.8m", pec:"934.6k", mev:"8.6k", meer:"620k" },
 ];
 function toNum(v){ v=String(v).replace("+","").trim(); var m=v.match(/^([\d.]+)\s*(bn|m|k|%)?/); if(!m) return 0; var n=parseFloat(m[1])||0, u=m[2]; if(u==="bn")n*=1e9; else if(u==="m")n*=1e6; else if(u==="k")n*=1e3; return n; }
+
+const COLL_ROWS = [
+  { name:"News UA - Big Media", status:"activated", qty:15, includes:["24 Канал","Телеканал Прямий"], more:13,
+    created:"19.05.2023", sample:true, owner:{ name:"Oleh", c:"--color-avatar-1", i:"O" },
+    shared:[{c:"--color-avatar-3",i:"N",n:"Nick Rohynets"},{c:"--color-avatar-1",i:"O",n:"Oleh"}] },
+  { name:"Crypto", status:"activated", qty:35, includes:["Crypto Moon","Smart Risk"], more:33,
+    created:"27.06.2025", sample:true, owner:{ name:"Olena Bakhtii", c:"--color-avatar-5", i:"O" },
+    shared:[{c:"--color-avatar-3",i:"O",n:"Oleh"}] },
+  // остальные статусы (created / pending / inactive) — как на проде у новых коллекций
+  { name:"Gaming UA", status:"created", qty:8, includes:["Zems Racing","Hunt Squad"], more:6,
+    created:"12.07.2026", owner:{ name:"You", c:"--color-avatar-1", i:"Y" }, shared:[] },
+  { name:"Tech Reviews", status:"pending", qty:22, includes:["GadgetLab","TechNova"], more:20,
+    created:"20.07.2026", owner:{ name:"You", c:"--color-avatar-1", i:"Y" }, shared:[{c:"--color-avatar-5",i:"A",n:"Anna Kovalenko"}] },
+];
+// P1.1: у коллекции есть реальный состав из каталога каналов — от него зависят
+// и фильтр по коллекции на Basic data, и набор строк в Deep data.
+const COLL_CHANNELS = {
+  "News UA - Big Media": ["24 Канал","ТСН","Телеканал 1+1","Факти ICTV","Новини.LIVE","5 канал","Фабрика новин","Телеканал Прямий"],
+  "Crypto": ["Crypto Moon","Smart Risk","Coin Bureau","Altcoin Daily","Benjamin Cowen","Crypto Banter"],
+  "Gaming UA": ["Zems Racing","Hunt Squad","Clutch Moments","Squad Highlights"],
+  "Tech Reviews": ["GadgetLab","TechNova","Linus Tech Tips","MKBHD","Unbox Therapy","Dave2D"],
+};
+COLL_ROWS.forEach(function (r) {
+  r.channels = COLL_CHANNELS[r.name] || r.includes.slice();
+  r.qty = r.channels.length;
+  r.includes = r.channels.slice(0, 2);
+  r.more = Math.max(0, r.qty - 2);
+});
+
+const CH_IDX = {};
+CH.forEach(function (c, i) { CH_IDX[c[0]] = i; });
+const DEEP_HARD = {};
+DEEP_ROWS.forEach(function (r) { DEEP_HARD[r.name] = r; });
+// строка deep-таблицы для любого канала каталога: даты/страна/язык — из каталога,
+// метрики — детерминированно, порядки величин те же, что в прод-строках
+function deepObj(name) {
+  const i = CH_IDX[name];
+  if (i == null) return null;
+  const c = CH[i], m = CH_META[i], r = prng(7000 + i);
+  const perVid = c[3] / Math.max(1, c[4]);
+  const pvcN = c[3] * (0.008 + r() * 0.02);
+  const mevN = perVid * (0.1 + r() * 0.3);
+  const row = {
+    name: c[0], i: c[1],
+    topics: (c[5] || []).slice(0, 2).join(", "),
+    added: m.added, activated: m.added, created: m.created, lastupd: m.lastUpd,
+    country: c[6], language: c[7],
+    subs: fmt(c[2]), views: fmt(c[3]), vids: fmt(c[4]), avv: fmt(perVid),
+    subsg: fmtDelta(m.subsG30), viewsg: fmtDelta(m.viewsG30),
+    vps: fmt(m.viewsG30 / Math.max(1, m.subsG30)),
+    pvco: fmtDelta(m.viewsG30 * (0.1 + r() * 0.15)),
+    pvn: fmt(perVid * (0.005 + r() * 0.02)),
+    pvc: fmt(pvcN), pec: fmt(pvcN * (0.01 + r() * 0.04)),
+    mev: fmt(mevN), meer: fmt(c[3] * (3e-5 + r() * 8e-5)),
+    min: fmt(mevN * (0.15 + r() * 0.25)), max: fmt(mevN * (3 + r() * 6))
+  };
+  const hard = DEEP_HARD[name];
+  if (hard) Object.keys(hard).forEach(function (k) { if (k !== "i") row[k] = hard[k]; });
+  // срезы: значение «all» дробим по типам контента (P1.6)
+  row.sl = {};
+  DEEP_COLS.forEach(function (col) {
+    if (!col.metric) return;
+    const base = toNum(row[col.id]), sh = sliceShare(i, col.id);
+    row.sl[col.id] = { all: row[col.id], videos: fmt(base * sh.videos), shorts: fmt(base * sh.shorts), streams: fmt(base * sh.streams) };
+  });
+  return row;
+}
+// в Deep data открываются только активированные коллекции (как на проде)
+const DEEP_DEFAULT_COLL = "News UA - Big Media";
+// P1.6: срезы метрик по типу контента. Доли сумм по типам детерминированы на канал,
+// в сумме дают 1 — значение «all» на них разбивается, поэтому цифры не расходятся.
+const SLICES = ["all", "videos", "shorts", "streams"];
+const SLICE_LABEL = { all: "all", videos: "Videos", shorts: "Shorts", streams: "Streams" };
+function sliceShare(chIdx, colId) {
+  const r = prng(9000 + chIdx * 31 + colId.length * 7);
+  const v = 0.35 + r() * 0.35, sh = (1 - v) * (0.4 + r() * 0.45);
+  return { all: 1, videos: v, shorts: sh, streams: Math.max(0.02, 1 - v - sh) };
+}
+const DEEP_NUM_COLS = DEEP_COLS.filter(function (c) { return !c.stub && !c.text && c.kind !== "channel"; });
+const DEEP_COLL_SETS = COLL_ROWS.filter(function (c) { return c.status === "activated"; }).map(function (c) {
+  const rows = c.channels.map(function (n) {
+    const o = deepObj(n);
+    if (o) o.activated = c.created;      // дата активации коллекции — одна на все её каналы
+    return o;
+  }).filter(Boolean);
+  const avg = {}, tot = {};
+  DEEP_NUM_COLS.forEach(function (col) {
+    if (col.metric) {
+      // по срезам: avg[col] — объект {all, videos, shorts, streams}
+      avg[col.id] = {}; tot[col.id] = {};
+      SLICES.forEach(function (sl) {
+        let sum = 0;
+        rows.forEach(function (r) { sum += toNum(r.sl[col.id][sl]); });
+        tot[col.id][sl] = rows.length ? fmt(sum) : "—";
+        avg[col.id][sl] = (sl === "all" && c.name === DEEP_DEFAULT_COLL && DEEP_AVG_PROD[col.id])
+          ? DEEP_AVG_PROD[col.id]
+          : (rows.length ? fmt(sum / rows.length) : "—");
+      });
+      return;
+    }
+    let sum = 0;
+    rows.forEach(function (r) { sum += toNum(r[col.id]); });
+    tot[col.id] = rows.length ? fmt(sum) : "—";
+    if (c.name === DEEP_DEFAULT_COLL && DEEP_AVG_PROD[col.id]) { avg[col.id] = DEEP_AVG_PROD[col.id]; return; }
+    avg[col.id] = rows.length ? fmt(sum / rows.length) : "—";
+  });
+  return { name: c.name, rows: rows, avg: avg, tot: tot };
+});
 
 function deepHeadCell(c){
   let cls = "an-th";
   let style = "width:" + c.w + "px";
   if (c.pin) { cls += " an-th--pin an-th--name"; style += ";left:0"; }
   if (c.stub) cls += " an-th--stub";
+  if (c.off) cls += " is-colhidden";
   let inner = "";
   if (c.stub) inner = "";
-  else if (c.kind === "channel") inner = '<span class="an-sort" role="button" tabindex="0" data-an-sort="' + c.id + '">' + c.label + IC.sort + '</span>';
-  else if (c.metric) inner = '<span class="an-sort an-sort--metric" role="button" tabindex="0" data-an-sort="' + c.id + '">' + c.label + IC.sort + '<span class="and-colx" aria-hidden="true">' + IC.closeBold + '</span></span>';
-  else if (c.sort) inner = '<span class="an-sort" role="button" tabindex="0" data-an-sort="' + c.id + '">' + c.label + IC.sort + '</span>';
+  else if (c.metric) {
+    // метрика: лейбл — селектор среза по типу контента (P1.6), рядом сортировка и × (скрыть)
+    const base = c.label.replace(/ all$/, "");
+    inner = '<span class="an-sort an-sort--metric" role="button" tabindex="0" data-an-sort="' + c.id + '">' +
+      '<span class="an-slice-wrap" data-an-slice="' + c.id + '">' +
+        '<button class="an-slice__trig" type="button" data-an-slice-trig="' + c.id + '">' +
+          '<span data-an-slice-lbl="' + c.id + '">' + c.label + '</span>' +
+          '<span class="an-slice__chev">' + IC.circleDown + '</span>' +
+        '</button>' +
+        '<div class="an-slice__menu" data-an-slice-menu="' + c.id + '" hidden role="listbox">' +
+          SLICES.map(function (sl) {
+            const ico = sl === "all" ? IC.ytAll : sl === "videos" ? IC.ytVideo : sl === "shorts" ? IC.ytShorts : IC.ytStream;
+            return '<button class="an-slice__opt' + (sl === "all" ? " is-selected" : "") + '" type="button" role="option" ' +
+              'data-an-slice-opt="' + sl + '" data-col="' + c.id + '" data-lbl="' + esc(base + " " + SLICE_LABEL[sl]) + '">' +
+              ico + esc(base + " " + SLICE_LABEL[sl]) + '</button>';
+          }).join("") +
+        '</div>' +
+      '</span>' + IC.sort +
+      '<span class="and-colx" aria-hidden="true" data-an-colx="' + c.id + '">' + IC.closeBold + '</span></span>';
+  }
+  else if (c.sort || c.kind === "channel") inner = '<span class="an-sort" role="button" tabindex="0" data-an-sort="' + c.id + '">' + c.label + IC.sort + '</span>';
   else inner = c.label;
   return '<div class="' + cls + '" style="' + style + '" data-col="' + c.id + '">' + inner + '</div>';
 }
 function deepMetricCell(val, avg, isDelta){
-  const tint = toNum(val) >= toNum(avg) ? "pos" : "neg";
   const txt = isDelta && String(val)[0] === "+" ? '<span class="an-delta--pos">' + esc(val) + '</span>' : esc(val);
   return txt;
 }
-function deepAvgRow(){
+function deepAvgRow(avg, tot, coll, off){
   const cells = [];
-  cells.push('<div class="an-td an-td--pin an-td--name" style="width:280px;left:0"><button class="an-collsel and-avg" type="button">Average ' + IC.chevDown + '</button></div>');
-  cells.push('<div class="an-td an-td--stub" style="width:20px"></div>');
-  let ai = 0;
   DEEP_COLS.forEach(function(c){
-    if (c.kind === "channel" || c.stub) return;
-    cells.push('<div class="an-td" style="width:' + c.w + 'px">' + esc(DEEP_AVG[ai]) + '</div>');
-    ai++;
+    const hid = c.off ? " is-colhidden" : "";
+    if (c.kind === "channel") {
+      // P1.8: переключатель сводки — Average (по умолчанию) / Total
+      cells.push('<div class="an-td an-td--pin an-td--name' + hid + '" style="width:280px;left:0" data-col="name">' +
+        '<span class="an-gs-wrap" data-an-gs>' +
+          '<button class="an-collsel and-avg" type="button" data-an-gs-trig aria-haspopup="listbox">' +
+            '<span data-an-gs-val>Average</span> ' + IC.chevDown +
+          '</button>' +
+          '<div class="anf-menu an-gs__menu" data-an-gs-menu hidden role="listbox">' +
+            '<div class="anf-opts">' +
+              '<button class="anf-opt is-selected" type="button" role="option" data-an-gs-opt="average">Average</button>' +
+              '<button class="anf-opt" type="button" role="option" data-an-gs-opt="total">Total</button>' +
+            '</div>' +
+          '</div>' +
+        '</span></div>');
+    } else if (c.stub) {
+      cells.push('<div class="an-td an-td--stub' + hid + '" style="width:20px" data-col="stub"></div>');
+    } else if (c.text) {
+      cells.push('<div class="an-td' + hid + '" style="width:' + c.w + 'px" data-col="' + c.id + '"></div>');
+    } else {
+      const sl0 = !!c.metric;
+      const aVal = sl0 ? avg[c.id].all : (avg[c.id] || "");
+      const tVal = sl0 ? tot[c.id].all : (tot[c.id] || "");
+      let sattrs = '';
+      if (sl0) SLICES.forEach(function (sl) {
+        sattrs += ' data-avg-' + sl + '="' + esc(avg[c.id][sl]) + '" data-total-' + sl + '="' + esc(tot[c.id][sl]) + '"';
+      });
+      cells.push('<div class="an-td' + hid + '" style="width:' + c.w + 'px" data-col="' + c.id + '"' +
+        ' data-avg="' + esc(aVal) + '" data-total="' + esc(tVal) + '"' + sattrs + '>' + esc(aVal) + '</div>');
+    }
   });
-  return '<div class="an-tr an-tr--avg">' + cells.join("") + '</div>';
+  return '<div class="an-tr an-tr--avg" data-coll="' + esc(coll) + '"' + off + '>' + cells.join("") + '</div>';
 }
-function deepBodyRow(r, i){
+function deepBodyRow(r, i, avg, coll, off){
   const color = AVA[i % AVA.length];
   const cells = [];
-  cells.push('<div class="an-td an-td--pin an-td--name" style="width:280px;left:0">' +
-    '<div class="and-chan">' +
-      '<button class="and-rowact" type="button" aria-label="Pin">' + IC.pin + '</button>' +
-      '<button class="and-rowact" type="button" aria-label="Bookmark">' + IC.bookmark + '</button>' +
-      '<a class="and-chan__link" href="#" tabindex="-1"><span class="an-chan__ava" style="background:var(' + color + ')">' + esc(r[1]) + '</span>' +
-      '<span class="an-chan__name">' + esc(r[0]) + '</span></a>' +
-      '<span class="an-chan__fade"></span>' +
-      '<button class="and-open" type="button" aria-label="Open channel">' + IC.channelPage + '</button>' +
-    '</div></div>');
-  cells.push('<div class="an-td an-td--stub" style="width:20px"></div>');
-  let ai = 0;
   DEEP_COLS.forEach(function(c){
-    if (c.kind === "channel" || c.stub) return;
-    const val = r[2 + ai];
-    const tint = toNum(val) >= toNum(DEEP_AVG[ai]) ? "pos" : "neg";
-    cells.push('<div class="an-td an-td--metric" style="width:' + c.w + 'px"><span class="an-heat an-heat--' + tint + '">' + deepMetricCell(val, DEEP_AVG[ai], !!c.delta) + '</span></div>');
-    ai++;
+    const hid = c.off ? " is-colhidden" : "";
+    if (c.kind === "channel") {
+      cells.push('<div class="an-td an-td--pin an-td--name' + hid + '" style="width:280px;left:0" data-col="name">' +
+        '<div class="and-chan">' +
+          '<button class="and-rowact" type="button" aria-label="Pin">' + IC.pin + '</button>' +
+          '<button class="and-rowact" type="button" aria-label="Bookmark">' + IC.bookmark + '</button>' +
+          '<a class="and-chan__link" href="#" tabindex="-1"><span class="an-chan__ava" style="background:var(' + color + ')">' + esc(r.i) + '</span>' +
+          '<span class="an-chan__name">' + esc(r.name) + '</span></a>' +
+          '<span class="an-chan__fade"></span>' +
+          '<button class="and-open" type="button" aria-label="Open channel">' + IC.channelPage + '</button>' +
+        '</div></div>');
+    } else if (c.stub) {
+      cells.push('<div class="an-td an-td--stub' + hid + '" style="width:20px" data-col="stub"></div>');
+    } else if (c.text) {
+      cells.push('<div class="an-td an-td--plain' + hid + '" style="width:' + c.w + 'px" data-col="' + c.id + '">' + esc(r[c.id] || "—") + '</div>');
+    } else {
+      const isSl = !!c.metric;
+      const val = isSl ? r.sl[c.id].all : r[c.id];
+      const avgAll = isSl ? avg[c.id].all : avg[c.id];
+      const tint = toNum(val) >= toNum(avgAll) ? "pos" : "neg";
+      let attrs = '';
+      if (isSl) SLICES.forEach(function (sl) {
+        const v = r.sl[c.id][sl];
+        attrs += ' data-sl-' + sl + '="' + esc(v) + '|' + (toNum(v) >= toNum(avg[c.id][sl]) ? "pos" : "neg") + '"';
+      });
+      cells.push('<div class="an-td an-td--metric' + hid + '" style="width:' + c.w + 'px" data-col="' + c.id + '"' + attrs + '>' +
+        '<span class="an-heat an-heat--' + tint + '">' + deepMetricCell(val, avgAll, !!c.delta) + '</span></div>');
+    }
   });
-  return '<div class="an-tr">' + cells.join("") + '</div>';
+  return '<div class="an-tr" data-coll="' + esc(coll) + '"' + off + '>' + cells.join("") + '</div>';
 }
+// P1.7: поповер «Columns visibility» — чекбоксы всех колонок кроме Channel и служебной stub
+const deepColsPopover = '<div class="an-cols-wrap" data-an-cols>' +
+  '<button class="an-btn an-btn--secondary" type="button" data-an-cols-trig>' + IC.columns + 'Columns</button>' +
+  '<div class="an-cols" data-an-cols-menu hidden>' +
+    '<div class="an-cols__head">' +
+      '<h3 class="an-cols__title">Columns visibility</h3>' +
+      '<button class="an-btn an-btn--link an-btn--small" type="button" data-an-cols-reset>' + IC.closeBold + 'Reset</button>' +
+    '</div>' +
+    '<div class="an-cols__list">' +
+      DEEP_COLS.filter(function (c) { return !c.stub && c.kind !== "channel"; }).map(function (c) {
+        return '<label class="an-cols__row">' +
+          '<button class="an-check' + (c.off ? "" : " is-checked") + '" type="button" data-an-cols-opt="' + c.id + '" aria-label="' + esc(c.label) + '"></button>' +
+          '<span class="an-cols__lbl">' + esc(c.label) + '</span>' +
+        '</label>';
+      }).join("") +
+    '</div>' +
+  '</div>' +
+'</div>';
 
 const deepHead = '<div class="an-tr an-tr--head">' + DEEP_COLS.map(deepHeadCell).join("") + '</div>';
-const deepBody = deepAvgRow() + "\n          " + DEEP_ROWS.map(deepBodyRow).join("\n          ");
+// в разметку кладём строки всех активированных коллекций, селектор просто переключает набор
+const deepBody = DEEP_COLL_SETS.map(function (c) {
+  const off = c.name === DEEP_DEFAULT_COLL ? "" : ' data-filtered=""';
+  return deepAvgRow(c.avg, c.tot, c.name, off) + "\n          " +
+    c.rows.map(function (r, i) { return deepBodyRow(r, i, c.avg, c.name, off); }).join("\n          ");
+}).join("\n          ");
+
+// ================= P1.9: таб Videos (Potential videos) =================
+// Перенос прод-таблицы: Video (превью) / Video title / Published at / Views / Reactions / V/S / ER.
+// Размер страницы 10 (как на проде), у таба свой тулбар, своя пагинация и своя панель фильтров.
+const VID_COLS = [
+  { id:"thumb", w:240, label:"Video" },
+  { id:"title", w:420, label:"Video title", sort:true },
+  { id:"published", w:140, label:"Published at", sort:true },
+  { id:"views", w:120, label:"Views", sort:true },
+  { id:"reactions", w:140, label:"Reactions", sort:true },
+  { id:"vs", w:80, label:"V/S", sort:true },
+  { id:"er", w:80, label:"ER", sort:true },
+];
+const VID_TITLES = [
+  "Що сталося за добу: головне", "Розбір: як це працює", "Інтервʼю без цензури",
+  "Топ-5 подій тижня", "Пряма трансляція брифінгу", "Репортаж з місця подій",
+  "Спецпроєкт: цифри та факти", "Чому це важливо просто зараз",
+  "Підсумки дня за 10 хвилин", "Що далі: три сценарії"
+];
+const VID_TYPES = ["Video", "Shorts", "Stream"];
+function vidDur(sec) {
+  const m = Math.floor(sec / 60), s = sec % 60;
+  return m + ":" + ("0" + s).slice(-2);
+}
+// видео строятся из каналов коллекции: по 3 на канал, детерминированно
+function vidRowsFor(coll) {
+  const out = [];
+  coll.channels.forEach(function (name, ci) {
+    const i = CH_IDX[name];
+    if (i == null) return;
+    const c = CH[i];
+    for (let k = 0; k < 3; k++) {
+      const r = prng(4200 + i * 13 + k);
+      const views = Math.max(1200, c[3] / Math.max(1, c[4]) * (0.2 + r() * 3.4));
+      const reactions = views * (0.01 + r() * 0.06);
+      const type = VID_TYPES[Math.floor(r() * 3)];
+      out.push({
+        title: VID_TITLES[(i + k) % VID_TITLES.length] + (k ? " — частина " + (k + 1) : ""),
+        chan: name, ini: c[1], color: AVA[i % AVA.length], type: type,
+        dur: vidDur(type === "Shorts" ? 15 + Math.floor(r() * 45) : 240 + Math.floor(r() * 2400)),
+        published: dmy(1 + Math.floor(r() * 27), 1 + Math.floor(r() * 7), 2026),
+        views: fmt(views), reactions: fmt(reactions),
+        vs: (0.2 + r() * 2.4).toFixed(1), er: (0.6 + r() * 7).toFixed(1) + "%"
+      });
+    }
+  });
+  return out;
+}
+const VID_COLL_SETS = COLL_ROWS.filter(function (c) { return c.status === "activated"; }).map(function (c) {
+  return { name: c.name, rows: vidRowsFor(c) };
+});
+const VID_DEFAULT_COUNT = (VID_COLL_SETS.filter(function (c) { return c.name === DEEP_DEFAULT_COLL; })[0] || { rows: [] }).rows.length;
+function vidHeadCell(c) {
+  const inner = c.sort
+    ? '<span class="an-sort" role="button" tabindex="0" data-an-sort="' + c.id + '">' + c.label + IC.sort + '</span>'
+    : c.label;
+  return '<div class="an-th" style="width:' + c.w + 'px" data-col="' + c.id + '">' + inner + '</div>';
+}
+function vidRow(v, coll, off) {
+  return '<div class="an-tr" data-coll="' + esc(coll) + '"' + off + '>' +
+    '<div class="an-td" style="width:240px" data-col="thumb">' +
+      '<span class="vid-thumb"><span class="vid-thumb__dur">' + esc(v.dur) + '</span>' +
+      '<span class="vid-thumb__type">' + (v.type === "Shorts" ? IC.ytShorts : v.type === "Stream" ? IC.ytStream : IC.ytVideo) + '</span></span>' +
+    '</div>' +
+    '<div class="an-td" style="width:420px" data-col="title">' +
+      '<span class="vid-title"><a class="vid-title__t" href="#" tabindex="-1">' + esc(v.title) + '</a>' +
+      '<span class="vid-title__chan"><span class="mc-ava vid-ava" style="background:var(' + v.color + ')">' + esc(v.ini) + '</span>' + esc(v.chan) + '</span></span>' +
+    '</div>' +
+    '<div class="an-td an-td--plain" style="width:140px" data-col="published">' + esc(v.published) + '</div>' +
+    '<div class="an-td an-td--plain" style="width:120px" data-col="views">' + esc(v.views) + '</div>' +
+    '<div class="an-td an-td--plain" style="width:140px" data-col="reactions">' + esc(v.reactions) + '</div>' +
+    '<div class="an-td an-td--plain" style="width:80px" data-col="vs">' + esc(v.vs) + '</div>' +
+    '<div class="an-td an-td--plain" style="width:80px" data-col="er">' + esc(v.er) + '</div>' +
+  '</div>';
+}
+const vidHead = '<div class="an-tr an-tr--head">' + VID_COLS.map(vidHeadCell).join("") + '</div>';
+const vidBody = VID_COLL_SETS.map(function (c) {
+  const off = c.name === DEEP_DEFAULT_COLL ? "" : ' data-filtered=""';
+  return c.rows.map(function (v) { return vidRow(v, c.name, off); }).join("\n          ");
+}).join("\n          ");
+const videosPanel = `
+      <section class="an-toolbar">
+        <div class="an-search vid-search">
+          ${IC.search}<input class="an-search__input" type="text" placeholder="Start typing name or ID" data-vid-search />
+        </div>
+        <button class="an-btn an-btn--secondary" type="button" data-an-filters-toggle>${IC.filter}Filters<span class="an-btn__dot" data-an-filters-dot hidden></span></button>
+        <button class="an-btn an-btn--secondary" type="button">${IC.export}Export</button>
+      </section>
+
+      <section class="an-pagi" data-an-table="video">
+        <div class="an-pagi__label">
+          <span class="an-pagi__name">Videos in collection</span>
+          ${collSel("video", DEEP_DEFAULT_COLL, "Select collection")}
+          <span class="an-pagi__dot"></span>
+          <span class="an-pagi__total">${VID_DEFAULT_COUNT}</span>
+        </div>
+        <div class="an-pagi__ctrls">
+          <span class="an-pagi__pages">Pages: 1</span>
+          <div class="an-pagi__nav">
+            <button class="an-pagi__arrow" type="button" data-an-prev aria-label="Previous Page">${IC.arrowL}</button>
+            <input class="an-pagi__page" type="text" value="1" aria-label="Page number" data-an-page />
+            <button class="an-pagi__arrow" type="button" data-an-next aria-label="Next Page">${IC.arrowR}</button>
+          </div>
+          <div class="an-perpage-wrap" data-an-perpage-wrap>
+            <button class="an-perpage" type="button" data-an-perpage-trig>10 ${IC.arrowDown}</button>
+            <div class="an-perpage__menu" data-an-perpage-menu hidden role="listbox"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="an-tablewrap" data-an-tablewrap="video">
+        <div class="an-table" data-an-table-body="video">
+          <div class="an-thead">${vidHead}</div>
+          <div class="an-tbody">
+          ${vidBody}
+          </div>
+        </div>
+      </section>`;
 
 const deepInner = `
     <section class="an-page">
       <header class="an-head"><h1 class="an-title">Deep data</h1></header>
 
       <nav class="an-tabs">
-        <button class="an-tab is-active" type="button">Channels</button>
-        <button class="an-tab" type="button">Videos</button>
+        <a class="an-tab" href="analytics-deep-data.html?tab=channels" data-an-tab="channels">Channels</a>
+        <a class="an-tab" href="analytics-deep-data.html?tab=videos" data-an-tab="videos">Videos</a>
       </nav>
 
+      <div data-an-tab-panel="channels">
+
       <section class="an-toolbar">
-        <button class="an-btn an-btn--secondary" type="button">${IC.columns}Columns</button>
-        <button class="an-btn an-btn--secondary" type="button">${IC.filter}Filters</button>
+        ${deepColsPopover}
+        <button class="an-btn an-btn--secondary" type="button" data-an-filters-toggle>${IC.filter}Filters<span class="an-btn__dot" data-an-filters-dot hidden></span></button>
         <button class="an-btn an-btn--secondary" type="button">${IC.export}Export</button>
       </section>
 
       <section class="an-pagi" data-an-table="deep">
         <div class="an-pagi__label">
           <span class="an-pagi__name">Channels in collection</span>
-          <button class="an-collsel" type="button"><span class="an-collsel__txt" data-ai-collname>News UA - Big Media</span>${IC.chevSelect}</button>
+          ${collSel("deep", DEEP_DEFAULT_COLL, "Select collection")}
           <span class="ai-badge" data-ai-badge hidden>${IC.aiStarsSolid}${AI_BADGE}</span>
           <span class="an-pagi__dot"></span>
           <span class="an-pagi__total">15</span>
@@ -664,7 +1201,14 @@ const deepInner = `
           </div>
         </div>
       </section>
+      </div>
+
+      <div data-an-tab-panel="videos" hidden>${videosPanel}
+      </div>
     </section>
+
+    ${FILTERS_DEEP}
+    ${FILTERS_DEEP_VIDEOS}
 
     <div class="an-toast" data-an-toast hidden></div>`;
 
@@ -679,26 +1223,14 @@ const COLL_COLS = [
   { id:"shared", w:120, label:"Shared with" },
   { id:"actions", w:120, label:"" },
 ];
-const COLL_ROWS = [
-  { name:"News UA - Big Media", status:"activated", qty:15, includes:["24 Канал","Телеканал Прямий"], more:13,
-    created:"19.05.2023", owner:{ name:"Oleh", c:"--color-avatar-1", i:"O" },
-    shared:[{c:"--color-avatar-3",i:"N"},{c:"--color-avatar-1",i:"O"}] },
-  { name:"Crypto", status:"activated", qty:35, includes:["Crypto Moon","Smart Risk"], more:33,
-    created:"27.06.2025", owner:{ name:"Olena Bakhtii", c:"--color-avatar-5", i:"O" },
-    shared:[{c:"--color-avatar-3",i:"O"}] },
-  // остальные статусы (created / pending / inactive) — как на проде у новых коллекций
-  { name:"Gaming UA", status:"created", qty:8, includes:["Zems Racing","Hunt Squad"], more:6,
-    created:"12.07.2026", owner:{ name:"You", c:"--color-avatar-1", i:"Y" }, shared:[] },
-  { name:"Tech Reviews", status:"pending", qty:22, includes:["GadgetLab","TechNova"], more:20,
-    created:"20.07.2026", owner:{ name:"You", c:"--color-avatar-1", i:"Y" }, shared:[{c:"--color-avatar-5",i:"A"}] },
-];
 
 function collHeadCell(c){
   let cls = "an-th" + (c.grow ? " an-th--grow" : "");
   let inner = c.sort ? '<span class="an-sort" role="button" tabindex="0" data-an-sort="' + c.id + '">' + c.label + IC.sort + '</span>' : c.label;
   return '<div class="' + cls + '" style="width:' + c.w + 'px" data-col="' + c.id + '">' + inner + '</div>';
 }
-function ava(a, cls){ return '<span class="' + (cls || "mc-ava") + '" style="background:var(' + a.c + ')">' + esc(a.i) + '</span>'; }
+function ava(a, cls){ return '<span class="' + (cls || "mc-ava") + '" style="background:var(' + a.c + ')"' +
+  (a.n ? ' title="' + esc(a.n) + '"' : '') + '>' + esc(a.i) + '</span>'; }
 function collRow(r){
   const cells = [];
   cells.push('<div class="an-td" style="width:240px"><span class="mc-name">' + esc(r.name) + '</span></div>');
@@ -726,10 +1258,13 @@ function collRow(r){
   cells.push('<div class="an-td" style="width:160px"><span class="mc-owner">' + ava(r.owner) + '<span class="mc-owner__name">' + esc(r.owner.name) + '</span></span></div>');
   cells.push('<div class="an-td" style="width:120px"><span class="mc-shared">' + r.shared.map(function (a) { return ava(a); }).join("") + '</span></div>');
   cells.push('<div class="an-td" style="width:120px"><button class="mc-more" type="button" aria-label="Actions" data-mc-more data-status="' + r.status + '" data-name="' + esc(r.name) + '">' + IC.dots + '</button></div>');
-  return '<div class="an-tr" data-mc-row data-name="' + esc(r.name) + '">' + cells.join("") + '</div>';
+  return '<div class="an-tr" data-mc-row data-name="' + esc(r.name) + '"' +
+    (r.sample ? ' data-sample="1"' : '') + ' data-owner="' + esc(r.owner.name) + '"' +
+    ' data-shared="' + esc(r.shared.map(function (a) { return a.n || a.i; }).join("|")) + '">' + cells.join("") + '</div>';
 }
 const collHead = '<div class="an-tr an-tr--head">' + COLL_COLS.map(collHeadCell).join("") + '</div>';
 const collBody = COLL_ROWS.map(collRow).join("\n          ");
+
 
 const collInner = `
     <section class="an-page">
@@ -743,7 +1278,7 @@ const collInner = `
 
       <section class="an-toolbar">
         <div class="mc-search">${IC.search}<input type="text" placeholder="Search..." /></div>
-        <button class="an-btn an-btn--secondary" type="button">${IC.filter}Filters</button>
+        <button class="an-btn an-btn--secondary" type="button" data-an-filters-toggle>${IC.filter}Filters<span class="an-btn__dot" data-an-filters-dot hidden></span></button>
       </section>
 
       <section class="an-pagi" data-an-table="coll">
@@ -845,6 +1380,8 @@ const collInner = `
 
     ${aiModalHtml}
 
+    ${FILTERS_COLL}
+
     <div class="an-toast" data-an-toast hidden></div>`;
 
 // ================= COLLECTION (открытая коллекция = «Editing collection») =================
@@ -924,10 +1461,12 @@ const editInner = `
         <button class="an-btn an-btn--danger an-btn--huge" type="button">${IC.trash}Delete</button>
         <button class="an-btn an-btn--danger an-btn--huge" type="button">Deactivate</button>
         <span class="ce-footer__spacer"></span>
-        <button class="an-btn an-btn--secondary an-btn--huge" type="button">Add channels</button>
+        <button class="an-btn an-btn--secondary an-btn--huge" type="button" data-nc-open>Add channels</button>
         <button class="an-btn an-btn--secondary an-btn--huge" type="button">Save</button>
       </div>
     </div>
+
+    ${ceAddModalHtml}
 
     <div class="an-toast" data-an-toast hidden></div>`;
 
@@ -950,7 +1489,7 @@ function buildPage(src, title, inner, current){
   // базовые коллекции (те же, что в списке My collections) — единый источник для дропдауна
   // назначения в модалке sourcing; страницы Basic data / My collections читают их из window
   const seed = JSON.stringify(COLL_ROWS.map(function (r) {
-    return { name: r.name, status: r.status, qty: r.qty, channels: r.includes.slice() };
+    return { name: r.name, status: r.status, qty: r.qty, sample: !!r.sample, owner: r.owner.name, channels: r.channels.slice() };
   }));
   // каналы: подсказки для референсов + источник для фильтров и поиска по базе (P1.13, D2)
   const chSeed = JSON.stringify(ROWS.map(function (r, i) {

@@ -76,6 +76,117 @@
       updateFooter();
       return;
     }
+    // --- P1.13: панель фильтров ---
+    if (e.target.closest("[data-an-filters-toggle]")) {
+      flOpen(!document.body.classList.contains("filters-open"));
+      return;
+    }
+    if (e.target.closest("[data-an-filters-close]")) { flOpen(false); return; }
+    if (e.target.closest("[data-an-filters-clear]")) { flClear(); return; }
+    var fTrig = e.target.closest("[data-anf-trig]");
+    if (fTrig) {
+      var sel = fTrig.closest(".anf-select"), menu = sel.querySelector("[data-anf-menu]");
+      var willOpen = menu.hidden;
+      // закрываем остальные
+      [].slice.call(document.querySelectorAll(".anf-select")).forEach(function (o) {
+        if (o !== sel) { o.classList.remove("is-open"); var m = o.querySelector("[data-anf-menu]"); if (m) m.hidden = true; }
+      });
+      menu.hidden = !willOpen;
+      sel.classList.toggle("is-open", willOpen);
+      fTrig.setAttribute("aria-expanded", willOpen ? "true" : "false");
+      return;
+    }
+    var fOpt = e.target.closest("[data-anf-opt]");
+    if (fOpt) {
+      var selRoot = fOpt.closest(".anf-select");
+      var valEl = selRoot.querySelector("[data-anf-val]");
+      if (valEl) { valEl.textContent = fOpt.getAttribute("data-anf-opt"); valEl.classList.remove("is-ph"); }
+      [].slice.call(selRoot.querySelectorAll(".anf-opt")).forEach(function (o) { o.classList.toggle("is-selected", o === fOpt); });
+      var m2 = selRoot.querySelector("[data-anf-menu]"); if (m2) m2.hidden = true;
+      selRoot.classList.remove("is-open");
+      flApply();
+      return;
+    }
+    var fSeg = e.target.closest("[data-anf-seg]");
+    if (fSeg) {
+      [].slice.call(fSeg.parentNode.querySelectorAll(".anf-seg__btn")).forEach(function (b) {
+        b.classList.toggle("is-on", b === fSeg);
+        b.setAttribute("aria-checked", b === fSeg ? "true" : "false");
+      });
+      flApply();
+      return;
+    }
+    var pSet = e.target.closest("[data-an-period-set]");
+    if (pSet) { flSetPeriod(pSet.getAttribute("data-an-period-set")); return; }
+    // --- P1.6: срез метрики по типу контента (до сортировки: селектор внутри .an-sort) ---
+    var slT = e.target.closest("[data-an-slice-trig]");
+    if (slT) {
+      var slCol = slT.getAttribute("data-an-slice-trig");
+      var slW = slT.closest("[data-an-slice]");
+      var slM = slW.querySelector("[data-an-slice-menu]");
+      slMenu(slM && slM.hidden ? slCol : null);
+      return;
+    }
+    var slO = e.target.closest("[data-an-slice-opt]");
+    if (slO) { slSetCol(slO.getAttribute("data-col"), slO.getAttribute("data-an-slice-opt")); return; }
+    if (!e.target.closest("[data-an-slice]")) slMenu(null);
+    // --- P1.8: сводка Average / Total ---
+    var gsT = e.target.closest("[data-an-gs-trig]");
+    if (gsT) {
+      var gsW = gsT.closest("[data-an-gs]");
+      var gsM = gsW.querySelector("[data-an-gs-menu]");
+      gsMenu(gsM ? gsM.hidden : true, gsW);
+      return;
+    }
+    var gsO = e.target.closest("[data-an-gs-opt]");
+    if (gsO) { gsSet(gsO.getAttribute("data-an-gs-opt")); return; }
+    if (!e.target.closest("[data-an-gs]")) gsMenu(false);
+    // --- P1.7: видимость колонок ---
+    if (e.target.closest("[data-an-cols-trig]")) {
+      var cvM = document.querySelector("[data-an-cols-menu]");
+      cvMenu(cvM ? cvM.hidden : true);
+      return;
+    }
+    if (e.target.closest("[data-an-cols-reset]")) { cvReset(); return; }
+    var cvOpt = e.target.closest("[data-an-cols-opt]");
+    if (cvOpt) { cvToggle(cvOpt.getAttribute("data-an-cols-opt")); return; }
+    var cvX = e.target.closest("[data-an-colx]");
+    if (cvX) { cvToggle(cvX.getAttribute("data-an-colx")); return; }   // × в шапке = снять колонку
+    if (!e.target.closest("[data-an-cols]")) cvMenu(false);
+    // --- P1.4: модалка «New channels» ---
+    if (e.target.closest("[data-nc-open]")) { ncOpen(); return; }
+    if (e.target.closest("[data-nc-close]")) { closeModal(document.getElementById("ncModal")); return; }
+    if (e.target.closest("[data-nc-new-open]")) { ncNewForm(true); return; }
+    if (e.target.closest("[data-nc-new-cancel]")) { ncNewForm(false); return; }
+    if (e.target.closest("[data-nc-new-submit]")) { ncCreate(); return; }
+    if (e.target.closest("[data-nc-submit]")) { ncSubmit(); return; }
+    var ncIt = e.target.closest("[data-nc-item]");
+    if (ncIt) {
+      var ncNm = ncIt.getAttribute("data-nc-item");
+      if (ncSel[ncNm]) delete ncSel[ncNm]; else ncSel[ncNm] = true;
+      ncRender();
+      return;
+    }
+    // --- P1.1: селектор коллекции у счётчика ---
+    var csTrig = e.target.closest("[data-an-collsel-trig]");
+    if (csTrig) {
+      var csW = csTrig.closest("[data-an-collsel]");
+      var csM = csW.querySelector("[data-an-collsel-menu]");
+      csOpen(csW, csM.hidden);
+      return;
+    }
+    var csOpt = e.target.closest("[data-an-collsel-opt]");
+    if (csOpt) {
+      csPick(csOpt.closest("[data-an-collsel]"), csOpt.getAttribute("data-an-collsel-opt"));
+      return;
+    }
+    if (!e.target.closest("[data-an-collsel]")) csWraps().forEach(function (w) { csOpen(w, false); });
+    if (!e.target.closest(".anf-select")) {
+      [].slice.call(document.querySelectorAll(".anf-select.is-open")).forEach(function (o) {
+        o.classList.remove("is-open");
+        var m = o.querySelector("[data-anf-menu]"); if (m) m.hidden = true;
+      });
+    }
     // --- P1.5: сортировка ---
     var sortEl = e.target.closest("[data-an-sort]");
     if (sortEl) {
@@ -111,7 +222,7 @@
       return;
     }
     if (!e.target.closest("[data-an-perpage-wrap]")) {
-      ["basic", "deep", "coll"].forEach(function (k) { tblPerPageMenu(k, false); });
+      ["basic", "deep", "coll", "video"].forEach(function (k) { tblPerPageMenu(k, false); });
     }
     // очистка поиска
     if (e.target.closest("[data-an-search-clear]")) {
@@ -122,6 +233,18 @@
     }
   });
 
+  // P1.9: поиск по видео — мгновенно
+  var vidSq = document.querySelector("[data-vid-search]");
+  if (vidSq) vidSq.addEventListener("input", vidApply);
+
+  // P1.4: счётчик ссылок и поиск по коллекциям — мгновенно
+  var ncTa = document.querySelector("[data-nc-links]");
+  if (ncTa) ncTa.addEventListener("input", ncSync);
+  var ncSq = document.querySelector("[data-nc-search]");
+  if (ncSq) ncSq.addEventListener("input", ncRender);
+  var ncNi = document.querySelector("[data-nc-new-name]");
+  if (ncNi) ncNi.addEventListener("keyup", function (e) { if (e.key === "Enter") ncCreate(); });
+
   var input = document.querySelector("[data-an-search]");
   if (input) input.addEventListener("input", function () {
     var cl = document.querySelector("[data-an-search-clear]");
@@ -129,13 +252,275 @@
   });
 
 
+  // ================= P1.6: срезы метрик по типу контента =================
+  // Значения всех срезов лежат в data-атрибутах ячейки (data-sl-videos="1.7k|pos"),
+  // сводная строка — в data-avg-<срез> / data-total-<срез>. Выбор запоминается на колонку.
+  var SL_KEY = "subsub_deep_slice";
+  function slLoad() {
+    try { var v = JSON.parse(localStorage.getItem(SL_KEY) || "{}"); return v && typeof v === "object" ? v : {}; }
+    catch (e) { return {}; }
+  }
+  function slSave(col, slice) {
+    var st = slLoad();
+    st[col] = slice;
+    try { localStorage.setItem(SL_KEY, JSON.stringify(st)); } catch (e) {}
+  }
+  function slMenu(col) {
+    [].slice.call(document.querySelectorAll("[data-an-slice]")).forEach(function (w) {
+      var on = col && w.getAttribute("data-an-slice") === col;
+      var m = w.querySelector("[data-an-slice-menu]");
+      if (m) m.hidden = !on;
+      w.classList.toggle("is-open", !!on);
+    });
+  }
+  function slSetCol(col, slice, quiet) {
+    var body = tblBody("deep");
+    if (!body) return;
+    var opt = document.querySelector('[data-an-slice-opt="' + slice + '"][data-col="' + col + '"]');
+    var lbl = document.querySelector('[data-an-slice-lbl="' + col + '"]');
+    if (lbl && opt && slice !== "all") lbl.textContent = opt.getAttribute("data-lbl");
+    if (lbl && slice === "all" && opt) lbl.textContent = opt.getAttribute("data-lbl");
+    [].slice.call(document.querySelectorAll('[data-an-slice-opt][data-col="' + col + '"]')).forEach(function (b) {
+      b.classList.toggle("is-selected", b.getAttribute("data-an-slice-opt") === slice);
+    });
+    [].slice.call(body.querySelectorAll('.an-tbody > .an-tr:not(.an-tr--avg) [data-col="' + col + '"]')).forEach(function (cell) {
+      var raw = cell.getAttribute("data-sl-" + slice);
+      if (!raw) return;
+      var parts = raw.split("|"), heat = cell.querySelector(".an-heat");
+      if (!heat) return;
+      heat.textContent = parts[0];
+      heat.classList.toggle("an-heat--pos", parts[1] === "pos");
+      heat.classList.toggle("an-heat--neg", parts[1] !== "pos");
+    });
+    [].slice.call(body.querySelectorAll('.an-tr--avg [data-col="' + col + '"]')).forEach(function (cell) {
+      var a = cell.getAttribute("data-avg-" + slice), t = cell.getAttribute("data-total-" + slice);
+      if (a != null) cell.setAttribute("data-avg", a);
+      if (t != null) cell.setAttribute("data-total", t);
+    });
+    if (!quiet) { slSave(col, slice); gsApply(gsMode()); slMenu(null); }
+  }
+  function slInit() {
+    if (!tblBody("deep")) return;
+    var st = slLoad();
+    Object.keys(st).forEach(function (col) { slSetCol(col, st[col], true); });
+  }
+
+  // ================= P1.8: сводная строка Average / Total =================
+  // В режиме Total прод гасит хитмап («Insights unavailable in Total mode»), повторяем.
+  var GS_KEY = "subsub_deep_gs";
+  function gsMode() {
+    try { return localStorage.getItem(GS_KEY) === "total" ? "total" : "average"; } catch (e) { return "average"; }
+  }
+  function gsApply(mode) {
+    var body = tblBody("deep");
+    if (!body) return;
+    [].slice.call(body.querySelectorAll(".an-tr--avg [data-avg]")).forEach(function (cell) {
+      cell.textContent = mode === "total" ? cell.getAttribute("data-total") : cell.getAttribute("data-avg");
+    });
+    body.classList.toggle("is-total", mode === "total");
+    [].slice.call(body.querySelectorAll("[data-an-gs-val]")).forEach(function (el) {
+      el.textContent = mode === "total" ? "Total" : "Average";
+    });
+    [].slice.call(body.querySelectorAll("[data-an-gs-opt]")).forEach(function (b) {
+      b.classList.toggle("is-selected", b.getAttribute("data-an-gs-opt") === mode);
+    });
+  }
+  function gsMenu(open, wrap) {
+    [].slice.call(document.querySelectorAll("[data-an-gs]")).forEach(function (w) {
+      var m = w.querySelector("[data-an-gs-menu]");
+      if (m) m.hidden = !(open && w === wrap);
+    });
+  }
+  function gsSet(mode) {
+    try { localStorage.setItem(GS_KEY, mode); } catch (e) {}
+    gsApply(mode);
+    gsMenu(false);
+  }
+  function gsInit() { if (tblBody("deep")) gsApply(gsMode()); }
+
+  // ================= P1.7: видимость колонок Deep data =================
+  // Отличие от прода: там изменения применяются при закрытии поповера, здесь — сразу
+  // (иначе в прототипе клик по чекбоксу выглядит как «не работает»).
+  var CV_KEY = "subsub_deep_cols";
+  function cvDefaults() {
+    var out = {};
+    [].slice.call(document.querySelectorAll("[data-an-cols-opt]")).forEach(function (b) {
+      out[b.getAttribute("data-an-cols-opt")] = b.classList.contains("is-checked");
+    });
+    return out;
+  }
+  var cvDefault = null;
+  function cvLoad() {
+    try { var v = JSON.parse(localStorage.getItem(CV_KEY) || "null"); return v && typeof v === "object" ? v : null; }
+    catch (e) { return null; }
+  }
+  function cvSave(v) { try { localStorage.setItem(CV_KEY, JSON.stringify(v)); } catch (e) {} }
+  function cvApply(state) {
+    var body = tblBody("deep");
+    if (!body) return;
+    Object.keys(state).forEach(function (id) {
+      var on = !!state[id];
+      [].slice.call(body.querySelectorAll('[data-col="' + id + '"]')).forEach(function (cell) {
+        cell.classList.toggle("is-colhidden", !on);
+      });
+      var box = document.querySelector('[data-an-cols-opt="' + id + '"]');
+      if (box) box.classList.toggle("is-checked", on);
+    });
+  }
+  function cvInit() {
+    if (!document.querySelector("[data-an-cols]")) return;
+    cvDefault = cvDefaults();
+    var st = cvLoad();
+    if (st) cvApply(st);
+  }
+  function cvToggle(id) {
+    var st = cvLoad() || cvDefaults();
+    st[id] = !st[id];
+    cvSave(st);
+    cvApply(st);
+  }
+  function cvReset() {
+    if (!cvDefault) return;
+    var st = {};
+    Object.keys(cvDefault).forEach(function (k) { st[k] = cvDefault[k]; });
+    cvSave(st);
+    cvApply(st);
+    cvMenu(false);
+  }
+  function cvMenu(open) {
+    var m = document.querySelector("[data-an-cols-menu]");
+    if (m) m.hidden = !open;
+  }
+
+  // ================= P1.1: селектор коллекции у счётчика =================
+  // Один компонент на Basic и Deep, но смысл разный: на Basic это тот же фильтр,
+  // что поле Collection в панели (держим их синхронно), на Deep — переключение набора
+  // строк (в разметке лежат строки всех активированных коллекций, помечены data-coll).
+  function csWraps() { return [].slice.call(document.querySelectorAll("[data-an-collsel]")); }
+  function csList(key) {
+    var all = (typeof aiAllColls === "function" ? aiAllColls() : []);
+    // deep data (оба таба) открывается только по активированным коллекциям (как на проде)
+    if (key !== "deep" && key !== "video") return all;
+    var have = {};
+    tblAllRows(key).forEach(function (r) { have[r.getAttribute("data-coll") || ""] = true; });
+    return all.filter(function (c) { return have[c.name]; });
+  }
+  function csVal(wrap) { return wrap.querySelector("[data-an-collsel-val]"); }
+  function csCurrent(wrap) {
+    var v = csVal(wrap);
+    return v && !v.classList.contains("an-collsel__txt--ph") ? v.textContent.trim() : "";
+  }
+  function csFill(wrap, q) {
+    var box = wrap.querySelector("[data-an-collsel-opts]");
+    if (!box) return;
+    var cur = csCurrent(wrap), s = (q || "").toLowerCase();
+    var list = csList(wrap.getAttribute("data-an-collsel")).filter(function (c) {
+      return !s || c.name.toLowerCase().indexOf(s) !== -1;
+    });
+    box.innerHTML = list.map(function (c) {
+      return '<button class="anf-opt' + (c.name === cur ? " is-selected" : "") + '" type="button" role="option" ' +
+             'data-an-collsel-opt="' + escHtml(c.name) + '">' + escHtml(c.name) + "</button>";
+    }).join("") || '<div class="anf-empty">No collections</div>';
+  }
+  function csOpen(wrap, open) {
+    csWraps().forEach(function (w) {
+      var m = w.querySelector("[data-an-collsel-menu]"), t = w.querySelector("[data-an-collsel-trig]");
+      var on = w === wrap && !!open;
+      if (m) m.hidden = !on;
+      w.classList.toggle("is-open", on);
+      if (t) t.setAttribute("aria-expanded", on ? "true" : "false");
+    });
+    if (open && wrap) {
+      csFill(wrap, "");
+      var si = wrap.querySelector("[data-an-collsel-search]");
+      if (si) { si.value = ""; si.focus(); }
+    }
+  }
+  function csSetLabel(wrap, name) {
+    var v = csVal(wrap);
+    if (!v) return;
+    if (name) { v.textContent = name; v.classList.remove("an-collsel__txt--ph"); }
+    else { v.textContent = v.getAttribute("data-an-collsel-ph") || ""; v.classList.add("an-collsel__txt--ph"); }
+  }
+  function csPick(wrap, name) {
+    var key = wrap.getAttribute("data-an-collsel");
+    csSetLabel(wrap, name);
+    csOpen(wrap, false);
+    if (key === "deep") csApplyDeep(name);
+    else if (key === "video") csApplyVideo(name);
+    else csApplyBasic(name);
+  }
+  // Basic: коллекция — это фильтр, поэтому пишем значение в панель и применяем её целиком
+  function csApplyBasic(name) {
+    var act = flActive();
+    if (act) {
+      var f = act.querySelector('[data-anf-field="collection"]');
+      if (f) {
+        var v = f.querySelector("[data-anf-val]");
+        if (v) { v.textContent = name; v.classList.remove("is-ph"); }
+      }
+    }
+    flApply();
+  }
+  // Deep: коллекция задаёт набор строк — пишем её в панель и применяем панель целиком
+  function csApplyDeep(name) {
+    var act = flActive();
+    var f = act && act.querySelector('[data-anf-field="collection"] [data-anf-val]');
+    if (f) { f.textContent = name; f.classList.remove("is-ph"); }
+    var badge = document.querySelector("[data-ai-badge]");
+    if (badge) {
+      var rec = csList("deep").filter(function (c) { return c.name === name; })[0];
+      badge.hidden = !(rec && rec.isAi);
+    }
+    flApply();
+  }
+  // P1.9: таб Videos — свой набор строк на коллекцию + поиск по названию/каналу
+  function vidApply() {
+    var w = document.querySelector('[data-an-collsel="video"]');
+    var coll = w ? csCurrent(w) : "";
+    var q = (document.querySelector("[data-vid-search]") || {}).value || "";
+    q = q.trim().toLowerCase();
+    tblAllRows("video").forEach(function (row) {
+      var ok = !coll || (row.getAttribute("data-coll") || "") === coll;
+      if (ok && q) {
+        var t = row.querySelector(".vid-title__t"), ch = row.querySelector(".vid-title__chan");
+        var hay = ((t ? t.textContent : "") + " " + (ch ? ch.textContent : "")).toLowerCase();
+        if (hay.indexOf(q) === -1) ok = false;
+      }
+      if (ok) row.removeAttribute("data-filtered"); else row.setAttribute("data-filtered", "");
+    });
+    TBL.video.page = 1;
+    tblApply("video");
+  }
+  function csApplyVideo(name) {
+    var act = flActive();
+    var f = act && act.querySelector('[data-anf-field="collection"] [data-anf-val]');
+    if (f) { f.textContent = name; f.classList.remove("is-ph"); }
+    vidApply();
+    flDot();
+  }
+
+  // обратная синхронизация: значение поля Collection в панели → подпись селектора
+  function csSyncFromPanel() {
+    var w = document.querySelector('[data-an-collsel="basic"]');
+    if (!w) return;
+    var act = flActive();
+    var f = act && act.querySelector('[data-anf-field="collection"] [data-anf-val]');
+    csSetLabel(w, f && !f.classList.contains("is-ph") ? f.textContent.trim() : "");
+  }
+  csWraps().forEach(function (w) {
+    var si = w.querySelector("[data-an-collsel-search]");
+    if (si) si.addEventListener("input", function () { csFill(w, si.value); });
+  });
+
   // ================= P1.5: клиентская сортировка + пагинация =================
   // Работает по статическим строкам в DOM: сортировка переставляет узлы, пагинация
   // скрывает лишние. Строки, скрытые другими фильтрами (data-filtered), в выборку не попадают.
   var TBL = {
     basic: { per: 30, sizes: [30, 50, 100], sort: null, page: 1 },
     deep:  { per: 30, sizes: [30, 50, 100], sort: null, page: 1 },
-    coll:  { per: 15, sizes: [15, 30, 50],  sort: null, page: 1 }
+    coll:  { per: 15, sizes: [15, 30, 50],  sort: null, page: 1 },
+    video: { per: 10, sizes: [10, 25, 50],  sort: null, page: 1 }   // P1.9: на проде 10
   };
   function tblBody(key) { return document.querySelector('[data-an-table-body="' + key + '"]'); }
   function tblPagi(key) { return document.querySelector('[data-an-table="' + key + '"]'); }
@@ -212,7 +597,8 @@
     if (st.page > pages) st.page = pages;
     var from = (st.page - 1) * st.per, to = from + st.per;
     tblAllRows(key).forEach(function (r) {
-      if (r.classList.contains("an-tr--avg")) return;      // сводная строка всегда видна
+      // сводная строка видна всегда — кроме сводок «чужих» коллекций (P1.1)
+      if (r.classList.contains("an-tr--avg")) { r.hidden = r.hasAttribute("data-filtered"); return; }
       r.hidden = true;
     });
     rows.slice(from, to).forEach(function (r) { r.hidden = false; });
@@ -255,9 +641,227 @@
     return host ? (host.getAttribute("data-an-table") || host.getAttribute("data-an-table-body")) : null;
   }
   function tblInitAll() {
-    ["basic", "deep", "coll"].forEach(function (key) {
+    ["basic", "deep", "coll", "video"].forEach(function (key) {
       if (tblBody(key)) tblApply(key);
     });
+  }
+
+  // ================= P1.9: табы Channels / Videos (?tab=) =================
+  function tabCurrent() {
+    var t = (new URLSearchParams(location.search).get("tab") || "channels").toLowerCase();
+    return t === "videos" ? "videos" : "channels";
+  }
+  function tabInit() {
+    var panels = [].slice.call(document.querySelectorAll("[data-an-tab-panel]"));
+    if (!panels.length) return;
+    var cur = tabCurrent();
+    panels.forEach(function (p) { p.hidden = p.getAttribute("data-an-tab-panel") !== cur; });
+    [].slice.call(document.querySelectorAll("[data-an-tab]")).forEach(function (a) {
+      a.classList.toggle("is-active", a.getAttribute("data-an-tab") === cur);
+    });
+  }
+
+
+  // ================= P1.13: панель фильтров + P1.2 Growth period =================
+  // Прод-поведение: drawer открыт по умолчанию, применение мгновенное, Apply нет.
+  // Значения читаем прямо из DOM панели — отдельного стора не держим.
+  var FL_TABLE = { basic: "basic", deep: "deep", deepVideos: "deep", coll: "coll" };
+  function flPanels() { return [].slice.call(document.querySelectorAll("[data-an-filters]")); }
+  function flActive() {                       // активная панель страницы (у Deep их две — по табу)
+    var list = flPanels();
+    if (!list.length) return null;
+    var tab = (new URLSearchParams(location.search).get("tab") || "channels").toLowerCase();
+    var wanted = list.length > 1 ? (tab === "videos" ? "deepVideos" : "deep") : list[0].getAttribute("data-an-filters");
+    for (var i = 0; i < list.length; i++) if (list[i].getAttribute("data-an-filters") === wanted) return list[i];
+    return list[0];
+  }
+  function flSyncActive() {
+    var act = flActive();
+    flPanels().forEach(function (el) { el.classList.toggle("is-active", el === act); });
+  }
+  function flOpen(open) {
+    document.body.classList.toggle("filters-open", !!open);
+    flSyncActive();
+  }
+  // список коллекций в поле Collection заполняем динамически: часть создана на клиенте
+  function flFillCollections() {
+    var act = flActive(); if (!act) return;
+    var box = act.querySelector('[data-anf-field="collection"] [data-anf-opts]');
+    if (!box) return;
+    // на Deep data выбирать можно только активированные коллекции — как в селекторе у счётчика
+    var key = FL_TABLE[act.getAttribute("data-an-filters")];
+    var names = csList(key === "deep" ? "deep" : "basic").map(function (c) { return c.name; });
+    box.innerHTML = names.map(function (n) {
+      return '<button class="anf-opt" type="button" role="option" data-anf-opt="' + escHtml(n) + '">' + escHtml(n) + "</button>";
+    }).join("") || '<div class="anf-empty">No collections</div>';
+  }
+  // текущие значения панели
+  function flValues() {
+    var act = flActive(), out = {};
+    if (!act) return out;
+    [].slice.call(act.querySelectorAll("[data-anf-field]")).forEach(function (f) {
+      var id = f.getAttribute("data-anf-field");
+      var val = f.querySelector("[data-anf-val]");
+      var txt = f.querySelector("[data-anf-text]");
+      var from = f.querySelector("[data-anf-from]"), to = f.querySelector("[data-anf-to]");
+      var seg = f.querySelector(".anf-seg__btn.is-on");
+      if (val && !val.classList.contains("is-ph")) out[id] = val.textContent.trim();
+      if (txt && txt.value.trim()) out[id] = txt.value.trim();
+      if (from && from.value) out[id + "From"] = parseFloat(from.value);
+      if (to && to.value) out[id + "To"] = parseFloat(to.value);
+      if (seg) out[id] = seg.getAttribute("data-anf-seg");
+    });
+    return out;
+  }
+  // непустой фильтр → красная точка на кнопке Filters (как на проде)
+  function flDot() {
+    var v = flValues(), dirty = false;
+    for (var k in v) {
+      if (k === "highlight") continue;                       // визуальный элемент
+      if (k === "ctype" && v[k] === "All") continue;          // дефолт сегмента
+      dirty = true;
+    }
+    var dot = document.querySelector("[data-an-filters-dot]");
+    if (dot) dot.hidden = !dirty;
+  }
+  // ---- мгновенное применение ----
+  function flApply() {
+    var key = null, act = flActive();
+    if (act) key = FL_TABLE[act.getAttribute("data-an-filters")];
+    var v = flValues();
+    if (key === "basic") flApplyBasic(v);
+    else if (key === "coll") flApplyColl(v);
+    else if (key === "deep") flApplyDeep(v);
+    if (key === "basic") csSyncFromPanel();   // селектор у счётчика показывает тот же фильтр (P1.1)
+    flDot();
+    if (key && typeof tblApply === "function") { TBL[key].page = 1; tblApply(key); }
+  }
+  function chInfo(name) {                     // справка по каналу из сида
+    var pool = (typeof aiChannelPool === "function" ? aiChannelPool() : []);
+    for (var i = 0; i < pool.length; i++) if (pool[i].name === name) return pool[i];
+    return null;
+  }
+  function flApplyBasic(v) {
+    var rows = tblAllRows("basic");
+    var collChannels = null;
+    if (v.collection && typeof aiChannelsOf === "function") collChannels = aiChannelsOf(v.collection);
+    rows.forEach(function (row) {
+      var nameEl = row.querySelector(".an-chan__name");
+      var nm = nameEl ? nameEl.textContent.trim() : "";
+      var info = chInfo(nm) || {};
+      var topics = [].slice.call(row.querySelectorAll("[data-an-topic]")).map(function (t) { return t.getAttribute("data-an-topic"); });
+      if (info.topics) topics = info.topics;                  // включая скрытые под «+N»
+      var ok = true;
+      if (v.topic && topics.indexOf(v.topic) === -1) ok = false;
+      if (v.title && nm.toLowerCase().indexOf(v.title.toLowerCase()) === -1) ok = false;
+      if (v.country && info.country !== v.country) ok = false;
+      if (v.language && info.language !== v.language) ok = false;
+      if (collChannels && collChannels.indexOf(nm) === -1) ok = false;
+      if (ok) row.removeAttribute("data-filtered"); else row.setAttribute("data-filtered", "");
+    });
+  }
+  function flApplyDeep(v) {
+    // коллекция задаёт набор строк, остальные поля фильтруют внутри него (P1.1)
+    var w = document.querySelector('[data-an-collsel="deep"]');
+    if (v.collection && w) csSetLabel(w, v.collection);
+    var coll = v.collection || (w ? csCurrent(w) : "");
+    tblAllRows("deep").forEach(function (row) {
+      var mine = !coll || (row.getAttribute("data-coll") || "") === coll;
+      var ok = mine;
+      if (!row.classList.contains("an-tr--avg")) {
+        var t = row.querySelector(".and-chan");
+        var nm = t ? t.textContent.trim() : "";
+        if (v.title && nm.toLowerCase().indexOf(v.title.toLowerCase()) === -1) ok = false;
+      }
+      if (ok) row.removeAttribute("data-filtered"); else row.setAttribute("data-filtered", "");
+    });
+  }
+  function flApplyColl(v) {
+    tblAllRows("coll").forEach(function (row) {
+      var nm = row.getAttribute("data-name") || "";
+      var statusEl = row.querySelector(".mc-status__t");
+      var st = statusEl ? statusEl.textContent.trim() : "";
+      var qtyEl = row.querySelectorAll(".an-td")[2];
+      var qty = qtyEl ? parseInt(String(qtyEl.textContent).replace(/\D/g, ""), 10) : NaN;
+      var chips = [].slice.call(row.querySelectorAll(".mc-chip")).map(function (c) { return c.textContent.trim(); }).join(" ").toLowerCase();
+      var ok = true;
+      // P1.10: Samples — это public-коллекции (владелец не ты), Own — свои
+      if (v.ctype === "Samples" && !row.hasAttribute("data-sample")) ok = false;
+      if (v.ctype === "Own" && row.hasAttribute("data-sample")) ok = false;
+      if (v.status && st !== v.status) ok = false;
+      if (v.channels && chips.indexOf(v.channels.toLowerCase()) === -1) ok = false;
+      if (v.qtyFrom != null && !isNaN(qty) && qty < v.qtyFrom) ok = false;
+      if (v.qtyTo != null && !isNaN(qty) && qty > v.qtyTo) ok = false;
+      // P1.12: фильтр по конкретному пользователю из дропдауна
+      if (v.shared) {
+        var shared = (row.getAttribute("data-shared") || "").split("|");
+        if (shared.indexOf(v.shared) === -1) ok = false;
+      }
+      if (ok) row.removeAttribute("data-filtered"); else row.setAttribute("data-filtered", "");
+      if (!nm) row.removeAttribute("data-filtered");
+    });
+  }
+  // ---- Clear all: сбрасываем всё, включая сегменты (в проде Collection type не сбрасывается — баг, не воспроизводим) ----
+  function flClear() {
+    var act = flActive(); if (!act) return;
+    [].slice.call(act.querySelectorAll("[data-anf-val]")).forEach(function (el) {
+      var ph = el.getAttribute("data-anf-ph");
+      if (ph) el.textContent = ph;
+      el.classList.add("is-ph");
+    });
+    [].slice.call(act.querySelectorAll("[data-anf-text],[data-anf-from],[data-anf-to],[data-anf-search]")).forEach(function (i) { i.value = ""; });
+    [].slice.call(act.querySelectorAll(".anf-select")).forEach(function (sel) {
+      var menu = sel.querySelector("[data-anf-menu]"); if (menu) menu.hidden = true;
+      sel.classList.remove("is-open");
+      [].slice.call(sel.querySelectorAll(".anf-opt")).forEach(function (o) { o.classList.remove("is-selected"); });
+    });
+    [].slice.call(act.querySelectorAll(".anf-seg")).forEach(function (seg) {
+      var btns = [].slice.call(seg.querySelectorAll(".anf-seg__btn"));
+      btns.forEach(function (b, i) { b.classList.toggle("is-on", i === 0); b.setAttribute("aria-checked", i === 0 ? "true" : "false"); });
+    });
+    flApply();
+  }
+  // ---- P1.2: Growth period. Подменяет ячейки прироста из window.SUBSUB_GROWTH ----
+  var flPeriod = "30";
+  function flSetPeriod(pd) {
+    var G = window.SUBSUB_GROWTH || {};
+    if (!G[pd]) return;
+    flPeriod = pd;
+    var labels = (window.SUBSUB_DICT || {}).periodLabels || {};
+    [].slice.call(document.querySelectorAll("[data-an-period-val]")).forEach(function (el) {
+      el.textContent = labels[pd] || ("Last " + pd + " days");
+    });
+    [].slice.call(document.querySelectorAll("[data-an-period-set]")).forEach(function (b) {
+      b.classList.toggle("is-on", b.getAttribute("data-an-period-set") === pd);
+    });
+    // порядок строк мог измениться сортировкой — сопоставляем по имени канала
+    var idxByName = {};
+    (window.SUBSUB_CHANNELS || []).forEach(function (c, i) { idxByName[c.name] = i; });
+    var iSubsG = tblColIndex("basic", "subsg"), iViewsG = tblColIndex("basic", "viewsg"), iVps = tblColIndex("basic", "vps");
+    tblAllRows("basic").forEach(function (row) {
+      var nameEl = row.querySelector(".an-chan__name");
+      var i = nameEl ? idxByName[nameEl.textContent.trim()] : undefined;
+      if (i == null || !G[pd][i]) return;
+      var g = G[pd][i];
+      function setCell(idx, val, delta) {
+        var cell = row.children[idx]; if (!cell) return;
+        if (delta) {
+          var tag = cell.querySelector("[class*='an-delta']");
+          if (tag) { tag.textContent = val; return; }
+        }
+        cell.textContent = val;
+      }
+      setCell(iSubsG, g[0], true);
+      setCell(iViewsG, g[1], true);
+      setCell(iVps, g[2], false);
+    });
+  }
+  function flInit() {
+    if (!flPanels().length) return;
+    flSyncActive();
+    flFillCollections();
+    flOpen(true);                              // как на проде — открыт по умолчанию
+    flDot();
   }
 
   // ================= MY COLLECTIONS: флоу действий =================
@@ -608,6 +1212,127 @@
     });
     if (changed) aiSave(list);
     aiRenderPill();
+  }
+
+  // ================= P1.4: модалка «New channels» (Add to base) =================
+  // Коллекции не выбраны → каналы уходят только в базу (на проде это addChannelsToBase).
+  // Выбраны → те же ссылки дописываются в каждую выбранную коллекцию.
+  var NC_MAX = 30;
+  var NC_ICON_ON = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 3h12a1 1 0 0 1 1 1v16.2a.8.8 0 0 1-1.24.66L12 17.4l-5.76 3.46A.8.8 0 0 1 5 20.2V4a1 1 0 0 1 1-1z"/></svg>';
+  var NC_ICON_OFF = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M6 3.8h12a.7.7 0 0 1 .7.7v15.7L12 16.5 5.3 20.2V4.5a.7.7 0 0 1 .7-.7z"/></svg>';
+  var ncSel = {};            // выбранные коллекции: name → true
+  function ncEl(sel) { var m = document.getElementById("ncModal"); return m ? m.querySelector(sel) : null; }
+  // ссылки: одна строка = один канал; имя канала берём из хэндла или последнего сегмента
+  function ncLinks() {
+    var ta = ncEl("[data-nc-links]");
+    if (!ta) return [];
+    return ta.value.split(/[\s,]+/).map(function (s) { return s.trim(); }).filter(Boolean);
+  }
+  function ncNameFromLink(url) {
+    var m = String(url).match(/@([^/?#]+)/);
+    if (m) return "@" + m[1];
+    var parts = String(url).replace(/[?#].*$/, "").replace(/\/+$/, "").split("/");
+    return parts[parts.length - 1] || url;
+  }
+  function ncRender() {
+    var box = ncEl("[data-nc-items]");
+    if (!box) return;
+    var q = (ncEl("[data-nc-search]") || {}).value || "";
+    var all = (typeof aiAllColls === "function" ? aiAllColls() : []);
+    var wrap = ncEl("[data-nc-search-wrap]");
+    if (wrap) wrap.hidden = all.length < 10;      // поиск появляется от 10 коллекций (как на проде)
+    var list = all.filter(function (c) { return !q || c.name.toLowerCase().indexOf(q.toLowerCase()) !== -1; });
+    box.innerHTML = list.map(function (c) {
+      var on = !!ncSel[c.name];
+      return '<button class="nc-item' + (on ? " is-on" : "") + '" type="button" data-nc-item="' + escHtml(c.name) + '">' +
+        (on ? NC_ICON_ON : NC_ICON_OFF) +
+        '<span class="nc-item__name">' + escHtml(c.name) + "</span>" +
+        '<span class="nc-item__qty">Channels in collection:&nbsp;' + (aiChannelsOf(c.name).length + (on ? ncLinks().length : 0)) + "</span>" +
+      "</button>";
+    }).join("") || '<div class="nc-empty">You have no collection yet.</div>';
+  }
+  function ncSync() {
+    var n = ncLinks().length;
+    var cnt = ncEl("[data-nc-count]"); if (cnt) cnt.textContent = String(n);
+    var lim = ncEl("[data-nc-limit]"); if (lim) lim.hidden = n <= NC_MAX;
+    var sub = ncEl("[data-nc-submit]"); if (sub) sub.disabled = n === 0 || n > NC_MAX;
+    ncRender();
+  }
+  // на странице коллекции цель одна — сама коллекция, списка выбора нет (P1.11)
+  function ncCollPage() {
+    var m = document.getElementById("ncModal");
+    return !!(m && m.hasAttribute("data-nc-collpage"));
+  }
+  function ncPageColl() {
+    var n = document.querySelector("[data-ce-name]");
+    return n ? (n.value || "").trim() : "";
+  }
+  function ncOpen() {
+    ncSel = {};
+    var ta = ncEl("[data-nc-links]"); if (ta) ta.value = "";
+    var sq = ncEl("[data-nc-search]"); if (sq) sq.value = "";
+    if (ncCollPage()) {
+      var t = ncEl("[data-nc-title]"), nm = ncPageColl();
+      if (t) t.textContent = nm ? "Add channels to " + nm : "Add channels";
+    }
+    ncNewForm(false);
+    ncSync();
+    openModal("ncModal");
+    if (ta) ta.focus();
+  }
+  function ncNewForm(open) {
+    var f = ncEl("[data-nc-new-form]"), b = ncEl("[data-nc-new-open]");
+    if (f) f.hidden = !open;
+    if (b) b.hidden = !!open;
+    var i = ncEl("[data-nc-new-name]");
+    if (i) { i.value = ""; if (open) i.focus(); }
+  }
+  function ncCreate() {
+    var i = ncEl("[data-nc-new-name]");
+    var name = i ? i.value.trim() : "";
+    if (!name) return;
+    if (aiAllColls().some(function (c) { return c.name === name; })) { toast("Collection with this name already exists"); return; }
+    aiCreatePlain(name);
+    ncSel[name] = true;                            // созданную сразу считаем выбранной
+    ncNewForm(false);
+    ncSync();
+    toast("Collection created successfully");
+  }
+  // допись произвольных каналов (не из sourcing) в коллекцию
+  function ncAppend(target, names) {
+    var have = aiChannelsOf(target), extra = aiExtraLoad();
+    var slot = extra[target] || { channels: [] };
+    names.forEach(function (n) {
+      if (have.indexOf(n) === -1 && slot.channels.indexOf(n) === -1) slot.channels.push(n);
+    });
+    extra[target] = slot;
+    aiExtraSave(extra);
+    var list = aiLoad(), touched = false;
+    list.forEach(function (x) {
+      if (x.mode !== "append" && x.name === target) { x.channels = aiChannelsOf(target); touched = true; }
+    });
+    if (touched) aiSave(list);
+  }
+  function ncSubmit() {
+    var links = ncLinks();
+    if (!links.length || links.length > NC_MAX) return;
+    var names = links.map(ncNameFromLink);
+    // на странице коллекции добавляем в неё же и дорисовываем строки таблицы
+    if (ncCollPage()) {
+      var coll = ncPageColl();
+      if (coll) ncAppend(coll, names);
+      if (typeof ceAddRows === "function") ceAddRows(names);
+      closeModal(document.getElementById("ncModal"));
+      toast("Channels added successfully");
+      return;
+    }
+    var targets = Object.keys(ncSel).filter(function (n) { return ncSel[n]; });
+    targets.forEach(function (t) { ncAppend(t, names); });
+    closeModal(document.getElementById("ncModal"));
+    toast(targets.length
+      ? "Channels added successfully"
+      : links.length + (links.length === 1 ? " channel" : " channels") + " sent to base");
+    if (typeof aiRenderCollections === "function") aiRenderCollections();
   }
 
   // допись найденных каналов в существующую коллекцию: дубликаты не добавляем
@@ -1262,6 +1987,18 @@
   document.addEventListener("input", function (e) {
     if (!e.target.closest("#aiModal")) return;
     // состояние 2 — набор в описании: ротацию гасим сразу
+    // P1.13: применение без кнопки Apply
+    if (e.target.closest("[data-anf-text],[data-anf-from],[data-anf-to]")) { flApply(); return; }
+    var fSearch = e.target.closest("[data-anf-search]");
+    if (fSearch) {
+      var q = fSearch.value.trim().toLowerCase();
+      var opts = fSearch.closest("[data-anf-menu]").querySelectorAll(".anf-opt");
+      for (var oi = 0; oi < opts.length; oi++) {
+        var t = opts[oi].textContent.toLowerCase();
+        opts[oi].hidden = !!q && t.indexOf(q) === -1;
+      }
+      return;
+    }
     if (e.target.closest("[data-ai-refseed]")) aiRefSuggest();
     if (e.target.closest("[data-ai-query]")) {
       aiPhStop();
@@ -1454,6 +2191,30 @@
   });
 
   // страница открытой коллекции: имя из ?name= (заголовок формы)
+  // P1.11: строки для добавленных каналов — цифр по ним нет, ставим «—»
+  function ceAddRows(names) {
+    var body = document.querySelector(".ce-table .an-tbody") ||
+               (document.querySelector("[data-ce-row]") && document.querySelector("[data-ce-row]").parentNode);
+    if (!body) return;
+    var pool = (typeof aiChannelPool === "function" ? aiChannelPool() : []);
+    var proto = document.querySelector("[data-ce-remove]");
+    var trash = proto ? proto.innerHTML : "";
+    names.forEach(function (nm) {
+      var info = null;
+      for (var i = 0; i < pool.length; i++) if (pool[i].name === nm) info = pool[i];
+      var ini = (info && info.initial) || nm.replace(/^@/, "").charAt(0).toUpperCase();
+      var col = (info && info.color) || "--color-avatar-3";
+      var html = '<div class="an-tr" data-ce-row>' +
+        '<div class="an-td" style="width:240px"><span class="ce-chan"><span class="mc-ava ce-ava" style="background:var(' + col + ')">' + escHtml(ini) + '</span>' +
+          '<span class="ce-chan__name">' + escHtml(nm) + '</span></span></div>' +
+        '<div class="an-td ce-num" style="width:120px">' + escHtml(info ? info.views : "—") + '</div>' +
+        '<div class="an-td ce-num" style="width:120px">' + escHtml(info ? info.subs : "—") + '</div>' +
+        '<div class="an-td" style="width:200px"><a class="ce-view" href="#" tabindex="-1">View channel</a></div>' +
+        '<div class="an-td" style="width:100px"><button class="ce-trash" type="button" aria-label="Remove channel" data-ce-remove>' + trash + '</button></div>' +
+      '</div>';
+      body.insertAdjacentHTML("beforeend", html);
+    });
+  }
   function ceInit() {
     var inp = document.querySelector("[data-ce-name]");
     if (!inp) return;
@@ -1470,7 +2231,12 @@
 
   aiTick();
   aiRenderCollections();
+  tabInit();                         // P1.9: активный таб из ?tab=
   tblInitAll();                      // P1.5: первая отрисовка страниц
+  cvInit();                          // P1.7: видимость колонок из localStorage
+  slInit();                          // P1.6: выбранные срезы по типу контента
+  gsInit();                          // P1.8: режим сводной строки
+  flInit();                          // P1.13: панель открыта по умолчанию
   aiRenderCollectionView();
   ceInit();
 })();
