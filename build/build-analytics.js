@@ -369,7 +369,8 @@ const FILTERS_BASIC = filtersPanel("basic",
 const FILTERS_DEEP = filtersPanel("deep",
   fSearch("title", "Search in title", "Search by channel title") +
   fSelect("collection", "Collection", "Select collection", []) +
-  fGrowthPeriod(false) +
+  // Growth period вынесен в заголовок страницы
+
   fSelect("topic", "YouTube topic", "Select topic", TOPIC_LIST) +
   fSelect("country", "YouTube country", "Select country", COUNTRY_LIST) +
   fSelect("language", "Detected Language", "Select language", LANG_LIST) +
@@ -1059,6 +1060,7 @@ function deepAvgRow(avg, tot, coll, off){
       cells.push('<div class="an-td' + hid + '" style="width:' + c.w + 'px" data-col="' + c.id + '"></div>');
     } else {
       const sl0 = !!c.metric;
+      const g30a = c.delta ? ' data-g30="' + toNum(avg[c.id]) + '" data-g30t="' + toNum(tot[c.id]) + '"' : '';
       const aVal = sl0 ? avg[c.id].all : (avg[c.id] || "");
       const tVal = sl0 ? tot[c.id].all : (tot[c.id] || "");
       let sattrs = '';
@@ -1066,7 +1068,7 @@ function deepAvgRow(avg, tot, coll, off){
         sattrs += ' data-avg-' + sl + '="' + esc(avg[c.id][sl]) + '" data-total-' + sl + '="' + esc(tot[c.id][sl]) + '"';
       });
       cells.push('<div class="an-td' + hid + '" style="width:' + c.w + 'px" data-col="' + c.id + '"' +
-        ' data-avg="' + esc(aVal) + '" data-total="' + esc(tVal) + '"' + sattrs + '>' + esc(aVal) + '</div>');
+        ' data-avg="' + esc(aVal) + '" data-total="' + esc(tVal) + '"' + sattrs + g30a + '>' + esc(aVal) + '</div>');
     }
   });
   return '<div class="an-tr an-tr--avg" data-coll="' + esc(coll) + '"' + off + '>' + cells.join("") + '</div>';
@@ -1093,6 +1095,8 @@ function deepBodyRow(r, i, avg, coll, off){
       cells.push('<div class="an-td an-td--plain' + hid + '" style="width:' + c.w + 'px" data-col="' + c.id + '">' + esc(r[c.id] || "—") + '</div>');
     } else {
       const isSl = !!c.metric;
+      // сырое 30-дневное значение для колонок прироста — по нему считается любой период
+      const g30 = c.delta ? ' data-g30="' + toNum(r[c.id]) + '"' : '';
       const val = isSl ? r.sl[c.id].all : r[c.id];
       const avgAll = isSl ? avg[c.id].all : avg[c.id];
       const tint = toNum(val) >= toNum(avgAll) ? "pos" : "neg";
@@ -1101,7 +1105,7 @@ function deepBodyRow(r, i, avg, coll, off){
         const v = r.sl[c.id][sl];
         attrs += ' data-sl-' + sl + '="' + esc(v) + '|' + (toNum(v) >= toNum(avg[c.id][sl]) ? "pos" : "neg") + '"';
       });
-      cells.push('<div class="an-td an-td--metric' + hid + '" style="width:' + c.w + 'px" data-col="' + c.id + '"' + attrs + '>' +
+      cells.push('<div class="an-td an-td--metric' + hid + '" style="width:' + c.w + 'px" data-col="' + c.id + '"' + attrs + g30 + '>' +
         '<span class="an-heat an-heat--' + tint + '">' + deepMetricCell(val, avgAll, !!c.delta) + '</span></div>');
     }
   });
@@ -1261,7 +1265,48 @@ const videosPanel = `
 
 const deepInner = `
     <section class="an-page">
-      <header class="an-head"><h1 class="an-title">Deep data</h1></header>
+      <header class="an-head an-head--between"><h1 class="an-title">Deep data</h1>
+        <!-- тот же контрол Growth period, что на Basic data -->
+        <section class="an-periodbar" data-an-period>
+          <span class="an-periodbar__lbl">Growth period</span>
+          <!-- поле-диапазон: по клику открывается календарь на два месяца -->
+          <div class="an-dr" data-an-dr>
+            <button class="an-dr__field" type="button" data-an-period-trig aria-haspopup="dialog">
+              <span class="an-dr__ico" aria-hidden="true">${IC.calendar}</span>
+              <span class="an-dr__val" data-an-period-val>${PERIOD_RANGE["30"]}</span>
+            </button>
+            <div class="an-dr__pop" data-an-dr-pop hidden role="dialog" aria-label="Select period">
+              <aside class="an-dr__presets" data-an-dr-presets></aside>
+              <div class="an-dr__main">
+                <div class="an-dr__nav">
+                  <button class="an-dr__arrow" type="button" data-an-dr-prev aria-label="Previous month">${IC.arrowL}</button>
+                  <span class="an-dr__mon" data-an-dr-mon="0"></span>
+                  <span class="an-dr__mon" data-an-dr-mon="1"></span>
+                  <button class="an-dr__arrow" type="button" data-an-dr-next aria-label="Next month">${IC.arrowR}</button>
+                </div>
+                <div class="an-dr__grids">
+                  <div class="an-dr__grid" data-an-dr-grid="0"></div>
+                  <div class="an-dr__grid" data-an-dr-grid="1"></div>
+                </div>
+                <div class="an-dr__foot">
+                  <input class="an-input an-dr__inp" type="text" data-an-dr-from aria-label="From" placeholder="dd.mm.yyyy" />
+                  <span class="an-dr__dash">–</span>
+                  <input class="an-input an-dr__inp" type="text" data-an-dr-to aria-label="To" placeholder="dd.mm.yyyy" />
+                  <span class="an-dr__spacer"></span>
+                  <button class="an-btn an-btn--secondary an-btn--small" type="button" data-an-dr-cancel>Cancel</button>
+                  <button class="an-btn an-btn--primary an-btn--small" type="button" data-an-dr-apply>Apply</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="an-periodseg" data-an-period-chips role="radiogroup" aria-label="Growth period">
+            <button class="an-periodseg__btn" type="button" role="radio" aria-checked="false" data-an-period-set="custom">Custom</button>${PERIODS.slice().reverse().map(function (pd) {
+              return '<button class="an-periodseg__btn' + (pd === "30" ? " is-on" : "") + '" type="button" role="radio" aria-checked="' +
+                (pd === "30" ? "true" : "false") + '" data-an-period-set="' + pd + '">' + pd + ' days</button>';
+            }).join("")}
+          </div>
+        </section>
+      </header>
 
       <nav class="an-tabs">
         <a class="an-tab" href="analytics-deep-data.html?tab=channels" data-an-tab="channels">Channels</a>

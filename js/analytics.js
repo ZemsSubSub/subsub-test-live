@@ -925,6 +925,9 @@
     if (!panels.length) return;
     var cur = tabCurrent();
     panels.forEach(function (p) { p.hidden = p.getAttribute("data-an-tab-panel") !== cur; });
+    // на табе Videos прирост не при чём — контрол периода скрываем
+    var bar = document.querySelector(".an-periodbar");
+    if (bar) bar.hidden = cur === "videos";
     [].slice.call(document.querySelectorAll("[data-an-tab]")).forEach(function (a) {
       a.classList.toggle("is-active", a.getAttribute("data-an-tab") === cur);
     });
@@ -1143,6 +1146,35 @@
     if (n >= 1e3) return s1(n / 1e3, "k");
     return String(Math.round(n));
   }
+  // Deep data: колонки прироста пересчитываем из 30-дневной базы (data-g30 в ячейке)
+  function flScaleDeep(k) {
+    var body = tblBody("deep");
+    if (!body) return;
+    ["subsg", "viewsg", "pvco"].forEach(function (col) {
+      [].slice.call(body.querySelectorAll('[data-col="' + col + '"][data-g30]')).forEach(function (cell) {
+        var base = parseFloat(cell.getAttribute("data-g30")) || 0;
+        var isAvg = !!cell.closest(".an-tr--avg");
+        // исходные значения (30 дней) — прод-цифры, при возврате показываем их, а не переформатированные
+        if (!cell.hasAttribute("data-orig")) {
+          cell.setAttribute("data-orig", isAvg ? (cell.getAttribute("data-avg") || "") : (cell.textContent || "").trim());
+          if (isAvg) cell.setAttribute("data-origt", cell.getAttribute("data-total") || "");
+        }
+        var val = k === 1 ? cell.getAttribute("data-orig") : "+" + jsFmt(base * k);
+        if (isAvg) {
+          // сводка: пересчитываем и среднее, и сумму, дальше режим выберет gsApply
+          var baseT = parseFloat(cell.getAttribute("data-g30t"));
+          cell.setAttribute("data-avg", val);
+          if (k === 1) cell.setAttribute("data-total", cell.getAttribute("data-origt") || cell.getAttribute("data-total"));
+          else if (!isNaN(baseT)) cell.setAttribute("data-total", "+" + jsFmt(baseT * k));
+          return;
+        }
+        var heat = cell.querySelector(".an-heat");
+        var tag = (heat || cell).querySelector("[class*='an-delta']");
+        if (tag) tag.textContent = val; else (heat || cell).textContent = val;
+      });
+    });
+    if (typeof gsApply === "function") gsApply(gsMode());
+  }
   function flSetCustom(from, to) {
     var base = drDict().growthBase || [];
     var k = drDays(from, to) / 30;
@@ -1172,6 +1204,7 @@
       if (iViewsG >= 0) put(iViewsG, "+" + jsFmt(viewsG));
       if (iVps >= 0) put(iVps, jsFmt(viewsG / Math.max(1, subsG)));
     });
+    flScaleDeep(k);
   }
 
   function flApplyBasic(v) {
@@ -1295,6 +1328,7 @@
       setCell(iViewsG, g[1], true);
       setCell(iVps, g[2], false);
     });
+    flScaleDeep((parseInt(pd, 10) || 30) / 30);   // те же периоды в deep-таблице
   }
   function flInit() {
     if (!flPanels().length) return;

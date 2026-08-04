@@ -1815,6 +1815,7 @@ body.is-open:not(.is-collapsed) .main { margin-left: 306px; }
 .an-tbody .an-tr.is-selected .an-chan__fade { background: linear-gradient(to left, var(--color-blue-20, #e1e8ff), var(--color-blue-20, #e1e8ff), transparent); }
 /* A4: Growth period в заголовке страницы: поле-диапазон + сегмент периодов */
 .an-periodbar { position: relative; display: flex; align-items: center; gap: 12px; user-select: none; }
+.an-periodbar[hidden] { display: none; }
 .an-periodbar__lbl { font-size: 14px; font-weight: 500; color: var(--color-black); }
 .an-periodbar .anf-chips { padding-top: 0; }
 
