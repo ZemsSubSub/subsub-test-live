@@ -277,6 +277,15 @@ function fSelect(id, label, ph, opts, extra) {
     (extra || "") +
   '</div>';
 }
+// поиск по названию: то же текстовое поле, но с иконкой лупы
+function fSearch(id, label, ph) {
+  return '<div class="anf-field" data-anf-field="' + id + '">' +
+    '<label class="anf-lbl">' + esc(label) + '</label>' +
+    '<div class="an-search anf-search-field">' + IC.search +
+      '<input class="an-search__input" type="text" placeholder="' + esc(ph) + '" data-anf-text />' +
+    '</div>' +
+  '</div>';
+}
 function fText(id, label, ph) {
   return '<div class="anf-field" data-anf-field="' + id + '">' +
     '<label class="anf-lbl">' + esc(label) + '</label>' +
@@ -334,9 +343,6 @@ function collSel(key, val, ph) {
     '</div>' +
   '</span>';
 }
-function fGroup(title, iconKey, inner) {
-  return '<div class="anf-group"><div class="anf-group__title">' + (IC[iconKey] || "") + esc(title) + '</div>' + inner + '</div>';
-}
 // сам drawer
 function filtersPanel(key, inner) {
   return '<aside class="an-filters" data-an-filters="' + key + '">' +
@@ -353,22 +359,18 @@ function filtersPanel(key, inner) {
 
 // наборы полей: на каждой странице свой (P1.13)
 const FILTERS_BASIC = filtersPanel("basic",
-  fGroup("Collection", "collections", fSelect("collection", "Collection", "Select collection", [])) +
-  fGroup("Channel", "chartPie",
-    // A4: Growth period переехал в тулбар страницы
-
-    fSelect("topic", "YouTube topic", "Select topic", TOPIC_LIST) +
-    fText("title", "YouTube channel title", "Select channel") +
-    fSelect("country", "YouTube country", "Select country", COUNTRY_LIST) +
-    fSelect("language", "Detected Language", "Select language", LANG_LIST)
-  )
+  fSearch("title", "Search in title", "Search by channel title") +
+  fSelect("collection", "Collection", "Select collection", []) +
+  fSelect("topic", "YouTube topic", "Select topic", TOPIC_LIST) +
+  fSelect("country", "YouTube country", "Select country", COUNTRY_LIST) +
+  fSelect("language", "Detected Language", "Select language", LANG_LIST)
 );
 // Deep data, таб Channels — плоский список без групп; Growth period без чипов (только календарь)
 const FILTERS_DEEP = filtersPanel("deep",
+  fSearch("title", "Search in title", "Search by channel title") +
   fSelect("collection", "Collection", "Select collection", []) +
   fGrowthPeriod(false) +
   fSelect("topic", "YouTube topic", "Select topic", TOPIC_LIST) +
-  fText("title", "YouTube channel title", "Select channel") +
   fSelect("country", "YouTube country", "Select country", COUNTRY_LIST) +
   fSelect("language", "Detected Language", "Select language", LANG_LIST) +
   // ниже — визуальные элементы без логики: на проде «Disable mode» тоже ничего не переключает,
@@ -804,8 +806,6 @@ const mainInner = `
           ${collSel("basic", "", "Select collection")}
           <span class="an-pagi__dot"></span>
           <span class="an-pagi__total">2.2m channels</span>
-          <span class="an-pagi__sep">·</span>
-          <span class="an-pagi__shown" data-an-shown>showing 1–30</span>
         </div>
         <div class="an-pagi__ctrls">
           <span class="an-pagi__pages">Pages: 74,046</span>

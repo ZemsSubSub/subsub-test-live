@@ -1852,27 +1852,32 @@ body.filters-open .an-tablewrap::-webkit-scrollbar { width: 0; height: 0; }
 .an-dr__arrow svg { width: 20px; height: 20px; }
 .an-dr__mon { text-align: center; font-size: 16px; font-weight: 500; color: var(--color-black); }
 .an-dr__grids { display: flex; gap: 20px; padding: 8px 16px 16px; }
-.an-dr__grid { display: grid; grid-template-columns: repeat(7, 34px); gap: 2px 2px; }
+/* ячейки без зазоров — иначе в выбранном диапазоне появляются белые полосы */
+.an-dr__grid { display: grid; grid-template-columns: repeat(7, 36px); gap: 0; }
 .an-dr__wd { display: flex; align-items: center; justify-content: center; height: 28px; font-size: 12px; font-weight: 500; color: var(--color-shade-700); }
 .an-dr__day {
-  position: relative; display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 32px;
-  border: 0; background: none; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 400; color: var(--color-black); border-radius: 8px;
+  position: relative; display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px;
+  border: 0; background: none; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 400; color: var(--color-black); padding: 0;
 }
-.an-dr__day:hover { background: var(--color-shade-100); }
+.an-dr__d { position: relative; z-index: 1; display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px; border-radius: 50%; }
+.an-dr__day:hover .an-dr__d { background: var(--color-shade-200); }
 .an-dr__day--out { color: var(--color-shade-500); }
-.an-dr__day--in { background: var(--color-shade-100); border-radius: 0; }
-.an-dr__day--edge { background: var(--color-black); color: #fff; border-radius: 8px; }
-.an-dr__day--edge:hover { background: var(--color-black); }
-.an-dr__day--today::after { content: ""; position: absolute; bottom: 4px; left: 50%; transform: translateX(-50%);
-  width: 4px; height: 4px; border-radius: 50%; background: var(--color-black); }
+/* непрерывная полоса промежутка: середина заливается целиком, у краёв — половина */
+.an-dr__day--in { background: var(--color-shade-100); }
+.an-dr__day--start::before, .an-dr__day--end::before {
+  content: ""; position: absolute; top: 0; bottom: 0; width: 50%; background: var(--color-shade-100); z-index: 0;
+}
+.an-dr__day--start::before { right: 0; }
+.an-dr__day--end::before { left: 0; }
+.an-dr__day--edge .an-dr__d { background: var(--color-black); color: #fff; }
+.an-dr__day--edge:hover .an-dr__d { background: var(--color-black); }
+.an-dr__day--today::after { content: ""; position: absolute; bottom: 2px; left: 50%; transform: translateX(-50%);
+  width: 4px; height: 4px; border-radius: 50%; background: var(--color-black); z-index: 2; }
 .an-dr__day--edge.an-dr__day--today::after { background: #fff; }
 .an-dr__foot { display: flex; align-items: center; gap: 8px; padding: 12px 20px; border-top: 1px solid var(--color-shade-200); }
 .an-dr__inp { width: 116px; height: 40px; font-size: 14px; text-align: center; }
 .an-dr__dash { color: var(--color-shade-700); }
 .an-dr__spacer { flex: 1; }
-/* A7: счётчик показанного диапазона */
-.an-pagi__sep { color: var(--color-shade-500); }
-.an-pagi__shown { font-size: 16px; font-weight: 400; color: var(--color-shade-700); }
 .an-table { width: max-content; min-width: 100%; }
 .an-thead, .an-tbody { width: max-content; min-width: 100%; }
 .an-tr { display: flex; align-items: stretch; width: max-content; min-width: 100%; }
@@ -2599,6 +2604,10 @@ body.filters-open .main { padding-right: calc(417px + 28px); }
 .anf-lbl { display: inline-flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 500; line-height: 16px; color: var(--color-black); }
 .anf-mark { width: 12px; height: 12px; border-radius: 3px; background: var(--color-brick-orange, #e2703a); flex-shrink: 0; }
 .anf-input { height: 48px; }
+/* поле «Search in title»: иконка лупы внутри, метрики как у остальных полей панели */
+.anf-search-field { flex: 0 0 auto; gap: 12px; height: 48px; border-radius: 8px; }
+.anf-search-field > svg { width: 24px; height: 24px; color: var(--color-shade-700); flex-shrink: 0; }
+.anf-search-field .an-search__input { font-size: 16px; font-weight: 400; }
 .anf-row { display: flex; align-items: center; gap: 8px; }
 .anf-row .anf-input { flex: 1; min-width: 0; }
 .anf-dash { color: var(--color-shade-700); }

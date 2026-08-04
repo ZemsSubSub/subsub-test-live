@@ -885,18 +885,8 @@
       body.appendChild(el);
     }
   }
-  // A7: «2.2m channels · showing 1–30» — какой диапазон видно на текущей странице
-  function tblUpdateShown(key, rows) {
-    var pagi = tblPagi(key); if (!pagi) return;
-    var el = pagi.querySelector("[data-an-shown]"); if (!el) return;
-    var st = TBL[key];
-    if (!rows) { el.textContent = "nothing to show"; return; }
-    var from = (st.page - 1) * st.per + 1, to = Math.min(rows, st.page * st.per);
-    el.textContent = "showing " + from.toLocaleString("en-US") + "–" + to.toLocaleString("en-US");
-  }
   // счётчик рядом с лейблом: на Basic оставляем «2.2m» (это размер базы), в остальных — число строк
   function tblUpdateTotal(key, n) {
-    tblUpdateShown(key, n);
     if (key === "basic") return;
     var pagi = tblPagi(key); if (!pagi) return;
     var tot = pagi.querySelector(".an-pagi__total");
@@ -1097,12 +1087,15 @@
       for (var c = 0; c < 42; c++) {
         var day = new Date(startDay.getFullYear(), startDay.getMonth(), startDay.getDate() + c);
         var out = day.getMonth() !== mv.getMonth();
-        var isEdge = (drFrom && drKey(day) === drKey(drFrom)) || (drTo && drKey(day) === drKey(drTo));
+        var isStart = drFrom && drKey(day) === drKey(drFrom);
+        var isEnd = drTo && drKey(day) === drKey(drTo);
         var inRange = drFrom && drTo && day > drFrom && day < drTo;
+        var band = drFrom && drTo && drKey(drFrom) !== drKey(drTo);   // полоса рисуется только у диапазона
         html += '<button class="an-dr__day' + (out ? " an-dr__day--out" : "") +
-          (inRange ? " an-dr__day--in" : "") + (isEdge ? " an-dr__day--edge" : "") +
+          (inRange ? " an-dr__day--in" : "") + (isStart || isEnd ? " an-dr__day--edge" : "") +
+          (band && isStart ? " an-dr__day--start" : "") + (band && isEnd ? " an-dr__day--end" : "") +
           (drKey(day) === todayK ? " an-dr__day--today" : "") +
-          '" type="button" data-an-dr-day="' + drFmt(day) + '">' + day.getDate() + "</button>";
+          '" type="button" data-an-dr-day="' + drFmt(day) + '"><span class="an-dr__d">' + day.getDate() + "</span></button>";
       }
       grid.innerHTML = html;
     });
