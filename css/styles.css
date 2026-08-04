@@ -2425,7 +2425,8 @@ body.is-open:not(.is-collapsed) .main { margin-left: 306px; }
   background: #fff; border-left: 1px solid var(--color-shade-300);
 }
 body.filters-open .an-filters.is-active { display: flex; }
-body.filters-open .main { padding-right: 417px; }
+/* контент сохраняет свой правый паддинг (28px) — на проде между ним и панелью зазор */
+body.filters-open .main { padding-right: calc(417px + 28px); }
 /* шапка: заголовок «Filters» + × справа (BasePanelHeader: pt-25, h-60, без бордера) */
 .an-filters__head {
   display: flex; align-items: center; justify-content: space-between; gap: 12px;
