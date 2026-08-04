@@ -65,7 +65,7 @@ const IC = {
   // BoldOutlineIconClose — жирный X (закрытие футера / remove-колонки)
   closeBold: '<svg viewBox="0 0 24 24" fill="none"><path d="M19.172 6.42187C19.6126 5.98124 19.6126 5.26874 19.172 4.83281C18.7314 4.39687 18.0189 4.39218 17.583 4.83281L12.0048 10.4109L6.42202 4.82812C5.9814 4.38749 5.2689 4.38749 4.83296 4.82812C4.39702 5.26874 4.39233 5.98124 4.83296 6.41718L10.4111 11.9953L4.82827 17.5781C4.38765 18.0187 4.38765 18.7312 4.82827 19.1672C5.2689 19.6031 5.9814 19.6078 6.41733 19.1672L11.9955 13.5891L17.5783 19.1719C18.0189 19.6125 18.7314 19.6125 19.1673 19.1719C19.6033 18.7312 19.608 18.0187 19.1673 17.5828L13.5892 12.0047L19.172 6.42187Z" fill="currentColor"/></svg>',
   // BoldOutlineIconChannelPage — «открыть канал» (синяя pill / row open)
-  channelPage: '<svg viewBox="0 0 24 24" fill="none"><path d="M20 2C20.7956 2 21.5587 2.31607 22.1213 2.87868C22.6839 3.44129 23 4.20435 23 5V6.2C23 6.64183 22.6418 7 22.2 7H21V19C21 19.7956 20.6839 20.5587 20.1213 21.1213C19.5587 21.6839 18.7956 22 18 22H4C3.20435 22 2.44129 21.6839 1.87868 21.1213C1.31607 20.5587 1 19.7956 1 19V17.8C1 17.3582 1.35817 17 1.8 17H16.2C16.6418 17 17 17.3582 17 17.8V19C17 19.2449 17.09 19.4813 17.2527 19.6644C17.4155 19.8474 17.6397 19.9643 17.883 19.993L18 20C18.2449 20 18.4813 19.91 18.6644 19.7473C18.8474 19.5845 18.9643 19.3603 18.993 19.117L19 19V4H6C5.75507 4.00003 5.51866 4.08996 5.33563 4.25272C5.15259 4.41547 5.03566 4.63975 5.007 4.883L5 5V14.5C5 14.7761 4.77614 15 4.5 15H3.5C3.22386 15 3 14.7761 3 14.5V5C3 4.20435 3.31607 3.44129 3.87868 2.87868C4.44129 2.31607 5.20435 2 6 2H20Z" fill="currentColor"/></svg>',
+
   // OutlineIconColumns
   columns: '<svg viewBox="0 0 24 24" fill="none"><path d="M18.7693 4H5.23077C4.55104 4 4 4.55104 4 5.23077V18.7693C4 19.449 4.55104 20.0001 5.23077 20.0001H18.7693C19.449 20.0001 20.0001 19.449 20.0001 18.7693V5.23077C20.0001 4.55104 19.449 4 18.7693 4Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 7.69229H20.0001" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 7.69229V20" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 13.8462H20.0001" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>',
   // OutlineIconSave — «Export» (стрелка вниз в лоток)
@@ -455,7 +455,6 @@ function bodyRow(r, i){
         '<span class="an-chan__left"><span class="an-chan__ava" style="background:var(' + color + ')">' + esc(r[1]) + '</span>' +
         '<span class="an-chan__name">' + esc(r[0]) + '</span></span>' +
         '<span class="an-chan__fade"></span>' +
-        '<span class="an-chan__open" aria-hidden="true">' + IC.channelPage + '</span>' +
       '</a></div>');
   cells.push('<div class="an-td an-td--stub" style="width:20px"></div>');
   // топики: до 2 баджей + «+N» (P1.3). Кликабельными их делает A5 в Фазе 2.
@@ -821,7 +820,7 @@ const mainInner = `
         </div>
       </section>
 
-      <section class="an-tablewrap an-tablewrap--stick" data-an-tablewrap="basic">
+      <section class="an-tablewrap an-tablewrap--surface an-tablewrap--stick" data-an-tablewrap="basic">
         <div class="an-table" data-an-table-body="basic">
           <div class="an-thead">${headHtml}</div>
           <div class="an-tbody">
@@ -1087,7 +1086,6 @@ function deepBodyRow(r, i, avg, coll, off){
           '<a class="and-chan__link" href="#" tabindex="-1"><span class="an-chan__ava" style="background:var(' + color + ')">' + esc(r.i) + '</span>' +
           '<span class="an-chan__name">' + esc(r.name) + '</span></a>' +
           '<span class="an-chan__fade"></span>' +
-          '<button class="and-open" type="button" aria-label="Open channel">' + IC.channelPage + '</button>' +
         '</div></div>');
     } else if (c.stub) {
       cells.push('<div class="an-td an-td--stub' + hid + '" style="width:20px" data-col="stub"></div>');
@@ -1252,7 +1250,7 @@ const videosPanel = `
         </div>
       </section>
 
-      <section class="an-tablewrap an-tablewrap--stick" data-an-tablewrap="video">
+      <section class="an-tablewrap an-tablewrap--surface an-tablewrap--stick" data-an-tablewrap="video">
         <div class="an-table" data-an-table-body="video">
           <div class="an-thead">${vidHead}</div>
           <div class="an-tbody">
@@ -1319,7 +1317,7 @@ const deepInner = `
         </div>
       </section>
 
-      <section class="an-tablewrap an-tablewrap--stick" data-an-tablewrap="deep">
+      <section class="an-tablewrap an-tablewrap--surface an-tablewrap--stick" data-an-tablewrap="deep">
         <div class="an-table" data-an-table-body="deep">
           <div class="an-thead">${deepHead}</div>
           <div class="an-tbody">
@@ -1624,12 +1622,14 @@ const editInner = `
           </div>
         </section>
 
-        <div class="an-table an-table--fill ce-table">
-          <div class="an-thead">${ceHead}</div>
-          <div class="an-tbody">
-          ${ceBody}
+        <section class="an-tablewrap an-tablewrap--surface" data-an-tablewrap="ce">
+          <div class="an-table an-table--fill ce-table">
+            <div class="an-thead">${ceHead}</div>
+            <div class="an-tbody">
+            ${ceBody}
+            </div>
           </div>
-        </div>
+        </section>
       </div>
     </section>
 

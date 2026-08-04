@@ -1793,10 +1793,14 @@ body.is-open:not(.is-collapsed) .main { margin-left: 306px; }
 /* A2: у таблицы свой скролл-бокс — шапка липкая, горизонтальный скроллбар всегда под рукой
    (в проде шапка не липкая, а скроллбар лежит в самом низу страницы) */
 .an-tablewrap--stick { max-height: calc(100vh - 320px); min-height: 320px; overflow: auto; }
-/* при открытой панели фильтров скроллбар таблицы не показываем — скролл остаётся
-   (колесо + shift-колесо), но полоса не режет и без того сжатую таблицу */
-body.filters-open .an-tablewrap { scrollbar-width: none; -ms-overflow-style: none; }
-body.filters-open .an-tablewrap::-webkit-scrollbar { width: 0; height: 0; }
+/* Полосы прокрутки серфейса: ровно 8px и занимают своё место (не поверх контента).
+   Стандартные scrollbar-width/scrollbar-color здесь НЕ задаём: в Chrome они отключают
+   ::-webkit-scrollbar и подставляют свою «тонкую» полосу ~14px. */
+.an-tablewrap::-webkit-scrollbar { width: 8px; height: 8px; }
+.an-tablewrap::-webkit-scrollbar-track { background: transparent; }
+.an-tablewrap::-webkit-scrollbar-thumb { background: var(--color-shade-300); border-radius: 8px; }
+.an-tablewrap::-webkit-scrollbar-thumb:hover { background: var(--color-shade-500); }
+.an-tablewrap::-webkit-scrollbar-corner { background: transparent; }
 .an-tablewrap--stick .an-thead { position: sticky; top: 0; z-index: 6; }
 .an-tablewrap--stick .an-thead .an-th--pin { z-index: 8; }
 /* A2: заглушка-колонка не должна просвечивать под закреплёнными */
@@ -1890,12 +1894,16 @@ body.filters-open .an-tablewrap::-webkit-scrollbar { width: 0; height: 0; }
 .an-th--stub, .an-td--stub { padding: 0; }
 .an-sort { display: inline-flex; align-items: center; gap: 4px; cursor: pointer; height: 100%; white-space: nowrap; }
 .an-sort svg { width: 16px; height: 16px; color: var(--color-shade-300); flex-shrink: 0; }
-.an-tbody .an-tr { height: 64px; border-bottom: 1px solid var(--color-shade-200); }
+.an-tbody .an-tr { height: 48px; border-bottom: 1px solid var(--color-shade-200); }
 .an-tbody .an-tr:last-child { border-bottom: 0; }
 .an-td { display: flex; align-items: center; flex-shrink: 0; box-sizing: border-box; padding: 8px 24px 8px 0; font-size: 14px; font-weight: 300; color: var(--color-black); background: #fff; }
 .an-td--check, .an-td--name { background: #fff; }
 /* закреплённая ячейка канала: паддинги как на проде (pl-2 pr-4) */
 .an-td--name { padding: 8px 16px 8px 8px; }
+/* крайние колонки: контент отступает от рамки серфейса */
+.an-tr > .an-th:first-child, .an-tr > .an-td:first-child { padding-left: 16px; }
+.an-tr > .an-th:last-child, .an-tr > .an-td:last-child { padding-right: 16px; }
+.an-tr > .an-td--check:first-child, .an-tr > .an-th--check:first-child { padding-left: 16px; padding-right: 0; }
 /* --- P1.5: состояние сортировки и меню размера страницы --- */
 .an-sort { cursor: pointer; }
 .an-sort.is-sorted { color: var(--color-black); font-weight: 600; }
@@ -1942,15 +1950,12 @@ body.filters-open .an-tablewrap::-webkit-scrollbar { width: 0; height: 0; }
 .an-chan { position: relative; display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%; height: 100%; text-decoration: none; overflow: visible; }
 .an-chan__left { display: flex; align-items: center; gap: 8px; min-width: 0; }
 /* аватар: 48px; подпись как на проде — 16px/400 на Basic, 14px/300 в deep-таблице */
-.an-chan__ava { width: 48px; height: 48px; border-radius: 50%; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; color: #fff; font-size: 16px; font-weight: 400; overflow: hidden; }
-.and-chan .an-chan__ava { font-size: 14px; font-weight: 300; }
+.an-chan__ava { width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; color: #fff; font-size: 12px; font-weight: 400; overflow: hidden; }
+.and-chan .an-chan__ava { font-size: 12px; font-weight: 400; }
 .an-chan__name { font-size: 14px; font-weight: 500; color: var(--color-black); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } /* text-body-semi-14 */
 .an-chan__fade { pointer-events: none; position: absolute; top: 0; bottom: 0; right: 0; width: 80px; background: linear-gradient(to left, #fff, #fff, transparent); z-index: 1; }
-.an-chan__open { position: relative; z-index: 2; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; background: var(--color-blue-20); color: var(--color-blue); border-radius: 4px; padding: 8px; }
-.an-chan__open svg { width: 16px; height: 16px; }
 .an-tbody .an-tr:hover .an-td--name, .an-tbody .an-tr:hover .an-chan { background: var(--color-shade-100); }
 .an-tbody .an-tr:hover .an-chan__fade { background: linear-gradient(to left, var(--color-shade-100), var(--color-shade-100), transparent); }
-.an-tbody .an-tr:hover .an-chan__open { background: var(--color-blue); color: var(--color-blue-20); }
 
 /* футер выбора */
 .an-footer { position: fixed; left: 306px; right: 0; bottom: 0; height: 60px; background: #fff; border-top: 1px solid var(--color-shade-200); z-index: 50; display: flex; align-items: center; padding: 0 28px; }
@@ -1983,7 +1988,7 @@ body.filters-open .an-tablewrap::-webkit-scrollbar { width: 0; height: 0; }
 /* хитмап-заливка ячеек метрик — метрики прода: ячейка py-2 pr-6, плашка padding 12/8,
    без закругления, цвет ТЕКСТА тоже меняется (зелёный/красный/оранжевый) */
 .an-td--metric { padding: 8px 24px 8px 0; }
-.an-heat { display: flex; align-items: center; width: 100%; padding: 12px 8px; box-sizing: border-box; }
+.an-heat { display: flex; align-items: center; width: 100%; height: 100%; padding: 0 8px; box-sizing: border-box; }
 .an-heat--pos { background: rgba(155, 230, 153, 0.16); color: #1bbc40; }
 .an-heat--neg { background: rgba(255, 153, 153, 0.16); color: #e92929; }
 .an-heat--flat { background: var(--color-shade-90); color: var(--color-black); }
@@ -2000,9 +2005,6 @@ body.filters-open .an-tablewrap::-webkit-scrollbar { width: 0; height: 0; }
 .and-chan .and-rowact { color: var(--color-black); }
 .and-rowact.is-on { color: var(--color-black); }
 .and-chan__link { display: flex; align-items: center; gap: 8px; min-width: 0; text-decoration: none; }
-/* «открыть канал» — тот же компонент, что на Basic data: синяя плашка 32px, иконка 16 */
-.and-open { position: relative; z-index: 2; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; padding: 8px; box-sizing: border-box; border: 0; background: var(--color-blue-20); color: var(--color-blue); cursor: pointer; border-radius: 4px; }
-.an-tbody .an-tr:hover .and-open { background: var(--color-blue); color: var(--color-blue-20); }
 .and-open svg { width: 16px; height: 16px; } /* прод: иконка 16 в кнопке 32 */
 
 /* ==================================================== ANALYTICS → MY COLLECTIONS
@@ -2018,9 +2020,9 @@ body.filters-open .an-tablewrap::-webkit-scrollbar { width: 0; height: 0; }
 .an-table--fill .an-th:last-child, .an-table--fill .an-td:last-child { padding-right: 16px; }
 
 /* серфейс-обёртка таблицы — как `.ml-table-wrap` в Media Library */
+/* серфейс: белая карточка с рамкой, внутри которой живёт таблица и её скроллы */
 .an-tablewrap--surface {
-  overflow-x: auto;          /* при открытой панели фильтров таблица должна скроллиться, а не слипаться */
-  overflow-y: hidden;
+  overflow: auto;
   background: var(--color-white);
   border: 1px solid var(--color-shade-200);
   border-radius: 12px;
@@ -2030,7 +2032,7 @@ body.filters-open .an-tablewrap::-webkit-scrollbar { width: 0; height: 0; }
 /* внутри серфейса верхняя inset-линия шапки дублировала бы рамку — оставляем только нижнюю */
 .an-tablewrap--surface .an-th { box-shadow: inset 0 -1px 0 var(--color-shade-300); }
 .an-th--grow, .an-td--grow { flex: 1 1 auto; min-width: 200px; }
-.an-table--fill .an-tbody .an-tr { height: 72px; }
+.an-table--fill .an-tbody .an-tr { height: 56px; }
 
 /* C1: пояснение в меню, почему чужую коллекцию нельзя менять */
 .mc-menu__note { margin: 4px 8px 4px; max-width: 220px; font-size: 12px; line-height: 1.4; color: var(--color-shade-700); }
@@ -2534,9 +2536,9 @@ body.filters-open .an-tablewrap::-webkit-scrollbar { width: 0; height: 0; }
 .ce-aiblock { margin-top: 4px; }
 
 .ce-table { margin-top: 8px; }
-.ce-table .an-tbody .an-tr { height: 80px; }
+.ce-table .an-tbody .an-tr { height: 56px; }
 .ce-chan { display: inline-flex; align-items: center; gap: 12px; min-width: 0; }
-.ce-ava { width: 48px; height: 48px; font-size: 16px; font-weight: 400; } /* как аватар канала на проде */
+.ce-ava { width: 24px; height: 24px; font-size: 12px; font-weight: 400; }
 .ce-chan__name { font-size: 14px; font-weight: 300; color: var(--color-black); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .ce-num { font-size: 16px; font-weight: 400; color: var(--color-black); }
 .ce-view { font-size: 14px; font-weight: 400; color: var(--color-black); text-decoration: underline; text-underline-offset: 4px; }

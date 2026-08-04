@@ -1301,7 +1301,7 @@
     flSyncActive();
     flFillCollections();
     csSyncToPanel();                           // на Deep поле Collection = текущая коллекция
-    flOpen(true);                              // как на проде — открыт по умолчанию
+    flOpen(false);                             // по умолчанию панель закрыта
     flDot();
   }
 
