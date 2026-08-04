@@ -1828,7 +1828,7 @@ body.filters-open .an-tablewrap::-webkit-scrollbar { width: 0; height: 0; }
 .an-tr { display: flex; align-items: stretch; width: max-content; min-width: 100%; }
 .an-tr[hidden] { display: none; } /* перебиваем display:flex — иначе пагинация/фильтры не скрывают строки */
 .an-tr--head { height: 48px; background: var(--color-shade-90); box-shadow: inset 0 1px 0 var(--color-shade-300), inset 0 -1px 0 var(--color-shade-300); }
-.an-th { display: flex; align-items: center; flex-shrink: 0; box-sizing: border-box; padding-right: 16px; font-size: 12px; font-weight: 500; color: var(--color-shade-700); text-transform: uppercase; box-shadow: inset 0 1px 0 var(--color-shade-300), inset 0 -1px 0 var(--color-shade-300); } /* text-table-title-semi-12; inset-линии на КАЖДОЙ ячейке, чтобы sticky-колонки (Channel/checkbox) не перекрывали верх/низ бордер */
+.an-th { display: flex; align-items: center; flex-shrink: 0; box-sizing: border-box; padding-right: 16px; font-size: 12px; font-weight: 500; color: var(--color-shade-700); text-transform: uppercase; background: var(--color-shade-90); box-shadow: inset 0 1px 0 var(--color-shade-300), inset 0 -1px 0 var(--color-shade-300); } /* text-table-title-semi-12; inset-линии на КАЖДОЙ ячейке, чтобы sticky-колонки (Channel/checkbox) не перекрывали верх/низ бордер */
 .an-th--pin, .an-td--pin { position: sticky; z-index: 2; }
 .an-th--check, .an-th--name { background: var(--color-shade-90); }
 .an-th--check, .an-td--check { justify-content: flex-start; padding-right: 0; }
@@ -1839,6 +1839,8 @@ body.filters-open .an-tablewrap::-webkit-scrollbar { width: 0; height: 0; }
 .an-tbody .an-tr:last-child { border-bottom: 0; }
 .an-td { display: flex; align-items: center; flex-shrink: 0; box-sizing: border-box; padding: 8px 24px 8px 0; font-size: 14px; font-weight: 300; color: var(--color-black); background: #fff; }
 .an-td--check, .an-td--name { background: #fff; }
+/* закреплённая ячейка канала: паддинги как на проде (pl-2 pr-4) */
+.an-td--name { padding: 8px 16px 8px 8px; }
 /* --- P1.5: состояние сортировки и меню размера страницы --- */
 .an-sort { cursor: pointer; }
 .an-sort.is-sorted { color: var(--color-black); font-weight: 600; }
@@ -1869,14 +1871,24 @@ body.filters-open .an-tablewrap::-webkit-scrollbar { width: 0; height: 0; }
 .an-muted { color: var(--color-shade-500); }
 
 /* чекбокс */
-.an-check { width: 20px; height: 20px; border: 1.5px solid var(--color-shade-300); border-radius: 5px; background: #fff; cursor: pointer; flex-shrink: 0; position: relative; padding: 0; }
+/* чекбокс = DS BaseCheckbox: 16×16, rounded-xs (2px), бордер shade-300 → чёрный,
+   отмеченный — чёрная заливка + белая галочка BoldOutlineIconCheck 10×10 */
+.an-check {
+  width: 16px; height: 16px; box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center;
+  border: 1px solid var(--color-shade-300); border-radius: 2px; background: #fff; cursor: pointer; flex-shrink: 0; padding: 0;
+  transition: border-color .15s ease, background-color .15s ease;
+}
+.an-check:hover { border-color: var(--color-shade-500); }
+.an-check svg { width: 10px; height: 10px; color: #fff; opacity: 0; }
 .an-check.is-checked { background: var(--color-black); border-color: var(--color-black); }
-.an-check.is-checked::after { content: ""; position: absolute; left: 6px; top: 2px; width: 4px; height: 9px; border: solid #fff; border-width: 0 2px 2px 0; transform: rotate(45deg); }
+.an-check.is-checked svg { opacity: 1; }
 
 /* ячейка канала */
 .an-chan { position: relative; display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%; height: 100%; text-decoration: none; overflow: visible; }
 .an-chan__left { display: flex; align-items: center; gap: 8px; min-width: 0; }
-.an-chan__ava { width: 48px; height: 48px; border-radius: 50%; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; color: #fff; font-size: 14px; font-weight: 600; overflow: hidden; }
+/* аватар: 48px; подпись как на проде — 16px/400 на Basic, 14px/300 в deep-таблице */
+.an-chan__ava { width: 48px; height: 48px; border-radius: 50%; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; color: #fff; font-size: 16px; font-weight: 400; overflow: hidden; }
+.and-chan .an-chan__ava { font-size: 14px; font-weight: 300; }
 .an-chan__name { font-size: 14px; font-weight: 500; color: var(--color-black); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } /* text-body-semi-14 */
 .an-chan__fade { pointer-events: none; position: absolute; top: 0; bottom: 0; right: 0; width: 80px; background: linear-gradient(to left, #fff, #fff, transparent); z-index: 1; }
 .an-chan__open { position: relative; z-index: 2; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; background: var(--color-blue-20); color: var(--color-blue); border-radius: 4px; padding: 8px; }
@@ -1928,11 +1940,15 @@ body.filters-open .an-tablewrap::-webkit-scrollbar { width: 0; height: 0; }
 .and-chan { position: relative; display: flex; align-items: center; gap: 6px; width: 100%; height: 100%; overflow: visible; }
 .and-rowact { flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border: 0; background: transparent; color: var(--color-shade-500); cursor: pointer; padding: 0; }
 .and-rowact:hover { color: var(--color-black); }
-.and-rowact svg { width: 18px; height: 18px; }
+.and-rowact svg { width: 20px; height: 20px; } /* прод: 20×20 */
+/* закладка на проде чёрная, пин — shade-500 (закреплённый становится чёрным) */
+.and-chan .and-rowact:nth-of-type(2) { color: var(--color-black); }
+.and-rowact.is-on { color: var(--color-black); }
 .and-chan__link { display: flex; align-items: center; gap: 8px; min-width: 0; text-decoration: none; }
-.and-open { position: relative; z-index: 2; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border: 0; background: transparent; color: var(--color-shade-500); cursor: pointer; border-radius: 6px; }
-.and-open:hover { background: var(--color-shade-100); color: var(--color-black); }
-.and-open svg { width: 20px; height: 20px; }
+/* «открыть канал» — тот же компонент, что на Basic data: синяя плашка 32px, иконка 16 */
+.and-open { position: relative; z-index: 2; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; padding: 8px; box-sizing: border-box; border: 0; background: var(--color-blue-20); color: var(--color-blue); cursor: pointer; border-radius: 4px; }
+.an-tbody .an-tr:hover .and-open { background: var(--color-blue); color: var(--color-blue-20); }
+.and-open svg { width: 16px; height: 16px; } /* прод: иконка 16 в кнопке 32 */
 
 /* ==================================================== ANALYTICS → MY COLLECTIONS
    Список коллекций: заголовок + Create Collection, тулбар, пагинация, таблица
@@ -1964,8 +1980,8 @@ body.filters-open .an-tablewrap::-webkit-scrollbar { width: 0; height: 0; }
 /* C1: пояснение в меню, почему чужую коллекцию нельзя менять */
 .mc-menu__note { margin: 4px 8px 4px; max-width: 220px; font-size: 12px; line-height: 1.4; color: var(--color-shade-700); }
 .mc-menu__note[hidden] { display: none; }
-.mc-noshare { display: inline-flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 300; color: var(--color-shade-700); }
-.mc-noshare svg { width: 20px; height: 20px; flex-shrink: 0; }
+.mc-noshare { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 500; color: var(--color-shade-700); }
+.mc-noshare svg { width: 24px; height: 24px; flex-shrink: 0; }
 .mc-search { display: flex; align-items: center; gap: 8px; width: 280px; height: 48px; padding: 0 16px; border: 1px solid var(--color-shade-300); border-radius: 8px; background: #fff; box-sizing: border-box; }
 .mc-search:focus-within { border-color: var(--color-black); }
 .mc-search svg { width: 20px; height: 20px; color: var(--color-shade-700); flex-shrink: 0; }
@@ -1986,14 +2002,14 @@ body.filters-open .an-tablewrap::-webkit-scrollbar { width: 0; height: 0; }
 .mc-status--gray { background: var(--color-shade-100); color: var(--color-shade-700); }
 
 .mc-chips { display: flex; align-items: center; gap: 6px; overflow: hidden; }
-.mc-chip { display: inline-flex; align-items: center; flex-shrink: 0; padding: 4px 8px; border-radius: 4px; background: var(--color-shade-200); color: var(--color-black); font-size: 14px; font-weight: 400; white-space: nowrap; }
+.mc-chip { display: inline-flex; align-items: center; flex-shrink: 0; padding: 4px 8px; border-radius: 4px; background: var(--color-shade-200); color: var(--color-black); font-size: 14px; font-weight: 500; white-space: nowrap; }
 
 .mc-ava { width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; color: #fff; font-size: 13px; font-weight: 600; }
 .mc-owner { display: inline-flex; align-items: center; gap: 8px; min-width: 0; }
-.mc-owner__name { font-size: 14px; font-weight: 400; color: var(--color-black); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mc-owner__name { font-size: 14px; font-weight: 500; color: var(--color-black); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .mc-shared { display: inline-flex; align-items: center; }
 .mc-shared .mc-ava { border: 2px solid #fff; }
-.mc-shared .mc-ava + .mc-ava { margin-left: -10px; }
+.mc-shared .mc-ava + .mc-ava { margin-left: -8px; }
 
 /* ховер строки (таблицы во всю ширину: список коллекций + страница коллекции).
    Перебиваем `background:#fff` у .an-td, иначе подсветка строки не видна. */
@@ -2465,7 +2481,7 @@ body.filters-open .an-tablewrap::-webkit-scrollbar { width: 0; height: 0; }
 .ce-table { margin-top: 8px; }
 .ce-table .an-tbody .an-tr { height: 80px; }
 .ce-chan { display: inline-flex; align-items: center; gap: 12px; min-width: 0; }
-.ce-ava { width: 48px; height: 48px; font-size: 14px; }
+.ce-ava { width: 48px; height: 48px; font-size: 16px; font-weight: 400; } /* как аватар канала на проде */
 .ce-chan__name { font-size: 14px; font-weight: 300; color: var(--color-black); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .ce-num { font-size: 16px; font-weight: 400; color: var(--color-black); }
 .ce-view { font-size: 14px; font-weight: 400; color: var(--color-black); text-decoration: underline; text-underline-offset: 4px; }
