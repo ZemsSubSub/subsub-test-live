@@ -2,6 +2,8 @@
 // футер, очистка поиска. Данные статичны; сортировка/пагинация не подключены к бэкенду.
 (function () {
   function updateFooter() {
+    // на Deep data у футера другая роль (B2: удаление из коллекции)
+    if (document.querySelector("[data-dp-remove]")) { dpFooter(); return; }
     var n = document.querySelectorAll("[data-an-check].is-checked").length;
     var footer = document.querySelector("[data-an-footer]");
     if (!footer) return;
@@ -136,18 +138,13 @@
     }
     var pSet = e.target.closest("[data-an-period-set]");
     if (pSet) { flSetPeriod(pSet.getAttribute("data-an-period-set")); return; }
-    // --- P1.6: срез метрики по типу контента (до сортировки: селектор внутри .an-sort) ---
-    var slT = e.target.closest("[data-an-slice-trig]");
-    if (slT) {
-      var slCol = slT.getAttribute("data-an-slice-trig");
-      var slW = slT.closest("[data-an-slice]");
-      var slM = slW.querySelector("[data-an-slice-menu]");
-      slMenu(slM && slM.hidden ? slCol : null);
-      return;
-    }
-    var slO = e.target.closest("[data-an-slice-opt]");
-    if (slO) { slSetCol(slO.getAttribute("data-col"), slO.getAttribute("data-an-slice-opt")); return; }
-    if (!e.target.closest("[data-an-slice]")) slMenu(null);
+    // --- B1: один переключатель типа контента на все метрики ---
+    var ctB = e.target.closest("[data-an-ctype-set]");
+    if (ctB) { ctSet(ctB.getAttribute("data-an-ctype-set")); return; }
+    // --- B2: массовое удаление каналов из коллекции ---
+    if (e.target.closest("[data-dp-remove]")) { dpAsk(); return; }
+    if (e.target.closest("[data-dp-close]")) { closeModal(document.getElementById("dpConfirm")); return; }
+    if (e.target.closest("[data-dp-confirm]")) { dpRemove(); return; }
     // --- P1.8: сводка Average / Total ---
     var gsT = e.target.closest("[data-an-gs-trig]");
     if (gsT) {
@@ -388,9 +385,99 @@
   }
   function slInit() {
     if (!tblBody("deep")) return;
-    var st = slLoad();
-    Object.keys(st).forEach(function (col) { slSetCol(col, st[col], true); });
+    ctInit();
   }
+  // B1: тип контента — один переключатель на все метрики (было по дропдауну в каждой шапке)
+  var CT_KEY = "subsub_deep_ctype";
+  function ctGet() {
+    try { var v = localStorage.getItem(CT_KEY); return ["all", "videos", "shorts", "streams"].indexOf(v) >= 0 ? v : "all"; }
+    catch (e) { return "all"; }
+  }
+  function ctApply(slice) {
+    var body = tblBody("deep");
+    if (!body) return;
+    [].slice.call(document.querySelectorAll("[data-an-ctype-set]")).forEach(function (b) {
+      var on = b.getAttribute("data-an-ctype-set") === slice;
+      b.classList.toggle("is-on", on);
+      b.setAttribute("aria-checked", on ? "true" : "false");
+    });
+    // все metric-колонки переводим на выбранный срез
+    [].slice.call(document.querySelectorAll("[data-an-metric-lbl]")).forEach(function (lbl) {
+      var col = lbl.getAttribute("data-an-metric-lbl");
+      slSetCol(col, slice, true);
+      // лейбл: «PVN» для all, «PVN Shorts» для срезов
+      var base = lbl.getAttribute("data-base") || lbl.textContent.trim();
+      if (!lbl.getAttribute("data-base")) lbl.setAttribute("data-base", base);
+      lbl.textContent = slice === "all" ? base : base + " " + slice.charAt(0).toUpperCase() + slice.slice(1);
+    });
+    gsApply(gsMode());
+  }
+  function ctSet(slice) {
+    try { localStorage.setItem(CT_KEY, slice); } catch (e) {}
+    ctApply(slice);
+  }
+  function ctInit() { ctApply(ctGet()); }
+
+  // ================= B2: массовое удаление каналов из коллекции (Deep data) =================
+  function dpChecked() {
+    return [].slice.call(document.querySelectorAll('[data-an-table-body="deep"] [data-an-check].is-checked'))
+      .map(function (b) {
+        var row = b.closest(".an-tr"), n = row && row.querySelector(".an-chan__name");
+        return { row: row, name: n ? n.textContent.trim() : "" };
+      }).filter(function (x) { return x.name; });
+  }
+  function dpFooter() {
+    var picked = dpChecked(), footer = document.querySelector("[data-an-footer]");
+    if (!footer) return;
+    footer.hidden = !picked.length;
+    var lbl = footer.querySelector("[data-dp-remove-lbl]");
+    if (lbl) lbl.textContent = "Remove " + picked.length + (picked.length === 1 ? " channel" : " channels");
+  }
+  function dpAsk() {
+    var picked = dpChecked();
+    if (!picked.length) return;
+    var w = document.querySelector('[data-an-collsel="deep"]');
+    var coll = w ? csCurrent(w) : "";
+    var t = document.querySelector("[data-dp-text]");
+    if (t) t.textContent = picked.length === 1
+      ? "«" + picked[0].name + "» will be removed from " + (coll || "the collection") + ". Deep data for this channel will no longer be collected."
+      : picked.length + " channels will be removed from " + (coll || "the collection") + ". Deep data for them will no longer be collected.";
+    openModal("dpConfirm");
+  }
+  function dpRemove() {
+    var picked = dpChecked();
+    var w = document.querySelector('[data-an-collsel="deep"]');
+    var coll = w ? csCurrent(w) : "";
+    picked.forEach(function (x) { if (x.row) x.row.remove(); });
+    // убираем и из состава коллекции в состоянии, чтобы счётчики совпали
+    if (coll) {
+      var extra = aiExtraLoad();
+      if (extra[coll] && extra[coll].channels) {
+        extra[coll].channels = extra[coll].channels.filter(function (n) {
+          return !picked.some(function (x) { return x.name === n; });
+        });
+        aiExtraSave(extra);
+      }
+      var removed = aiRemovedLoad();
+      removed[coll] = (removed[coll] || []).concat(picked.map(function (x) { return x.name; }));
+      aiRemovedSave(removed);
+    }
+    closeModal(document.getElementById("dpConfirm"));
+    var allBtn = document.querySelector('[data-an-table-body="deep"] [data-an-check-all]');
+    if (allBtn) allBtn.classList.remove("is-checked");
+    dpFooter();
+    TBL.deep.page = 1;
+    tblApply("deep");
+    if (typeof aiRenderCollections === "function") aiRenderCollections();
+    toast(picked.length + (picked.length === 1 ? " channel" : " channels") + " removed from " + (coll || "collection"));
+  }
+  // удалённые каналы держим отдельно — иначе базовый состав из сборки их вернёт
+  var AI_REMOVED_KEY = "subsub_coll_removed";
+  function aiRemovedLoad() {
+    try { var v = JSON.parse(localStorage.getItem(AI_REMOVED_KEY) || "{}"); return v && typeof v === "object" ? v : {}; }
+    catch (e) { return {}; }
+  }
+  function aiRemovedSave(o) { try { localStorage.setItem(AI_REMOVED_KEY, JSON.stringify(o)); } catch (e) {} }
 
   // ================= P1.8: сводная строка Average / Total =================
   // В режиме Total прод гасит хитмап («Insights unavailable in Total mode»), повторяем.
@@ -510,8 +597,16 @@
       ? '<button class="anf-opt' + (cur ? "" : " is-selected") + '" type="button" role="option" data-an-collsel-all>All channels</button>'
       : "";
     box.innerHTML = head + (list.map(function (c) {
+      // B3: рядом с коллекцией — сколько строк с deep-данными в ней есть
+      var qty = "";
+      if (key === "deep" || key === "video") {
+        var n = tblAllRows(key).filter(function (r) {
+          return (r.getAttribute("data-coll") || "") === c.name && !r.classList.contains("an-tr--avg");
+        }).length;
+        qty = '<span class="anf-opt__qty">' + n + "</span>";
+      }
       return '<button class="anf-opt' + (c.name === cur ? " is-selected" : "") + '" type="button" role="option" ' +
-             'data-an-collsel-opt="' + escHtml(c.name) + '">' + escHtml(c.name) + "</button>";
+             'data-an-collsel-opt="' + escHtml(c.name) + '">' + escHtml(c.name) + qty + "</button>";
     }).join("") || (head ? "" : '<div class="anf-empty">No collections</div>'));
   }
   // A3: сброс к «All channels» — снимаем и поле Collection в панели
@@ -718,6 +813,7 @@
     });
     rows.slice(from, to).forEach(function (r) { r.hidden = false; });
     if (typeof markSelected === "function") markSelected();
+    tblEmpty(key, rows.length);
     var pagi = tblPagi(key);
     if (pagi) {
       var pagesEl = pagi.querySelector(".an-pagi__pages");
@@ -731,6 +827,20 @@
       if (trig) trig.childNodes[0].nodeValue = st.per + " ";
     }
     tblUpdateTotal(key, rows.length);
+  }
+  // B3: пустое состояние таблицы — тексты как на проде
+  var TBL_EMPTY = { basic: "No channels found", deep: "No channels found", video: "No videos found", coll: "No collections found" };
+  function tblEmpty(key, n) {
+    var b = tblBody(key); if (!b) return;
+    var body = b.querySelector(".an-tbody"); if (!body) return;
+    var el = body.querySelector(".an-empty");
+    if (n > 0) { if (el) el.remove(); return; }
+    if (!el) {
+      el = document.createElement("div");
+      el.className = "an-empty";
+      el.textContent = TBL_EMPTY[key] || "Nothing found";
+      body.appendChild(el);
+    }
   }
   // A7: «2.2m channels · showing 1–30» — какой диапазон видно на текущей странице
   function tblUpdateShown(key, rows) {
@@ -2135,7 +2245,9 @@
     var c = aiCollByName(name), extra = aiExtraLoad()[name];
     var list = c ? c.channels.slice() : [];
     if (extra && extra.channels) extra.channels.forEach(function (n) { if (list.indexOf(n) === -1) list.push(n); });
-    return list;
+    // B2/D1: удалённые из коллекции каналы не возвращаем
+    var removed = (typeof aiRemovedLoad === "function" ? aiRemovedLoad()[name] : null) || [];
+    return removed.length ? list.filter(function (n) { return removed.indexOf(n) === -1; }) : list;
   }
 
   // случай 1 (коллекций нет) — поле имени; случай 2 — дропдаун
@@ -2199,22 +2311,25 @@
     aiPhIdle();                                  // состояние 1 — ротация примеров
     var n = m.querySelector("[data-ai-name]"); if (n) n.focus();
   }
-  // любое изменение полей модалки пересчитывает состояния кнопок и сводку
+  // P1.13: панель фильтров применяется без кнопки Apply. Отдельный слушатель —
+  // раньше это лежало внутри обработчика AI-модалки и не срабатывало вне неё.
   document.addEventListener("input", function (e) {
-    if (!e.target.closest("#aiModal")) return;
-    // состояние 2 — набор в описании: ротацию гасим сразу
-    // P1.13: применение без кнопки Apply
     if (e.target.closest("[data-anf-text],[data-anf-from],[data-anf-to]")) { flApply(); return; }
     var fSearch = e.target.closest("[data-anf-search]");
     if (fSearch) {
       var q = fSearch.value.trim().toLowerCase();
-      var opts = fSearch.closest("[data-anf-menu]").querySelectorAll(".anf-opt");
+      var menu = fSearch.closest("[data-anf-menu]");
+      var opts = menu ? menu.querySelectorAll(".anf-opt") : [];
       for (var oi = 0; oi < opts.length; oi++) {
         var t = opts[oi].textContent.toLowerCase();
         opts[oi].hidden = !!q && t.indexOf(q) === -1;
       }
-      return;
     }
+  });
+  // любое изменение полей модалки пересчитывает состояния кнопок и сводку
+  document.addEventListener("input", function (e) {
+    if (!e.target.closest("#aiModal")) return;
+    // состояние 2 — набор в описании: ротацию гасим сразу
     if (e.target.closest("[data-ai-refseed]")) aiRefSuggest();
     if (e.target.closest("[data-ai-query]")) {
       aiPhStop();

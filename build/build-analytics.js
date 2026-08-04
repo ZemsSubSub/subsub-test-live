@@ -823,6 +823,7 @@ const mainInner = `
 // text:true — не число: без хитмапа и без значения в сводной строке;
 // metric:true — метрика «all», у неё в шапке есть × (переключатель среза, P1.6/B1).
 const DEEP_COLS = [
+  { id:"check", w:40, kind:"check" },
   { id:"name", w:280, label:"Channel", pin:true, sort:true, kind:"channel" },
   { id:"stub", w:20, stub:true },
   { id:"topics", w:160, label:"Youtube topics", off:true, text:true },
@@ -840,13 +841,13 @@ const DEEP_COLS = [
   { id:"viewsg", w:120, label:"Views+", sort:true, delta:true },
   { id:"vps", w:140, label:"Views+/Subs+", sort:true, off:true },
   { id:"pvco", w:160, label:"PVCO", sort:true, delta:true },
-  { id:"pvn", w:150, label:"PVN all", metric:true },
-  { id:"pvc", w:150, label:"PVC all", metric:true },
-  { id:"pec", w:150, label:"PEC all", metric:true },
-  { id:"mev", w:150, label:"MEV all", metric:true },
-  { id:"meer", w:160, label:"MEER all", metric:true },
-  { id:"min", w:150, label:"MIN all", metric:true, off:true },
-  { id:"max", w:150, label:"MAX all", metric:true, off:true },
+  { id:"pvn", w:150, label:"PVN", metric:true },
+  { id:"pvc", w:150, label:"PVC", metric:true },
+  { id:"pec", w:150, label:"PEC", metric:true },
+  { id:"mev", w:150, label:"MEV", metric:true },
+  { id:"meer", w:160, label:"MEER", metric:true },
+  { id:"min", w:150, label:"MIN", metric:true, off:true },
+  { id:"max", w:150, label:"MAX", metric:true, off:true },
 ];
 // средние по коллекции «News UA - Big Media» — значения с прода (по ним настроен хитмап)
 const DEEP_AVG_PROD = { subs:"3.5m", views:"4.6bn", subsg:"9.1k", viewsg:"54.1m", pvco:"9.6m",
@@ -974,31 +975,22 @@ const DEEP_COLL_SETS = COLL_ROWS.filter(function (c) { return c.status === "acti
 function deepHeadCell(c){
   let cls = "an-th";
   let style = "width:" + c.w + "px";
-  if (c.pin) { cls += " an-th--pin an-th--name"; style += ";left:0"; }
+  if (c.kind === "check") {
+    return '<div class="an-th an-th--pin an-th--check" style="width:40px;left:0" data-col="check">' +
+      '<button class="an-check" type="button" data-an-check-all aria-label="Select all"></button></div>';
+  }
+  if (c.pin) { cls += " an-th--pin an-th--name"; style += ";left:40px"; }
   if (c.stub) cls += " an-th--stub";
   if (c.off) cls += " is-colhidden";
   let inner = "";
   if (c.stub) inner = "";
   else if (c.metric) {
-    // метрика: лейбл — селектор среза по типу контента (P1.6), рядом сортировка и × (скрыть)
-    const base = c.label.replace(/ all$/, "");
+    // B1: тип контента переключается один раз на всю таблицу (тулбар), поэтому в шапке
+    // остаются только лейбл и сортировка; скрыть колонку можно в поповере Columns
     inner = '<span class="an-sort an-sort--metric" role="button" tabindex="0" data-an-sort="' + c.id + '">' +
-      '<span class="an-slice-wrap" data-an-slice="' + c.id + '">' +
-        '<button class="an-slice__trig" type="button" data-an-slice-trig="' + c.id + '">' +
-          '<span data-an-slice-lbl="' + c.id + '">' + c.label + '</span>' +
-          '<span class="an-slice__chev">' + IC.circleDown + '</span>' +
-        '</button>' +
-        '<div class="an-slice__menu" data-an-slice-menu="' + c.id + '" hidden role="listbox">' +
-          SLICES.map(function (sl) {
-            const ico = sl === "all" ? IC.ytAll : sl === "videos" ? IC.ytVideo : sl === "shorts" ? IC.ytShorts : IC.ytStream;
-            return '<button class="an-slice__opt' + (sl === "all" ? " is-selected" : "") + '" type="button" role="option" ' +
-              'data-an-slice-opt="' + sl + '" data-col="' + c.id + '" data-lbl="' + esc(base + " " + SLICE_LABEL[sl]) + '">' +
-              ico + esc(base + " " + SLICE_LABEL[sl]) + '</button>';
-          }).join("") +
-        '</div>' +
-      '</span>' + IC.sort +
-      '<span class="and-colx" aria-hidden="true" data-an-colx="' + c.id + '">' + IC.closeBold + '</span></span>';
+      '<span data-an-metric-lbl="' + c.id + '">' + c.label + '</span>' + IC.sort + '</span>';
   }
+
   else if (c.sort || c.kind === "channel") inner = '<span class="an-sort" role="button" tabindex="0" data-an-sort="' + c.id + '">' + c.label + IC.sort + '</span>';
   else inner = c.label;
   return '<div class="' + cls + '" style="' + style + '" data-col="' + c.id + '">' + inner + '</div>';
@@ -1011,9 +1003,11 @@ function deepAvgRow(avg, tot, coll, off){
   const cells = [];
   DEEP_COLS.forEach(function(c){
     const hid = c.off ? " is-colhidden" : "";
-    if (c.kind === "channel") {
+    if (c.kind === "check") {
+      cells.push('<div class="an-td an-td--pin an-td--check" style="width:40px;left:0" data-col="check"></div>');
+    } else if (c.kind === "channel") {
       // P1.8: переключатель сводки — Average (по умолчанию) / Total
-      cells.push('<div class="an-td an-td--pin an-td--name' + hid + '" style="width:280px;left:0" data-col="name">' +
+      cells.push('<div class="an-td an-td--pin an-td--name' + hid + '" style="width:280px;left:40px" data-col="name">' +
         '<span class="an-gs-wrap" data-an-gs>' +
           '<button class="an-collsel and-avg" type="button" data-an-gs-trig aria-haspopup="listbox">' +
             '<span data-an-gs-val>Average</span> ' + IC.chevDown +
@@ -1048,8 +1042,11 @@ function deepBodyRow(r, i, avg, coll, off){
   const cells = [];
   DEEP_COLS.forEach(function(c){
     const hid = c.off ? " is-colhidden" : "";
-    if (c.kind === "channel") {
-      cells.push('<div class="an-td an-td--pin an-td--name' + hid + '" style="width:280px;left:0" data-col="name">' +
+    if (c.kind === "check") {
+      cells.push('<div class="an-td an-td--pin an-td--check" style="width:40px;left:0" data-col="check">' +
+        '<button class="an-check" type="button" data-an-check aria-label="Select"></button></div>');
+    } else if (c.kind === "channel") {
+      cells.push('<div class="an-td an-td--pin an-td--name' + hid + '" style="width:280px;left:40px" data-col="name">' +
         '<div class="and-chan">' +
           '<button class="and-rowact" type="button" aria-label="Pin">' + IC.pin + '</button>' +
           '<button class="and-rowact" type="button" aria-label="Bookmark">' + IC.bookmark + '</button>' +
@@ -1087,7 +1084,7 @@ const deepColsPopover = '<div class="an-cols-wrap" data-an-cols>' +
       '<button class="an-btn an-btn--link an-btn--small" type="button" data-an-cols-reset>' + IC.closeBold + 'Reset</button>' +
     '</div>' +
     '<div class="an-cols__list">' +
-      DEEP_COLS.filter(function (c) { return !c.stub && c.kind !== "channel"; }).map(function (c) {
+      DEEP_COLS.filter(function (c) { return !c.stub && c.kind !== "channel" && c.kind !== "check"; }).map(function (c) {
         return '<label class="an-cols__row">' +
           '<button class="an-check' + (c.off ? "" : " is-checked") + '" type="button" data-an-cols-opt="' + c.id + '" aria-label="' + esc(c.label) + '"></button>' +
           '<span class="an-cols__lbl">' + esc(c.label) + '</span>' +
@@ -1221,7 +1218,7 @@ const videosPanel = `
         </div>
       </section>
 
-      <section class="an-tablewrap" data-an-tablewrap="video">
+      <section class="an-tablewrap an-tablewrap--stick" data-an-tablewrap="video">
         <div class="an-table" data-an-table-body="video">
           <div class="an-thead">${vidHead}</div>
           <div class="an-tbody">
@@ -1242,6 +1239,13 @@ const deepInner = `
       <div data-an-tab-panel="channels">
 
       <section class="an-toolbar">
+        <!-- B1: один переключатель типа контента на все метрики -->
+        <div class="an-ctype" data-an-ctype role="radiogroup" aria-label="Content type">${SLICES.map(function (sl) {
+          const ico = sl === "all" ? IC.ytAll : sl === "videos" ? IC.ytVideo : sl === "shorts" ? IC.ytShorts : IC.ytStream;
+          const lbl = sl === "all" ? "All content" : SLICE_LABEL[sl];
+          return '<button class="an-ctype__btn' + (sl === "all" ? " is-on" : "") + '" type="button" role="radio" ' +
+            'aria-checked="' + (sl === "all" ? "true" : "false") + '" data-an-ctype-set="' + sl + '">' + ico + lbl + '</button>';
+        }).join("")}</div>
         ${deepColsPopover}
         <button class="an-btn an-btn--secondary" type="button" data-an-filters-toggle>${IC.filter}Filters<span class="an-btn__dot" data-an-filters-dot hidden></span></button>
         <button class="an-btn an-btn--secondary" type="button">${IC.export}Export</button>
@@ -1281,7 +1285,7 @@ const deepInner = `
         </div>
       </section>
 
-      <section class="an-tablewrap" data-an-tablewrap="deep">
+      <section class="an-tablewrap an-tablewrap--stick" data-an-tablewrap="deep">
         <div class="an-table" data-an-table-body="deep">
           <div class="an-thead">${deepHead}</div>
           <div class="an-tbody">
@@ -1297,6 +1301,29 @@ const deepInner = `
 
     ${FILTERS_DEEP}
     ${FILTERS_DEEP_VIDEOS}
+
+    <!-- B2: массовые действия по выбранным каналам коллекции -->
+    <div class="an-footer" data-an-footer hidden>
+      <div class="an-footer__inner">
+        <button class="an-btn an-btn--danger an-btn--small" type="button" data-dp-remove>${IC.trash}<span data-dp-remove-lbl>Remove 1 channel</span></button>
+        <button class="an-footer__close" type="button" data-an-footer-close aria-label="Clear channels selection">${IC.closeBold}</button>
+      </div>
+    </div>
+
+    <!-- подтверждение удаления каналов из коллекции -->
+    <div class="an-modal" id="dpConfirm"><div class="an-modal__overlay" data-dp-close></div>
+      <div class="an-modal__dialog an-modal__dialog--sm">
+        <div class="an-modal__head">
+          <h2 class="an-modal__title" data-dp-title>Remove channels from collection?</h2>
+          <button class="an-modal__x" type="button" data-dp-close aria-label="Close">${IC.closeBold}</button>
+        </div>
+        <div class="an-modal__body"><p class="an-modal__text" data-dp-text></p></div>
+        <div class="an-modal__foot">
+          <button class="an-btn an-btn--secondary an-btn--small" type="button" data-dp-close>Cancel</button>
+          <button class="an-btn an-btn--danger an-btn--small" type="button" data-dp-confirm>Remove</button>
+        </div>
+      </div>
+    </div>
 
     <div class="an-toast" data-an-toast hidden></div>`;
 

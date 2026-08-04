@@ -2066,6 +2066,19 @@ body.is-open:not(.is-collapsed) .main { margin-left: 306px; }
 [data-an-table-body="video"] .an-tbody > .an-tr { height: 146px; }
 [data-an-table-body="video"] .an-td { padding: 8px 0; box-sizing: border-box; }
 
+/* --- B1: единый переключатель типа контента в тулбаре Deep data --- */
+.an-ctype { display: inline-flex; align-items: center; gap: 4px; padding: 4px; margin-right: auto; border-radius: 8px; background: var(--color-shade-100); }
+.an-ctype__btn {
+  display: inline-flex; align-items: center; gap: 6px; height: 40px; padding: 0 14px; border: 0; border-radius: 4px;
+  background: none; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 400; color: var(--color-shade-700); white-space: nowrap;
+}
+.an-ctype__btn svg { width: 20px; height: 20px; }
+.an-ctype__btn.is-on { background: #fff; color: var(--color-black); box-shadow: 0 0 4px 0 rgba(0,0,0,.1); }
+/* B3: объём коллекции в дропдауне и пустое состояние таблицы */
+.anf-opt { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.anf-opt__qty { color: var(--color-shade-700); font-weight: 400; }
+.an-empty { display: flex; align-items: center; justify-content: center; height: 160px; font-size: 14px; font-weight: 300; color: var(--color-shade-700); }
+
 /* --- P1.6: селектор среза по типу контента в шапке метрики --- */
 .an-slice-wrap { position: relative; display: inline-flex; }
 .an-slice__trig { display: inline-flex; align-items: center; gap: 4px; padding: 0; border: 0; background: none;
