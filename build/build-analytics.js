@@ -404,34 +404,19 @@ const COLS = [
   { id:"check",  w:40,  pin:"check" },
   { id:"name",   w:280, pin:"name", label:"Channel", sort:true },
   { id:"stub",   w:20,  stub:true },
-  { id:"topics", w:140, label:"Youtube topics", group:"Content" },
-  { id:"created",w:120, label:"Created", group:"Dates" },
-  { id:"lastupd",w:150, label:"Last upd", group:"Dates" },
-  { id:"added",  w:150, label:"Added to base", group:"Dates" },
-  { id:"subs",   w:110, label:"Subs", sort:true, group:"Audience" },
-  { id:"views",  w:100, label:"Views", sort:true, group:"Audience" },
-  { id:"vids",   w:110, label:"Vids", sort:true, group:"Audience" },
+  { id:"topics", w:140, label:"Youtube topics" },
+  { id:"created",w:120, label:"Created" },
+  { id:"lastupd",w:150, label:"Last upd" },
+  { id:"added",  w:150, label:"Added to base" },
+  { id:"subs",   w:110, label:"Subs", sort:true },
+  { id:"views",  w:100, label:"Views", sort:true },
+  { id:"vids",   w:110, label:"Vids", sort:true },
   // A1: AVV — это средние просмотры на видео, место рядом с объёмами, а не в приросте
-  { id:"avv",    w:80,  label:"AVV", sort:true, group:"Audience" },
-  { id:"subsg",  w:110, label:"Subs+", sort:true, group:"Growth" },
-  { id:"viewsg", w:120, label:"Views+", sort:true, group:"Growth" },
-  { id:"vps",    w:150, label:"Views+/Subs+", sort:true, group:"Growth" },
+  { id:"avv",    w:80,  label:"AVV", sort:true },
+  { id:"subsg",  w:110, label:"Subs+", sort:true },
+  { id:"viewsg", w:120, label:"Views+", sort:true },
+  { id:"vps",    w:150, label:"Views+/Subs+", sort:true },
 ];
-// A1: строка групп над шапкой — колонки одной темы объединены подписью
-function groupRow(cols) {
-  const cells = [];
-  let i = 0;
-  while (i < cols.length) {
-    const g = cols[i].group || "";
-    let w = 0, j = i;
-    while (j < cols.length && (cols[j].group || "") === g) { w += cols[j].w; j++; }
-    const pin = !g;   // служебная зона (чекбокс + канал + stub) — закреплена
-    cells.push('<div class="an-thg' + (pin ? " an-thg--pin" : "") + '" style="width:' + w + 'px' + (pin ? ";left:0" : "") + '">' +
-      (g ? '<span>' + esc(g) + '</span>' : "") + '</div>');
-    i = j;
-  }
-  return '<div class="an-tr an-tr--groups">' + cells.join("") + '</div>';
-}
 
 // ---- данные-примеры (реальные каналы/значения с прода app.subsub.io/analytics/basic-data) ----
 const AVA = ["--color-avatar-1","--color-avatar-3","--color-avatar-5","--color-avatar-1","--color-avatar-3"];
@@ -494,7 +479,7 @@ function bodyRow(r, i){
   return '<div class="an-tr">' + cells.join("") + '</div>';
 }
 
-const headHtml = groupRow(COLS) + '<div class="an-tr an-tr--head">' + COLS.map(headCell).join("") + '</div>';
+const headHtml = '<div class="an-tr an-tr--head">' + COLS.map(headCell).join("") + '</div>';
 const rowsHtml = ROWS.map(bodyRow).join("\n          ");
 
 // Модалка «Create collection» — общий фрагмент: используется и как самостоятельный флоу
@@ -746,7 +731,16 @@ const aiModalHtml = `
 
 const mainInner = `
     <section class="an-page">
-      <header class="an-head"><h1 class="an-title">Basic data</h1></header>
+      <header class="an-head an-head--between"><h1 class="an-title">Basic data</h1>
+        <!-- A4: Growth period в правом верхнем углу, на уровне заголовка -->
+        <section class="an-periodbar" data-an-period>
+        <span class="an-periodbar__lbl">Growth period</span>
+        <span class="an-periodbar__val" data-an-period-val data-an-period-label>${PERIOD_LABEL["30"]}</span>
+        <span class="anf-chips an-periodbar__chips" data-an-period-chips>${PERIODS.map(function (pd) {
+        return '<button class="anf-chip' + (pd === "30" ? " is-on" : "") + '" type="button" data-an-period-set="' + pd + '">' + pd + ' days</button>';
+        }).join("")}</span>
+        </section>
+      </header>
 
       <section class="an-searchrow">
         <div class="an-search">
@@ -777,14 +771,6 @@ const mainInner = `
         </div>
       </section>
 
-      <!-- A4: Growth period в тулбаре: значение + чипы 7/30/90 с состоянием выбора -->
-      <section class="an-periodbar" data-an-period>
-        <span class="an-periodbar__lbl">Growth period</span>
-        <span class="an-periodbar__val" data-an-period-val>${PERIOD_LABEL["30"]}</span>
-        <span class="anf-chips an-periodbar__chips" data-an-period-chips>${PERIODS.map(function (pd) {
-          return '<button class="anf-chip' + (pd === "30" ? " is-on" : "") + '" type="button" data-an-period-set="' + pd + '">' + pd + ' days</button>';
-        }).join("")}</span>
-      </section>
 
       <section class="an-pagi" data-an-table="basic">
         <div class="an-pagi__label">
