@@ -172,7 +172,20 @@
     // --- B1: один переключатель типа контента на все метрики ---
     var ctB = e.target.closest("[data-an-ctype-set]");
     if (ctB) { ctSet(ctB.getAttribute("data-an-ctype-set")); return; }
+    // копирование заголовка видео (таб Videos) — как на проде
+    var vcB = e.target.closest("[data-vid-copy]");
+    if (vcB) {
+      e.preventDefault();
+      var vcT = vcB.getAttribute("data-vid-copy") || "";
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(vcT).then(function () { toast("Title copied"); },
+          function () { toast("Failed to copy title"); });
+      } else toast("Failed to copy title");
+      return;
+    }
     // --- B2: массовое удаление каналов из коллекции ---
+    if (e.target.closest("[data-ac-open]")) { acOpen(); return; }
+    if (e.target.closest("[data-dp-pin]")) { dpPinToggle(); return; }
     if (e.target.closest("[data-dp-remove]")) { dpAsk(); return; }
     if (e.target.closest("[data-dp-close]")) { closeModal(document.getElementById("dpConfirm")); return; }
     if (e.target.closest("[data-dp-confirm]")) { dpRemove(); return; }
@@ -481,6 +494,13 @@
     footer.hidden = !picked.length;
     var lbl = footer.querySelector("[data-dp-remove-lbl]");
     if (lbl) lbl.textContent = "Remove " + picked.length + (picked.length === 1 ? " channel" : " channels");
+    var addLbl = footer.querySelector("[data-dp-add-lbl]");
+    if (addLbl) addLbl.textContent = "Add " + picked.length + (picked.length === 1 ? " channel" : " channels") + " to collection";
+    var pinLbl = footer.querySelector("[data-dp-pin-lbl]");
+    if (pinLbl) {
+      var allPinned = picked.length && picked.every(function (x) { return x.row.classList.contains("is-pinned"); });
+      pinLbl.textContent = allPinned ? "Unpin" : "Pin on top";
+    }
   }
   function dpAsk() {
     var picked = dpChecked();
@@ -520,6 +540,72 @@
     if (typeof aiRenderCollections === "function") aiRenderCollections();
     toast(picked.length + (picked.length === 1 ? " channel" : " channels") + " removed from " + (coll || "collection"));
   }
+  // закреплённые каналы: список на коллекцию, порядок сохраняем между перезагрузками
+  var DP_PIN_KEY = "subsub_deep_pinned";
+  function dpPinLoad() {
+    try { var v = JSON.parse(localStorage.getItem(DP_PIN_KEY) || "{}"); return v && typeof v === "object" ? v : {}; }
+    catch (e) { return {}; }
+  }
+  function dpPinSave(o) { try { localStorage.setItem(DP_PIN_KEY, JSON.stringify(o)); } catch (e) {} }
+  function dpColl() {
+    var w = document.querySelector('[data-an-collsel="deep"]');
+    return w ? csCurrent(w) : "";
+  }
+  // закреплённые строки поднимаем наверх (сразу после сводной), остальные — в исходном порядке
+  function dpApplyPins() {
+    var b = tblBody("deep");
+    if (!b) return;
+    var body = b.querySelector(".an-tbody");
+    var all = tblAllRows("deep");
+    // исходный порядок помним в data-ord: по нему строки возвращаются после снятия закрепления
+    var mx = 0;
+    all.forEach(function (r) { var o = r.getAttribute("data-ord"); if (o !== null) mx = Math.max(mx, +o); });
+    all.forEach(function (r) { if (r.getAttribute("data-ord") === null) r.setAttribute("data-ord", ++mx); });
+    all.slice().sort(function (a, c) { return (+a.getAttribute("data-ord")) - (+c.getAttribute("data-ord")); })
+      .forEach(function (r) { body.appendChild(r); });
+    var coll = dpColl(), names = dpPinLoad()[coll] || [];
+    function rowOf(nm) {
+      return all.filter(function (r) {
+        var n = r.querySelector(".an-chan__name");
+        return n && n.textContent.trim() === nm && (r.getAttribute("data-coll") || "") === coll;
+      })[0];
+    }
+    all.forEach(function (row) {
+      var n = row.querySelector(".an-chan__name");
+      row.classList.toggle("is-pinned", !!n && names.indexOf(n.textContent.trim()) !== -1 &&
+        (row.getAttribute("data-coll") || "") === coll);
+    });
+    var avg = all.filter(function (r) {
+      return r.classList.contains("an-tr--avg") && (r.getAttribute("data-coll") || "") === coll;
+    })[0];
+    var anchor = avg ? avg.nextSibling : body.firstChild;
+    names.forEach(function (nm) {
+      var row = rowOf(nm);
+      if (row) body.insertBefore(row, anchor);
+    });
+    tblApply("deep");
+  }
+  function dpPinToggle() {
+    var picked = dpChecked();
+    if (!picked.length) return;
+    var coll = dpColl();
+    if (!coll) return;
+    var store = dpPinLoad(), list = (store[coll] || []).slice();
+    var allPinned = picked.every(function (x) { return x.row.classList.contains("is-pinned"); });
+    picked.forEach(function (x) {
+      var i = list.indexOf(x.name);
+      if (allPinned) { if (i !== -1) list.splice(i, 1); }
+      else if (i === -1) list.push(x.name);
+    });
+    store[coll] = list;
+    dpPinSave(store);
+    [].slice.call(document.querySelectorAll('[data-an-table-body="deep"] [data-an-check], [data-an-table-body="deep"] [data-an-check-all]')).forEach(function (b2) { b2.classList.remove("is-checked"); });
+    dpApplyPins();
+    markSelected();
+    dpFooter();
+    toast(picked.length + (picked.length === 1 ? " channel " : " channels ") + (allPinned ? "unpinned" : "pinned on top"));
+  }
+
   // удалённые каналы держим отдельно — иначе базовый состав из сборки их вернёт
   var AI_REMOVED_KEY = "subsub_coll_removed";
   function aiRemovedLoad() {
@@ -741,6 +827,7 @@
   }
   // Deep: коллекция задаёт набор строк — пишем её в панель и применяем панель целиком
   function csApplyDeep(name) {
+    setTimeout(function () { if (typeof dpApplyPins === "function") dpApplyPins(); }, 0);
     var dBody = tblBody("deep");
     if (dBody) dBody.setAttribute("data-empty-msg", "");     // коллекция снова выбрана
     var act = flActive();
@@ -2113,6 +2200,7 @@
     [].slice.call(document.querySelectorAll("[data-an-check], [data-an-check-all]")).forEach(function (b) { b.classList.remove("is-checked"); });
     markSelected();
     updateFooter();
+    if (typeof dpFooter === "function") dpFooter();
     if (typeof aiRenderCollections === "function") aiRenderCollections();
     toast(picked.length + (picked.length === 1 ? " channel" : " channels") + " added to " +
           (targets.length === 1 ? targets[0] : targets.length + " collections"));
@@ -3100,6 +3188,7 @@
   aiTick();
   aiRenderCollections();
   tabInit();                         // P1.9: активный таб из ?tab=
+  if (tblBody("deep")) dpApplyPins();  // закреплённые каналы наверху
   tblInitAll();                      // P1.5: первая отрисовка страниц
   cvInit();                          // P1.7: видимость колонок из localStorage
   slInit();                          // P1.6: выбранные срезы по типу контента

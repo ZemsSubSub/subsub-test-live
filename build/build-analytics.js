@@ -24,6 +24,7 @@ const IC = {
   aiStars: '<svg viewBox="0 0 16 16" fill="none"><path d="M6.65952 6.11513L7.24284 4.07484C7.46142 3.31113 8.54378 3.31113 8.76236 4.07484L9.34502 6.11513C9.38191 6.2442 9.45108 6.36173 9.54599 6.45665C9.64091 6.55157 9.75845 6.62074 9.88751 6.65763L11.9278 7.24029C12.6915 7.45887 12.6915 8.54123 11.9278 8.75981L9.88751 9.34246C9.75845 9.37935 9.64091 9.44852 9.54599 9.54344C9.45108 9.63836 9.38191 9.7559 9.34502 9.88496L8.76236 11.9253C8.54378 12.689 7.46142 12.689 7.24284 11.9253L6.66018 9.88496C6.62329 9.7559 6.55412 9.63836 6.4592 9.54344C6.36429 9.44852 6.24675 9.37935 6.11768 9.34246L4.07739 8.75981C3.31368 8.54123 3.31368 7.45887 4.07739 7.24029L6.11768 6.65763C6.24675 6.62074 6.36429 6.55157 6.4592 6.45665C6.55412 6.36173 6.62329 6.2442 6.66018 6.11513M12.0213 10.9673C12.2116 10.4123 13.0115 10.4117 13.2011 10.9673L13.2182 11.0246L13.4131 11.8067L14.1952 12.0023C14.8273 12.1603 14.8273 13.057 14.1952 13.215L13.4131 13.4105L13.2182 14.1927C13.0602 14.8241 12.1628 14.8241 12.0048 14.1927L11.8093 13.4105L11.0272 13.215C10.3951 13.057 10.3951 12.1596 11.0272 12.0023L11.8093 11.8067L12.0048 11.0246L12.0213 10.9673ZM12.6112 12.475C12.5733 12.5257 12.5283 12.5708 12.4775 12.6086C12.5283 12.6465 12.5733 12.6915 12.6112 12.7423C12.6491 12.6915 12.6941 12.6465 12.7448 12.6086C12.6941 12.5706 12.649 12.5253 12.6112 12.4743M2.8041 1.74947C3.0003 1.17603 3.84762 1.19513 4.00102 1.80675L4.1959 2.5889L4.97804 2.78443C5.61008 2.94244 5.61008 3.83914 4.97804 3.99715L4.1959 4.19269L4.00102 4.97483C3.84301 5.60621 2.94565 5.60621 2.78764 4.97483L2.59211 4.19269L1.80996 3.99715C1.17793 3.83914 1.17793 2.94178 1.80996 2.78443L2.59211 2.5889L2.78764 1.80675L2.8041 1.74947ZM3.394 3.2578C3.35607 3.30831 3.31105 3.3531 3.26036 3.39079C3.31115 3.42888 3.35616 3.47412 3.394 3.5251C3.43185 3.47412 3.47686 3.42888 3.52765 3.39079C3.47691 3.3529 3.43189 3.30855 3.394 3.2578Z" fill="url(#aiStar0)"/><defs><linearGradient id="aiStar0" x1="1.89149" y1="4.66649" x2="18.9317" y2="7.11893" gradientUnits="userSpaceOnUse"><stop stop-color="#F567FF"/><stop offset="0.403337" stop-color="#B351F6"/><stop offset="0.889423" stop-color="#5951F6"/></linearGradient></defs></svg>',
   // FilledIconLink — иконка ссылки в поле «Paste Channel Reference Link»
   // P1.6: срезы метрик по типу контента — иконки DS (OutlineIconYoutube/Video/YoutubeShorts/Stream)
+  youtube: '<svg viewBox="0 0 23 16" fill="none"><path d="M22.3523 2.50551C22.2212 2.02123 21.9655 1.57974 21.6106 1.22498C21.2557 0.870223 20.814 0.614585 20.3295 0.483521C18.5557 0 11.417 0 11.417 0C11.417 0 4.27787 0.0146359 2.50412 0.498157C2.01962 0.629228 1.57791 0.88488 1.223 1.23965C0.868092 1.59443 0.612358 2.03594 0.481267 2.52023C-0.0552507 5.67035 -0.263376 10.4704 0.495999 13.4945C0.627104 13.9788 0.882844 14.4203 1.23775 14.775C1.59266 15.1298 2.03436 15.3854 2.51886 15.5165C4.29261 16 11.4315 16 11.4315 16C11.4315 16 18.5704 16 20.344 15.5165C20.8285 15.3854 21.2703 15.1298 21.6252 14.775C21.9801 14.4203 22.2359 13.9788 22.367 13.4945C22.9329 10.3399 23.1072 5.54282 22.3523 2.50551Z" fill="currentColor"/><path d="M9.14478 11.4284L15.0669 7.99984L9.14478 4.57129V11.4284Z" fill="white"/></svg>',
   ytAll: '<svg viewBox="0 0 24 24" fill="none"><path d="M17 20H7C4 20 2 18 2 15V9C2 6 4 4 7 4H17C20 4 22 6 22 9V15C22 18 20 20 17 20Z" stroke="currentColor" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/><path d="M11.4 9.5L13.9 11C14.8 11.6 14.8 12.5 13.9 13.1L11.4 14.6C10.4 15.2 9.59998 14.7 9.59998 13.6V10.6C9.59998 9.3 10.4 8.9 11.4 9.5Z" stroke="currentColor" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/></svg>',
   ytVideo: '<svg viewBox="0 0 24 24" fill="none"><path d="M2 12C2 7.28595 2 4.92893 3.46447 3.46447C4.92893 2 7.28595 2 12 2C16.714 2 19.0711 2 20.5355 3.46447C22 4.92893 22 7.28595 22 12C22 16.714 22 19.0711 20.5355 20.5355C19.0711 22 16.714 22 12 22C7.28595 22 4.92893 22 3.46447 20.5355C2 19.0711 2 16.714 2 12Z" stroke="currentColor" stroke-width="1.5"/><path d="M17 2.5L17 21.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M7 2.5L7 21.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M2.5 7L7 7M21.5 7L17 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M2.5 17L7 17M21.5 17L17 17" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M2 12H22" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>',
   ytShorts: '<svg viewBox="0 0 24 24" fill="none"><path d="M19.0181 11.1693L19.0164 11.1667C18.6305 10.601 18.1151 10.1342 17.511 9.80959C18.485 9.27655 19.2168 8.38443 19.5437 7.32015C19.8769 6.24182 19.7654 5.0751 19.239 4.07898C18.7121 3.08203 17.8119 2.33531 16.7345 2.00216L16.733 2.00172C15.6563 1.67115 14.4916 1.77961 13.4943 2.30664L13.494 2.30679L5.5351 6.51678C4.82504 6.88876 4.23526 7.45304 3.83191 8.14416C3.4272 8.83761 3.22925 9.63121 3.25518 10.4304L3.25526 10.4326C3.28358 11.2327 3.53611 12.0095 3.98486 12.6731L3.98589 12.6746C4.37109 13.2414 4.88474 13.7056 5.48556 14.0295C4.53479 14.5761 3.83002 15.4682 3.52091 16.5229C3.20655 17.5889 3.32265 18.7342 3.83936 19.7157L3.83971 19.7164C4.35708 20.6968 5.23795 21.4382 6.29368 21.7807C7.3492 22.1231 8.49732 22.0406 9.49244 21.549L9.51123 21.5394L17.4679 17.3256C18.178 16.9536 18.7677 16.3893 19.1711 15.6983C19.5758 15.0048 19.7737 14.2112 19.7478 13.412L19.7477 13.4098C19.7194 12.6097 19.4669 11.833 19.0181 11.1693Z" stroke="currentColor" stroke-width="1.5"/><path d="M9.71311 13.0963C9.71311 13.7188 10.3681 14.1237 10.9249 13.8454L13.3224 12.6471C13.9397 12.3386 13.9398 11.4578 13.3226 11.1491L10.9252 9.94986C10.3684 9.67134 9.71311 10.0762 9.71311 10.6988V13.0963Z" stroke="currentColor" stroke-width="1.2"/></svg>',
@@ -72,12 +73,8 @@ const IC = {
   export: '<svg viewBox="0 0 24 24" fill="none"><path d="M6 8.33333L12 15M12 15L18 8.33333M12 15L12 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 17L3 18.3333C3 19.8061 4.15127 21 5.57143 21L18.4286 21C19.8487 21 21 19.8061 21 18.3333V17" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>',
   // «unpin» — перечёркнутая кнопка-пин (строки deep-data)
 
-  // DS FilledIconSaveFilled — канал уже в коллекции
-  bookmarkOn: '<svg viewBox="0 0 24 24" fill="none"><path d="M17.9999 21.0518C17.9999 21.4056 17.5742 21.5852 17.3208 21.3383L12.2791 16.4258C12.1238 16.2745 11.8761 16.2745 11.7208 16.4258L6.67915 21.3383C6.4257 21.5852 6 21.4056 6 21.0518V4.46154C6 4.07391 6.15804 3.70217 6.43933 3.42807C6.72064 3.15398 7.10216 3 7.49999 3H16.4999C16.8977 3 17.2793 3.15398 17.5606 3.42807C17.8418 3.70217 17.9999 4.07391 17.9999 4.46154V21.0518Z" fill="currentColor" /></svg>',
-
   // OutlineIconSaveOutline — bookmark (строки deep-data)
-  // DS OutlineIconSaveOutline
-  bookmark: '<svg viewBox="0 0 24 24" fill="none"><path d="M17.9999 22L12 16.1538L6 22V4.46154C6 4.07391 6.15804 3.70217 6.43933 3.42807C6.72064 3.15398 7.10216 3 7.49999 3H16.4999C16.8977 3 17.2793 3.15398 17.5606 3.42807C17.8418 3.70217 17.9999 4.07391 17.9999 4.46154V22Z" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" /></svg>',
+
   // BoldOutlineIconThumbUp — статус «Activated»
   thumbUp: '<svg viewBox="0 0 24 24" fill="none"><path fill-rule="evenodd" clip-rule="evenodd" d="M10.3601 3.53447C10.5044 3.20946 10.8263 3 11.1817 3C13.0189 3 14.5083 4.49088 14.5083 6.32998V8.66996H18.4597C19.1962 8.66324 19.8988 8.97979 20.3822 9.53629C20.8668 10.0942 21.0823 10.837 20.9715 11.568L19.8548 18.8579C19.6669 20.0984 18.596 21.0113 17.3431 20.9999L5.79161 20.9997C4.39147 21.0201 3.19594 19.9903 3.00811 18.6004C3.00271 18.5604 3 18.5201 3 18.4797V12.8098C3 12.7694 3.00271 12.7291 3.00811 12.6891C3.18783 11.3591 4.33367 10.179 5.7916 10.2H7.40059L10.3601 3.53447ZM8.84404 11.3809L11.7222 4.89844C12.2996 5.11701 12.7101 5.67551 12.7101 6.32998V9.56996C12.7101 10.067 13.1126 10.47 13.6092 10.47H18.4642L18.4744 10.4699C18.6854 10.4675 18.8868 10.558 19.0253 10.7174C19.1638 10.8768 19.2253 11.0891 19.1937 11.2979L18.0772 18.5865L18.077 18.5879C18.0232 18.9429 17.7164 19.204 17.3577 19.2L8.84404 19.1999V11.3809ZM7.04587 19.1998L5.78453 19.1997L5.76856 19.1999C5.29361 19.2083 4.88522 18.8718 4.79817 18.4093V12.8794C4.89358 12.3581 5.34836 11.9924 5.76856 11.9999L5.78446 12H7.04587V19.1998Z" fill="currentColor"/></svg>',
   // FilledIconCollections — кнопка Create Collection + сабменю
@@ -383,9 +380,9 @@ const FILTERS_DEEP = filtersPanel("deep",
 );
 // Deep data, таб Videos — другой набор
 const FILTERS_DEEP_VIDEOS = filtersPanel("deepVideos",
-  fText("published", "Published at", "Last 30 days") +
+  fText("published", "Published at", "Select date range") +
   fText("channels", "Channels", "Start typing channel name") +
-  fSelect("vtype", "Video type", "Select the required type", ["Video", "Shorts", "Stream"]) +
+  fSelect("vtype", "Video type", "Select the required type", ["Video", "Short", "Stream"]) +
   fText("video", "Video", "Start typing name or ID") +
   fRange("duration", "Video duration", "Min (sec.)", "Max (sec.)")
 );
@@ -1087,7 +1084,6 @@ function deepBodyRow(r, i, avg, coll, off){
     } else if (c.kind === "channel") {
       cells.push('<div class="an-td an-td--pin an-td--name' + hid + '" style="width:280px;left:40px" data-col="name">' +
         '<div class="and-chan">' +
-          '<button class="and-rowact" type="button" aria-label="Bookmark">' + IC.bookmark + '</button>' +
           '<a class="and-chan__link" href="#" tabindex="-1"><span class="an-chan__ava" style="background:var(' + color + ')">' + esc(r.i) + '</span>' +
           '<span class="an-chan__name">' + esc(r.name) + '</span></a>' +
           '<span class="an-chan__fade"></span>' +
@@ -1166,7 +1162,7 @@ const VID_TITLES = [
   "Спецпроєкт: цифри та факти", "Чому це важливо просто зараз",
   "Підсумки дня за 10 хвилин", "Що далі: три сценарії"
 ];
-const VID_TYPES = ["Video", "Shorts", "Stream"];
+const VID_TYPES = ["Video", "Short", "Stream"];
 function fmtUp(n) { return fmt(n).replace("k", "K").replace("m", "M").replace("bn", "B"); }
 function vidDur(sec) {
   const m = Math.floor(sec / 60), s = sec % 60;
@@ -1187,7 +1183,7 @@ function vidRowsFor(coll) {
       out.push({
         title: VID_TITLES[(i + k) % VID_TITLES.length] + (k ? " — частина " + (k + 1) : ""),
         chan: name, ini: c[1], color: AVA[i % AVA.length], type: type,
-        dur: vidDur(type === "Shorts" ? 15 + Math.floor(r() * 45) : 240 + Math.floor(r() * 2400)),
+        dur: vidDur(type === "Short" ? 15 + Math.floor(r() * 45) : 240 + Math.floor(r() * 2400)),
         published: dmy(1 + Math.floor(r() * 27), 1 + Math.floor(r() * 7), 26),
         time: ("0" + Math.floor(r() * 24)).slice(-2) + ":" + ("0" + Math.floor(r() * 12) * 5).slice(-2),
         views: fmtUp(views), reactions: fmtUp(reactions),
@@ -1208,17 +1204,22 @@ function vidHeadCell(c) {
   return '<div class="an-th" style="width:' + c.w + 'px" data-col="' + c.id + '">' + inner + '</div>';
 }
 function vidRow(v, coll, off) {
+  // иконка типа живёт в бейдже длительности, в центре превью — глиф YouTube (как на проде)
+  const tIco = v.type === "Short" ? IC.ytShorts : v.type === "Stream" ? IC.ytStream : IC.ytVideo;
   return '<div class="an-tr" data-coll="' + esc(coll) + '"' + off + '>' +
     '<div class="an-td" style="width:240px" data-col="thumb">' +
       '<span class="vid-thumb">' +
-        '<span class="vid-thumb__img">' + (v.type === "Shorts" ? IC.ytShorts : v.type === "Stream" ? IC.ytStream : IC.ytVideo) + '</span>' +
-        '<span class="vid-thumb__dur">' + esc(v.dur) + '</span>' +
+        '<span class="vid-thumb__img">' + IC.youtube + '</span>' +
+        '<span class="vid-thumb__dur" title="' + esc(v.type) + '">' + tIco + esc(v.dur) + '</span>' +
       '</span>' +
     '</div>' +
     '<div class="an-td" style="width:580px" data-col="title">' +
       '<span class="vid-title">' +
-        '<a class="vid-title__t" href="#" tabindex="-1">' + esc(v.title) + '</a>' +
-        '<span class="vid-title__chan"><span class="mc-ava vid-ava" style="background:var(' + v.color + ')">' + esc(v.ini) + '</span>' + esc(v.chan) + '</span>' +
+        '<span class="vid-title__top">' +
+          '<a class="vid-title__t" href="#" tabindex="-1">' + esc(v.title) + '</a>' +
+          '<button class="vid-title__copy" type="button" data-vid-copy="' + esc(v.title) + '" aria-label="Copy title" title="Copy title">' + IC.copy + '</button>' +
+        '</span>' +
+        '<span class="vid-title__chan"><span class="mc-ava vid-ava" style="background:var(' + v.color + ')">' + esc(v.ini) + '</span><span class="vid-title__cname">' + esc(v.chan) + '</span></span>' +
       '</span>' +
     '</div>' +
     '<div class="an-td an-td--plain" style="width:120px" data-col="published">' +
@@ -1390,12 +1391,16 @@ const deepInner = `
       </div>
     </section>
 
+    ${acModalHtml}
+
     ${FILTERS_DEEP}
     ${FILTERS_DEEP_VIDEOS}
 
     <!-- B2: массовые действия по выбранным каналам коллекции -->
     <div class="an-footer" data-an-footer hidden>
       <div class="an-footer__inner">
+        <button class="an-btn an-btn--primary an-btn--small" type="button" data-ac-open><span data-dp-add-lbl>Add 1 channel to collection</span></button>
+        <button class="an-btn an-btn--secondary an-btn--small" type="button" data-dp-pin><span data-dp-pin-lbl>Pin on top</span></button>
         <button class="an-btn an-btn--danger an-btn--small" type="button" data-dp-remove>${IC.trash}<span data-dp-remove-lbl>Remove 1 channel</span></button>
         <button class="an-footer__close" type="button" data-an-footer-close aria-label="Clear channels selection">${IC.closeBold}</button>
       </div>
