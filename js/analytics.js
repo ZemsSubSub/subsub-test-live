@@ -105,6 +105,8 @@
     }
     if (e.target.closest("[data-an-filters-close]")) { flOpen(false); return; }
     if (e.target.closest("[data-an-filters-clear]")) { flClear(); return; }
+    var fchipX = e.target.closest("[data-an-fchip-x]");
+    if (fchipX) { flChipRemove(fchipX.getAttribute("data-an-fchip-x")); return; }
     var fTrig = e.target.closest("[data-anf-trig]");
     if (fTrig) {
       var sel = fTrig.closest(".anf-select"), menu = sel.querySelector("[data-anf-menu]");
@@ -964,8 +966,9 @@
     [].slice.call(document.querySelectorAll(".an-tablewrap--stick")).forEach(function (w) {
       if (w.offsetParent === null) return;              // скрытый таб не трогаем
       var top = w.getBoundingClientRect().top;
-      var h = window.innerHeight - top - reserve;
-      w.style.maxHeight = Math.max(240, Math.round(h)) + "px";
+      var h = Math.max(240, Math.round(window.innerHeight - top - reserve));
+      w.style.height = h + "px";        // фиксированная высота: пустая таблица не «сдувается»
+      w.style.maxHeight = h + "px";
     });
   }
   var tblFitT = null;
@@ -1046,6 +1049,69 @@
     return out;
   }
   // непустой фильтр → красная точка на кнопке Filters (как на проде)
+  // ================= бейджи применённых фильтров =================
+  // Рисуются из того же состояния панели, что и сами фильтры: одна правда, без дублей.
+  var FCHIP_LABEL = {
+    collection: "Collection", topic: "Topic", title: "Search", country: "Country", language: "Language",
+    status: "Status", shared: "Shared with", channels: "Channel", ctype: "Type",
+    published: "Published at", vtype: "Video type", video: "Video"
+  };
+  function flChipsHost() {
+    var act = flActive();
+    var key = act ? FL_TABLE[act.getAttribute("data-an-filters")] : null;
+    if (!key) return null;
+    return document.querySelector('[data-an-fchips="' + key + '"]') ||
+           (key === "deep" && tabCurrentSafe() === "videos" ? document.querySelector('[data-an-fchips="video"]') : null);
+  }
+  function tabCurrentSafe() { try { return tabCurrent(); } catch (e) { return "channels"; } }
+  function flChips() {
+    var host = flChipsHost();
+    if (!host) return;
+    var v = flValues(), items = [];
+    var act0 = flActive();
+    var key0 = act0 ? FL_TABLE[act0.getAttribute("data-an-filters")] : null;
+    Object.keys(v).forEach(function (k) {
+      if (k === "highlight" || k === "period") return;              // не фильтры
+      if (k === "ctype" && v[k] === "All") return;                   // дефолт сегмента
+      // на Deep и Videos коллекция выбирается пилюлей у счётчика — бейдж дублировал бы её
+      if (k === "collection" && key0 === "deep") return;
+      var base = k.replace(/(From|To)$/, "");
+      if (/(From|To)$/.test(k)) {                                    // диапазон сводим в один бейдж
+        if (items.some(function (i) { return i.id === base; })) return;
+        var from = v[base + "From"], to = v[base + "To"];
+        items.push({ id: base, label: FCHIP_LABEL[base] || base, value: (from != null ? from : "…") + " – " + (to != null ? to : "…") });
+        return;
+      }
+      items.push({ id: k, label: FCHIP_LABEL[k] || k, value: v[k] });
+    });
+    host.hidden = !items.length;
+    host.innerHTML = items.map(function (i) {
+      return '<span class="an-fchip"><span class="an-fchip__k">' + escHtml(i.label) + ":</span>" + escHtml(String(i.value)) +
+        '<button class="an-fchip__x" type="button" data-an-fchip-x="' + escHtml(i.id) + '" aria-label="Remove filter">' + closeIconHtml() + "</button></span>";
+    }).join("") + (items.length > 1 ? '<button class="an-fchips__clear" type="button" data-an-filters-clear>Clear all</button>' : "");
+    if (typeof tblFit === "function") tblFit();   // строка бейджей меняет высоту — пересчитываем скролл-бокс
+  }
+  function closeIconHtml() {
+    var proto = document.querySelector("[data-an-filters-close] svg") || document.querySelector(".an-modal__x svg");
+    return proto ? proto.outerHTML : "×";
+  }
+  // снятие одного фильтра: возвращаем поле в исходное состояние и применяем панель
+  function flChipRemove(id) {
+    var act = flActive();
+    if (!act) return;
+    var f = act.querySelector('[data-anf-field="' + id + '"]');
+    if (!f) return;
+    var val = f.querySelector("[data-anf-val]");
+    if (val) {
+      var ph = val.getAttribute("data-anf-ph");
+      if (ph) val.textContent = ph;
+      val.classList.add("is-ph");
+    }
+    [].slice.call(f.querySelectorAll("[data-anf-text],[data-anf-from],[data-anf-to]")).forEach(function (i) { i.value = ""; });
+    var segs = [].slice.call(f.querySelectorAll(".anf-seg__btn"));
+    if (segs.length) segs.forEach(function (b, i) { b.classList.toggle("is-on", i === 0); });
+    flApply();
+  }
   function flDot() {
     var v = flValues(), dirty = false;
     var act = flActive(), key = act ? FL_TABLE[act.getAttribute("data-an-filters")] : null;
@@ -1069,6 +1135,7 @@
     else if (key === "deep") flApplyDeep(v);
     if (key === "basic") csSyncFromPanel();   // селектор у счётчика показывает тот же фильтр (P1.1)
     flDot();
+    flChips();
     if (key && typeof tblApply === "function") { TBL[key].page = 1; tblApply(key); }
   }
   function chInfo(name) {                     // справка по каналу из сида
@@ -1397,6 +1464,7 @@
     csSyncToPanel();                           // на Deep поле Collection = текущая коллекция
     flOpen(false);                             // по умолчанию панель закрыта
     flDot();
+    flChips();
   }
 
   // ================= MY COLLECTIONS: флоу действий =================

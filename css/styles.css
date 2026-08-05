@@ -1950,11 +1950,16 @@ body.is-open:not(.is-collapsed) .main { margin-left: 306px; }
 .an-perpage__opt:hover { background: var(--color-shade-100); }
 .an-perpage__opt.is-selected { background: var(--color-shade-100); font-weight: 600; }
 
-.an-topic { text-decoration: underline; text-underline-offset: 3px; }
-/* топики — 1:1 с продом: первый топик подчёркнут, дальше «+N» обычным текстом, одна строка */
-.an-topics { display: inline-flex; flex-wrap: nowrap; align-items: center; gap: 4px; min-width: 0; font-size: 14px; font-weight: 300; }
-.an-topics .an-topic { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.an-topic__more { flex-shrink: 0; cursor: pointer; color: inherit; }
+/* топики — маленькие пилюли: первый топик + «+N», обе кликабельны */
+.an-topics { display: inline-flex; flex-wrap: nowrap; align-items: center; gap: 4px; min-width: 0; }
+.an-topic, .an-topic__more {
+  display: inline-flex; align-items: center; flex-shrink: 0; max-width: 100%; padding: 2px 8px;
+  border-radius: 4px; background: var(--color-shade-100); color: var(--color-black);
+  font-size: 12px; font-weight: 400; line-height: 18px; cursor: pointer; white-space: nowrap;
+  overflow: hidden; text-overflow: ellipsis;
+}
+.an-topic:hover, .an-topic__more:hover { background: var(--color-shade-200); }
+.an-topics.is-expanded { flex-wrap: wrap; gap: 2px 4px; }
 .an-delta--pos { color: var(--color-green); }
 .an-delta--neg { color: var(--color-red); }
 .an-muted { color: var(--color-shade-500); }
@@ -2180,6 +2185,22 @@ body.is-open:not(.is-collapsed) .main { margin-left: 306px; }
 }
 .an-ctype__btn svg { width: 16px; height: 16px; }
 .an-ctype__btn.is-on { background: #fff; color: var(--color-black); box-shadow: 0 0 4px 0 rgba(0,0,0,.1); }
+/* бейджи применённых фильтров над таблицей */
+.an-fchips { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.an-fchips[hidden] { display: none; }
+.an-fchip {
+  display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 8px 0 10px;
+  border-radius: 6px; background: var(--color-shade-100); font-size: 13px; font-weight: 400; color: var(--color-black); white-space: nowrap;
+}
+.an-fchip__k { color: var(--color-shade-700); }
+.an-fchip__x { display: inline-flex; align-items: center; justify-content: center; width: 16px; height: 16px;
+  padding: 0; border: 0; border-radius: 50%; background: none; color: var(--color-shade-700); cursor: pointer; }
+.an-fchip__x:hover { background: var(--color-shade-300); color: var(--color-black); }
+.an-fchip__x svg { width: 10px; height: 10px; }
+.an-fchips__clear { height: 28px; padding: 0 10px; border: 0; border-radius: 6px; background: none; cursor: pointer;
+  font-family: inherit; font-size: 13px; font-weight: 500; color: var(--color-black); }
+.an-fchips__clear:hover { background: var(--color-shade-100); }
+
 /* B3: объём коллекции в дропдауне и пустое состояние таблицы */
 .anf-opt { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .anf-opt__qty { color: var(--color-shade-700); font-weight: 400; }
