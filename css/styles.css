@@ -1951,7 +1951,11 @@ body.is-open:not(.is-collapsed) .main { margin-left: 306px; }
 .an-perpage__opt.is-selected { background: var(--color-shade-100); font-weight: 600; }
 
 /* топики — маленькие пилюли: первый топик + «+N», обе кликабельны */
-.an-topics { display: inline-flex; flex-wrap: nowrap; align-items: center; gap: 4px; min-width: 0; }
+.an-td--topics { overflow: hidden; }   /* длинное название не должно лезть в соседнюю колонку */
+.an-topics { display: inline-flex; flex-wrap: nowrap; align-items: center; gap: 4px; min-width: 0; max-width: 100%; }
+/* длинный топик сжимается с эллипсисом, «+N» остаётся целым */
+.an-topics .an-topic { min-width: 0; flex-shrink: 1; }
+.an-topics .an-topic__more { flex-shrink: 0; }
 .an-topic, .an-topic__more {
   display: inline-flex; align-items: center; flex-shrink: 0; max-width: 100%; padding: 2px 8px;
   border-radius: 4px; background: var(--color-shade-100); color: var(--color-black);
@@ -2013,7 +2017,9 @@ body.is-open:not(.is-collapsed) .main { margin-left: 306px; }
 .an-tr--avg { height: 36px !important; border-bottom: 1px solid var(--color-shade-200); background: #fff; }
 .an-tr--avg .an-td { background: #fff; font-weight: 300; padding: 0 24px 0 0; }
 .an-tr--avg .an-td--name { background: #fff; padding-left: 8px; }
-.and-avg { font-weight: 500; color: var(--color-black); padding: 0; }
+/* дропдаун Average/Total — без серой подложки пилюли селектора */
+.and-avg { font-weight: 500; color: var(--color-black); padding: 0; background: transparent; }
+.and-avg:hover { background: transparent; }
 .and-avg svg { width: 16px; height: 16px; color: var(--color-shade-700); }
 
 /* хитмап-заливка ячеек метрик — метрики прода: ячейка py-2 pr-6, плашка padding 12/8,
