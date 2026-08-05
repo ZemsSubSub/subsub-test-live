@@ -2206,9 +2206,9 @@ body.is-open:not(.is-collapsed) .main { margin-left: 306px; }
 .vid-time { font-size: 12px; color: var(--color-shade-500); }
 /* превью 138.67×78 (16:9) + по 6px сверху/снизу — ровно 12px между строками */
 [data-an-table-body="video"] .an-tbody > .an-tr { height: 90px; }
-/* прод-паддинг слева 8px — превью 138.67 + 8 укладывается в колонку 148 */
-[data-an-table-body="video"] .an-th { padding: 8px 0 8px 8px; box-sizing: border-box; }
-[data-an-table-body="video"] .an-td { padding: 6px 0 6px 8px; box-sizing: border-box; }
+/* между колонками 16px, у первой (превью) — 8px: 138.67 + 8 укладывается в колонку 148 */
+[data-an-table-body="video"] .an-th { padding: 8px 0 8px 16px; box-sizing: border-box; }
+[data-an-table-body="video"] .an-td { padding: 6px 0 6px 16px; box-sizing: border-box; }
 [data-an-table-body="video"] .an-tr > .an-th:first-child,
 [data-an-table-body="video"] .an-tr > .an-td:first-child { padding-left: 8px; }
 [data-an-table-body="video"] .an-tr > .an-th:last-child,
