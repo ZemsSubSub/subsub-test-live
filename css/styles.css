@@ -1724,7 +1724,7 @@ body.is-open:not(.is-collapsed) .main { margin-left: 306px; }
 /* страница коллекции скроллится как форма: снизу оставляем место под прибитый футер */
 .main:has(.ce-page) { padding-bottom: 144px; }
 .an-page { display: flex; flex-direction: column; gap: 24px; }
-.an-head { min-height: 48px; display: flex; align-items: center; gap: 16px; } /* gap — отступ бейджа (напр. AI collection) от заголовка */
+.an-head { min-height: 48px; display: flex; align-items: center; flex-wrap: wrap; row-gap: 12px; gap: 16px; } /* gap — отступ бейджа (напр. AI collection) от заголовка; wrap — чтобы Growth period не сминался на узких экранах */
 .an-title { margin: 0; font-size: 32px; line-height: 1.3; font-weight: 500; color: var(--color-black); } /* text-title-semi-32 */
 
 /* --- строка поиска --- */
@@ -2009,6 +2009,10 @@ body.is-open:not(.is-collapsed) .main { margin-left: 306px; }
 
 /* ---- Deep data: табы / тулбар / average / хитмап / pin-bookmark ---- */
 .an-tabs { display: flex; gap: 24px; border-bottom: 1px solid var(--color-shade-200); }
+/* переключатель в заголовке: без сквозной линии, выровнен по базовой линии заголовка */
+.an-tabs--head { align-self: stretch; align-items: flex-end; gap: 20px; border-bottom: 0; }
+.an-tabs--head .an-tab { height: auto; padding: 0 0 6px; }
+.an-tabs--head .an-tab.is-active::after { bottom: 0; }
 .an-tab { position: relative; height: 36px; padding: 0 0 8px; border: 0; background: transparent; cursor: pointer; font-family: inherit; font-size: 16px; font-weight: 500; color: var(--color-shade-700); }
 .an-tab.is-active { color: var(--color-black); }
 .an-tab.is-active::after { content: ""; position: absolute; left: 0; right: 0; bottom: -1px; height: 2px; background: var(--color-black); }
@@ -2053,6 +2057,8 @@ body.is-open:not(.is-collapsed) .main { margin-left: 306px; }
    Список коллекций: заголовок + Create Collection, тулбар, пагинация, таблица
    (Name/Status/Quantity/Includes/Created on/Owner/Shared with/⋮). */
 .an-head--between { justify-content: space-between; }
+/* заголовок + переключатель табов слева, Growth period справа */
+.an-head__left { display: flex; align-items: baseline; gap: 24px; min-width: 0; }
 .an-head__btns { display: flex; align-items: center; gap: 12px; }
 /* таблица во всю ширину (без гориз. скролла) — Includes растягивается */
 .an-table--fill, .an-table--fill .an-thead, .an-table--fill .an-tbody, .an-table--fill .an-tr { width: 100%; min-width: 100%; }
@@ -2171,10 +2177,10 @@ body.is-open:not(.is-collapsed) .main { margin-left: 306px; }
 .vid-search > svg { width: 24px; height: 24px; color: var(--color-black); flex-shrink: 0; }
 /* превью 230×129 (aspect-video, radius 4): реальных картинок YouTube в статике нет,
    поэтому плейсхолдер с глифом YouTube в центре и бейджем «тип + длительность» */
-.vid-thumb { position: relative; display: block; width: 230px; flex-shrink: 0; }
-.vid-thumb__img { display: flex; align-items: center; justify-content: center; width: 230px; height: 129px;
+.vid-thumb { position: relative; display: block; width: 170.67px; flex-shrink: 0; }
+.vid-thumb__img { display: flex; align-items: center; justify-content: center; width: 170.67px; height: 96px;
   border-radius: 4px; background: linear-gradient(135deg, var(--color-shade-200), var(--color-shade-100)); }
-.vid-thumb__img svg { width: 48px; height: 24px; color: #dc2626; }
+.vid-thumb__img svg { width: 36px; height: 18px; color: #dc2626; }
 .vid-thumb__dur { position: absolute; right: 4px; bottom: 4px; display: flex; align-items: center; gap: 4px;
   padding: 4px; border-radius: 4px; background: rgba(12,12,12,.4); backdrop-filter: blur(2px);
   color: #fff; font-size: 12px; font-weight: 300; line-height: 130%; }
@@ -2195,16 +2201,18 @@ body.is-open:not(.is-collapsed) .main { margin-left: 306px; }
   font-size: 14px; font-weight: 600; color: var(--color-black); }
 .vid-title__cname { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .vid-ava { width: 28px; height: 28px; font-size: 12px; flex-shrink: 0; }
-.vid-date { display: flex; flex-direction: column; align-items: flex-start; font-size: 16px; color: var(--color-black); }
-.vid-time { font-size: 14px; color: var(--color-shade-500); }
-[data-an-table-body="video"] .an-tbody > .an-tr { height: 146px; }
-/* на проде у ячеек только py-2 pl-2 — превью 230 + 8 укладывается в колонку 240 */
+/* метрики и дата — теми же шрифтами, что метрики в Deep data → Channels (14/300) */
+.vid-date { display: flex; flex-direction: column; align-items: flex-start; font-size: 14px; color: var(--color-black); }
+.vid-time { font-size: 12px; color: var(--color-shade-500); }
+/* превью 171×96 (16:9) + вертикальные паддинги ячейки 8/8 */
+[data-an-table-body="video"] .an-tbody > .an-tr { height: 112px; }
+/* на проде у ячеек только py-2 pl-2 — превью 171 + 8 укладывается в колонку 180 */
 [data-an-table-body="video"] .an-th, [data-an-table-body="video"] .an-td { padding: 8px 0 8px 8px; box-sizing: border-box; }
 [data-an-table-body="video"] .an-tr > .an-th:first-child,
 [data-an-table-body="video"] .an-tr > .an-td:first-child { padding-left: 8px; }
 [data-an-table-body="video"] .an-tr > .an-th:last-child,
 [data-an-table-body="video"] .an-tr > .an-td:last-child { padding-right: 8px; }
-[data-an-table-body="video"] .an-td--plain { font-size: 16px; }
+[data-an-table-body="video"] .an-td--plain { font-size: 14px; font-weight: 300; color: var(--color-black); }
 /* прод-раскладка ширин: Published at / Views / Reactions делят свободную ширину поровну
    (isGrow в calculateTableSizing), остальные колонки фиксированные */
 [data-an-table-body="video"] [data-col="published"] { flex: 1 1 0; min-width: 120px; }

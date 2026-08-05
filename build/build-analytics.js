@@ -1148,7 +1148,7 @@ const deepBody = DEEP_COLL_SETS.map(function (c) {
 // Перенос прод-таблицы: Video (превью) / Video title / Published at / Views / Reactions / V/S / ER.
 // Размер страницы 10 (как на проде), у таба свой тулбар, своя пагинация и своя панель фильтров.
 const VID_COLS = [
-  { id:"thumb", w:240, label:"Video" },
+  { id:"thumb", w:180, label:"Video" },
   { id:"title", w:580, label:"Video title", sort:true },
   { id:"published", w:120, label:"Published at", sort:true },
   { id:"views", w:100, label:"Views", sort:true },
@@ -1207,7 +1207,7 @@ function vidRow(v, coll, off) {
   // иконка типа живёт в бейдже длительности, в центре превью — глиф YouTube (как на проде)
   const tIco = v.type === "Short" ? IC.ytShorts : v.type === "Stream" ? IC.ytStream : IC.ytVideo;
   return '<div class="an-tr" data-coll="' + esc(coll) + '"' + off + '>' +
-    '<div class="an-td" style="width:240px" data-col="thumb">' +
+    '<div class="an-td" style="width:180px" data-col="thumb">' +
       '<span class="vid-thumb">' +
         '<span class="vid-thumb__img">' + IC.youtube + '</span>' +
         '<span class="vid-thumb__dur" title="' + esc(v.type) + '">' + tIco + esc(v.dur) + '</span>' +
@@ -1278,7 +1278,15 @@ const videosPanel = `
 
 const deepInner = `
     <section class="an-page">
-      <header class="an-head an-head--between"><h1 class="an-title">Deep data</h1>
+      <header class="an-head an-head--between">
+        <div class="an-head__left">
+          <h1 class="an-title">Deep data</h1>
+          <!-- переключатель Channels / Videos живёт в заголовке, рядом с названием страницы -->
+          <nav class="an-tabs an-tabs--head">
+            <a class="an-tab" href="analytics-deep-data.html?tab=channels" data-an-tab="channels">Channels</a>
+            <a class="an-tab" href="analytics-deep-data.html?tab=videos" data-an-tab="videos">Videos</a>
+          </nav>
+        </div>
         <!-- тот же контрол Growth period, что на Basic data -->
         <section class="an-periodbar" data-an-period>
           <span class="an-periodbar__lbl">Growth period</span>
@@ -1320,11 +1328,6 @@ const deepInner = `
           </div>
         </section>
       </header>
-
-      <nav class="an-tabs">
-        <a class="an-tab" href="analytics-deep-data.html?tab=channels" data-an-tab="channels">Channels</a>
-        <a class="an-tab" href="analytics-deep-data.html?tab=videos" data-an-tab="videos">Videos</a>
-      </nav>
 
       <div data-an-tab-panel="channels">
 

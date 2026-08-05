@@ -1073,9 +1073,6 @@
     if (!panels.length) return;
     var cur = tabCurrent();
     panels.forEach(function (p) { p.hidden = p.getAttribute("data-an-tab-panel") !== cur; });
-    // на табе Videos прирост не при чём — контрол периода скрываем
-    var bar = document.querySelector(".an-periodbar");
-    if (bar) bar.hidden = cur === "videos";
     if (typeof tblFit === "function") tblFit();
     [].slice.call(document.querySelectorAll("[data-an-tab]")).forEach(function (a) {
       a.classList.toggle("is-active", a.getAttribute("data-an-tab") === cur);
@@ -1103,6 +1100,9 @@
   function flOpen(open) {
     document.body.classList.toggle("filters-open", !!open);
     flSyncActive();
+    // контент сужается: заголовок может перенести Growth period на вторую строку,
+    // поэтому высоту скролл-бокса таблицы пересчитываем после перекладки
+    if (typeof tblFit === "function") { tblFit(); requestAnimationFrame(tblFit); }
   }
   // список коллекций в поле Collection заполняем динамически: часть создана на клиенте
   function flFillCollections() {
