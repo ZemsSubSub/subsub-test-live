@@ -2177,10 +2177,10 @@ body.is-open:not(.is-collapsed) .main { margin-left: 306px; }
 .vid-search > svg { width: 24px; height: 24px; color: var(--color-black); flex-shrink: 0; }
 /* превью 230×129 (aspect-video, radius 4): реальных картинок YouTube в статике нет,
    поэтому плейсхолдер с глифом YouTube в центре и бейджем «тип + длительность» */
-.vid-thumb { position: relative; display: block; width: 170.67px; flex-shrink: 0; }
-.vid-thumb__img { display: flex; align-items: center; justify-content: center; width: 170.67px; height: 96px;
+.vid-thumb { position: relative; display: block; width: 138.67px; flex-shrink: 0; }
+.vid-thumb__img { display: flex; align-items: center; justify-content: center; width: 138.67px; height: 78px;
   border-radius: 4px; background: linear-gradient(135deg, var(--color-shade-200), var(--color-shade-100)); }
-.vid-thumb__img svg { width: 36px; height: 18px; color: #dc2626; }
+.vid-thumb__img svg { width: 29px; height: 14px; color: #dc2626; }
 .vid-thumb__dur { position: absolute; right: 4px; bottom: 4px; display: flex; align-items: center; gap: 4px;
   padding: 4px; border-radius: 4px; background: rgba(12,12,12,.4); backdrop-filter: blur(2px);
   color: #fff; font-size: 12px; font-weight: 300; line-height: 130%; }
@@ -2204,10 +2204,11 @@ body.is-open:not(.is-collapsed) .main { margin-left: 306px; }
 /* метрики и дата — теми же шрифтами, что метрики в Deep data → Channels (14/300) */
 .vid-date { display: flex; flex-direction: column; align-items: flex-start; font-size: 14px; color: var(--color-black); }
 .vid-time { font-size: 12px; color: var(--color-shade-500); }
-/* превью 171×96 (16:9) + вертикальные паддинги ячейки 8/8 */
-[data-an-table-body="video"] .an-tbody > .an-tr { height: 112px; }
-/* на проде у ячеек только py-2 pl-2 — превью 171 + 8 укладывается в колонку 180 */
-[data-an-table-body="video"] .an-th, [data-an-table-body="video"] .an-td { padding: 8px 0 8px 8px; box-sizing: border-box; }
+/* превью 138.67×78 (16:9) + по 6px сверху/снизу — ровно 12px между строками */
+[data-an-table-body="video"] .an-tbody > .an-tr { height: 90px; }
+/* прод-паддинг слева 8px — превью 138.67 + 8 укладывается в колонку 148 */
+[data-an-table-body="video"] .an-th { padding: 8px 0 8px 8px; box-sizing: border-box; }
+[data-an-table-body="video"] .an-td { padding: 6px 0 6px 8px; box-sizing: border-box; }
 [data-an-table-body="video"] .an-tr > .an-th:first-child,
 [data-an-table-body="video"] .an-tr > .an-td:first-child { padding-left: 8px; }
 [data-an-table-body="video"] .an-tr > .an-th:last-child,

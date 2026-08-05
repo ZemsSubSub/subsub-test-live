@@ -1148,7 +1148,7 @@ const deepBody = DEEP_COLL_SETS.map(function (c) {
 // Перенос прод-таблицы: Video (превью) / Video title / Published at / Views / Reactions / V/S / ER.
 // Размер страницы 10 (как на проде), у таба свой тулбар, своя пагинация и своя панель фильтров.
 const VID_COLS = [
-  { id:"thumb", w:180, label:"Video" },
+  { id:"thumb", w:148, label:"Video" },
   { id:"title", w:580, label:"Video title", sort:true },
   { id:"published", w:120, label:"Published at", sort:true },
   { id:"views", w:100, label:"Views", sort:true },
@@ -1207,7 +1207,7 @@ function vidRow(v, coll, off) {
   // иконка типа живёт в бейдже длительности, в центре превью — глиф YouTube (как на проде)
   const tIco = v.type === "Short" ? IC.ytShorts : v.type === "Stream" ? IC.ytStream : IC.ytVideo;
   return '<div class="an-tr" data-coll="' + esc(coll) + '"' + off + '>' +
-    '<div class="an-td" style="width:180px" data-col="thumb">' +
+    '<div class="an-td" style="width:148px" data-col="thumb">' +
       '<span class="vid-thumb">' +
         '<span class="vid-thumb__img">' + IC.youtube + '</span>' +
         '<span class="vid-thumb__dur" title="' + esc(v.type) + '">' + tIco + esc(v.dur) + '</span>' +
