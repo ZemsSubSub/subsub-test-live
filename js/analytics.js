@@ -646,16 +646,17 @@
       ? '<button class="anf-opt' + (cur ? "" : " is-selected") + '" type="button" role="option" data-an-collsel-all>All channels</button>'
       : "";
     box.innerHTML = head + (list.map(function (c) {
-      // B3: рядом с коллекцией — сколько строк с deep-данными в ней есть
-      var qty = "";
-      if (key === "deep" || key === "video") {
-        var n = tblAllRows(key).filter(function (r) {
-          return (r.getAttribute("data-coll") || "") === c.name && !r.classList.contains("an-tr--avg");
-        }).length;
-        qty = '<span class="anf-opt__qty">' + n + "</span>";
-      }
-      return '<button class="anf-opt' + (c.name === cur ? " is-selected" : "") + '" type="button" role="option" ' +
-             'data-an-collsel-opt="' + escHtml(c.name) + '">' + escHtml(c.name) + qty + "</button>";
+      // количество каналов рядом с коллекцией: в Deep/Videos — сколько строк есть в таблице,
+      // на Basic и в остальных — размер состава коллекции
+      var n = (key === "deep" || key === "video")
+        ? tblAllRows(key).filter(function (r) {
+            return (r.getAttribute("data-coll") || "") === c.name && !r.classList.contains("an-tr--avg");
+          }).length
+        : aiChannelsOf(c.name).length;
+      var qty = '<span class="anf-opt__qty">' + n + "</span>";
+      // бейдж с количеством — перед названием
+      return '<button class="anf-opt" type="button" role="option"' + (c.name === cur ? ' data-selected' : '') +
+             ' data-an-collsel-opt="' + escHtml(c.name) + '">' + qty + '<span class="anf-opt__name">' + escHtml(c.name) + '</span></button>';
     }).join("") || (head ? "" : '<div class="anf-empty">No collections</div>'));
   }
   // A3: сброс к «All channels» — снимаем и поле Collection в панели
@@ -925,13 +926,11 @@
   }
   // счётчик рядом с лейблом: единый формат «N единиц» на всех страницах.
   // На Basic число не трогаем — там показан размер всей базы (2.2m channels).
-  var TBL_UNIT = { deep: "channel", video: "video", coll: "collection" };
   function tblUpdateTotal(key, n) {
     if (key === "basic") return;
     var pagi = tblPagi(key); if (!pagi) return;
     var tot = pagi.querySelector(".an-pagi__total");
-    var unit = TBL_UNIT[key] || "";
-    if (tot) tot.textContent = n.toLocaleString("en-US") + " " + unit + (n === 1 ? "" : "s");
+    if (tot) tot.textContent = n.toLocaleString("en-US");   // без слова-единицы
   }
   function tblPerPageMenu(key, open) {
     var pagi = tblPagi(key); if (!pagi) return;

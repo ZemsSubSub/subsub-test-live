@@ -369,7 +369,7 @@ const FILTERS_BASIC = filtersPanel("basic",
 // Deep data, таб Channels — плоский список без групп; Growth period без чипов (только календарь)
 const FILTERS_DEEP = filtersPanel("deep",
   fSearch("title", "Search in title", "Search by channel title") +
-  fSelect("collection", "Collection", "Select collection", []) +
+  // коллекция выбирается пилюлей у счётчика, в панели дублировать не нужно
   // Growth period вынесен в заголовок страницы
 
   fSelect("topic", "YouTube topic", "Select topic", TOPIC_LIST) +
@@ -384,7 +384,6 @@ const FILTERS_DEEP = filtersPanel("deep",
 // Deep data, таб Videos — другой набор
 const FILTERS_DEEP_VIDEOS = filtersPanel("deepVideos",
   fText("published", "Published at", "Last 30 days") +
-  fSelect("collection", "Collection", "Select collection", []) +
   fText("channels", "Channels", "Start typing channel name") +
   fSelect("vtype", "Video type", "Select the required type", ["Video", "Shorts", "Stream"]) +
   fText("video", "Video", "Start typing name or ID") +
@@ -1249,7 +1248,7 @@ const videosPanel = `
           <span class="an-pagi__name">Videos</span>
           ${collSel("video", DEEP_DEFAULT_COLL, "Select collection")}
           <span class="an-pagi__dot"></span>
-          <span class="an-pagi__total">${VID_DEFAULT_COUNT} videos</span>
+          <span class="an-pagi__total">${VID_DEFAULT_COUNT}</span>
         </div>
         <div class="an-pagi__ctrls">
           <span class="an-pagi__pages">Pages: 1</span>
@@ -1347,7 +1346,7 @@ const deepInner = `
           ${collSel("deep", DEEP_DEFAULT_COLL, "Select collection")}
           <span class="ai-badge" data-ai-badge hidden>${IC.aiStarsSolid}${AI_BADGE}</span>
           <span class="an-pagi__dot"></span>
-          <span class="an-pagi__total">8 channels</span>
+          <span class="an-pagi__total">8</span>
         </div>
         <div class="an-pagi__ctrls">
           <span class="an-pagi__pages">Pages: 1</span>
@@ -1495,7 +1494,7 @@ const collInner = `
         <div class="an-pagi__label">
           <span class="an-pagi__name">Collections</span>
           <span class="an-pagi__dot"></span>
-          <span class="an-pagi__total">${COLL_ROWS.length} collections</span>
+          <span class="an-pagi__total">${COLL_ROWS.length}</span>
         </div>
         <div class="an-pagi__ctrls">
           <span class="an-pagi__pages">Pages: 1</span>
