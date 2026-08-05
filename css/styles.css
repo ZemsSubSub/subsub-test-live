@@ -1735,7 +1735,9 @@ body.is-open:not(.is-collapsed) .main { margin-left: 306px; }
 .an-search__input::placeholder { color: var(--color-shade-700); }
 .an-search__divider { width: 1px; height: 16px; background: var(--color-shade-300); flex-shrink: 0; }
 .an-search__clear { border: 0; background: transparent; color: var(--color-shade-300); cursor: pointer; display: inline-flex; padding: 0; flex-shrink: 0; }
+.an-search__clear[hidden] { display: none; } /* иначе display:inline-flex перебивает [hidden] и крестик виден в пустом поле */
 .an-search__clear svg { width: 20px; height: 20px; }
+.an-search__clear:hover { color: var(--color-black); }
 
 /* --- ModePopover (в инпуте) --- */
 .an-mode { position: relative; flex-shrink: 0; display: flex; align-items: center; }
@@ -2173,7 +2175,8 @@ body.is-open:not(.is-collapsed) .main { margin-left: 306px; }
 [data-an-tab-panel] { display: flex; flex-direction: column; gap: 24px; }
 [data-an-tab-panel][hidden] { display: none; }
 /* поиск занимает свободную ширину, кнопки прижаты вправо — как на проде */
-.vid-search { flex: 1 1 auto; min-width: 220px; gap: 12px; height: 40px; }
+/* поле поиска — те же метрики, что на Basic data (.an-search): 40px, gap 16, текст 16/300 */
+.vid-search { min-width: 220px; }
 .vid-search > svg { width: 24px; height: 24px; color: var(--color-black); flex-shrink: 0; }
 /* превью 230×129 (aspect-video, radius 4): реальных картинок YouTube в статике нет,
    поэтому плейсхолдер с глифом YouTube в центре и бейджем «тип + длительность» */

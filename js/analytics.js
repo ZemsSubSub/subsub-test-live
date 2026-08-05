@@ -334,6 +334,13 @@
       ["basic", "deep", "coll", "video"].forEach(function (k) { tblPerPageMenu(k, false); });
     }
     // очистка поиска
+    if (e.target.closest("[data-vid-search-clear]")) {
+      var vinp = document.querySelector("[data-vid-search]");
+      if (vinp) vinp.value = "";
+      var vcl = document.querySelector("[data-vid-search-clear]"); if (vcl) vcl.hidden = true;
+      vidApply();
+      return;
+    }
     if (e.target.closest("[data-an-search-clear]")) {
       var inp = document.querySelector("[data-an-search]");
       if (inp) inp.value = "";
@@ -370,7 +377,11 @@
 
   // P1.9: поиск по видео — мгновенно
   var vidSq = document.querySelector("[data-vid-search]");
-  if (vidSq) vidSq.addEventListener("input", vidApply);
+  if (vidSq) vidSq.addEventListener("input", function () {
+    var cl = document.querySelector("[data-vid-search-clear]");
+    if (cl) cl.hidden = vidSq.value.length === 0;   // крестик как в поиске Basic data
+    vidApply();
+  });
 
   // P1.4: счётчик ссылок и поиск по коллекциям — мгновенно
   var ncTa = document.querySelector("[data-nc-links]");

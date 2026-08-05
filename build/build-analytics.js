@@ -1237,8 +1237,10 @@ const vidBody = VID_COLL_SETS.map(function (c) {
 }).join("\n          ");
 const videosPanel = `
       <section class="an-toolbar">
+        <!-- обычный поиск в стилях Basic data: иконка + поле + сброс, без переключателя режимов -->
         <div class="an-search vid-search">
           ${IC.search}<input class="an-search__input" type="text" placeholder="Start typing name or ID" data-vid-search />
+          <button class="an-search__clear" type="button" data-vid-search-clear aria-label="Clear search" hidden>${IC.close}</button>
         </div>
         <button class="an-btn an-btn--secondary" type="button" data-an-filters-toggle>${IC.filter}Filters<span class="an-btn__dot" data-an-filters-dot hidden></span></button>
         <button class="an-btn an-btn--secondary" type="button">${IC.export}Export</button>
