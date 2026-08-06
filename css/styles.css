@@ -2012,9 +2012,14 @@ body.is-open:not(.is-collapsed) .main { margin-left: 306px; }
 /* ---- Deep data: табы / тулбар / average / хитмап / pin-bookmark ---- */
 .an-tabs { display: flex; gap: 24px; border-bottom: 1px solid var(--color-shade-200); }
 /* переключатель в заголовке: без сквозной линии, выровнен по базовой линии заголовка */
-.an-tabs--head { align-self: stretch; align-items: flex-end; gap: 20px; border-bottom: 0; }
-.an-tabs--head .an-tab { height: auto; padding: 0 0 6px; }
-.an-tabs--head .an-tab.is-active::after { bottom: 0; }
+/* в заголовке — свич-сегмент теми же метриками, что переключатель типа контента */
+.an-tabs--head { align-self: center; align-items: center; gap: 4px; padding: 4px; border-bottom: 0;
+  border-radius: 8px; background: var(--color-shade-100); }
+.an-tabs--head .an-tab { display: inline-flex; align-items: center; height: 32px; padding: 0 14px; border-radius: 6px;
+  font-size: 14px; font-weight: 500; color: var(--color-shade-700); text-decoration: none; }
+.an-tabs--head .an-tab:hover { color: var(--color-black); }
+.an-tabs--head .an-tab.is-active { background: #fff; color: var(--color-black); box-shadow: 0 0 4px 0 rgba(0,0,0,.1); }
+.an-tabs--head .an-tab.is-active::after { content: none; }
 .an-tab { position: relative; height: 36px; padding: 0 0 8px; border: 0; background: transparent; cursor: pointer; font-family: inherit; font-size: 16px; font-weight: 500; color: var(--color-shade-700); }
 .an-tab.is-active { color: var(--color-black); }
 .an-tab.is-active::after { content: ""; position: absolute; left: 0; right: 0; bottom: -1px; height: 2px; background: var(--color-black); }
