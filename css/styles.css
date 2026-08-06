@@ -1944,9 +1944,14 @@ body.is-open:not(.is-collapsed) .main { margin-left: 306px; }
 /* --- P1.5: состояние сортировки и меню размера страницы --- */
 .an-sort { cursor: pointer; }
 /* активная сортировка подсвечивается пурпурным — как бейджи применённых фильтров */
-.an-sort.is-sorted { color: var(--color-purple-900); font-weight: 600; }
+.an-sort.is-sorted { color: var(--color-purple-900); }
 .an-sort.is-sorted svg { color: var(--color-purple-900); }
-.an-sort.is-sorted.is-asc svg { transform: rotate(180deg); }
+/* направление видно по подсвеченной стрелке: вниз — по убыванию, вверх — по возрастанию
+   (в DS-иконке две стрелки: первый path — нижняя, второй — верхняя) */
+.an-sort.is-sorted svg path { fill: var(--color-shade-300); }
+.an-sort.is-sorted svg path:first-child { fill: var(--color-purple-900); }
+.an-sort.is-sorted.is-asc svg path:first-child { fill: var(--color-shade-300); }
+.an-sort.is-sorted.is-asc svg path:last-child { fill: var(--color-purple-900); }
 .an-pagi__arrow[disabled] { opacity: .35; cursor: not-allowed; }
 .an-perpage-wrap { position: relative; }
 .an-perpage__menu {
