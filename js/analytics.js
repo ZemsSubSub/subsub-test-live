@@ -468,6 +468,7 @@
     catch (e) { return "all"; }
   }
   function ctApply(slice) {
+    setTimeout(tblHugAll, 0);
     var body = tblBody("deep");
     if (!body) return;
     [].slice.call(document.querySelectorAll("[data-an-ctype-set]")).forEach(function (b) {
@@ -695,12 +696,14 @@
     if (st) cvApply(st);
   }
   function cvToggle(id) {
+    setTimeout(tblHugAll, 0);
     var st = cvLoad() || cvDefaults();
     st[id] = !st[id];
     cvSave(st);
     cvApply(st);
   }
   function cvReset() {
+    setTimeout(tblHugAll, 0);
     if (!cvDefault) return;
     var st = {};
     Object.keys(cvDefault).forEach(function (k) { st[k] = cvDefault[k]; });
@@ -1060,6 +1063,33 @@
     var host = el.closest("[data-an-table]") || el.closest("[data-an-table-body]");
     return host ? (host.getAttribute("data-an-table") || host.getAttribute("data-an-table-body")) : null;
   }
+  // hug: колонка сужается до своего содержимого (шапка + видимые строки).
+  // Исходная ширина остаётся потолком (data-w0) — колонки только ужимаются, не разъезжаются.
+  // Закреплённые check/name и распорка stub не трогаются: от них зависят left-смещения.
+  var HUG_SKIP = { check: 1, name: 1, stub: 1 };
+  function tblHug(key) {
+    var b = tblBody(key);
+    if (!b || b.offsetParent === null) return;
+    var heads = [].slice.call(b.querySelectorAll(".an-thead .an-tr--head > *"));
+    var rows = tblAllRows(key).filter(function (r) { return !r.hidden; });
+    heads.forEach(function (h, i) {
+      var col = h.getAttribute("data-col");
+      if (!col || HUG_SKIP[col] || h.hidden) return;
+      var cells = [h];
+      rows.forEach(function (r) { if (r.children[i]) cells.push(r.children[i]); });
+      var w0 = h.getAttribute("data-w0");
+      if (w0 === null) { w0 = Math.round(h.getBoundingClientRect().width); h.setAttribute("data-w0", w0); }
+      w0 = +w0;
+      cells.forEach(function (c) { c.style.width = "max-content"; });
+      var need = 0;
+      cells.forEach(function (c) { need = Math.max(need, c.getBoundingClientRect().width); });
+      var w = Math.min(Math.ceil(need) + 8, w0);
+      cells.forEach(function (c) { c.style.width = w + "px"; });
+    });
+  }
+  function tblHugAll() {
+    ["basic", "deep"].forEach(function (key) { if (tblBody(key)) tblHug(key); });
+  }
   function tblInitAll() {
     // дефолтная сортировка таблиц каналов — по Views, от большего (первый клик по колонке даёт desc)
     ["basic", "deep"].forEach(function (key) {
@@ -1068,6 +1098,7 @@
     ["basic", "deep", "coll", "video"].forEach(function (key) {
       if (tblBody(key)) tblApply(key);
     });
+    tblHugAll();
     tblFit();
   }
   // высота скролл-бокса считается от реального положения таблицы, иначе страница
@@ -1259,6 +1290,7 @@
     flDot();
     flChips();
     if (key && typeof tblApply === "function") { TBL[key].page = 1; tblApply(key); }
+    tblHugAll();
   }
   function chInfo(name) {                     // справка по каналу из сида
     var pool = (typeof aiChannelPool === "function" ? aiChannelPool() : []);
@@ -1542,6 +1574,7 @@
   // ---- P1.2: Growth period. Подменяет ячейки прироста из window.SUBSUB_GROWTH ----
   var flPeriod = "30";
   function flSetPeriod(pd) {
+    setTimeout(tblHugAll, 0);
     var G = window.SUBSUB_GROWTH || {};
     if (!G[pd]) return;
     flPeriod = pd;

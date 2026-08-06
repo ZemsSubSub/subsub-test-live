@@ -1937,10 +1937,14 @@ body.is-open:not(.is-collapsed) .main { margin-left: 306px; }
 .an-td--check, .an-td--name { background: #fff; }
 /* закреплённая ячейка канала: паддинги как на проде (pl-2 pr-4) */
 .an-td--name { padding: 8px 16px 8px 8px; }
+/* последняя закреплённая колонка отделена строуком — borderRight в pinnedStyles.ts на проде */
+.an-th--name, .an-td--name { border-right: 1px solid var(--color-shade-200); }
 /* крайние колонки: контент отступает от рамки серфейса */
 .an-tr > .an-th:first-child, .an-tr > .an-td:first-child { padding-left: 16px; }
 .an-tr > .an-th:last-child, .an-tr > .an-td:last-child { padding-right: 16px; }
 .an-tr > .an-td--check:first-child, .an-tr > .an-th--check:first-child { padding-left: 16px; padding-right: 0; }
+/* распорка между закреплёнными и обычными колонками: без паддинга, иначе тело шире шапки на 4px */
+.an-tr > .an-th--stub, .an-tr > .an-td--stub { padding: 0; }
 /* --- P1.5: состояние сортировки и меню размера страницы --- */
 .an-sort { cursor: pointer; }
 /* активная сортировка подсвечивается пурпурным — как бейджи применённых фильтров */
