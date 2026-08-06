@@ -2691,19 +2691,13 @@ body.filters-open .an-filters.is-active { display: flex; }
 .an-filters__x { display: inline-flex; padding: 0; border: 0; background: none; cursor: pointer; color: var(--color-shade-300); }
 .an-filters__x svg { width: 24px; height: 24px; }
 .an-filters__x:hover { color: var(--color-shade-500); }
-/* «Clear all» — отдельной строкой справа под шапкой */
-.an-filters__clearrow { flex-shrink: 0; display: flex; justify-content: flex-end; padding: 12px 24px 0; }
-.an-filters__clear {
-  display: inline-flex; align-items: center; gap: 4px; padding: 0; height: 24px;
-  border: 0; background: none; cursor: pointer; font-family: inherit;
-  font-size: 16px; font-weight: 400; color: var(--color-black);
-}
+/* «Clear all» живёт в футере рядом с Apply — с той же DS-иконкой */
 .an-filters__clear svg { width: 20px; height: 20px; }
-.an-filters__clear:hover { text-decoration: underline; }
-.an-filters__body { flex: 1; min-height: 0; overflow-y: auto; padding: 16px 24px 24px; display: flex; flex-direction: column; gap: 32px; }
+.an-filters__body { flex: 1; min-height: 0; overflow-y: auto; padding: 24px; display: flex; flex-direction: column; gap: 32px; }
 /* прибитый снизу футер панели с кнопкой применения */
-.an-filters__foot { flex-shrink: 0; padding: 16px 24px; border-top: 1px solid var(--color-shade-200); background: #fff; }
-.an-filters__apply { width: 100%; justify-content: center; }
+.an-filters__foot { flex-shrink: 0; display: flex; align-items: center; gap: 12px;
+  padding: 16px 24px; border-top: 1px solid var(--color-shade-200); background: #fff; }
+.an-filters__apply { margin-left: auto; }
 
 /* красная точка на кнопке Filters при непустых фильтрах */
 .an-btn__dot { width: 6px; height: 6px; margin-left: 2px; border-radius: 50%; background: var(--color-red); }

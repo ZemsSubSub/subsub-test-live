@@ -349,11 +349,9 @@ function filtersPanel(key, inner) {
       '<span class="an-filters__title">' + IC.filter + 'Filters</span>' +
       '<button class="an-filters__x" type="button" data-an-filters-close aria-label="Close panel">' + IC.closeCircle + '</button>' +
     '</div>' +
-    '<div class="an-filters__clearrow">' +
-      '<button class="an-filters__clear" type="button" data-an-filters-clear>' + IC.clear + 'Clear all</button>' +
-    '</div>' +
     '<div class="an-filters__body">' + inner + '</div>' +
     '<div class="an-filters__foot">' +
+      '<button class="an-btn an-btn--secondary an-filters__clear" type="button" data-an-filters-clear>' + IC.clear + 'Clear all</button>' +
       '<button class="an-btn an-btn--primary an-filters__apply" type="button" data-an-filters-apply>Apply</button>' +
     '</div>' +
   '</aside>';
