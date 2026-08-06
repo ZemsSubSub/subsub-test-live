@@ -103,6 +103,7 @@
       flOpen(!document.body.classList.contains("filters-open"));
       return;
     }
+    if (e.target.closest("[data-an-filters-apply]")) { flOpen(false); return; }
     if (e.target.closest("[data-an-filters-close]")) { flOpen(false); return; }
     if (e.target.closest("[data-an-filters-clear]")) { flClear(); return; }
     var fchipX = e.target.closest("[data-an-fchip-x]");
@@ -128,7 +129,7 @@
       [].slice.call(selRoot.querySelectorAll(".anf-opt")).forEach(function (o) { o.classList.toggle("is-selected", o === fOpt); });
       var m2 = selRoot.querySelector("[data-anf-menu]"); if (m2) m2.hidden = true;
       selRoot.classList.remove("is-open");
-      flApply();
+      flTouch();
       return;
     }
     var fSeg = e.target.closest("[data-anf-seg]");
@@ -137,7 +138,7 @@
         b.classList.toggle("is-on", b === fSeg);
         b.setAttribute("aria-checked", b === fSeg ? "true" : "false");
       });
-      flApply();
+      flTouch();
       return;
     }
     var pSet = e.target.closest("[data-an-period-set]");
@@ -1056,6 +1057,10 @@
     return host ? (host.getAttribute("data-an-table") || host.getAttribute("data-an-table-body")) : null;
   }
   function tblInitAll() {
+    // дефолтная сортировка таблиц каналов — по Views, от большего (первый клик по колонке даёт desc)
+    ["basic", "deep"].forEach(function (key) {
+      if (tblBody(key) && tblColIndex(key, "views") >= 0) tblSort(key, "views");
+    });
     ["basic", "deep", "coll", "video"].forEach(function (key) {
       if (tblBody(key)) tblApply(key);
     });
@@ -1117,6 +1122,7 @@
     flPanels().forEach(function (el) { el.classList.toggle("is-active", el === act); });
   }
   function flOpen(open) {
+    if (!open && flPending) { flPending = false; document.body.classList.remove("filters-open"); flApply(); }
     document.body.classList.toggle("filters-open", !!open);
     flSyncActive();
     // контент сужается: заголовок может перенести Growth period на вторую строку,
@@ -1230,7 +1236,13 @@
     var dot = document.querySelector("[data-an-filters-dot]");
     if (dot) dot.hidden = !dirty;
   }
-  // ---- мгновенное применение ----
+  // Пока панель открыта, правки полей копятся и применяются по кнопке Apply
+  // (закрытие панели любым способом тоже применяет — иначе изменения потерялись бы).
+  var flPending = false;
+  function flTouch() {
+    if (document.body.classList.contains("filters-open")) { flPending = true; return; }
+    flApply();
+  }
   function flApply() {
     var key = null, act = flActive();
     if (act) key = FL_TABLE[act.getAttribute("data-an-filters")];
@@ -1520,7 +1532,7 @@
       var btns = [].slice.call(seg.querySelectorAll(".anf-seg__btn"));
       btns.forEach(function (b, i) { b.classList.toggle("is-on", i === 0); b.setAttribute("aria-checked", i === 0 ? "true" : "false"); });
     });
-    flApply();
+    flTouch();
   }
   // ---- P1.2: Growth period. Подменяет ячейки прироста из window.SUBSUB_GROWTH ----
   var flPeriod = "30";
@@ -2879,7 +2891,7 @@
   // P1.13: панель фильтров применяется без кнопки Apply. Отдельный слушатель —
   // раньше это лежало внутри обработчика AI-модалки и не срабатывало вне неё.
   document.addEventListener("input", function (e) {
-    if (e.target.closest("[data-anf-text],[data-anf-from],[data-anf-to]")) { flApply(); return; }
+    if (e.target.closest("[data-anf-text],[data-anf-from],[data-anf-to]")) { flTouch(); return; }
     var fSearch = e.target.closest("[data-anf-search]");
     if (fSearch) {
       var q = fSearch.value.trim().toLowerCase();
@@ -3209,8 +3221,8 @@
   // бейджи в селекторах коллекции: на старте значение уже в разметке, счётчик проставляем здесь
   [].slice.call(document.querySelectorAll("[data-an-collsel]")).forEach(function (w) { csSetLabel(w, csCurrent(w)); });
   tabInit();                         // P1.9: активный таб из ?tab=
-  if (tblBody("deep")) dpApplyPins();  // закреплённые каналы наверху
-  tblInitAll();                      // P1.5: первая отрисовка страниц
+  tblInitAll();                      // P1.5: первая отрисовка страниц + сортировка по умолчанию
+  if (tblBody("deep")) dpApplyPins();  // закреплённые каналы наверху — уже после сортировки
   cvInit();                          // P1.7: видимость колонок из localStorage
   slInit();                          // P1.6: выбранные срезы по типу контента
   gsInit();                          // P1.8: режим сводной строки

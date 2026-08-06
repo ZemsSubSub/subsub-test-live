@@ -1943,8 +1943,9 @@ body.is-open:not(.is-collapsed) .main { margin-left: 306px; }
 .an-tr > .an-td--check:first-child, .an-tr > .an-th--check:first-child { padding-left: 16px; padding-right: 0; }
 /* --- P1.5: состояние сортировки и меню размера страницы --- */
 .an-sort { cursor: pointer; }
-.an-sort.is-sorted { color: var(--color-black); font-weight: 600; }
-.an-sort.is-sorted svg { color: var(--color-black); }
+/* активная сортировка подсвечивается пурпурным — как бейджи применённых фильтров */
+.an-sort.is-sorted { color: var(--color-purple-900); font-weight: 600; }
+.an-sort.is-sorted svg { color: var(--color-purple-900); }
 .an-sort.is-sorted.is-asc svg { transform: rotate(180deg); }
 .an-pagi__arrow[disabled] { opacity: .35; cursor: not-allowed; }
 .an-perpage-wrap { position: relative; }
@@ -2673,26 +2674,25 @@ body.is-open:not(.is-collapsed) .main { margin-left: 306px; }
 .an-filters {
   position: fixed; top: 72px; right: 0; bottom: 0; width: 417px; z-index: 60;
   display: none; flex-direction: column;
-  background: #fff; border-left: 1px solid var(--color-shade-300);
+  background: #fff; border-left: 1px solid var(--color-shade-300); box-shadow: -8px 0 24px 0 rgba(0,0,0,.08);
 }
 body.filters-open .an-filters.is-active { display: flex; }
-/* контент сохраняет свой правый паддинг (28px) — на проде между ним и панелью зазор */
-body.filters-open .main { padding-right: calc(417px + 28px); }
-/* шапка: заголовок «Filters» + × справа (BasePanelHeader: pt-25, h-60, без бордера) */
+/* панель ложится поверх контента и не двигает его */
+/* шапка компактная и отделена дивайдером */
 .an-filters__head {
   display: flex; align-items: center; justify-content: space-between; gap: 12px;
-  flex-shrink: 0; height: 60px; margin-top: 25px; padding: 0 24px;
+  flex-shrink: 0; height: 56px; padding: 0 20px 0 24px; border-bottom: 1px solid var(--color-shade-200);
 }
 .an-filters__title {
-  display: inline-flex; align-items: center; gap: 4px;
-  font-size: 24px; font-weight: 400; color: var(--color-black);
+  display: inline-flex; align-items: center; gap: 8px;
+  font-size: 18px; font-weight: 500; color: var(--color-black);
 }
-.an-filters__title svg { width: 32px; height: 32px; }
+.an-filters__title svg { width: 24px; height: 24px; }
 .an-filters__x { display: inline-flex; padding: 0; border: 0; background: none; cursor: pointer; color: var(--color-shade-300); }
-.an-filters__x svg { width: 32px; height: 32px; }
+.an-filters__x svg { width: 24px; height: 24px; }
 .an-filters__x:hover { color: var(--color-shade-500); }
 /* «Clear all» — отдельной строкой справа под шапкой */
-.an-filters__clearrow { flex-shrink: 0; display: flex; justify-content: flex-end; padding: 0 24px; }
+.an-filters__clearrow { flex-shrink: 0; display: flex; justify-content: flex-end; padding: 12px 24px 0; }
 .an-filters__clear {
   display: inline-flex; align-items: center; gap: 4px; padding: 0; height: 24px;
   border: 0; background: none; cursor: pointer; font-family: inherit;
@@ -2700,7 +2700,10 @@ body.filters-open .main { padding-right: calc(417px + 28px); }
 }
 .an-filters__clear svg { width: 20px; height: 20px; }
 .an-filters__clear:hover { text-decoration: underline; }
-.an-filters__body { flex: 1; min-height: 0; overflow-y: auto; padding: 16px 24px 110px; display: flex; flex-direction: column; gap: 32px; }
+.an-filters__body { flex: 1; min-height: 0; overflow-y: auto; padding: 16px 24px 24px; display: flex; flex-direction: column; gap: 32px; }
+/* прибитый снизу футер панели с кнопкой применения */
+.an-filters__foot { flex-shrink: 0; padding: 16px 24px; border-top: 1px solid var(--color-shade-200); background: #fff; }
+.an-filters__apply { width: 100%; justify-content: center; }
 
 /* красная точка на кнопке Filters при непустых фильтрах */
 .an-btn__dot { width: 6px; height: 6px; margin-left: 2px; border-radius: 50%; background: var(--color-red); }

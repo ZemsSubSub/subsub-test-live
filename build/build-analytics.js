@@ -353,6 +353,9 @@ function filtersPanel(key, inner) {
       '<button class="an-filters__clear" type="button" data-an-filters-clear>' + IC.clear + 'Clear all</button>' +
     '</div>' +
     '<div class="an-filters__body">' + inner + '</div>' +
+    '<div class="an-filters__foot">' +
+      '<button class="an-btn an-btn--primary an-filters__apply" type="button" data-an-filters-apply>Apply</button>' +
+    '</div>' +
   '</aside>';
 }
 
@@ -1244,7 +1247,7 @@ const videosPanel = `
           <button class="an-search__clear" type="button" data-vid-search-clear aria-label="Clear search" hidden>${IC.close}</button>
         </div>
         <button class="an-btn an-btn--secondary" type="button" data-an-filters-toggle>${IC.filter}Filters<span class="an-btn__dot" data-an-filters-dot hidden></span></button>
-        <button class="an-btn an-btn--secondary" type="button">${IC.export}Export</button>
+        <button class="an-btn an-btn--primary" type="button">${IC.export}Export</button>
       </section>
 
       <section class="an-pagi" data-an-table="video">
@@ -1342,7 +1345,7 @@ const deepInner = `
         }).join("")}</div>
         ${deepColsPopover}
         <button class="an-btn an-btn--secondary" type="button" data-an-filters-toggle>${IC.filter}Filters<span class="an-btn__dot" data-an-filters-dot hidden></span></button>
-        <button class="an-btn an-btn--secondary" type="button">${IC.export}Export</button>
+        <button class="an-btn an-btn--primary" type="button">${IC.export}Export</button>
       </section>
 
       <section class="an-pagi" data-an-table="deep">
