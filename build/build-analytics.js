@@ -802,7 +802,6 @@ const mainInner = `
         <div class="an-pagi__label">
           <span class="an-pagi__name">Channels</span>
           ${collSel("basic", "", "Select collection")}
-          <span class="an-pagi__total">2.2m</span>
         </div>
         <div class="an-pagi__ctrls">
           <span class="an-pagi__pages">Pages: 74,046</span>
