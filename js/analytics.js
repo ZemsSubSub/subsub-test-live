@@ -1161,7 +1161,9 @@
     var panels = [].slice.call(document.querySelectorAll("[data-an-tab-panel]"));
     if (!panels.length) return;
     var cur = tabCurrent();
-    panels.forEach(function (p) { p.hidden = p.getAttribute("data-an-tab-panel") !== cur; });
+    // во втором варианте таб один — показываем его всегда, что бы ни стояло в ?tab=
+    if (panels.length === 1) panels[0].hidden = false;
+    else panels.forEach(function (p) { p.hidden = p.getAttribute("data-an-tab-panel") !== cur; });
     if (typeof tblFit === "function") tblFit();
     [].slice.call(document.querySelectorAll("[data-an-tab]")).forEach(function (a) {
       a.classList.toggle("is-active", a.getAttribute("data-an-tab") === cur);

@@ -417,6 +417,47 @@ const COLS = [
   { id:"added",  w:150, label:"Added to base" },
 ];
 
+// Growth period — один и тот же блок на Basic data, Deep data и Videos data
+const PERIOD_BAR = `<section class="an-periodbar" data-an-period>
+          <span class="an-periodbar__lbl">Growth period</span>
+          <!-- поле-диапазон: по клику открывается календарь на два месяца -->
+          <div class="an-dr" data-an-dr>
+            <button class="an-dr__field" type="button" data-an-period-trig aria-haspopup="dialog">
+              <span class="an-dr__ico" aria-hidden="true">${IC.calendar}</span>
+              <span class="an-dr__val" data-an-period-val>${PERIOD_RANGE["30"]}</span>
+            </button>
+            <div class="an-dr__pop" data-an-dr-pop hidden role="dialog" aria-label="Select period">
+              <aside class="an-dr__presets" data-an-dr-presets></aside>
+              <div class="an-dr__main">
+                <div class="an-dr__nav">
+                  <button class="an-dr__arrow" type="button" data-an-dr-prev aria-label="Previous month">${IC.arrowL}</button>
+                  <span class="an-dr__mon" data-an-dr-mon="0"></span>
+                  <span class="an-dr__mon" data-an-dr-mon="1"></span>
+                  <button class="an-dr__arrow" type="button" data-an-dr-next aria-label="Next month">${IC.arrowR}</button>
+                </div>
+                <div class="an-dr__grids">
+                  <div class="an-dr__grid" data-an-dr-grid="0"></div>
+                  <div class="an-dr__grid" data-an-dr-grid="1"></div>
+                </div>
+                <div class="an-dr__foot">
+                  <input class="an-input an-dr__inp" type="text" data-an-dr-from aria-label="From" placeholder="dd.mm.yyyy" />
+                  <span class="an-dr__dash">–</span>
+                  <input class="an-input an-dr__inp" type="text" data-an-dr-to aria-label="To" placeholder="dd.mm.yyyy" />
+                  <span class="an-dr__spacer"></span>
+                  <button class="an-btn an-btn--secondary an-btn--small" type="button" data-an-dr-cancel>Cancel</button>
+                  <button class="an-btn an-btn--primary an-btn--small" type="button" data-an-dr-apply>Apply</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="an-periodseg" data-an-period-chips role="radiogroup" aria-label="Growth period">
+            <button class="an-periodseg__btn" type="button" role="radio" aria-checked="false" data-an-period-set="custom">Custom</button>${PERIODS.slice().reverse().map(function (pd) {
+              return '<button class="an-periodseg__btn' + (pd === "30" ? " is-on" : "") + '" type="button" role="radio" aria-checked="' +
+                (pd === "30" ? "true" : "false") + '" data-an-period-set="' + pd + '">' + pd + ' days</button>';
+            }).join("")}
+          </div>
+        </section>`;
+
 // ---- данные-примеры (реальные каналы/значения с прода app.subsub.io/analytics/basic-data) ----
 const AVA = ["--color-avatar-1","--color-avatar-3","--color-avatar-5","--color-avatar-1","--color-avatar-3"];
 const ROWS = basicRows("30");   // дефолтный период — 30 дней (P1.2)
@@ -731,45 +772,7 @@ const mainInner = `
     <section class="an-page">
       <header class="an-head an-head--between"><h1 class="an-title">Basic data</h1>
         <!-- A4: Growth period в правом верхнем углу, на уровне заголовка -->
-        <section class="an-periodbar" data-an-period>
-          <span class="an-periodbar__lbl">Growth period</span>
-          <!-- поле-диапазон: по клику открывается календарь на два месяца -->
-          <div class="an-dr" data-an-dr>
-            <button class="an-dr__field" type="button" data-an-period-trig aria-haspopup="dialog">
-              <span class="an-dr__ico" aria-hidden="true">${IC.calendar}</span>
-              <span class="an-dr__val" data-an-period-val>${PERIOD_RANGE["30"]}</span>
-            </button>
-            <div class="an-dr__pop" data-an-dr-pop hidden role="dialog" aria-label="Select period">
-              <aside class="an-dr__presets" data-an-dr-presets></aside>
-              <div class="an-dr__main">
-                <div class="an-dr__nav">
-                  <button class="an-dr__arrow" type="button" data-an-dr-prev aria-label="Previous month">${IC.arrowL}</button>
-                  <span class="an-dr__mon" data-an-dr-mon="0"></span>
-                  <span class="an-dr__mon" data-an-dr-mon="1"></span>
-                  <button class="an-dr__arrow" type="button" data-an-dr-next aria-label="Next month">${IC.arrowR}</button>
-                </div>
-                <div class="an-dr__grids">
-                  <div class="an-dr__grid" data-an-dr-grid="0"></div>
-                  <div class="an-dr__grid" data-an-dr-grid="1"></div>
-                </div>
-                <div class="an-dr__foot">
-                  <input class="an-input an-dr__inp" type="text" data-an-dr-from aria-label="From" placeholder="dd.mm.yyyy" />
-                  <span class="an-dr__dash">–</span>
-                  <input class="an-input an-dr__inp" type="text" data-an-dr-to aria-label="To" placeholder="dd.mm.yyyy" />
-                  <span class="an-dr__spacer"></span>
-                  <button class="an-btn an-btn--secondary an-btn--small" type="button" data-an-dr-cancel>Cancel</button>
-                  <button class="an-btn an-btn--primary an-btn--small" type="button" data-an-dr-apply>Apply</button>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="an-periodseg" data-an-period-chips role="radiogroup" aria-label="Growth period">
-            <button class="an-periodseg__btn" type="button" role="radio" aria-checked="false" data-an-period-set="custom">Custom</button>${PERIODS.slice().reverse().map(function (pd) {
-              return '<button class="an-periodseg__btn' + (pd === "30" ? " is-on" : "") + '" type="button" role="radio" aria-checked="' +
-                (pd === "30" ? "true" : "false") + '" data-an-period-set="' + pd + '">' + pd + ' days</button>';
-            }).join("")}
-          </div>
-        </section>
+        ${PERIOD_BAR}
       </header>
 
       <section class="an-searchrow">
@@ -1292,45 +1295,7 @@ const deepInner = `
           </nav>
         </div>
         <!-- тот же контрол Growth period, что на Basic data -->
-        <section class="an-periodbar" data-an-period>
-          <span class="an-periodbar__lbl">Growth period</span>
-          <!-- поле-диапазон: по клику открывается календарь на два месяца -->
-          <div class="an-dr" data-an-dr>
-            <button class="an-dr__field" type="button" data-an-period-trig aria-haspopup="dialog">
-              <span class="an-dr__ico" aria-hidden="true">${IC.calendar}</span>
-              <span class="an-dr__val" data-an-period-val>${PERIOD_RANGE["30"]}</span>
-            </button>
-            <div class="an-dr__pop" data-an-dr-pop hidden role="dialog" aria-label="Select period">
-              <aside class="an-dr__presets" data-an-dr-presets></aside>
-              <div class="an-dr__main">
-                <div class="an-dr__nav">
-                  <button class="an-dr__arrow" type="button" data-an-dr-prev aria-label="Previous month">${IC.arrowL}</button>
-                  <span class="an-dr__mon" data-an-dr-mon="0"></span>
-                  <span class="an-dr__mon" data-an-dr-mon="1"></span>
-                  <button class="an-dr__arrow" type="button" data-an-dr-next aria-label="Next month">${IC.arrowR}</button>
-                </div>
-                <div class="an-dr__grids">
-                  <div class="an-dr__grid" data-an-dr-grid="0"></div>
-                  <div class="an-dr__grid" data-an-dr-grid="1"></div>
-                </div>
-                <div class="an-dr__foot">
-                  <input class="an-input an-dr__inp" type="text" data-an-dr-from aria-label="From" placeholder="dd.mm.yyyy" />
-                  <span class="an-dr__dash">–</span>
-                  <input class="an-input an-dr__inp" type="text" data-an-dr-to aria-label="To" placeholder="dd.mm.yyyy" />
-                  <span class="an-dr__spacer"></span>
-                  <button class="an-btn an-btn--secondary an-btn--small" type="button" data-an-dr-cancel>Cancel</button>
-                  <button class="an-btn an-btn--primary an-btn--small" type="button" data-an-dr-apply>Apply</button>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="an-periodseg" data-an-period-chips role="radiogroup" aria-label="Growth period">
-            <button class="an-periodseg__btn" type="button" role="radio" aria-checked="false" data-an-period-set="custom">Custom</button>${PERIODS.slice().reverse().map(function (pd) {
-              return '<button class="an-periodseg__btn' + (pd === "30" ? " is-on" : "") + '" type="button" role="radio" aria-checked="' +
-                (pd === "30" ? "true" : "false") + '" data-an-period-set="' + pd + '">' + pd + ' days</button>';
-            }).join("")}
-          </div>
-        </section>
+        ${PERIOD_BAR}
       </header>
 
       <div data-an-tab-panel="channels">
@@ -1755,9 +1720,17 @@ function buildPage(src, title, inner, current){
     if (!isCur) return;
     h = h.replace('<a class="m-item" href="' + url + '"', '<a class="m-item is-current" href="' + url + '"');
   };
+  // второй вариант: Deep data ведёт на свою страницу, под ним появляется пункт Videos data
+  if (current === "deep2" || current === "videos") {
+    h = h.replace('<a class="m-item" href="analytics-deep-data.html"><span class="m-ico"></span>Deep data</a>',
+      '<a class="m-item" href="analytics-deep-data-v2.html"><span class="m-ico"></span>Deep data</a>' +
+      '<a class="m-item" href="analytics-videos-data.html"><span class="m-ico"></span>Videos data</a>');
+  }
   markCurrent("analytics-basic-data.html", current === "basic");
   markCurrent("analytics-deep-data.html", current === "deep");
   markCurrent("analytics-collections.html", current === "collections");
+  markCurrent("analytics-deep-data-v2.html", current === "deep2");
+  markCurrent("analytics-videos-data.html", current === "videos");
   // базовые коллекции (те же, что в списке My collections) — единый источник для дропдауна
   // назначения в модалке sourcing; страницы Basic data / My collections читают их из window
   const seed = JSON.stringify(COLL_ROWS.map(function (r) {
@@ -1794,8 +1767,41 @@ function buildPage(src, title, inner, current){
   return h.slice(0, ms + '<main class="main">'.length) + inner + "\n  " + h.slice(me);
 }
 
+
+// ================= второй вариант навигации (для сравнения) =================
+// Deep data без свича Channels/Videos, а видео — отдельным пунктом меню под ним.
+// Первый вариант (analytics-deep-data.html) остаётся как есть.
+const NAV_BLOCK = deepInner.slice(
+  deepInner.indexOf("          <!-- переключатель Channels / Videos"),
+  deepInner.indexOf("</nav>") + "</nav>\n".length
+);
+const VIDEOS_PANEL_BLOCK = '<div data-an-tab-panel="videos" hidden>' + videosPanel + "\n      </div>";
+const deepV2Inner = deepInner
+  .split(NAV_BLOCK).join("")                       // свича нет
+  .split(VIDEOS_PANEL_BLOCK).join("")              // таба с видео тоже
+  .split(FILTERS_DEEP_VIDEOS).join("");            // и его панели фильтров
+
+const videosInner = `
+    <section class="an-page">
+      <header class="an-head an-head--between">
+        <div class="an-head__left"><h1 class="an-title">Videos data</h1></div>
+        ${PERIOD_BAR}
+      </header>
+
+      <div class="an-stack">${videosPanel}
+      </div>
+    </section>
+
+    ${acModalHtml}
+    ${FILTERS_DEEP_VIDEOS}
+
+    <div class="an-toast" data-an-toast hidden></div>`;
+
 fs.writeFileSync(DIR + "analytics-basic-data.html", buildPage(html, "Basic data", mainInner, "basic"));
 fs.writeFileSync(DIR + "analytics-deep-data.html", buildPage(html, "Deep data", deepInner, "deep"));
 fs.writeFileSync(DIR + "analytics-collections.html", buildPage(html, "My collections", collInner, "collections"));
 fs.writeFileSync(DIR + "analytics-collection-edit.html", buildPage(html, "Editing collection", editInner, "collections"));
-console.log("written: basic-data (" + ROWS.length + "), deep-data (" + DEEP_ROWS.length + "), collections (" + COLL_ROWS.length + "), collection-edit (" + CE_ROWS.length + ")");
+// второй вариант навигации
+fs.writeFileSync(DIR + "analytics-deep-data-v2.html", buildPage(html, "Deep data", deepV2Inner, "deep2"));
+fs.writeFileSync(DIR + "analytics-videos-data.html", buildPage(html, "Videos data", videosInner, "videos"));
+console.log("written: basic-data (" + ROWS.length + "), deep-data (" + DEEP_ROWS.length + "), collections (" + COLL_ROWS.length + "), collection-edit (" + CE_ROWS.length + "), + вариант 2: deep-data-v2, videos-data");

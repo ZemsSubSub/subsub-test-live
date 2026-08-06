@@ -2198,7 +2198,7 @@ body.is-open:not(.is-collapsed) .main { margin-left: 306px; }
 
 /* --- P1.9: таб Videos --- */
 /* обёртка таба не должна ломать вертикальные отступы .an-page */
-[data-an-tab-panel] { display: flex; flex-direction: column; gap: 24px; }
+[data-an-tab-panel], .an-stack { display: flex; flex-direction: column; gap: 24px; }
 [data-an-tab-panel][hidden] { display: none; }
 /* поиск занимает свободную ширину, кнопки прижаты вправо — как на проде */
 /* поле поиска — те же метрики, что на Basic data (.an-search): 40px, gap 16, текст 16/300 */
