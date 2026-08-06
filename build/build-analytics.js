@@ -330,10 +330,10 @@ function fGrowthPeriod(withChips) {
 // Список наполняется на клиенте (часть коллекций создана в localStorage).
 function collSel(key, val, ph) {
   return '<span class="an-collsel-wrap" data-an-collsel="' + key + '">' +
-    '<button class="an-collsel" type="button" data-an-collsel-trig aria-haspopup="listbox" aria-expanded="false">' +
+    '<button class="an-collsel" type="button" data-an-collsel-trig aria-haspopup="listbox" aria-expanded="false">' + IC.chevSelect +
       '<span class="an-collsel__qty" data-an-collsel-qty hidden></span>' +
       '<span class="an-collsel__txt' + (val ? "" : " an-collsel__txt--ph") + '" data-an-collsel-val data-an-collsel-ph="' + esc(ph) + '"' +
-      (key === "deep" ? " data-ai-collname" : "") + '>' + esc(val || ph) + '</span>' + IC.chevSelect +
+      (key === "deep" ? " data-ai-collname" : "") + '>' + esc(val || ph) + '</span>' +
     '</button>' +
     '<button class="an-collsel__x" type="button" data-an-collsel-clear aria-label="Clear collection"' + (val ? '' : ' hidden') + '>' + IC.closeBold + '</button>' +
     '<div class="anf-menu an-collsel__menu" data-an-collsel-menu hidden role="listbox">' +

@@ -1785,25 +1785,26 @@ body.is-open:not(.is-collapsed) .main { margin-left: 306px; }
 /* --- пагинация --- */
 .an-pagi { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; }
 .an-pagi__label { display: flex; align-items: center; gap: 8px; font-size: 16px; font-weight: 500; color: var(--color-black); } /* text-body-semi-16 */
-.an-collsel { display: inline-grid; grid-template-columns: auto auto 16px; align-items: center; gap: 6px; border: 0; background: var(--color-shade-100); border-radius: 6px; padding: 4px 8px; cursor: pointer; font-family: inherit; }
-.an-collsel:hover { background: var(--color-shade-200); }
+.an-collsel { display: inline-flex; align-items: center; gap: 6px; border: 0; padding: 0; background: none; cursor: pointer; font-family: inherit; }
 .an-collsel__txt { font-size: 16px; font-weight: 500; color: var(--color-black); } /* text-body-semi-16 */
 .an-collsel__txt--ph { color: var(--color-shade-500); } /* плейсхолдер «Select colleciton» */
 /* бейдж с количеством каналов — такой же, как в дропдауне */
 .an-collsel__qty { display: inline-flex; align-items: center; justify-content: center; min-width: 24px; height: 20px;
-  padding: 0 6px; border-radius: 4px; background: var(--color-shade-200); box-sizing: border-box;
-  font-size: 11px; font-weight: 500; color: var(--color-shade-800); }
+  padding: 0 6px; border-radius: 4px; background: #fff; box-sizing: border-box;
+  font-size: 11px; font-weight: 500; color: var(--color-black); }
 .an-collsel__qty[hidden] { display: none; }
 .an-collsel svg { width: 16px; height: 16px; color: var(--color-black); flex-shrink: 0; }
 /* P1.1: дропдаун выбора коллекции — меню переиспользует стили полей панели фильтров */
-.an-collsel-wrap { position: relative; display: inline-flex; align-items: center; gap: 2px; }
+/* пилюлей стала обёртка: внутри шеврон, бейдж, название и крестик сброса */
+.an-collsel-wrap { position: relative; display: inline-flex; align-items: center; gap: 6px; padding: 4px 8px; border-radius: 6px; background: var(--color-shade-100); }
+.an-collsel-wrap:hover { background: var(--color-shade-200); }
 /* × сбрасывает выбранную коллекцию */
-.an-collsel__x { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px;
-  padding: 0; border: 0; border-radius: 50%; background: none; color: var(--color-shade-700); cursor: pointer; flex-shrink: 0; }
-.an-collsel__x:hover { background: var(--color-shade-200); color: var(--color-black); }
+.an-collsel__x { display: inline-flex; align-items: center; justify-content: center; width: 16px; height: 16px;
+  padding: 0; border: 0; border-radius: 4px; background: none; color: var(--color-shade-700); cursor: pointer; flex-shrink: 0; }
+.an-collsel__x:hover { background: var(--color-shade-300); color: var(--color-black); }
 .an-collsel__x svg { width: 12px; height: 12px; }
 .an-collsel__x[hidden] { display: none; }
-.an-collsel-wrap.is-open .an-collsel { background: var(--color-shade-200); }
+.an-collsel-wrap.is-open { background: var(--color-shade-200); }
 .an-collsel-wrap.is-open .an-collsel svg { transform: rotate(180deg); }
 .an-collsel__menu { left: 0; right: auto; z-index: 40; width: 280px; }
 .an-pagi__ctrls { display: flex; align-items: center; gap: 32px; }
