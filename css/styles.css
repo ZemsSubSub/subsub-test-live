@@ -1917,7 +1917,9 @@ body.is-open:not(.is-collapsed) .main { margin-left: 306px; }
   width: 4px; height: 4px; border-radius: 50%; background: var(--color-black); z-index: 2; }
 .an-dr__day--edge.an-dr__day--today::after { background: #fff; }
 .an-dr__foot { display: flex; align-items: center; gap: 8px; padding: 12px 20px; border-top: 1px solid var(--color-shade-200); }
-.an-dr__inp { width: 116px; height: 40px; font-size: 14px; text-align: center; }
+/* дата целиком должна влезать: .an-input задаёт 16px и паддинг 16, поэтому размеры пишем
+   с большей специфичностью — 116px внутри давали 82px под текст при ширине даты 86px */
+.an-dr__foot .an-dr__inp { width: 132px; height: 40px; padding: 0 12px; font-size: 14px; text-align: center; }
 .an-dr__dash { color: var(--color-shade-700); }
 .an-dr__spacer { flex: 1; }
 .an-table { width: max-content; min-width: 100%; }

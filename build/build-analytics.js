@@ -359,8 +359,8 @@ function filtersPanel(key, inner) {
 
 // наборы полей: на каждой странице свой (P1.13)
 const FILTERS_BASIC = filtersPanel("basic",
+  // коллекция выбирается пилюлей у счётчика, в панели её нет
   fSearch("title", "Search in title", "Search by channel title") +
-  fSelect("collection", "Collection", "Select collection", []) +
   fSelect("topic", "YouTube topic", "Select topic", TOPIC_LIST) +
   fSelect("country", "YouTube country", "Select country", COUNTRY_LIST) +
   fSelect("language", "Detected Language", "Select language", LANG_LIST)

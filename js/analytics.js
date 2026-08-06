@@ -839,14 +839,7 @@
   }
   // Basic: коллекция — это фильтр, поэтому пишем значение в панель и применяем её целиком
   function csApplyBasic(name) {
-    var act = flActive();
-    if (act) {
-      var f = act.querySelector('[data-anf-field="collection"]');
-      if (f) {
-        var v = f.querySelector("[data-anf-val]");
-        if (v) { v.textContent = name; v.classList.remove("is-ph"); }
-      }
-    }
+    // поля Collection в панели нет: пилюля — единственный источник, просто применяем фильтры
     flApply();
   }
   // Deep: коллекция задаёт набор строк — пишем её в панель и применяем панель целиком
@@ -903,7 +896,8 @@
     if (!w) return;
     var act = flActive();
     var f = act && act.querySelector('[data-anf-field="collection"] [data-anf-val]');
-    csSetLabel(w, f && !f.classList.contains("is-ph") ? f.textContent.trim() : "");
+    if (!f) return;                    // поля Collection в панели нет — пилюлю не трогаем
+    csSetLabel(w, !f.classList.contains("is-ph") ? f.textContent.trim() : "");
   }
   csWraps().forEach(function (w) {
     var si = w.querySelector("[data-an-collsel-search]");
@@ -1523,7 +1517,10 @@
   function flApplyBasic(v) {
     var rows = tblAllRows("basic");
     var collChannels = null;
-    if (v.collection && typeof aiChannelsOf === "function") collChannels = aiChannelsOf(v.collection);
+    // поля Collection в панели больше нет — значение берём из пилюли у счётчика
+    var cw = document.querySelector('[data-an-collsel="basic"]');
+    var coll = v.collection || (cw ? csCurrent(cw) : "");
+    if (coll && typeof aiChannelsOf === "function") collChannels = aiChannelsOf(coll);
     rows.forEach(function (row) {
       var nameEl = row.querySelector(".an-chan__name");
       var nm = nameEl ? nameEl.textContent.trim() : "";
