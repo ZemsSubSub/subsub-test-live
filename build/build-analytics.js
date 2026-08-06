@@ -331,6 +331,7 @@ function fGrowthPeriod(withChips) {
 function collSel(key, val, ph) {
   return '<span class="an-collsel-wrap" data-an-collsel="' + key + '">' +
     '<button class="an-collsel" type="button" data-an-collsel-trig aria-haspopup="listbox" aria-expanded="false">' +
+      '<span class="an-collsel__qty" data-an-collsel-qty hidden></span>' +
       '<span class="an-collsel__txt' + (val ? "" : " an-collsel__txt--ph") + '" data-an-collsel-val data-an-collsel-ph="' + esc(ph) + '"' +
       (key === "deep" ? " data-ai-collname" : "") + '>' + esc(val || ph) + '</span>' + IC.chevSelect +
     '</button>' +
@@ -801,7 +802,6 @@ const mainInner = `
         <div class="an-pagi__label">
           <span class="an-pagi__name">Channels</span>
           ${collSel("basic", "", "Select collection")}
-          <span class="an-pagi__dot"></span>
           <span class="an-pagi__total">2.2m</span>
         </div>
         <div class="an-pagi__ctrls">
@@ -1250,8 +1250,6 @@ const videosPanel = `
         <div class="an-pagi__label">
           <span class="an-pagi__name">Videos</span>
           ${collSel("video", DEEP_DEFAULT_COLL, "Select collection")}
-          <span class="an-pagi__dot"></span>
-          <span class="an-pagi__total">${VID_DEFAULT_COUNT}</span>
         </div>
         <div class="an-pagi__ctrls">
           <span class="an-pagi__pages">Pages: 1</span>
@@ -1351,8 +1349,6 @@ const deepInner = `
           <span class="an-pagi__name">Channels</span>
           ${collSel("deep", DEEP_DEFAULT_COLL, "Select collection")}
           <span class="ai-badge" data-ai-badge hidden>${IC.aiStarsSolid}${AI_BADGE}</span>
-          <span class="an-pagi__dot"></span>
-          <span class="an-pagi__total">8</span>
         </div>
         <div class="an-pagi__ctrls">
           <span class="an-pagi__pages">Pages: 1</span>
@@ -1503,7 +1499,6 @@ const collInner = `
       <section class="an-pagi" data-an-table="coll">
         <div class="an-pagi__label">
           <span class="an-pagi__name">Collections</span>
-          <span class="an-pagi__dot"></span>
           <span class="an-pagi__total">${COLL_ROWS.length}</span>
         </div>
         <div class="an-pagi__ctrls">

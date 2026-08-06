@@ -1785,10 +1785,15 @@ body.is-open:not(.is-collapsed) .main { margin-left: 306px; }
 /* --- пагинация --- */
 .an-pagi { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; }
 .an-pagi__label { display: flex; align-items: center; gap: 8px; font-size: 16px; font-weight: 500; color: var(--color-black); } /* text-body-semi-16 */
-.an-collsel { display: inline-grid; grid-template-columns: auto 16px; align-items: center; gap: 4px; border: 0; background: var(--color-shade-100); border-radius: 6px; padding: 4px 8px; cursor: pointer; font-family: inherit; }
+.an-collsel { display: inline-grid; grid-template-columns: auto auto 16px; align-items: center; gap: 6px; border: 0; background: var(--color-shade-100); border-radius: 6px; padding: 4px 8px; cursor: pointer; font-family: inherit; }
 .an-collsel:hover { background: var(--color-shade-200); }
 .an-collsel__txt { font-size: 16px; font-weight: 500; color: var(--color-black); } /* text-body-semi-16 */
 .an-collsel__txt--ph { color: var(--color-shade-500); } /* плейсхолдер «Select colleciton» */
+/* бейдж с количеством каналов — такой же, как в дропдауне */
+.an-collsel__qty { display: inline-flex; align-items: center; justify-content: center; min-width: 24px; height: 20px;
+  padding: 0 6px; border-radius: 4px; background: var(--color-shade-200); box-sizing: border-box;
+  font-size: 11px; font-weight: 500; color: var(--color-shade-800); }
+.an-collsel__qty[hidden] { display: none; }
 .an-collsel svg { width: 16px; height: 16px; color: var(--color-black); flex-shrink: 0; }
 /* P1.1: дропдаун выбора коллекции — меню переиспользует стили полей панели фильтров */
 .an-collsel-wrap { position: relative; display: inline-flex; align-items: center; gap: 2px; }
@@ -1801,7 +1806,6 @@ body.is-open:not(.is-collapsed) .main { margin-left: 306px; }
 .an-collsel-wrap.is-open .an-collsel { background: var(--color-shade-200); }
 .an-collsel-wrap.is-open .an-collsel svg { transform: rotate(180deg); }
 .an-collsel__menu { left: 0; right: auto; z-index: 40; width: 280px; }
-.an-pagi__dot { width: 6px; height: 6px; border-radius: 50%; background: var(--color-shade-500); flex-shrink: 0; }
 .an-pagi__ctrls { display: flex; align-items: center; gap: 32px; }
 .an-pagi__pages { font-size: 16px; font-weight: 400; color: var(--color-shade-700); white-space: nowrap; }
 .an-pagi__nav { display: flex; align-items: center; gap: 12px; }
@@ -2243,19 +2247,18 @@ body.is-open:not(.is-collapsed) .main { margin-left: 306px; }
 .an-fchips[hidden] { display: none; }
 .an-fchip {
   display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 8px 0 10px;
-  border-radius: 6px; background: var(--color-shade-100); font-size: 13px; font-weight: 400; color: var(--color-black); white-space: nowrap;
+  border-radius: 6px; background: var(--color-purple-100); font-size: 13px; font-weight: 400; color: var(--color-purple-900); white-space: nowrap;
 }
-.an-fchip__k { color: var(--color-shade-700); }
+.an-fchip__k { color: var(--color-purple-900); opacity: .7; }
 .an-fchip__x { display: inline-flex; align-items: center; justify-content: center; width: 16px; height: 16px;
-  padding: 0; border: 0; border-radius: 50%; background: none; color: var(--color-shade-700); cursor: pointer; }
-.an-fchip__x:hover { background: var(--color-shade-300); color: var(--color-black); }
+  padding: 0; border: 0; border-radius: 4px; background: none; color: var(--color-purple-900); cursor: pointer; }
+.an-fchip__x:hover { background: var(--color-purple-200); }
 .an-fchip__x svg { width: 10px; height: 10px; }
 .an-fchips__clear { height: 28px; padding: 0 10px; border: 0; border-radius: 6px; background: none; cursor: pointer;
   font-family: inherit; font-size: 13px; font-weight: 500; color: var(--color-black); }
 .an-fchips__clear:hover { background: var(--color-shade-100); }
 
 /* B3: объём коллекции в дропдауне — маленький бейдж перед названием */
-.anf-opt { display: flex; align-items: center; gap: 8px; }
 .anf-opt[data-selected] { background: var(--color-shade-100); font-weight: 600; }
 .anf-opt__qty {
   flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; min-width: 24px; height: 20px;
@@ -2746,7 +2749,7 @@ body.filters-open .main { padding-right: calc(417px + 28px); }
 .anf-search input { flex: 1; min-width: 0; border: 0; outline: 0; font-family: inherit; font-size: 14px; }
 .anf-opts { flex: 1; min-height: 0; overflow-y: auto; padding: 4px; }
 .anf-opt {
-  display: block; width: 100%; padding: 8px 10px; border: 0; border-radius: 6px; background: none;
+  display: flex; align-items: center; gap: 8px; width: 100%; padding: 8px 10px; border: 0; border-radius: 6px; background: none;
   cursor: pointer; font-family: inherit; font-size: 14px; color: var(--color-black); text-align: left;
 }
 .anf-opt:hover { background: var(--color-shade-100); }

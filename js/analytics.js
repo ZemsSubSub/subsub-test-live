@@ -730,6 +730,15 @@
     var v = csVal(wrap);
     return v && !v.classList.contains("an-collsel__txt--ph") ? v.textContent.trim() : "";
   }
+  // количество каналов у коллекции: в Deep/Videos — строки таблицы, иначе состав коллекции
+  function csCount(key, name) {
+    if (key === "deep" || key === "video") {
+      return tblAllRows(key).filter(function (r) {
+        return (r.getAttribute("data-coll") || "") === name && !r.classList.contains("an-tr--avg");
+      }).length;
+    }
+    return aiChannelsOf(name).length;
+  }
   function csFill(wrap, q) {
     var box = wrap.querySelector("[data-an-collsel-opts]");
     if (!box) return;
@@ -743,14 +752,7 @@
       ? '<button class="anf-opt' + (cur ? "" : " is-selected") + '" type="button" role="option" data-an-collsel-all>All channels</button>'
       : "";
     box.innerHTML = head + (list.map(function (c) {
-      // количество каналов рядом с коллекцией: в Deep/Videos — сколько строк есть в таблице,
-      // на Basic и в остальных — размер состава коллекции
-      var n = (key === "deep" || key === "video")
-        ? tblAllRows(key).filter(function (r) {
-            return (r.getAttribute("data-coll") || "") === c.name && !r.classList.contains("an-tr--avg");
-          }).length
-        : aiChannelsOf(c.name).length;
-      var qty = '<span class="anf-opt__qty">' + n + "</span>";
+      var qty = '<span class="anf-opt__qty">' + csCount(key, c.name) + "</span>";
       // бейдж с количеством — перед названием
       return '<button class="anf-opt" type="button" role="option"' + (c.name === cur ? ' data-selected' : '') +
              ' data-an-collsel-opt="' + escHtml(c.name) + '">' + qty + '<span class="anf-opt__name">' + escHtml(c.name) + '</span></button>';
@@ -788,6 +790,12 @@
     if (!v) return;
     if (name) { v.textContent = name; v.classList.remove("an-collsel__txt--ph"); }
     else { v.textContent = v.getAttribute("data-an-collsel-ph") || ""; v.classList.add("an-collsel__txt--ph"); }
+    // бейдж с количеством каналов в самом селекторе — как в дропдауне
+    var qty = wrap.querySelector("[data-an-collsel-qty]");
+    if (qty) {
+      qty.textContent = name ? csCount(wrap.getAttribute("data-an-collsel"), name) : "";
+      qty.hidden = !name;
+    }
     // × показываем только когда коллекция выбрана
     var x = wrap.querySelector("[data-an-collsel-clear]");
     if (x) x.hidden = !name;
@@ -1188,9 +1196,9 @@
     }).join("") + (items.length > 1 ? '<button class="an-fchips__clear" type="button" data-an-filters-clear>Clear all</button>' : "");
     if (typeof tblFit === "function") tblFit();   // строка бейджей меняет высоту — пересчитываем скролл-бокс
   }
+  // обычный крестик (не в кружке) — им закрываются бейджи применённых фильтров
   function closeIconHtml() {
-    var proto = document.querySelector("[data-an-filters-close] svg") || document.querySelector(".an-modal__x svg");
-    return proto ? proto.outerHTML : "×";
+    return '<svg viewBox="0 0 24 24" fill="none"><path d="M19.172 6.42187C19.6126 5.98124 19.6126 5.26874 19.172 4.83281C18.7314 4.39687 18.0189 4.39218 17.583 4.83281L12.0048 10.4109L6.42202 4.82812C5.9814 4.38749 5.2689 4.38749 4.83296 4.82812C4.39702 5.26874 4.39233 5.98124 4.83296 6.41718L10.4111 11.9953L4.82827 17.5781C4.38765 18.0187 4.38765 18.7312 4.82827 19.1672C5.2689 19.6031 5.9814 19.6078 6.41733 19.1672L11.9955 13.5891L17.5783 19.1719C18.0189 19.6125 18.7314 19.6125 19.1673 19.1719C19.6033 18.7312 19.608 18.0187 19.1673 17.5828L13.5892 12.0047L19.172 6.42187Z" fill="currentColor"/></svg>';
   }
   // снятие одного фильтра: возвращаем поле в исходное состояние и применяем панель
   function flChipRemove(id) {
@@ -3198,6 +3206,8 @@
 
   aiTick();
   aiRenderCollections();
+  // бейджи в селекторах коллекции: на старте значение уже в разметке, счётчик проставляем здесь
+  [].slice.call(document.querySelectorAll("[data-an-collsel]")).forEach(function (w) { csSetLabel(w, csCurrent(w)); });
   tabInit();                         // P1.9: активный таб из ?tab=
   if (tblBody("deep")) dpApplyPins();  // закреплённые каналы наверху
   tblInitAll();                      // P1.5: первая отрисовка страниц
