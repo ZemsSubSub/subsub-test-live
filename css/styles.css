@@ -1838,13 +1838,12 @@ body.is-open:not(.is-collapsed) .main { margin-left: 306px; }
 /* A2: заглушка-колонка не должна просвечивать под закреплёнными */
 .an-th--stub, .an-td--stub { padding: 0; background: #fff; }
 .an-tr--head .an-th--stub { background: var(--color-shade-90); }
-/* на выделенной и закреплённой строке плашки хитмапа гасим — иначе полупрозрачный
-   зелёный/красный смешивается с подсветкой и цвет читается грязным (текст остаётся цветным) */
-.an-tbody .an-tr.is-selected .an-heat, .an-tbody .an-tr.is-pinned .an-heat { background: transparent; }
 /* A3: подсветка выбранной строки */
-.an-tbody .an-tr.is-selected .an-td { background: var(--color-blue-20, #e1e8ff); }
-.an-tbody .an-tr.is-selected .an-chan { background: var(--color-blue-20, #e1e8ff); }
-.an-tbody .an-tr.is-selected .an-chan__fade { background: linear-gradient(to left, var(--color-blue-20, #e1e8ff), var(--color-blue-20, #e1e8ff), transparent); }
+.an-tbody .an-tr.is-selected .an-td { background: var(--color-shade-200); }
+.an-tbody .an-tr.is-selected .an-chan { background: var(--color-shade-200); }
+.an-tbody .an-tr.is-selected .an-chan__fade { background: linear-gradient(to left, var(--color-shade-200), var(--color-shade-200), transparent); }
+/* ховер поверх выделения — на тон темнее, чтобы строка отзывалась */
+.an-tbody .an-tr.is-selected:hover .an-td, .an-tbody .an-tr.is-selected:hover .an-chan { background: var(--color-shade-300); }
 /* закреплённые строки Deep data: лёгкая подложка, чтобы отличать их от обычных */
 .an-tbody .an-tr.is-pinned .an-td { background: var(--color-yellow-20, #fff6db); }
 .an-tbody .an-tr.is-pinned .an-chan { background: var(--color-yellow-20, #fff6db); }
