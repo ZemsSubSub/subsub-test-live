@@ -1839,11 +1839,10 @@ body.is-open:not(.is-collapsed) .main { margin-left: 306px; }
 .an-th--stub, .an-td--stub { padding: 0; background: #fff; }
 .an-tr--head .an-th--stub { background: var(--color-shade-90); }
 /* A3: подсветка выбранной строки */
-.an-tbody .an-tr.is-selected .an-td { background: var(--color-shade-200); }
-.an-tbody .an-tr.is-selected .an-chan { background: var(--color-shade-200); }
-.an-tbody .an-tr.is-selected .an-chan__fade { background: linear-gradient(to left, var(--color-shade-200), var(--color-shade-200), transparent); }
-/* ховер поверх выделения — на тон темнее, чтобы строка отзывалась */
-.an-tbody .an-tr.is-selected:hover .an-td, .an-tbody .an-tr.is-selected:hover .an-chan { background: var(--color-shade-300); }
+/* выделение — тот же серый, что у ховера по названию канала, только на всю строку */
+.an-tbody .an-tr.is-selected .an-td { background: var(--color-shade-100); }
+.an-tbody .an-tr.is-selected .an-chan { background: var(--color-shade-100); }
+.an-tbody .an-tr.is-selected .an-chan__fade { background: linear-gradient(to left, var(--color-shade-100), var(--color-shade-100), transparent); }
 /* закреплённые строки Deep data: лёгкая подложка, чтобы отличать их от обычных */
 .an-tbody .an-tr.is-pinned .an-td { background: var(--color-yellow-20, #fff6db); }
 .an-tbody .an-tr.is-pinned .an-chan { background: var(--color-yellow-20, #fff6db); }
