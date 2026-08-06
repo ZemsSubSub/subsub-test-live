@@ -1937,6 +1937,7 @@ body.is-open:not(.is-collapsed) .main { margin-left: 306px; }
 .an-td--check, .an-td--name { background: #fff; }
 /* закреплённая ячейка канала: паддинги как на проде (pl-2 pr-4) */
 .an-td--name { padding: 8px 16px 8px 8px; }
+.an-th--name { padding-left: 8px; }  /* заголовок над аватаром, а не левее его */
 /* последняя закреплённая колонка отделена строуком — borderRight в pinnedStyles.ts на проде */
 .an-th--name, .an-td--name { border-right: 1px solid var(--color-shade-200); }
 /* крайние колонки: контент отступает от рамки серфейса */
@@ -2057,6 +2058,10 @@ body.is-open:not(.is-collapsed) .main { margin-left: 306px; }
 /* хитмап-заливка ячеек метрик — метрики прода: ячейка py-2 pr-6, плашка padding 12/8,
    без закругления, цвет ТЕКСТА тоже меняется (зелёный/красный/оранжевый) */
 .an-td--metric { padding: 8px 24px 8px 0; }
+/* Deep data: значение в плашке метрики отступает от края ячейки на 8px, текстовые ячейки — на 12px;
+   заголовки были прижаты к нулю, поэтому колонка выглядела невыровненной. Сводим всё к 8px. */
+[data-an-table-body="deep"] .an-th:not(.an-th--check):not(.an-th--name):not(.an-th--stub) { padding-left: 8px; }
+[data-an-table-body="deep"] .an-td--plain { padding: 0 12px 0 8px; }
 .an-heat { display: flex; align-items: center; width: 100%; height: 100%; padding: 0 8px; box-sizing: border-box; }
 .an-heat--pos { background: rgba(155, 230, 153, 0.16); color: #1bbc40; }
 .an-heat--neg { background: rgba(255, 153, 153, 0.16); color: #e92929; }
