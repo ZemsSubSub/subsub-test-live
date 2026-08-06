@@ -866,15 +866,19 @@
     var coll = w ? csCurrent(w) : "";
     var q = (document.querySelector("[data-vid-search]") || {}).value || "";
     q = q.trim().toLowerCase();
+    // тот же поиск есть и в панели фильтров — условия складываются
+    var pf = document.querySelector('[data-an-filters="deepVideos"] [data-anf-field="video"] [data-anf-text]');
+    var pq = pf ? pf.value.trim().toLowerCase() : "";
     // без выбранной коллекции показывать нечего — своё пустое состояние
     var vBody = tblBody("video");
     if (vBody) vBody.setAttribute("data-empty-msg", coll ? "" : "Select a collection to see videos");
     tblAllRows("video").forEach(function (row) {
       var ok = !!coll && (row.getAttribute("data-coll") || "") === coll;
-      if (ok && q) {
+      if (ok && (q || pq)) {
         var t = row.querySelector(".vid-title__t"), ch = row.querySelector(".vid-title__chan");
         var hay = ((t ? t.textContent : "") + " " + (ch ? ch.textContent : "")).toLowerCase();
-        if (hay.indexOf(q) === -1) ok = false;
+        if (q && hay.indexOf(q) === -1) ok = false;
+        if (pq && hay.indexOf(pq) === -1) ok = false;
       }
       if (ok) row.removeAttribute("data-filtered"); else row.setAttribute("data-filtered", "");
     });
@@ -1107,7 +1111,7 @@
   // ================= P1.13: панель фильтров + P1.2 Growth period =================
   // Прод-поведение: drawer открыт по умолчанию, применение мгновенное, Apply нет.
   // Значения читаем прямо из DOM панели — отдельного стора не держим.
-  var FL_TABLE = { basic: "basic", deep: "deep", deepVideos: "deep", coll: "coll" };
+  var FL_TABLE = { basic: "basic", deep: "deep", deepVideos: "video", coll: "coll" };
   function flPanels() { return [].slice.call(document.querySelectorAll("[data-an-filters]")); }
   function flActive() {                       // активная панель страницы (у Deep их две — по табу)
     var list = flPanels();
@@ -1165,7 +1169,7 @@
   var FCHIP_LABEL = {
     collection: "Collection", topic: "Topic", title: "Search", country: "Country", language: "Language",
     status: "Status", shared: "Shared with", channels: "Channel", ctype: "Type",
-    published: "Published at", vtype: "Video type", video: "Video"
+    published: "Published at", vtype: "Video type", video: "Search"
   };
   function flChipsHost() {
     var act = flActive();
@@ -1250,6 +1254,7 @@
     if (key === "basic") flApplyBasic(v);
     else if (key === "coll") flApplyColl(v);
     else if (key === "deep") flApplyDeep(v);
+    else if (key === "video") vidApply();
     if (key === "basic") csSyncFromPanel();   // селектор у счётчика показывает тот же фильтр (P1.1)
     flDot();
     flChips();

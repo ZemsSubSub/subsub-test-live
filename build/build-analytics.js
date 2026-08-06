@@ -382,10 +382,10 @@ const FILTERS_DEEP = filtersPanel("deep",
 );
 // Deep data, таб Videos — другой набор
 const FILTERS_DEEP_VIDEOS = filtersPanel("deepVideos",
+  fSearch("video", "Search in title", "Search by video title") +
   fText("published", "Published at", "Select date range") +
-  fText("channels", "Channels", "Start typing channel name") +
+  fText("channels", "Channels", "Search by channel title") +
   fSelect("vtype", "Video type", "Select the required type", ["Video", "Short", "Stream"]) +
-  fText("video", "Video", "Start typing name or ID") +
   fRange("duration", "Video duration", "Min (sec.)", "Max (sec.)")
 );
 const FILTERS_COLL = filtersPanel("coll",
