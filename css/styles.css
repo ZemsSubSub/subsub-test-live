@@ -1838,6 +1838,9 @@ body.is-open:not(.is-collapsed) .main { margin-left: 306px; }
 /* A2: заглушка-колонка не должна просвечивать под закреплёнными */
 .an-th--stub, .an-td--stub { padding: 0; background: #fff; }
 .an-tr--head .an-th--stub { background: var(--color-shade-90); }
+/* на выделенной и закреплённой строке плашки хитмапа гасим — иначе полупрозрачный
+   зелёный/красный смешивается с подсветкой и цвет читается грязным (текст остаётся цветным) */
+.an-tbody .an-tr.is-selected .an-heat, .an-tbody .an-tr.is-pinned .an-heat { background: transparent; }
 /* A3: подсветка выбранной строки */
 .an-tbody .an-tr.is-selected .an-td { background: var(--color-blue-20, #e1e8ff); }
 .an-tbody .an-tr.is-selected .an-chan { background: var(--color-blue-20, #e1e8ff); }
