@@ -686,7 +686,7 @@
         cell.classList.toggle("is-colhidden", !on);
       });
       var box = document.querySelector('[data-an-cols-opt="' + id + '"]');
-      if (box) box.classList.toggle("is-checked", on);
+      if (box) { box.classList.toggle("is-checked", on); box.setAttribute("aria-checked", on ? "true" : "false"); }
     });
   }
   function cvInit() {
@@ -696,20 +696,21 @@
     if (st) cvApply(st);
   }
   function cvToggle(id) {
-    setTimeout(tblHugAll, 0);
     var st = cvLoad() || cvDefaults();
     st[id] = !st[id];
     cvSave(st);
     cvApply(st);
+    tblHugAll();                       // ширины пересчитываем уже по новому составу колонок
+    if (typeof tblFit === "function") tblFit();
   }
   function cvReset() {
-    setTimeout(tblHugAll, 0);
     if (!cvDefault) return;
     var st = {};
     Object.keys(cvDefault).forEach(function (k) { st[k] = cvDefault[k]; });
     cvSave(st);
     cvApply(st);
     cvMenu(false);
+    tblHugAll();
   }
   function cvMenu(open) {
     var m = document.querySelector("[data-an-cols-menu]");
@@ -1071,20 +1072,49 @@
     var b = tblBody(key);
     if (!b || b.offsetParent === null) return;
     var heads = [].slice.call(b.querySelectorAll(".an-thead .an-tr--head > *"));
-    var rows = tblAllRows(key).filter(function (r) { return !r.hidden; });
+    var all = tblAllRows(key);
+    var grown = [];
     heads.forEach(function (h, i) {
       var col = h.getAttribute("data-col");
-      if (!col || HUG_SKIP[col] || h.hidden) return;
-      var cells = [h];
-      rows.forEach(function (r) { if (r.children[i]) cells.push(r.children[i]); });
+      // скрытые колонки пропускаем: их ширина 0, иначе запомним нулевой потолок
+      if (!col || HUG_SKIP[col] || h.hidden || h.classList.contains("is-colhidden")) return;
+      if (!h.getBoundingClientRect().width) return;
+      // меряем по видимым строкам, а ширину ставим всем — иначе скрытые строки другой
+      // коллекции всплывут со старой шириной и разъедутся с шапкой
+      var cells = [h], meas = [h];
+      all.forEach(function (r) {
+        var c = r.children[i];
+        if (!c) return;
+        cells.push(c);
+        if (!r.hidden) meas.push(c);
+      });
       var w0 = h.getAttribute("data-w0");
       if (w0 === null) { w0 = Math.round(h.getBoundingClientRect().width); h.setAttribute("data-w0", w0); }
       w0 = +w0;
-      cells.forEach(function (c) { c.style.width = "max-content"; });
+      meas.forEach(function (c) { c.style.width = "max-content"; });
       var need = 0;
-      cells.forEach(function (c) { need = Math.max(need, c.getBoundingClientRect().width); });
+      meas.forEach(function (c) { need = Math.max(need, c.getBoundingClientRect().width); });
       var w = Math.min(Math.ceil(need) + 8, w0);
       cells.forEach(function (c) { c.style.width = w + "px"; });
+      grown.push({ w: w, cells: cells });
+    });
+    // колонки уже серфейса — растягиваем их до его ширины (fill), шире — оставляем hug и скролл
+    var wrap = document.querySelector('[data-an-tablewrap="' + key + '"]');
+    if (!wrap || !grown.length) return;
+    var total = 0;
+    heads.forEach(function (h) {
+      if (h.hidden || h.classList.contains("is-colhidden")) return;
+      total += h.getBoundingClientRect().width;
+    });
+    var extra = Math.floor(wrap.clientWidth - total);
+    if (extra <= 0) return;
+    var base = grown.reduce(function (s, g) { return s + g.w; }, 0);
+    var used = 0;
+    grown.forEach(function (g, i) {
+      var add = i === grown.length - 1 ? extra - used : Math.floor(extra * g.w / base);
+      used += add;
+      var w = g.w + add;
+      g.cells.forEach(function (c) { c.style.width = w + "px"; });
     });
   }
   function tblHugAll() {
@@ -1119,7 +1149,7 @@
   var tblFitT = null;
   window.addEventListener("resize", function () {
     clearTimeout(tblFitT);
-    tblFitT = setTimeout(tblFit, 100);
+    tblFitT = setTimeout(function () { tblHugAll(); tblFit(); }, 100);
   });
 
   // ================= P1.9: табы Channels / Videos (?tab=) =================

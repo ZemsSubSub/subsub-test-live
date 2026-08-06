@@ -1129,10 +1129,12 @@ const deepColsPopover = '<div class="an-cols-wrap" data-an-cols>' +
     '</div>' +
     '<div class="an-cols__list">' +
       DEEP_COLS.filter(function (c) { return !c.stub && c.kind !== "channel" && c.kind !== "check"; }).map(function (c) {
-        return '<label class="an-cols__row">' +
-          '<button class="an-check' + (c.off ? "" : " is-checked") + '" type="button" data-an-cols-opt="' + c.id + '" aria-label="' + esc(c.label) + '"></button>' +
+        // одна кнопка на строку: раньше <label> вокруг <button> давал двойное срабатывание
+        return '<button class="an-cols__row' + (c.off ? "" : " is-checked") + '" type="button" role="switch"' +
+          ' aria-checked="' + (c.off ? "false" : "true") + '" data-an-cols-opt="' + c.id + '">' +
+          '<span class="an-check">' + IC.check + '</span>' +
           '<span class="an-cols__lbl">' + esc(c.label) + '</span>' +
-        '</label>';
+        '</button>';
       }).join("") +
     '</div>' +
   '</div>' +

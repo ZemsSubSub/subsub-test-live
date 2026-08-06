@@ -1943,8 +1943,9 @@ body.is-open:not(.is-collapsed) .main { margin-left: 306px; }
 .an-tr > .an-th:first-child, .an-tr > .an-td:first-child { padding-left: 16px; }
 .an-tr > .an-th:last-child, .an-tr > .an-td:last-child { padding-right: 16px; }
 .an-tr > .an-td--check:first-child, .an-tr > .an-th--check:first-child { padding-left: 16px; padding-right: 0; }
-/* распорка между закреплёнными и обычными колонками: без паддинга, иначе тело шире шапки на 4px */
-.an-tr > .an-th--stub, .an-tr > .an-td--stub { padding: 0; }
+/* распорка между закреплёнными и обычными колонками: без паддинга, иначе тело шире шапки на 4px
+   (специфичность выше, чем у .an-tr--avg .an-td — сводная строка тоже не должна её раздувать) */
+.an-table .an-tr > .an-th--stub, .an-table .an-tr > .an-td--stub { padding: 0; }
 /* --- P1.5: состояние сортировки и меню размера страницы --- */
 .an-sort { cursor: pointer; }
 /* активная сортировка подсвечивается пурпурным — как бейджи применённых фильтров */
@@ -2320,8 +2321,17 @@ body.is-open:not(.is-collapsed) .main { margin-left: 306px; }
 .an-cols__head .an-btn--link { height: 32px; gap: 4px; }
 .an-cols__head .an-btn--link svg { width: 16px; height: 16px; }
 .an-cols__list { display: flex; flex-direction: column; gap: 12px; max-height: 300px; overflow-y: auto; }
-.an-cols__row { display: flex; align-items: center; gap: 12px; cursor: pointer; }
+.an-cols__row { display: flex; align-items: center; gap: 12px; width: 100%; padding: 2px 4px; margin: -2px -4px;
+  border: 0; border-radius: 6px; background: none; cursor: pointer; font-family: inherit; text-align: left; }
+.an-cols__row:hover { background: var(--color-shade-100); }
+/* галочка внутри строки — та же, что в таблице */
+.an-cols__row.is-checked .an-check { background: var(--color-black); border-color: var(--color-black); }
+.an-cols__row.is-checked .an-check svg { opacity: 1; }
 .an-cols__lbl { flex: 1; font-size: 14px; font-weight: 300; color: var(--color-black); }
+/* скролл списка колонок — тонкий, как у таблиц */
+.an-cols__list::-webkit-scrollbar { width: 8px; }
+.an-cols__list::-webkit-scrollbar-thumb { border-radius: 4px; background: var(--color-shade-300); }
+.an-cols__list::-webkit-scrollbar-track { background: transparent; }
 
 /* --- D2: табы в модалке добавления каналов + список каналов базы --- */
 .nc-tabs { flex-shrink: 0; display: flex; gap: 24px; padding: 0 48px; border-bottom: 1px solid var(--color-shade-200); }
