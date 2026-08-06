@@ -401,17 +401,19 @@ const COLS = [
   { id:"name",   w:280, pin:"name", label:"Channel", sort:true },
   { id:"stub",   w:20,  stub:true },
   { id:"topics", w:140, label:"Youtube topics" },
+  // метрика идёт вместе со своим приростом: Subs → Subs+, Views → Views+
+  { id:"subs",   w:110, label:"Subs", sort:true },
+  { id:"subsg",  w:110, label:"Subs+", sort:true },
+  { id:"views",  w:100, label:"Views", sort:true },
+  { id:"viewsg", w:120, label:"Views+", sort:true },
+  { id:"vps",    w:150, label:"Views+/Subs+", sort:true },
+  { id:"vids",   w:110, label:"Vids", sort:true },
+  // A1: AVV — средние просмотры на видео, поэтому стоит рядом с Vids
+  { id:"avv",    w:80,  label:"AVV", sort:true },
+  // даты в конце: сначала метрики, потом служебные даты
   { id:"created",w:120, label:"Created" },
   { id:"lastupd",w:150, label:"Last upd" },
   { id:"added",  w:150, label:"Added to base" },
-  { id:"subs",   w:110, label:"Subs", sort:true },
-  { id:"views",  w:100, label:"Views", sort:true },
-  { id:"vids",   w:110, label:"Vids", sort:true },
-  // A1: AVV — это средние просмотры на видео, место рядом с объёмами, а не в приросте
-  { id:"avv",    w:80,  label:"AVV", sort:true },
-  { id:"subsg",  w:110, label:"Subs+", sort:true },
-  { id:"viewsg", w:120, label:"Views+", sort:true },
-  { id:"vps",    w:150, label:"Views+/Subs+", sort:true },
 ];
 
 // ---- данные-примеры (реальные каналы/значения с прода app.subsub.io/analytics/basic-data) ----
@@ -461,16 +463,16 @@ function bodyRow(r, i){
   const topHtml = '<span class="an-topic" data-an-topic="' + esc(tops[0]) + '">' + esc(tops[0]) + '</span>' +
     (tops.length > 1 ? '<span class="an-topic__more" data-an-topics-more="' + esc(tops.join("|")) + '">+' + (tops.length - 1) + '</span>' : "");
   cells.push('<div class="an-td an-td--topics" style="width:140px"><span class="an-topics">' + topHtml + '</span></div>');
-  cells.push('<div class="an-td" style="width:120px">' + esc(r[3]) + '</div>');
-  cells.push('<div class="an-td" style="width:150px">' + esc(r[4]) + '</div>');
-  cells.push('<div class="an-td" style="width:150px">' + esc(r[5]) + '</div>');
-  cells.push('<div class="an-td" style="width:110px">' + esc(r[6]) + '</div>');
-  cells.push('<div class="an-td" style="width:100px">' + esc(r[7]) + '</div>');
-  cells.push('<div class="an-td" style="width:110px">' + esc(r[8]) + '</div>');
-  cells.push('<div class="an-td" style="width:80px">' + esc(r[11]) + '</div>');    // AVV (A1)
-  cells.push(deltaCell(r[9], 110));
-  cells.push(deltaCell(r[10], 120));
-  cells.push('<div class="an-td" style="width:150px">' + esc(r[12]) + '</div>');
+  cells.push('<div class="an-td" style="width:110px">' + esc(r[6]) + '</div>');   // Subs
+  cells.push(deltaCell(r[9], 110));                                                  // Subs+
+  cells.push('<div class="an-td" style="width:100px">' + esc(r[7]) + '</div>');   // Views
+  cells.push(deltaCell(r[10], 120));                                                 // Views+
+  cells.push('<div class="an-td" style="width:150px">' + esc(r[12]) + '</div>');  // Views+/Subs+
+  cells.push('<div class="an-td" style="width:110px">' + esc(r[8]) + '</div>');   // Vids
+  cells.push('<div class="an-td" style="width:80px">' + esc(r[11]) + '</div>');   // AVV
+  cells.push('<div class="an-td" style="width:120px">' + esc(r[3]) + '</div>');  // Created
+  cells.push('<div class="an-td" style="width:150px">' + esc(r[4]) + '</div>');  // Last upd
+  cells.push('<div class="an-td" style="width:150px">' + esc(r[5]) + '</div>');  // Added to base
   return '<div class="an-tr">' + cells.join("") + '</div>';
 }
 
