@@ -2065,6 +2065,10 @@ body.is-open:not(.is-collapsed) .main { margin-left: 306px; }
    заголовки были прижаты к нулю, поэтому колонка выглядела невыровненной. Сводим всё к 8px. */
 [data-an-table-body="deep"] .an-th:not(.an-th--check):not(.an-th--name):not(.an-th--stub) { padding-left: 8px; }
 [data-an-table-body="deep"] .an-td--plain { padding: 0 12px 0 8px; }
+/* то же для таблиц отчётов */
+[data-an-table-body="repm"] .an-th, [data-an-table-body="repp"] .an-th { padding-left: 8px; }
+[data-an-table-body="repm"] .an-td, [data-an-table-body="repp"] .an-td { padding-left: 8px; }
+[data-an-table-body="repm"] .an-td--plain, [data-an-table-body="repp"] .an-td--plain { padding: 0 12px 0 8px; }
 .an-heat { display: flex; align-items: center; width: 100%; height: 100%; padding: 0 8px; box-sizing: border-box; }
 .an-heat--pos { background: rgba(155, 230, 153, 0.16); color: #1bbc40; }
 .an-heat--neg { background: rgba(255, 153, 153, 0.16); color: #e92929; }
@@ -2207,8 +2211,8 @@ body.is-open:not(.is-collapsed) .main { margin-left: 306px; }
 
 /* --- P1.9: таб Videos --- */
 /* обёртка таба не должна ломать вертикальные отступы .an-page */
-[data-an-tab-panel], .an-stack { display: flex; flex-direction: column; gap: 24px; }
-[data-an-tab-panel][hidden] { display: none; }
+[data-an-tab-panel], [data-rep-panel], .an-stack { display: flex; flex-direction: column; gap: 24px; }
+[data-an-tab-panel][hidden], [data-rep-panel][hidden] { display: none; }
 /* поиск занимает свободную ширину, кнопки прижаты вправо — как на проде */
 /* поле поиска — те же метрики, что на Basic data (.an-search): 40px, gap 16, текст 16/300 */
 .vid-search { min-width: 220px; }

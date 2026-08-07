@@ -1222,7 +1222,7 @@
     });
   }
   function tblHugAll() {
-    ["basic", "deep"].forEach(function (key) { if (tblBody(key)) tblHug(key); });
+    ["basic", "deep", "repm", "repp"].forEach(function (key) { if (tblBody(key)) tblHug(key); });
   }
   function tblInitAll() {
     // дефолтная сортировка таблиц каналов — по Views, от большего (первый клик по колонке даёт desc)
@@ -3383,6 +3383,7 @@
     var m = document.getElementById("repModal");
     if (m) m.setAttribute("data-rep-mode", cur);
     repTargetFill();
+    if (typeof tblHugAll === "function") tblHugAll();   // колонки по содержимому + добор ширины
     if (typeof tblFit === "function") tblFit();
   }
   // список в поле Collection / Channel — по табу
