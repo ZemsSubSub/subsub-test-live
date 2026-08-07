@@ -2067,6 +2067,7 @@
     });
     TBL.coll.page = 1;
     tblApply("coll");
+    if (typeof tblHug === "function") tblHug("coll");   // новые строки должны получить те же ширины
   }
 
   // новая строка коллекции (после Create)
@@ -2582,7 +2583,7 @@
       tbody.insertBefore(row, tbody.firstChild);
     }
     aiPaintTargets();
-    if (typeof tblApply === "function" && tblBody("coll")) tblApply("coll");
+    if (typeof tblApply === "function" && tblBody("coll")) { tblApply("coll"); tblHug("coll"); }
     mcCountSync();
   }
 
@@ -3616,6 +3617,7 @@
     closeModal(document.getElementById("repModal"));
     toast("Report is being prepared");
     if (typeof tblApply === "function") tblApply(key);
+    if (typeof tblHug === "function") tblHug(key);   // новая строка получает те же ширины
     setTimeout(function () {
       var st = row.querySelector('[data-col="status"]');
       if (st) st.innerHTML = repStatusHtml("created");
