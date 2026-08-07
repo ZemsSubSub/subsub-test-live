@@ -1636,7 +1636,20 @@ const ceBody = CE_ROWS.map(function (r) {
 const editInner = `
     <section class="an-page ce-page">
       <a class="ce-back" href="analytics-collections.html">${IC.arrowL}Back</a>
-      <header class="an-head"><h1 class="an-title">Editing collection</h1><span class="ai-badge ce-badge" data-ai-badge hidden>${IC.aiStarsSolid}${AI_BADGE}</span></header>
+      <header class="an-head an-head--between">
+        <div class="an-head__left">
+          <h1 class="an-title">Editing collection</h1>
+          <span class="ai-badge ce-badge" data-ai-badge hidden>${IC.aiStarsSolid}${AI_BADGE}</span>
+        </div>
+        <!-- действия страницы: снизу их забрал футер выбора каналов -->
+        <div class="an-head__btns">
+          <button class="an-btn an-btn--plain ce-head__del" type="button" data-ce-delete>${IC.trash}Delete</button>
+          <button class="an-btn an-btn--plain" type="button" data-ce-deactivate>${IC.archive}Deactivate</button>
+          <span class="an-head__sep"></span>
+          <button class="an-btn an-btn--secondary" type="button" data-nc-open>${IC.plus}Add channels</button>
+          <button class="an-btn an-btn--primary" type="button" data-ce-save>Save</button>
+        </div>
+      </header>
 
       <div class="ce-form">
         <div class="ce-field">
@@ -1665,28 +1678,18 @@ const editInner = `
           </div>
         </section>
 
-        <section class="an-tablewrap an-tablewrap--surface" data-an-tablewrap="ce">
+        <section class="an-tablewrap an-tablewrap--surface an-tablewrap--stick" data-an-tablewrap="ce" data-ce-scroll>
           <div class="an-table an-table--fill ce-table">
             <div class="an-thead">${ceHead}</div>
-            <div class="an-tbody">
+            <div class="an-tbody" data-ce-tbody>
             ${ceBody}
             </div>
+            <!-- догрузка каналов по скроллу: строка-статус внизу списка -->
+            <div class="ce-more" data-ce-more hidden><span class="ce-more__spin" aria-hidden="true"></span><span data-ce-more-txt>Loading channels…</span></div>
           </div>
         </section>
       </div>
     </section>
-
-    <!-- D3: деструктивные действия отделены разделителем, обычные — справа -->
-    <div class="ce-footer">
-      <div class="ce-footer__inner">
-        <button class="an-btn an-btn--danger an-btn--huge" type="button" data-ce-delete>${IC.trash}Delete</button>
-        <button class="an-btn an-btn--plain an-btn--huge ce-footer__deact" type="button" data-ce-deactivate>${IC.archive}Deactivate</button>
-        <span class="ce-footer__sep"></span>
-        <span class="ce-footer__spacer"></span>
-        <button class="an-btn an-btn--secondary an-btn--huge" type="button" data-nc-open>${IC.plus}Add channels</button>
-        <button class="an-btn an-btn--primary an-btn--huge" type="button" data-ce-save>Save</button>
-      </div>
-    </div>
 
     <!-- D1: массовое удаление выбранных каналов -->
     <div class="an-footer" data-an-footer hidden>

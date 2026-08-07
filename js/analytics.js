@@ -3239,6 +3239,70 @@
     if (allBtn) allBtn.classList.toggle("is-checked", ceRows().length > 0 && n === ceRows().length);
   }
   var ceAsk = null;            // что подтверждаем: remove | delete | deactivate
+  // ================= страница коллекции: догрузка каналов по скроллу =================
+  // В прототипе список берём из того же пула каналов, что и Basic data: сервер отдаёт
+  // первую порцию, остальное дописываем батчами по 10, пока пул не закончится.
+  var CE_BATCH = 10, ceLoading = false, ceDone = false;
+  function ceRowNames() {
+    return [].slice.call(document.querySelectorAll("[data-ce-row] .ce-chan__name")).map(function (e) { return e.textContent.trim(); });
+  }
+  function ceRowHtml(c, i) {
+    var color = c.color || "--color-avatar-1";
+    return '<div class="an-tr" data-ce-row>' +
+      '<div class="an-td an-td--check" style="width:40px"><button class="an-check" type="button" data-an-check aria-label="Select"></button></div>' +
+      '<div class="an-td"><span class="ce-chan"><span class="mc-ava ce-ava" style="background:var(' + color + ')">' +
+        escHtml(c.initial || (c.name || "?").charAt(0)) + '</span><span class="ce-chan__name">' + escHtml(c.name) + '</span></span></div>' +
+      '<div class="an-td ce-num" style="width:120px">' + escHtml(c.views || "—") + '</div>' +
+      '<div class="an-td ce-num" style="width:120px">' + escHtml(c.subs || "—") + '</div>' +
+      '<div class="an-td" style="width:200px"><a class="ce-view" href="#" tabindex="-1">View channel</a></div>' +
+      '<div class="an-td" style="width:100px"><button class="ce-trash" type="button" aria-label="Remove channel" data-ce-remove></button></div>' +
+    '</div>';
+  }
+  function ceLoadMore() {
+    if (ceLoading || ceDone) return;
+    var body = document.querySelector("[data-ce-tbody]"), more = document.querySelector("[data-ce-more]");
+    if (!body) return;
+    var have = ceRowNames();
+    var pool = (typeof aiChannelPool === "function" ? aiChannelPool() : []).filter(function (c) {
+      return have.indexOf(c.name) === -1;
+    });
+    if (!pool.length) {
+      ceDone = true;
+      if (more) { more.hidden = false; var t0 = more.querySelector("[data-ce-more-txt]"); if (t0) t0.textContent = "All channels loaded"; more.classList.add("is-done"); }
+      return;
+    }
+    ceLoading = true;
+    if (more) more.hidden = false;
+    // имитация запроса: иконки берём из уже отрисованной строки, чтобы не дублировать SVG
+    setTimeout(function () {
+      var chkIco = (document.querySelector("[data-ce-row] [data-an-check]") || {}).innerHTML || "";
+      var trashIco = (document.querySelector("[data-ce-row] [data-ce-remove]") || {}).innerHTML || "";
+      var html = pool.slice(0, CE_BATCH).map(ceRowHtml).join("");
+      var tmp = document.createElement("div");
+      tmp.innerHTML = html;
+      [].slice.call(tmp.children).forEach(function (row) {
+        var c = row.querySelector("[data-an-check]"); if (c) c.innerHTML = chkIco;
+        var t = row.querySelector("[data-ce-remove]"); if (t) t.innerHTML = trashIco;
+        body.appendChild(row);
+      });
+      ceLoading = false;
+      if (more) more.hidden = true;
+      if (pool.length <= CE_BATCH) {
+        ceDone = true;
+        if (more) { more.hidden = false; var t2 = more.querySelector("[data-ce-more-txt]"); if (t2) t2.textContent = "All channels loaded"; more.classList.add("is-done"); }
+      }
+    }, 400);
+  }
+  function ceScrollInit() {
+    var box = document.querySelector("[data-ce-scroll]");
+    if (!box) return;
+    box.addEventListener("scroll", function () {
+      if (box.scrollTop + box.clientHeight >= box.scrollHeight - 120) ceLoadMore();
+    });
+    // если первая порция короче бокса — сразу подгружаем следующую
+    if (box.scrollHeight <= box.clientHeight + 8) ceLoadMore();
+  }
+
   function ceConfirm(kind) {
     var t = document.querySelector("[data-ce-c-title]"), x = document.querySelector("[data-ce-c-text]");
     var btn = document.querySelector("[data-ce-c-confirm]");
@@ -3323,6 +3387,7 @@
   cvInit();                          // P1.7: видимость колонок из localStorage
   slInit();                          // P1.6: выбранные срезы по типу контента
   mcCtypeInit();                     // тип коллекции на My collections из localStorage
+  ceScrollInit();                    // страница коллекции: догрузка каналов по скроллу
   gsInit();                          // P1.8: режим сводной строки
   flInit();                          // P1.13: панель открыта по умолчанию
   aiRenderCollectionView();

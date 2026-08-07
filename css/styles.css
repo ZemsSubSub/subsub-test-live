@@ -1722,7 +1722,7 @@ body.is-open:not(.is-collapsed) .main { margin-left: 306px; }
 /* на страницах аналитики отступы от навбара и до низа страницы — 24px */
 .main:has(.an-page) { padding-top: calc(var(--header-height) + 24px); padding-bottom: 24px; }
 /* страница коллекции скроллится как форма: снизу оставляем место под прибитый футер */
-.main:has(.ce-page) { padding-bottom: 144px; }
+.main:has(.ce-page) { padding-bottom: 24px; }
 .an-page { display: flex; flex-direction: column; gap: 24px; }
 .an-head { min-height: 48px; display: flex; align-items: center; flex-wrap: wrap; row-gap: 12px; gap: 16px; } /* gap — отступ бейджа (напр. AI collection) от заголовка; wrap — чтобы Growth period не сминался на узких экранах */
 .an-title { margin: 0; font-size: 32px; line-height: 1.3; font-weight: 500; color: var(--color-black); } /* text-title-semi-32 */
@@ -1857,7 +1857,7 @@ body.is-open:not(.is-collapsed) .main { margin-left: 306px; }
 .an-dr { position: static; }
 .an-dr__field {
   display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 16px; box-sizing: border-box;
-  border: 1px solid var(--color-shade-300); border-radius: 10px; background: #fff; cursor: pointer;
+  border: 1px solid var(--color-shade-300); border-radius: 8px; background: #fff; cursor: pointer;
   font-family: inherit; font-size: 14px; font-weight: 500; color: var(--color-black); white-space: nowrap;
 }
 .an-dr__field:hover { border-color: var(--color-shade-500); }
@@ -2091,6 +2091,8 @@ body.is-open:not(.is-collapsed) .main { margin-left: 306px; }
 /* заголовок + переключатель табов слева, Growth period справа */
 .an-head__left { display: flex; align-items: baseline; gap: 24px; min-width: 0; }
 .an-head__btns { display: flex; align-items: center; gap: 12px; }
+.an-head__sep { width: 1px; height: 24px; background: var(--color-shade-200); }
+.ce-head__del { color: var(--color-red); }
 /* таблица во всю ширину (без гориз. скролла) — Includes растягивается */
 .an-table--fill, .an-table--fill .an-thead, .an-table--fill .an-tbody, .an-table--fill .an-tr { width: 100%; min-width: 100%; }
 /* первая колонка не прижата к краю (как `.ml-table th/td:first-child`) */
@@ -2118,7 +2120,7 @@ body.is-open:not(.is-collapsed) .main { margin-left: 306px; }
 .mc-menu__note[hidden] { display: none; }
 .mc-noshare { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 500; color: var(--color-shade-700); }
 .mc-noshare svg { width: 24px; height: 24px; flex-shrink: 0; }
-.mc-search { display: flex; align-items: center; gap: 8px; width: 280px; height: 48px; padding: 0 16px; border: 1px solid var(--color-shade-300); border-radius: 8px; background: #fff; box-sizing: border-box; }
+.mc-search { display: flex; align-items: center; gap: 8px; width: 280px; height: 40px; padding: 0 16px; border: 1px solid var(--color-shade-300); border-radius: 8px; background: #fff; box-sizing: border-box; }
 .mc-search:focus-within { border-color: var(--color-black); }
 .mc-search svg { width: 20px; height: 20px; color: var(--color-shade-700); flex-shrink: 0; }
 .mc-search input { flex: 1; min-width: 0; border: 0; outline: 0; font-family: inherit; font-size: 16px; font-weight: 300; color: var(--color-black); background: transparent; }
@@ -2360,8 +2362,6 @@ body.is-open:not(.is-collapsed) .main { margin-left: 306px; }
 .nc-baseitem svg { width: 24px; height: 24px; color: var(--color-black); flex-shrink: 0; }
 .nc-baseava { width: 32px; height: 32px; font-size: 13px; }
 /* D3: разделитель деструктивных действий в футере страницы коллекции */
-.ce-footer__sep { width: 1px; align-self: stretch; margin: 8px 8px; background: var(--color-shade-200); }
-.ce-footer__deact { color: var(--color-red); }
 
 /* --- P1.4: модалка «New channels» (Add to base) --- */
 .an-btn--tertiary { background: transparent; color: var(--color-black); box-shadow: inset 0 0 0 1px var(--color-shade-300); }
@@ -2657,17 +2657,18 @@ body.is-open:not(.is-collapsed) .main { margin-left: 306px; }
 /* ==================================================== ОТКРЫТАЯ КОЛЛЕКЦИЯ (Editing collection)
    Перенос app.subsub.io/analytics/collections/channels/<id>: ‹Back + заголовок, форма
    (Name collection / Shared with / поиск), таблица каналов, фиксированный футер действий. */
-.ce-page { padding-bottom: 140px; } /* место под фикс-футер */
+.ce-page { padding-bottom: 0; }   /* прибитого футера страницы больше нет */
 .ce-back { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 400; color: var(--color-black); text-decoration: none; }
 .ce-back:hover { color: var(--color-shade-700); }
 .ce-back svg { width: 16px; height: 16px; }
 .ce-badge { align-self: center; }
-.ce-form { display: flex; flex-direction: column; gap: 16px; max-width: 1000px; }
+/* страница коллекции использует всю ширину контента */
+.ce-form { display: flex; flex-direction: column; gap: 16px; }
 .ce-field { display: flex; flex-direction: column; gap: 6px; }
 .ce-lbl { font-size: 14px; font-weight: 500; color: var(--color-black); }
 .ce-select {
   display: flex; align-items: center; justify-content: space-between; gap: 8px;
-  height: 48px; padding: 8px 16px; box-sizing: border-box;
+  height: 40px; padding: 0 16px; box-sizing: border-box;
   border: 1px solid var(--color-shade-300); border-radius: 8px; background: #fff; cursor: pointer;
   font-family: inherit; font-size: 16px; font-weight: 300; color: var(--color-black);
 }
@@ -2676,9 +2677,18 @@ body.is-open:not(.is-collapsed) .main { margin-left: 306px; }
 .ce-select__chev { display: inline-flex; }
 .ce-select__chev svg { width: 20px; height: 20px; color: var(--color-black); }
 .ce-search { width: 100%; }
+/* инпуты и дропдауны страницы коллекции одного размера — 40px, как поле даты */
+.ce-form .an-input { height: 40px; }
 .ce-aiblock { margin-top: 4px; }
 
 .ce-table { margin-top: 8px; }
+/* строка догрузки в конце списка каналов */
+.ce-more { display: flex; align-items: center; justify-content: center; gap: 8px; height: 56px;
+  border-top: 1px solid var(--color-shade-200); font-size: 14px; font-weight: 300; color: var(--color-shade-700); }
+.ce-more[hidden] { display: none; }
+.ce-more__spin { width: 16px; height: 16px; border: 2px solid var(--color-shade-300); border-top-color: var(--color-black);
+  border-radius: 50%; animation: ce-spin .8s linear infinite; }
+@keyframes ce-spin { to { transform: rotate(360deg); } }
 /* колонки тянутся на всю ширину серфейса: свободное место забирает колонка канала,
    остальные остаются фиксированными (иначе справа оставался пустой хвост) */
 .ce-table .an-tr > *:nth-child(2) { flex: 1 1 240px; min-width: 240px; }
@@ -2694,9 +2704,6 @@ body.is-open:not(.is-collapsed) .main { margin-left: 306px; }
 .ce-trash svg { width: 24px; height: 24px; }
 
 /* футер действий (fixed, как на проде: shade-90, кнопки huge 56px) */
-.ce-footer { position: fixed; left: 306px; right: 0; bottom: 0; z-index: 1100; padding: 32px 28px; background: var(--color-shade-90); }
-.ce-footer__inner { display: flex; align-items: center; gap: 16px; max-width: 1000px; }
-.ce-footer__spacer { flex: 1; }
 .an-btn--huge { height: 56px; padding: 0 32px; font-size: 16px; font-weight: 300; }
 .an-btn--huge svg { width: 24px; height: 24px; }
 
