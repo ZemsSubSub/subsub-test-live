@@ -1396,10 +1396,11 @@ const deepInner = `
 
 // ================= MY COLLECTIONS =================
 const COLL_COLS = [
-  { id:"name", w:240, label:"Name", sort:true },
+  // свободную ширину забирает Name — она важнее, чем список каналов в Includes
+  { id:"name", w:240, label:"Name", sort:true, grow:true },
   { id:"status", w:320, label:"Status", sort:true },
   { id:"quantity", w:120, label:"Quantity", sort:true },
-  { id:"includes", w:350, label:"Includes", grow:true },
+  { id:"includes", w:350, label:"Includes" },
   { id:"created", w:140, label:"Created on", sort:true },
   { id:"owner", w:160, label:"Owner" },
   { id:"shared", w:120, label:"Shared with" },
@@ -1415,7 +1416,7 @@ function ava(a, cls){ return '<span class="' + (cls || "mc-ava") + '" style="bac
   (a.n ? ' title="' + esc(a.n) + '"' : '') + '>' + esc(a.i) + '</span>'; }
 function collRow(r){
   const cells = [];
-  cells.push('<div class="an-td" style="width:240px"><span class="mc-name">' + esc(r.name) + '</span></div>');
+  cells.push('<div class="an-td an-td--grow" style="width:240px"><span class="mc-name">' + esc(r.name) + '</span></div>');
   // статус — ОДНА пилюля: иконка + подпись + разделитель + ссылка внутри (как на проде)
   let st = '';
   if (r.status === "activated") {
@@ -1438,7 +1439,7 @@ function collRow(r){
   let chips = '<span class="mc-chips__list">' +
     r.includes.map(function (n) { return '<span class="mc-chip">' + esc(n) + '</span>'; }).join("") + '</span>';
   if (r.more) chips += '<span class="mc-chip mc-chip--more" title="' + r.more + ' more channels">+' + r.more + '</span>';
-  cells.push('<div class="an-td an-td--grow" style="width:350px"><div class="mc-chips">' + chips + '</div></div>');
+  cells.push('<div class="an-td" style="width:350px"><div class="mc-chips">' + chips + '</div></div>');
   cells.push('<div class="an-td" style="width:140px">' + esc(r.created) + '</div>');
   cells.push('<div class="an-td" style="width:160px"><span class="mc-owner">' + ava(r.owner) + '<span class="mc-owner__name">' + esc(r.owner.name) + '</span></span></div>');
   // пустая колонка Shared with на проде показывает «Not shared» с иконкой

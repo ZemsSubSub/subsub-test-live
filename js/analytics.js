@@ -1182,6 +1182,7 @@
       var col = h.getAttribute("data-col");
       // скрытые колонки пропускаем: их ширина 0, иначе запомним нулевой потолок
       if (!col || HUG_SKIP[col] || h.hidden || h.classList.contains("is-colhidden")) return;
+      if (h.classList.contains("an-th--grow")) return;   // растущая колонка сама заберёт остаток
       if (!h.getBoundingClientRect().width) return;
       // меряем по видимым строкам, а ширину ставим всем — иначе скрытые строки другой
       // коллекции всплывут со старой шириной и разъедутся с шапкой
@@ -1210,6 +1211,8 @@
       if (h.hidden || h.classList.contains("is-colhidden")) return;
       total += h.getBoundingClientRect().width;
     });
+    // если в таблице есть растущая колонка — раздачей остатка занимается flex, а не мы
+    if (b.querySelector(".an-th--grow")) return;
     var extra = Math.floor(wrap.clientWidth - total);
     if (extra <= 0) return;
     var base = grown.reduce(function (s, g) { return s + g.w; }, 0);
@@ -1222,7 +1225,7 @@
     });
   }
   function tblHugAll() {
-    ["basic", "deep", "repm", "repp"].forEach(function (key) { if (tblBody(key)) tblHug(key); });
+    ["basic", "deep", "coll", "repm", "repp"].forEach(function (key) { if (tblBody(key)) tblHug(key); });
   }
   function tblInitAll() {
     // дефолтная сортировка таблиц каналов — по Views, от большего (первый клик по колонке даёт desc)
@@ -2545,13 +2548,13 @@
       row.setAttribute("data-ai-row", "");
       row.setAttribute("data-name", c.name);
       row.innerHTML =
-        '<div class="an-td" style="width:240px">' +
-          (c.isAi === false ? "" : '<span class="ai-badge mc-name__ai">' + AI_ICO.stars + 'AI</span>') +
+        // AI-бейдж в списке коллекций не показываем — он остался только в представлении коллекции
+        '<div class="an-td an-td--grow" style="width:240px">' +
           '<span class="mc-name">' + escHtml(c.name) + '</span></div>' +
         '<div class="an-td" style="width:320px"><div class="mc-statuscell">' + aiStatusHtml(c.status, c.id) + '</div></div>' +
         '<div class="an-td" style="width:120px">' + (c.status === "pending" ? "—" : String((c.channels || []).length)) + '</div>' +
         // Includes — каналы коллекции; у AI-коллекции их ещё нет (фильтры показываем в её представлении)
-        '<div class="an-td an-td--grow" style="width:350px"><div class="mc-chips">' +
+        '<div class="an-td" style="width:350px"><div class="mc-chips">' +
           aiChipsHtml(c) + '</div></div>' +
         '<div class="an-td" style="width:140px">' + escHtml(c.created) + '</div>' +
         '<div class="an-td" style="width:160px"><span class="mc-owner"><span class="mc-ava" style="background:var(--color-avatar-1)">Y</span><span class="mc-owner__name">You</span></span></div>' +
