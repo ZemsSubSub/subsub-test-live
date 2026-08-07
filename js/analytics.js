@@ -170,6 +170,9 @@
     if (e.target.closest("[data-ce-close]")) { closeModal(document.getElementById("ceConfirm")); return; }
     if (e.target.closest("[data-ce-c-confirm]")) { ceDoConfirm(); return; }
     if (e.target.closest("[data-ce-save]")) { toast("Collection saved successfully"); return; }
+    // тип коллекции на My collections — сегмент в тулбаре
+    var mcCt = e.target.closest("[data-mc-ctype-set]");
+    if (mcCt) { mcCtypeSet(mcCt.getAttribute("data-mc-ctype-set")); return; }
     // --- B1: один переключатель типа контента на все метрики ---
     var ctB = e.target.closest("[data-an-ctype-set]");
     if (ctB) { ctSet(ctB.getAttribute("data-an-ctype-set")); return; }
@@ -1552,7 +1555,31 @@
       if (ok) row.removeAttribute("data-filtered"); else row.setAttribute("data-filtered", "");
     });
   }
+  // ---- тип коллекции: сегмент в тулбаре страницы My collections ----
+  var MC_CTYPE_KEY = "subsub_coll_ctype";
+  function mcCtype() {
+    var on = document.querySelector("[data-mc-ctype] .an-ctype__btn.is-on");
+    return on ? on.getAttribute("data-mc-ctype-set") : "All";
+  }
+  function mcCtypeSet(val) {
+    var box = document.querySelector("[data-mc-ctype]");
+    if (!box) return;
+    [].slice.call(box.querySelectorAll(".an-ctype__btn")).forEach(function (btn) {
+      var on = btn.getAttribute("data-mc-ctype-set") === val;
+      btn.classList.toggle("is-on", on);
+      btn.setAttribute("aria-checked", on ? "true" : "false");
+    });
+    try { localStorage.setItem(MC_CTYPE_KEY, val); } catch (e) {}
+    flApply();
+  }
+  function mcCtypeInit() {
+    if (!document.querySelector("[data-mc-ctype]")) return;
+    var saved = null;
+    try { saved = localStorage.getItem(MC_CTYPE_KEY); } catch (e) {}
+    if (saved && saved !== "All") mcCtypeSet(saved);
+  }
   function flApplyColl(v) {
+    var ctype = mcCtype();                       // сегмент живёт в тулбаре, а не в панели
     tblAllRows("coll").forEach(function (row) {
       var nm = row.getAttribute("data-name") || "";
       var statusEl = row.querySelector(".mc-status__t");
@@ -1562,8 +1589,8 @@
       var chips = [].slice.call(row.querySelectorAll(".mc-chip")).map(function (c) { return c.textContent.trim(); }).join(" ").toLowerCase();
       var ok = true;
       // P1.10: Samples — это public-коллекции (владелец не ты), Own — свои
-      if (v.ctype === "Samples" && !row.hasAttribute("data-sample")) ok = false;
-      if (v.ctype === "Own" && row.hasAttribute("data-sample")) ok = false;
+      if (ctype === "Samples" && !row.hasAttribute("data-sample")) ok = false;
+      if (ctype === "Own" && row.hasAttribute("data-sample")) ok = false;
       if (v.status && st !== v.status) ok = false;
       if (v.channels && chips.indexOf(v.channels.toLowerCase()) === -1) ok = false;
       if (v.qtyFrom != null && !isNaN(qty) && qty < v.qtyFrom) ok = false;
@@ -2349,8 +2376,9 @@
     if (c.status === "pending") return '<span class="an-muted">—</span>';
     var ch = c.channels || [];
     if (!ch.length) return '<span class="an-muted">No channels yet</span>';
-    var out = ch.slice(0, 2).map(function (n) { return '<span class="mc-chip">' + escHtml(n) + '</span>'; }).join("");
-    if (ch.length > 2) out += '<span class="mc-chip">+' + (ch.length - 2) + '</span>';
+    var out = '<span class="mc-chips__list">' +
+      ch.slice(0, 2).map(function (n) { return '<span class="mc-chip">' + escHtml(n) + '</span>'; }).join("") + '</span>';
+    if (ch.length > 2) out += '<span class="mc-chip mc-chip--more" title="' + (ch.length - 2) + ' more channels">+' + (ch.length - 2) + '</span>';
     return out;
   }
   // существующие коллекции, в которые сейчас идёт подбор: временно показываем «Sourcing…»,
@@ -2387,8 +2415,10 @@
     var chips = tds[3] ? tds[3].querySelector(".mc-chips") : null;
     if (chips) {
       var head = (base ? base.channels : []).slice(0, 2);
-      chips.innerHTML = head.map(function (n) { return '<span class="mc-chip">' + escHtml(n) + '</span>'; }).join("") +
-        (total > head.length ? '<span class="mc-chip">+' + (total - head.length) + '</span>' : "");
+      chips.innerHTML = '<span class="mc-chips__list">' +
+        head.map(function (n) { return '<span class="mc-chip">' + escHtml(n) + '</span>'; }).join("") + '</span>' +
+        (total > head.length ? '<span class="mc-chip mc-chip--more" title="' + (total - head.length) +
+          ' more channels">+' + (total - head.length) + '</span>' : "");
     }
   }
 
@@ -3292,6 +3322,7 @@
   if (tblBody("deep")) dpApplyPins();  // закреплённые каналы наверху — уже после сортировки
   cvInit();                          // P1.7: видимость колонок из localStorage
   slInit();                          // P1.6: выбранные срезы по типу контента
+  mcCtypeInit();                     // тип коллекции на My collections из localStorage
   gsInit();                          // P1.8: режим сводной строки
   flInit();                          // P1.13: панель открыта по умолчанию
   aiRenderCollectionView();

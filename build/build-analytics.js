@@ -389,7 +389,7 @@ const FILTERS_DEEP_VIDEOS = filtersPanel("deepVideos",
   fRange("duration", "Video duration", "Min (sec.)", "Max (sec.)")
 );
 const FILTERS_COLL = filtersPanel("coll",
-  fSegment("ctype", "Collection type", ["All", "Samples", "Own"], "All") +
+  // тип коллекции вынесен наружу, в тулбар страницы
   fSelect("status", "Status", "Select status", ["Created", "Activated", "Collecting data"]) +
   fSelect("shared", "Shared with", "Select user", USER_LIST) +
   fText("channels", "Channels", "Select channel") +
@@ -1432,8 +1432,11 @@ function collRow(r){
   cells.push('<div class="an-td" style="width:320px"><div class="mc-statuscell">' + st + '</div></div>');
   cells.push('<div class="an-td" style="width:120px">' + r.qty + '</div>');
   // includes (grow)
-  let chips = r.includes.map(function (n) { return '<span class="mc-chip">' + esc(n) + '</span>'; }).join("");
-  if (r.more) chips += '<span class="mc-chip">+' + r.more + '</span>';
+  // имена в отдельном контейнере (они ужимаются), бейдж «+N» рядом и не сжимается —
+  // иначе при нехватке ширины обрезался именно он
+  let chips = '<span class="mc-chips__list">' +
+    r.includes.map(function (n) { return '<span class="mc-chip">' + esc(n) + '</span>'; }).join("") + '</span>';
+  if (r.more) chips += '<span class="mc-chip mc-chip--more" title="' + r.more + ' more channels">+' + r.more + '</span>';
   cells.push('<div class="an-td an-td--grow" style="width:350px"><div class="mc-chips">' + chips + '</div></div>');
   cells.push('<div class="an-td" style="width:140px">' + esc(r.created) + '</div>');
   cells.push('<div class="an-td" style="width:160px"><span class="mc-owner">' + ava(r.owner) + '<span class="mc-owner__name">' + esc(r.owner.name) + '</span></span></div>');
@@ -1456,11 +1459,16 @@ const collInner = `
         <h1 class="an-title">My collections</h1>
         <div class="an-head__btns">
           <button class="an-btn an-btn--ai" type="button" data-ai-open>${IC.aiStarsSolid}${AI_LABEL}</button>
-          <button class="an-btn an-btn--primary" type="button" data-mc-create-open>${IC.collections}Create Collection</button>
+          <button class="an-btn an-btn--secondary" type="button" data-mc-create-open>${IC.plus}Create Collection</button>
         </div>
       </header>
 
       <section class="an-toolbar">
+        <!-- тип коллекции — тот же сегмент, что переключатель типа контента на Deep data -->
+        <div class="an-ctype" data-mc-ctype role="radiogroup" aria-label="Collection type">${["All", "Samples", "Own"].map(function (t) {
+          return '<button class="an-ctype__btn' + (t === "All" ? " is-on" : "") + '" type="button" role="radio" ' +
+            'aria-checked="' + (t === "All" ? "true" : "false") + '" data-mc-ctype-set="' + t + '">' + t + '</button>';
+        }).join("")}</div>
         <div class="mc-search">${IC.search}<input type="text" placeholder="Search..." data-mc-search /></div>
         <button class="an-btn an-btn--secondary" type="button" data-an-filters-toggle>${IC.filter}Filters<span class="an-btn__dot" data-an-filters-dot hidden></span></button>
       </section>

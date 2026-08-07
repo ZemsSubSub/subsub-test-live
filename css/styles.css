@@ -2137,8 +2137,12 @@ body.is-open:not(.is-collapsed) .main { margin-left: 306px; }
 .mc-status--orange { background: #fbead7; color: var(--color-orange); }
 .mc-status--gray { background: var(--color-shade-100); color: var(--color-shade-700); }
 
-.mc-chips { display: flex; align-items: center; gap: 6px; overflow: hidden; }
-.mc-chip { display: inline-flex; align-items: center; flex-shrink: 0; padding: 4px 8px; border-radius: 4px; background: var(--color-shade-200); color: var(--color-black); font-size: 14px; font-weight: 500; white-space: nowrap; }
+.mc-chips { display: flex; align-items: center; gap: 6px; min-width: 0; overflow: hidden; }
+/* имена ужимаются с многоточием, бейдж «+N» остаётся целым */
+.mc-chips__list { display: flex; align-items: center; gap: 6px; min-width: 0; overflow: hidden; }
+.mc-chip { display: inline-block; padding: 4px 8px; border-radius: 4px; background: var(--color-shade-200); color: var(--color-black); font-size: 14px; font-weight: 500; line-height: 20px; white-space: nowrap; flex-shrink: 0; box-sizing: border-box; }
+.mc-chips__list .mc-chip { flex-shrink: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.mc-chip--more { flex-shrink: 0; }
 
 .mc-ava { width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; color: #fff; font-size: 13px; font-weight: 600; }
 .mc-owner { display: inline-flex; align-items: center; gap: 8px; min-width: 0; }
@@ -2675,6 +2679,9 @@ body.is-open:not(.is-collapsed) .main { margin-left: 306px; }
 .ce-aiblock { margin-top: 4px; }
 
 .ce-table { margin-top: 8px; }
+/* колонки тянутся на всю ширину серфейса: свободное место забирает колонка канала,
+   остальные остаются фиксированными (иначе справа оставался пустой хвост) */
+.ce-table .an-tr > *:nth-child(2) { flex: 1 1 240px; min-width: 240px; }
 .ce-table .an-tbody .an-tr { height: 56px; }
 .ce-chan { display: inline-flex; align-items: center; gap: 12px; min-width: 0; }
 .ce-ava { width: 24px; height: 24px; font-size: 12px; font-weight: 400; }
