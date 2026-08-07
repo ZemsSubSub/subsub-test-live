@@ -176,6 +176,40 @@
     // --- B1: один переключатель типа контента на все метрики ---
     var ctB = e.target.closest("[data-an-ctype-set]");
     if (ctB) { ctSet(ctB.getAttribute("data-an-ctype-set")); return; }
+    // копирование ссылки на канал (страница коллекции)
+    var ceCp = e.target.closest("[data-ce-copy]");
+    if (ceCp) {
+      var ceUrlVal = ceCp.getAttribute("data-ce-copy") || "";
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(ceUrlVal).then(function () { toast("Link copied"); }, function () { toast("Failed to copy link"); });
+      } else toast("Failed to copy link");
+      return;
+    }
+    // шаринг коллекции из шапки страницы
+    if (e.target.closest("[data-ce-share-trig]")) {
+      var shMenu = document.querySelector("[data-ce-share-menu]");
+      if (shMenu) {
+        shMenu.hidden = !shMenu.hidden;
+        var shTrig = document.querySelector("[data-ce-share-trig]");
+        if (shTrig) shTrig.setAttribute("aria-expanded", shMenu.hidden ? "false" : "true");
+      }
+      return;
+    }
+    var shOpt = e.target.closest("[data-ce-share-opt]");
+    if (shOpt) {
+      var who = shOpt.getAttribute("data-ce-share-opt");
+      var on = !shOpt.hasAttribute("data-selected");
+      if (on) shOpt.setAttribute("data-selected", ""); else shOpt.removeAttribute("data-selected");
+      var picked = document.querySelectorAll("[data-ce-share-opt][data-selected]").length;
+      var shLbl = document.querySelector("[data-ce-share-lbl]");
+      if (shLbl) shLbl.textContent = picked ? "Shared with " + picked : "Shared with";
+      toast(on ? "Collection shared with " + who : "Sharing with " + who + " revoked");
+      return;
+    }
+    if (!e.target.closest("[data-ce-share]")) {
+      var shM = document.querySelector("[data-ce-share-menu]");
+      if (shM && !shM.hidden) shM.hidden = true;
+    }
     // копирование заголовка видео (таб Videos) — как на проде
     var vcB = e.target.closest("[data-vid-copy]");
     if (vcB) {
@@ -3214,7 +3248,11 @@
           '<span class="ce-chan__name">' + escHtml(nm) + '</span></span></div>' +
         '<div class="an-td ce-num" style="width:120px">' + escHtml(info ? info.views : "—") + '</div>' +
         '<div class="an-td ce-num" style="width:120px">' + escHtml(info ? info.subs : "—") + '</div>' +
-        '<div class="an-td" style="width:200px"><a class="ce-view" href="#" tabindex="-1">View channel</a></div>' +
+        '<div class="an-td ce-linkcell" style="width:260px">' +
+        '<a class="ce-view" href="' + ceUrl(c.name) + '" target="_blank" rel="noopener" title="' + ceUrl(c.name) + '">' +
+          escHtml(ceUrl(c.name).replace(/^https?:\/\/(www\.)?/, "")) + '</a>' +
+        '<button class="ce-copy" type="button" data-ce-copy="' + ceUrl(c.name) + '" aria-label="Copy link" title="Copy link"></button>' +
+      '</div>' +
         '<div class="an-td" style="width:100px"><button class="ce-trash" type="button" aria-label="Remove channel" data-ce-remove>' + trash + '</button></div>' +
       '</div>';
       body.insertAdjacentHTML("beforeend", html);
@@ -3245,6 +3283,11 @@
   var CE_BATCH = 10, ceLoading = false, ceDone = false;
   function ceRowNames() {
     return [].slice.call(document.querySelectorAll("[data-ce-row] .ce-chan__name")).map(function (e) { return e.textContent.trim(); });
+  }
+  // тот же вид ссылки, что в сборке
+  function ceUrl(name) {
+    var slug = String(name).toLowerCase().replace(/[^a-z0-9]+/g, "");
+    return slug ? "https://www.youtube.com/@" + slug : "https://www.youtube.com/channel/UC" + String(name).length + "prototype000000000";
   }
   function ceRowHtml(c, i) {
     var color = c.color || "--color-avatar-1";
@@ -3277,12 +3320,14 @@
     setTimeout(function () {
       var chkIco = (document.querySelector("[data-ce-row] [data-an-check]") || {}).innerHTML || "";
       var trashIco = (document.querySelector("[data-ce-row] [data-ce-remove]") || {}).innerHTML || "";
+      var copyIco = (document.querySelector("[data-ce-row] [data-ce-copy]") || {}).innerHTML || "";
       var html = pool.slice(0, CE_BATCH).map(ceRowHtml).join("");
       var tmp = document.createElement("div");
       tmp.innerHTML = html;
       [].slice.call(tmp.children).forEach(function (row) {
         var c = row.querySelector("[data-an-check]"); if (c) c.innerHTML = chkIco;
         var t = row.querySelector("[data-ce-remove]"); if (t) t.innerHTML = trashIco;
+        var cp = row.querySelector("[data-ce-copy]"); if (cp) cp.innerHTML = copyIco;
         body.appendChild(row);
       });
       ceLoading = false;
@@ -3299,8 +3344,13 @@
     box.addEventListener("scroll", function () {
       if (box.scrollTop + box.clientHeight >= box.scrollHeight - 120) ceLoadMore();
     });
-    // если первая порция короче бокса — сразу подгружаем следующую
-    if (box.scrollHeight <= box.clientHeight + 8) ceLoadMore();
+    // основной триггер — наблюдатель за концом списка: срабатывает и без события scroll
+    var sentinel = document.querySelector("[data-ce-sentinel]");
+    if (sentinel && typeof IntersectionObserver === "function") {
+      new IntersectionObserver(function (entries) {
+        for (var i = 0; i < entries.length; i++) if (entries[i].isIntersecting) { ceLoadMore(); break; }
+      }, { root: box, rootMargin: "120px" }).observe(sentinel);
+    } else if (box.scrollHeight <= box.clientHeight + 8) ceLoadMore();
   }
 
   function ceConfirm(kind) {

@@ -2372,7 +2372,7 @@ body.is-open:not(.is-collapsed) .main { margin-left: 306px; }
 #ncModal .an-modal__dialog { width: min(700px, 94vw); max-width: 736px; }
 .nc-head { flex-shrink: 0; display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; padding: 48px 48px 32px; }
 .nc-head .an-modal__title { font-size: 24px; line-height: 1.25; font-weight: 500; }
-.nc-body { flex: 1; min-height: 0; gap: 16px; padding: 0 48px 16px; overflow-y: auto; }
+.nc-body { flex: 1; min-height: 0; gap: 16px; padding: 24px 48px 16px; overflow-y: auto; }   /* без верхнего паддинга лейбл налезал на линию табов */
 .nc-foot { padding: 24px 48px 32px; }
 .nc-links { display: flex; flex-direction: column; gap: 8px; }
 .nc-textarea { height: auto; min-height: 104px; padding: 12px 16px; line-height: 1.5; resize: vertical; font-family: inherit; }
@@ -2677,12 +2677,16 @@ body.is-open:not(.is-collapsed) .main { margin-left: 306px; }
 .ce-select__chev { display: inline-flex; }
 .ce-select__chev svg { width: 20px; height: 20px; color: var(--color-black); }
 .ce-search { width: 100%; }
+/* контрол шаринга в шапке (на месте Save) */
+.ce-share { position: relative; display: inline-flex; }
+.ce-share__menu { top: calc(100% + 6px); right: 0; left: auto; width: 260px; }
 /* инпуты и дропдауны страницы коллекции одного размера — 40px, как поле даты */
 .ce-form .an-input { height: 40px; }
 .ce-aiblock { margin-top: 4px; }
 
-.ce-table { margin-top: 8px; }
+.ce-table { margin-top: 0; }   /* внутри серфейса отступ сверху давал белую полосу над шапкой */
 /* строка догрузки в конце списка каналов */
+.ce-sentinel { height: 1px; }
 .ce-more { display: flex; align-items: center; justify-content: center; gap: 8px; height: 56px;
   border-top: 1px solid var(--color-shade-200); font-size: 14px; font-weight: 300; color: var(--color-shade-700); }
 .ce-more[hidden] { display: none; }
@@ -2695,9 +2699,16 @@ body.is-open:not(.is-collapsed) .main { margin-left: 306px; }
 .ce-table .an-tbody .an-tr { height: 56px; }
 .ce-chan { display: inline-flex; align-items: center; gap: 12px; min-width: 0; }
 .ce-ava { width: 24px; height: 24px; font-size: 12px; font-weight: 400; }
-.ce-chan__name { font-size: 14px; font-weight: 300; color: var(--color-black); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.ce-num { font-size: 16px; font-weight: 400; color: var(--color-black); }
-.ce-view { font-size: 14px; font-weight: 400; color: var(--color-black); text-decoration: underline; text-underline-offset: 4px; }
+.ce-chan__name { font-size: 14px; font-weight: 500; color: var(--color-black); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* значения — тем же шрифтом, что метрики в Basic/Deep (было 16/400) */
+.ce-num { font-size: 14px; font-weight: 300; color: var(--color-black); }
+/* Link: настоящая ссылка + копирование */
+.ce-linkcell { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.ce-view { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  font-size: 14px; font-weight: 400; color: var(--color-black); text-decoration: underline; text-underline-offset: 4px; }
+.ce-copy { display: inline-flex; flex-shrink: 0; padding: 0; border: 0; background: none; color: var(--color-shade-500); cursor: pointer; }
+.ce-copy svg { width: 20px; height: 20px; }
+.ce-copy:hover { color: var(--color-black); }
 .ce-view:hover { text-decoration: none; }
 .ce-trash { display: inline-flex; align-items: center; justify-content: center; width: 48px; height: 48px; border: 0; background: transparent; color: var(--color-black); cursor: pointer; border-radius: 8px; }
 .ce-trash:hover { background: var(--color-shade-100); }

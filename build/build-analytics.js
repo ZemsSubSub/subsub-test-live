@@ -1606,29 +1606,46 @@ const CE_COLS = [
   { w: 240, label: "Channel" },
   { w: 120, label: "Views" },
   { w: 120, label: "Subs" },
-  { w: 200, label: "Link" },
+  { w: 260, label: "Link" },
   { w: 100, label: "" },
 ];
-const CE_ROWS = [
-  ["Cocomelon - Nursery Rhymes", "C", "--color-avatar-3", "225bn", "202m"],
-  ["김프로KIMPRO", "김", "--color-avatar-1", "150.7bn", "134m"],
-  ["T-Series", "T", "--color-avatar-1", "349.6bn", "314m"],
-  ["MrBeast", "M", "--color-avatar-5", "134.7bn", "510m"],
-  ["SET India", "S", "--color-avatar-3", "190.6bn", "189m"],
-];
+// ссылка на канал: латинские имена → @handle, остальные → channel/UC… (детерминированно)
+function ceChanUrl(name, i) {
+  const slug = String(name).toLowerCase().replace(/[^a-z0-9]+/g, "");
+  if (slug) return "https://www.youtube.com/@" + slug;
+  const r = prng(7100 + i);
+  let id = "";
+  const abc = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  for (let k = 0; k < 22; k++) id += abc[Math.floor(r() * abc.length)];
+  return "https://www.youtube.com/channel/UC" + id;
+}
+function ceLinkCell(name, i) {
+  const url = ceChanUrl(name, i);
+  const short = url.replace(/^https?:\/\/(www\.)?/, "");
+  return '<div class="an-td ce-linkcell" style="width:260px">' +
+    '<a class="ce-view" href="' + esc(url) + '" target="_blank" rel="noopener" title="' + esc(url) + '">' + esc(short) + '</a>' +
+    '<button class="ce-copy" type="button" data-ce-copy="' + esc(url) + '" aria-label="Copy link" title="Copy link">' + IC.copy + '</button>' +
+  '</div>';
+}
+// каналы коллекции берём из того же каталога, что и Basic data: первая порция приходит
+// со сборкой (её должно быть больше высоты бокса, чтобы был виден скролл), остальное
+// клиент догружает батчами при прокрутке
+const CE_ROWS = ROWS.slice(0, 14).map(function (r, i) {
+  return [r[0], r[1], AVA[i % AVA.length], r[7], r[6]];
+});
 const ceHead = '<div class="an-tr an-tr--head">' + CE_COLS.map(function (c) {
   if (c.check) return '<div class="an-th an-th--check" style="width:40px">' +
     '<button class="an-check" type="button" data-an-check-all aria-label="Select all">' + IC.check + '</button></div>';
   return '<div class="an-th" style="width:' + c.w + 'px">' + c.label + '</div>';
 }).join("") + '</div>';
-const ceBody = CE_ROWS.map(function (r) {
+const ceBody = CE_ROWS.map(function (r, i) {
   return '<div class="an-tr" data-ce-row>' +
     '<div class="an-td an-td--check" style="width:40px"><button class="an-check" type="button" data-an-check aria-label="Select">' + IC.check + '</button></div>' +
     '<div class="an-td" style="width:240px"><span class="ce-chan"><span class="mc-ava ce-ava" style="background:var(' + r[2] + ')">' + esc(r[1]) + '</span>' +
       '<span class="ce-chan__name">' + esc(r[0]) + '</span></span></div>' +
     '<div class="an-td ce-num" style="width:120px">' + esc(r[3]) + '</div>' +
     '<div class="an-td ce-num" style="width:120px">' + esc(r[4]) + '</div>' +
-    '<div class="an-td" style="width:200px"><a class="ce-view" href="#" tabindex="-1">View channel</a></div>' +
+    ceLinkCell(r[0], i) +
     '<div class="an-td" style="width:100px"><button class="ce-trash" type="button" aria-label="Remove channel" data-ce-remove>' + IC.trash + '</button></div>' +
   '</div>';
 }).join("\n          ");
@@ -1647,7 +1664,15 @@ const editInner = `
           <button class="an-btn an-btn--plain" type="button" data-ce-deactivate>${IC.archive}Deactivate</button>
           <span class="an-head__sep"></span>
           <button class="an-btn an-btn--secondary" type="button" data-nc-open>${IC.plus}Add channels</button>
-          <button class="an-btn an-btn--primary" type="button" data-ce-save>Save</button>
+          <!-- шаринг переехал из формы сюда, на место Save -->
+          <div class="ce-share" data-ce-share>
+            <button class="an-btn an-btn--secondary" type="button" data-ce-share-trig aria-haspopup="listbox" aria-expanded="false">${IC.share}<span data-ce-share-lbl>Shared with</span>${IC.chevSelect}</button>
+            <div class="anf-menu ce-share__menu" data-ce-share-menu hidden role="listbox" aria-label="Shared with">
+              <div class="anf-opts">${USER_LIST.map(function (u) {
+                return '<button class="anf-opt" type="button" role="option" data-ce-share-opt="' + esc(u) + '">' + esc(u) + '</button>';
+              }).join("")}</div>
+            </div>
+          </div>
         </div>
       </header>
 
@@ -1656,16 +1681,6 @@ const editInner = `
           <label class="ce-lbl" for="ceName">Name collection</label>
           <input class="an-input" id="ceName" type="text" value="Test Collection" data-ce-name />
         </div>
-
-        <div class="ce-field">
-          <label class="ce-lbl">Shared with</label>
-          <button class="ce-select" type="button">
-            <span class="ce-select__ph">Select user</span>
-            <span class="ce-select__chev">${IC.chevSelect}</span>
-          </button>
-        </div>
-
-        <div class="mc-search ce-search">${IC.search}<input type="text" placeholder="Search by channel title, link" /></div>
 
         <section class="ai-block ce-aiblock" data-ai-block hidden>
           <div class="ai-block__line">
@@ -1678,12 +1693,15 @@ const editInner = `
           </div>
         </section>
 
+        <div class="mc-search ce-search">${IC.search}<input type="text" placeholder="Search by channel title, link" /></div>
         <section class="an-tablewrap an-tablewrap--surface an-tablewrap--stick" data-an-tablewrap="ce" data-ce-scroll>
           <div class="an-table an-table--fill ce-table">
             <div class="an-thead">${ceHead}</div>
             <div class="an-tbody" data-ce-tbody>
             ${ceBody}
             </div>
+            <!-- маячок конца списка: по нему наблюдатель понимает, что пора догружать -->
+            <div class="ce-sentinel" data-ce-sentinel aria-hidden="true"></div>
             <!-- догрузка каналов по скроллу: строка-статус внизу списка -->
             <div class="ce-more" data-ce-more hidden><span class="ce-more__spin" aria-hidden="true"></span><span data-ce-more-txt>Loading channels…</span></div>
           </div>
