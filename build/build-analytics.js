@@ -24,6 +24,7 @@ const IC = {
   aiStars: '<svg viewBox="0 0 16 16" fill="none"><path d="M6.65952 6.11513L7.24284 4.07484C7.46142 3.31113 8.54378 3.31113 8.76236 4.07484L9.34502 6.11513C9.38191 6.2442 9.45108 6.36173 9.54599 6.45665C9.64091 6.55157 9.75845 6.62074 9.88751 6.65763L11.9278 7.24029C12.6915 7.45887 12.6915 8.54123 11.9278 8.75981L9.88751 9.34246C9.75845 9.37935 9.64091 9.44852 9.54599 9.54344C9.45108 9.63836 9.38191 9.7559 9.34502 9.88496L8.76236 11.9253C8.54378 12.689 7.46142 12.689 7.24284 11.9253L6.66018 9.88496C6.62329 9.7559 6.55412 9.63836 6.4592 9.54344C6.36429 9.44852 6.24675 9.37935 6.11768 9.34246L4.07739 8.75981C3.31368 8.54123 3.31368 7.45887 4.07739 7.24029L6.11768 6.65763C6.24675 6.62074 6.36429 6.55157 6.4592 6.45665C6.55412 6.36173 6.62329 6.2442 6.66018 6.11513M12.0213 10.9673C12.2116 10.4123 13.0115 10.4117 13.2011 10.9673L13.2182 11.0246L13.4131 11.8067L14.1952 12.0023C14.8273 12.1603 14.8273 13.057 14.1952 13.215L13.4131 13.4105L13.2182 14.1927C13.0602 14.8241 12.1628 14.8241 12.0048 14.1927L11.8093 13.4105L11.0272 13.215C10.3951 13.057 10.3951 12.1596 11.0272 12.0023L11.8093 11.8067L12.0048 11.0246L12.0213 10.9673ZM12.6112 12.475C12.5733 12.5257 12.5283 12.5708 12.4775 12.6086C12.5283 12.6465 12.5733 12.6915 12.6112 12.7423C12.6491 12.6915 12.6941 12.6465 12.7448 12.6086C12.6941 12.5706 12.649 12.5253 12.6112 12.4743M2.8041 1.74947C3.0003 1.17603 3.84762 1.19513 4.00102 1.80675L4.1959 2.5889L4.97804 2.78443C5.61008 2.94244 5.61008 3.83914 4.97804 3.99715L4.1959 4.19269L4.00102 4.97483C3.84301 5.60621 2.94565 5.60621 2.78764 4.97483L2.59211 4.19269L1.80996 3.99715C1.17793 3.83914 1.17793 2.94178 1.80996 2.78443L2.59211 2.5889L2.78764 1.80675L2.8041 1.74947ZM3.394 3.2578C3.35607 3.30831 3.31105 3.3531 3.26036 3.39079C3.31115 3.42888 3.35616 3.47412 3.394 3.5251C3.43185 3.47412 3.47686 3.42888 3.52765 3.39079C3.47691 3.3529 3.43189 3.30855 3.394 3.2578Z" fill="url(#aiStar0)"/><defs><linearGradient id="aiStar0" x1="1.89149" y1="4.66649" x2="18.9317" y2="7.11893" gradientUnits="userSpaceOnUse"><stop stop-color="#F567FF"/><stop offset="0.403337" stop-color="#B351F6"/><stop offset="0.889423" stop-color="#5951F6"/></linearGradient></defs></svg>',
   // FilledIconLink — иконка ссылки в поле «Paste Channel Reference Link»
   // P1.6: срезы метрик по типу контента — иконки DS (OutlineIconYoutube/Video/YoutubeShorts/Stream)
+  info: '<svg viewBox="0 0 24 24" fill="none"><path d="M12 22C17.5 22 22 17.5 22 12C22 6.5 17.5 2 12 2C6.5 2 2 6.5 2 12C2 17.5 6.5 22 12 22Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 8V13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M11.9946 16H12.0036" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
   youtube: '<svg viewBox="0 0 23 16" fill="none"><path d="M22.3523 2.50551C22.2212 2.02123 21.9655 1.57974 21.6106 1.22498C21.2557 0.870223 20.814 0.614585 20.3295 0.483521C18.5557 0 11.417 0 11.417 0C11.417 0 4.27787 0.0146359 2.50412 0.498157C2.01962 0.629228 1.57791 0.88488 1.223 1.23965C0.868092 1.59443 0.612358 2.03594 0.481267 2.52023C-0.0552507 5.67035 -0.263376 10.4704 0.495999 13.4945C0.627104 13.9788 0.882844 14.4203 1.23775 14.775C1.59266 15.1298 2.03436 15.3854 2.51886 15.5165C4.29261 16 11.4315 16 11.4315 16C11.4315 16 18.5704 16 20.344 15.5165C20.8285 15.3854 21.2703 15.1298 21.6252 14.775C21.9801 14.4203 22.2359 13.9788 22.367 13.4945C22.9329 10.3399 23.1072 5.54282 22.3523 2.50551Z" fill="currentColor"/><path d="M9.14478 11.4284L15.0669 7.99984L9.14478 4.57129V11.4284Z" fill="white"/></svg>',
   ytAll: '<svg viewBox="0 0 24 24" fill="none"><path d="M17 20H7C4 20 2 18 2 15V9C2 6 4 4 7 4H17C20 4 22 6 22 9V15C22 18 20 20 17 20Z" stroke="currentColor" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/><path d="M11.4 9.5L13.9 11C14.8 11.6 14.8 12.5 13.9 13.1L11.4 14.6C10.4 15.2 9.59998 14.7 9.59998 13.6V10.6C9.59998 9.3 10.4 8.9 11.4 9.5Z" stroke="currentColor" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/></svg>',
   ytVideo: '<svg viewBox="0 0 24 24" fill="none"><path d="M2 12C2 7.28595 2 4.92893 3.46447 3.46447C4.92893 2 7.28595 2 12 2C16.714 2 19.0711 2 20.5355 3.46447C22 4.92893 22 7.28595 22 12C22 16.714 22 19.0711 20.5355 20.5355C19.0711 22 16.714 22 12 22C7.28595 22 4.92893 22 3.46447 20.5355C2 19.0711 2 16.714 2 12Z" stroke="currentColor" stroke-width="1.5"/><path d="M17 2.5L17 21.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M7 2.5L7 21.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M2.5 7L7 7M21.5 7L17 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M2.5 17L7 17M21.5 17L17 17" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M2 12H22" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>',
@@ -1760,6 +1761,7 @@ function buildPage(src, title, inner, current){
   markCurrent("analytics-deep-data.html", current === "deep" || current === "deepTabs");
   markCurrent("analytics-collections.html", current === "collections");
   markCurrent("analytics-videos-data.html", current === "videos");
+  markCurrent("analytics-reports.html", current === "reports");
   // базовые коллекции (те же, что в списке My collections) — единый источник для дропдауна
   // назначения в модалке sourcing; страницы Basic data / My collections читают их из window
   const seed = JSON.stringify(COLL_ROWS.map(function (r) {
@@ -1782,7 +1784,11 @@ function buildPage(src, title, inner, current){
     months: ["January","February","March","April","May","June","July","August","September","October","November","December"],
     weekdays: ["Mo","Tu","We","Th","Fr","Sa","Su"],
     // база прироста за 30 дней числами — кастомный период масштабируется от неё
-    growthBase: CH_META.map(function (m) { return [Math.round(m.subsG30), Math.round(m.viewsG30)]; })
+    growthBase: CH_META.map(function (m) { return [Math.round(m.subsG30), Math.round(m.viewsG30)]; }),
+    // Reports: варианты типов, свои каналы и дата добавления первого канала коллекции
+    reportTypes: REP_TYPES,
+    ownChannels: REP_OWN_CHANNELS,
+    firstChannelAdded: "19.05.2023"
   });
   const growthSeed = JSON.stringify(GROWTH_BY_PERIOD);
   h = h.replace('<script src="js/nav.js"></script>',
@@ -1830,11 +1836,265 @@ const videosInner = `
 
     <div class="an-toast" data-an-toast hidden></div>`;
 
+
+// ================= Analytics → Reports =================
+// Прод: /analytics/reports/market и /analytics/reports/performance — два таба со своими
+// таблицами. Отчёт физически появляется в Media Library (папка Analytics) в момент,
+// когда статус меняется на Created — тот же паттерн, что у Converting/Transcribing.
+const REP_TYPES = [
+  { id: "basic", label: "Basic report", hint: "Includes basic metrics like subs, subs+ views, views+" },
+  { id: "deep", label: "Deep report", hint: "Includes basic metrics plus extended metrics (VIDS, PVN, PVC etc.)" },
+];
+// свои каналы (таб My performance) — те же, что в мок-данных Linked channels
+const REP_OWN_CHANNELS = ["Zems Racing", "Hunt Squad", "Eugene Zemskov"];
+const REP_STATUS = {
+  created: '<span class="mc-status mc-status--green"><span class="mc-status__i">' + IC.check + '</span><span class="mc-status__t">Created</span></span>',
+  progress: '<span class="mc-status mc-status--orange"><span class="mc-status__i">' + IC.progress + '</span><span class="mc-status__t">In progress</span></span>',
+};
+function repActions(status, file) {
+  const dis = status === "created" ? "" : " disabled";
+  return '<span class="rep-acts">' +
+    '<button class="rep-act" type="button" data-rep-download aria-label="Download report" title="Download">' + IC.circleDown + '</button>' +
+    '<button class="rep-act" type="button" data-rep-inml="' + esc(file || "") + '" aria-label="Show in Media Library" title="Show in Media Library"' + dis + '>' + IC.collections + '</button>' +
+    '<button class="rep-act rep-act--del" type="button" data-rep-del aria-label="Delete report" title="Delete">' + IC.trash + '</button>' +
+  '</span>';
+}
+const REP_COLS_M = [
+  { id: "name", w: 300, label: "Name", sort: true },
+  { id: "created", w: 140, label: "Created", sort: true },
+  { id: "period", w: 240, label: "Period" },
+  { id: "collection", w: 220, label: "Collection" },
+  { id: "type", w: 120, label: "Type" },
+  { id: "status", w: 160, label: "Status" },
+  { id: "actions", w: 140, label: "Actions" },
+];
+const REP_COLS_P = [
+  { id: "name", w: 300, label: "Name", sort: true },
+  { id: "created", w: 140, label: "Created", sort: true },
+  { id: "period", w: 240, label: "Period" },
+  { id: "channel", w: 220, label: "Channel" },
+  { id: "status", w: 160, label: "Status" },
+  { id: "actions", w: 140, label: "Actions" },
+];
+function repHead(cols) {
+  return '<div class="an-tr an-tr--head">' + cols.map(function (c) {
+    const inner = c.sort
+      ? '<span class="an-sort" role="button" tabindex="0" data-an-sort="' + c.id + '">' + c.label + IC.sort + '</span>'
+      : c.label;
+    return '<div class="an-th" style="width:' + c.w + 'px" data-col="' + c.id + '">' + inner + '</div>';
+  }).join("") + '</div>';
+}
+// строки-затравки: как на проде
+const REP_ROWS_M = [
+  { name: "Crypto Report 2026 July", created: "13.07.2026", period: "July 2026 - July 2026",
+    coll: "Crypto", type: "Basic", status: "created", file: "crypto-basic-report-1.xlsx" },
+];
+const REP_ROWS_P = [
+  { name: "Eugene Zemskov", created: "07.08.2026", period: "January 2026 - August 2026",
+    chan: "Zems Racing", status: "progress", file: "" },
+];
+function repRowM(r) {
+  return '<div class="an-tr" data-rep-row data-file="' + esc(r.file || "") + '">' +
+    '<div class="an-td an-td--plain" style="width:300px" data-col="name">' + esc(r.name) + '</div>' +
+    '<div class="an-td an-td--plain" style="width:140px" data-col="created">' + esc(r.created) + '</div>' +
+    '<div class="an-td an-td--plain" style="width:240px" data-col="period">' + esc(r.period) + '</div>' +
+    '<div class="an-td an-td--plain" style="width:220px" data-col="collection">' + esc(r.coll) + '</div>' +
+    '<div class="an-td an-td--plain" style="width:120px" data-col="type">' + esc(r.type) + '</div>' +
+    '<div class="an-td" style="width:160px" data-col="status">' + REP_STATUS[r.status] + '</div>' +
+    '<div class="an-td" style="width:140px" data-col="actions">' + repActions(r.status, r.file) + '</div>' +
+  '</div>';
+}
+function repRowP(r) {
+  return '<div class="an-tr" data-rep-row data-file="' + esc(r.file || "") + '">' +
+    '<div class="an-td an-td--plain" style="width:300px" data-col="name">' + esc(r.name) + '</div>' +
+    '<div class="an-td an-td--plain" style="width:140px" data-col="created">' + esc(r.created) + '</div>' +
+    '<div class="an-td an-td--plain" style="width:240px" data-col="period">' + esc(r.period) + '</div>' +
+    '<div class="an-td an-td--plain" style="width:220px" data-col="channel">' + esc(r.chan) + '</div>' +
+    '<div class="an-td" style="width:160px" data-col="status">' + REP_STATUS[r.status] + '</div>' +
+    '<div class="an-td" style="width:140px" data-col="actions">' + repActions(r.status, r.file) + '</div>' +
+  '</div>';
+}
+function repPagi(key) {
+  return '<section class="an-pagi" data-an-table="' + key + '">' +
+    '<div class="an-pagi__label"><span class="an-pagi__name">Reports</span>' +
+      '<span class="an-pagi__total">1</span></div>' +
+    '<div class="an-pagi__ctrls">' +
+      '<span class="an-pagi__pages">Pages: 1</span>' +
+      '<div class="an-pagi__nav">' +
+        '<button class="an-pagi__arrow" type="button" data-an-prev aria-label="Previous Page">' + IC.arrowL + '</button>' +
+        '<input class="an-pagi__page" type="text" value="1" aria-label="Page number" data-an-page />' +
+        '<button class="an-pagi__arrow" type="button" data-an-next aria-label="Next Page">' + IC.arrowR + '</button>' +
+      '</div>' +
+      '<div class="an-perpage-wrap" data-an-perpage-wrap>' +
+        '<button class="an-perpage" type="button" data-an-perpage-trig>30 ' + IC.arrowDown + '</button>' +
+        '<div class="an-perpage__menu" data-an-perpage-menu hidden role="listbox"></div>' +
+      '</div>' +
+    '</div>' +
+  '</section>';
+}
+
+
+// Модалка «New report»: тип отчёта с подсказками, имя, коллекция/канал с поиском,
+// период с календарём (быстрый переход по месяцам слева, сетка дней справа).
+const repModalHtml = `
+    <div class="an-modal" id="repModal" data-rep-mode="market"><div class="an-modal__overlay" data-rep-close></div>
+      <div class="an-modal__dialog an-modal__dialog--lg">
+        <div class="an-modal__head">
+          <h2 class="an-modal__title">New report</h2>
+          <button class="an-modal__x" type="button" data-rep-close aria-label="Close">${IC.closeBold}</button>
+        </div>
+        <div class="an-modal__body rp-body">
+          <div class="rp-field">
+            <label class="rp-lbl">Select report type</label>
+            <div class="rp-select" data-rp-sel="type">
+              <button class="rp-select__trig" type="button" data-rp-trig aria-haspopup="listbox" aria-expanded="false">
+                <span class="rp-select__val is-ph" data-rp-val>Select report type</span>${IC.chevSelect}
+              </button>
+              <div class="anf-menu rp-select__menu" data-rp-menu hidden role="listbox">
+                <div class="anf-opts">${REP_TYPES.map(function (t) {
+                  return '<button class="anf-opt rp-opt" type="button" role="option" data-rp-opt="' + t.label + '">' +
+                    '<span class="anf-opt__name">' + esc(t.label) + '</span>' +
+                    '<span class="rp-info" tabindex="0" data-rp-hint="' + esc(t.hint) + '" aria-label="' + esc(t.hint) + '">' + IC.info +
+                      '<span class="rp-tip">' + esc(t.hint) + '</span>' +
+                    '</span>' +
+                  '</button>';
+                }).join("")}</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="rp-field">
+            <label class="rp-lbl" for="repName">Report name</label>
+            <input class="an-input" id="repName" type="text" placeholder="e.g. Crypto Report 2026 July" data-rp-name />
+          </div>
+
+          <div class="rp-field" data-rp-target-field>
+            <label class="rp-lbl" data-rp-target-lbl>Collection</label>
+            <div class="rp-select" data-rp-sel="target">
+              <button class="rp-select__trig" type="button" data-rp-trig aria-haspopup="listbox" aria-expanded="false">
+                <span class="rp-select__val is-ph" data-rp-val data-rp-ph="Select collection">Select collection</span>${IC.chevSelect}
+              </button>
+              <div class="anf-menu rp-select__menu" data-rp-menu hidden role="listbox">
+                <div class="anf-search">${IC.search}<input type="text" placeholder="Search" data-rp-search /></div>
+                <div class="anf-opts" data-rp-target-opts></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="rp-field">
+            <label class="rp-lbl">Period</label>
+            <div class="rp-cal" data-rp-cal>
+              <button class="rp-select__trig" type="button" data-rp-cal-trig aria-haspopup="dialog" aria-expanded="false" disabled>
+                <span class="rp-select__val is-ph" data-rp-cal-val>Select period</span>${IC.calendar}
+              </button>
+              <div class="rp-cal__pop" data-rp-cal-pop hidden role="dialog" aria-label="Select period">
+                <div class="rp-cal__top">
+                  <aside class="rp-cal__months" data-rp-cal-months></aside>
+                  <div class="rp-cal__main">
+                    <div class="rp-cal__nav">
+                      <button class="an-dr__arrow" type="button" data-rp-cal-prev aria-label="Previous month">${IC.arrowL}</button>
+                      <span class="rp-cal__title" data-rp-cal-title></span>
+                      <button class="an-dr__arrow" type="button" data-rp-cal-next aria-label="Next month">${IC.arrowR}</button>
+                    </div>
+                    <div class="an-dr__grid rp-cal__grid" data-rp-cal-grid></div>
+                  </div>
+                </div>
+                <p class="rp-cal__note" data-rp-cal-note></p>
+                <div class="rp-cal__foot">
+                  <button class="an-btn an-btn--link an-btn--small" type="button" data-rp-cal-clear>Clear</button>
+                  <span class="an-dr__spacer"></span>
+                  <button class="an-btn an-btn--primary an-btn--small" type="button" data-rp-cal-apply>Apply</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="an-modal__foot">
+          <button class="an-btn an-btn--primary an-btn--huge" type="button" data-rp-submit disabled>Create report</button>
+        </div>
+      </div>
+    </div>`;
+
+const reportsInner = `
+    <section class="an-page">
+      <header class="an-head an-head--between">
+        <div class="an-head__left"><h1 class="an-title">Reports</h1></div>
+        <div class="an-head__btns">
+          <button class="an-btn an-btn--primary" type="button" data-rep-open>${IC.plus}Create report</button>
+        </div>
+      </header>
+
+      <!-- отчёты дублируются в Media Library — подсказка закрывается и больше не возвращается -->
+      <div class="rep-note" data-rep-note>
+        <span class="rep-note__i" aria-hidden="true">${IC.info}</span>
+        <p class="rep-note__t">All saved reports are also available in Media Library — find them there for easy access and download.</p>
+        <button class="rep-note__x" type="button" data-rep-note-x aria-label="Dismiss">${IC.closeBold}</button>
+      </div>
+
+      <nav class="an-tabs" data-rep-tabs>
+        <a class="an-tab is-active" href="analytics-reports.html?tab=market" data-rep-tab="market">Market insights</a>
+        <a class="an-tab" href="analytics-reports.html?tab=performance" data-rep-tab="performance">My performance</a>
+      </nav>
+
+      <div data-rep-panel="market">
+        ${repPagi("repm")}
+        <section class="an-tablewrap an-tablewrap--surface an-tablewrap--stick" data-an-tablewrap="repm">
+          <div class="an-table" data-an-table-body="repm">
+            <div class="an-thead">${repHead(REP_COLS_M)}</div>
+            <div class="an-tbody">${REP_ROWS_M.map(repRowM).join("")}</div>
+          </div>
+        </section>
+      </div>
+
+      <div data-rep-panel="performance" hidden>
+        ${repPagi("repp")}
+        <section class="an-tablewrap an-tablewrap--surface an-tablewrap--stick" data-an-tablewrap="repp">
+          <div class="an-table" data-an-table-body="repp">
+            <div class="an-thead">${repHead(REP_COLS_P)}</div>
+            <div class="an-tbody">${REP_ROWS_P.map(repRowP).join("")}</div>
+          </div>
+        </section>
+      </div>
+    </section>
+
+    ${repModalHtml}
+
+    <!-- подтверждение удаления отчёта -->
+    <div class="an-modal" id="repConfirm"><div class="an-modal__overlay" data-rep-c-close></div>
+      <div class="an-modal__dialog an-modal__dialog--sm">
+        <div class="an-modal__head">
+          <h2 class="an-modal__title">Delete report?</h2>
+          <button class="an-modal__x" type="button" data-rep-c-close aria-label="Close">${IC.closeBold}</button>
+        </div>
+        <div class="an-modal__body"><p class="an-modal__text" data-rep-c-text></p></div>
+        <div class="an-modal__foot">
+          <button class="an-btn an-btn--secondary an-btn--small" type="button" data-rep-c-close>Cancel</button>
+          <button class="an-btn an-btn--danger an-btn--small" type="button" data-rep-c-confirm>Delete</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- уведомление о готовом отчёте -->
+    <div class="rep-toastcard" data-rep-ready hidden>
+      <span class="rep-toastcard__i" aria-hidden="true">${IC.check}</span>
+      <div class="rep-toastcard__body">
+        <p class="rep-toastcard__t">Report ready</p>
+        <p class="rep-toastcard__s" data-rep-ready-name></p>
+      </div>
+      <div class="rep-toastcard__acts">
+        <button class="an-btn an-btn--link an-btn--small" type="button" data-rep-ready-dismiss>Dismiss</button>
+        <button class="an-btn an-btn--secondary an-btn--small" type="button" data-rep-ready-view>View</button>
+      </div>
+    </div>
+
+    <div class="an-toast" data-an-toast hidden></div>`;
+
 fs.writeFileSync(DIR + "analytics-basic-data.html", buildPage(html, "Basic data", mainInner, "basic"));
 fs.writeFileSync(DIR + "analytics-deep-data.html", buildPage(html, "Deep data", deepV2Inner, "deep"));
 fs.writeFileSync(DIR + "analytics-collections.html", buildPage(html, "My collections", collInner, "collections"));
 fs.writeFileSync(DIR + "analytics-collection-edit.html", buildPage(html, "Editing collection", editInner, "collections"));
 fs.writeFileSync(DIR + "analytics-videos-data.html", buildPage(html, "Videos data", videosInner, "videos"));
+fs.writeFileSync(DIR + "analytics-reports.html", buildPage(html, "Reports", reportsInner, "reports"));
 // альтернатива для сравнения: свич Channels / Videos в заголовке
 fs.writeFileSync(DIR + "analytics-deep-data-tabs.html", buildPage(html, "Deep data", deepTabsInner, "deepTabs"));
 console.log("written: basic-data (" + ROWS.length + "), deep-data (" + DEEP_ROWS.length + "), collections (" + COLL_ROWS.length + "), collection-edit (" + CE_ROWS.length + "), videos-data + альтернатива deep-data-tabs");

@@ -2840,3 +2840,81 @@ body.filters-open .an-filters.is-active { display: flex; }
   width: 18px; height: 18px; border-radius: 50%; background: #fff;
   border: 2px solid var(--color-black); box-shadow: 0 1px 4px rgba(0,0,0,.2);
 }
+
+/* ================= Analytics → Reports ================= */
+/* синяя подсказка про Media Library */
+.rep-note { display: flex; align-items: flex-start; gap: 12px; padding: 16px 20px; border-radius: 12px;
+  background: var(--color-blue-20, #e1e8ff); color: var(--color-black); }
+.rep-note[hidden] { display: none; }
+.rep-note__i { display: inline-flex; flex-shrink: 0; color: var(--color-indigo, #5766f0); }
+.rep-note__i svg { width: 24px; height: 24px; }
+.rep-note__t { margin: 0; flex: 1; font-size: 14px; font-weight: 300; line-height: 20px; }
+.rep-note__x { flex-shrink: 0; display: inline-flex; padding: 0; border: 0; background: none; color: var(--color-shade-700); cursor: pointer; }
+.rep-note__x svg { width: 16px; height: 16px; }
+.rep-note__x:hover { color: var(--color-black); }
+/* действия в строке отчёта */
+.rep-acts { display: inline-flex; align-items: center; gap: 4px; }
+.rep-act { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px;
+  padding: 0; border: 0; border-radius: 6px; background: none; color: var(--color-shade-700); cursor: pointer; }
+.rep-act svg { width: 20px; height: 20px; }
+.rep-act:hover { background: var(--color-shade-100); color: var(--color-black); }
+.rep-act[disabled] { opacity: .35; cursor: not-allowed; }
+.rep-act[disabled]:hover { background: none; color: var(--color-shade-700); }
+.rep-act--del { color: var(--color-red); }
+.rep-act--del:hover { background: var(--color-red-shade-100, #ffebeb); color: var(--color-red); }
+/* карточка «Report ready» */
+.rep-toastcard { position: fixed; right: 28px; bottom: 28px; z-index: 1200; display: flex; align-items: flex-start; gap: 12px;
+  width: 380px; padding: 16px; border-radius: 12px; background: #fff; box-shadow: 0 8px 32px rgba(0,0,0,.16); }
+.rep-toastcard[hidden] { display: none; }
+.rep-toastcard__i { display: inline-flex; flex-shrink: 0; width: 24px; height: 24px; align-items: center; justify-content: center;
+  border-radius: 50%; background: var(--color-green-10); color: var(--color-green-dark); }
+.rep-toastcard__i svg { width: 14px; height: 14px; }
+.rep-toastcard__body { flex: 1; min-width: 0; }
+.rep-toastcard__t { margin: 0; font-size: 14px; font-weight: 500; color: var(--color-black); }
+.rep-toastcard__s { margin: 2px 0 0; font-size: 13px; font-weight: 300; color: var(--color-shade-700); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rep-toastcard__acts { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
+/* модалка New report: поля и календарь периода */
+.rp-body { display: flex; flex-direction: column; gap: 20px; overflow: visible; }   /* поповер календаря не должен обрезаться */
+#repModal .an-modal__dialog { overflow: visible; }
+.rp-field { display: flex; flex-direction: column; gap: 8px; }
+.rp-lbl { font-size: 14px; font-weight: 500; color: var(--color-black); }
+.rp-select { position: relative; }
+.rp-select__trig { display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; height: 40px;
+  padding: 0 16px; box-sizing: border-box; border: 1px solid var(--color-shade-300); border-radius: 8px; background: #fff;
+  cursor: pointer; font-family: inherit; font-size: 16px; font-weight: 300; color: var(--color-black); text-align: left; }
+.rp-select__trig:hover:not([disabled]) { border-color: var(--color-shade-500); }
+.rp-select__trig[disabled] { background: var(--color-shade-100); color: var(--color-shade-500); cursor: not-allowed; }
+.rp-select__trig svg { width: 20px; height: 20px; flex-shrink: 0; }
+.rp-select__val { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rp-select__val.is-ph { color: var(--color-shade-700); }
+.rp-select__menu { top: calc(100% + 4px); left: 0; right: 0; }
+.rp-opt { justify-content: space-between; }
+/* «i» с тултипом у типа отчёта */
+.rp-info { position: relative; display: inline-flex; flex-shrink: 0; color: var(--color-shade-500); }
+.rp-info svg { width: 16px; height: 16px; }
+.rp-info:hover, .rp-info:focus-visible { color: var(--color-black); }
+.rp-tip { position: absolute; right: 0; bottom: calc(100% + 8px); z-index: 40; width: 260px; padding: 8px 12px;
+  border-radius: 8px; background: var(--color-black); color: #fff; font-size: 12px; font-weight: 300; line-height: 16px;
+  opacity: 0; pointer-events: none; transition: opacity .15s ease; }
+.rp-info:hover .rp-tip, .rp-info:focus-visible .rp-tip { opacity: 1; }
+/* календарь периода */
+.rp-cal { position: relative; }
+/* поле Period — последнее в модалке, поэтому календарь раскрывается вверх */
+.rp-cal__pop { position: absolute; bottom: calc(100% + 6px); left: 0; z-index: 1300; width: 560px;
+  border: 1px solid var(--color-shade-200); border-radius: 12px; background: #fff; box-shadow: 0 12px 32px rgba(0,0,0,.12); }
+.rp-cal__pop[hidden] { display: none; }
+.rp-cal__top { display: flex; align-items: stretch; }
+.rp-cal__months { flex: 0 0 140px; max-height: 300px; overflow-y: auto; padding: 12px 8px;
+  border-right: 1px solid var(--color-shade-200); }
+.rp-cal__year { padding: 8px 8px 4px; font-size: 12px; font-weight: 500; color: var(--color-shade-700); }
+.rp-cal__mbtn { display: block; width: 100%; padding: 6px 8px; border: 0; border-radius: 6px; background: none;
+  cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 300; color: var(--color-black); text-align: left; }
+.rp-cal__mbtn:hover { background: var(--color-shade-100); }
+.rp-cal__mbtn.is-on { background: var(--color-black); color: #fff; }
+.rp-cal__main { flex: 1; min-width: 0; padding: 12px 16px 4px; }
+.rp-cal__nav { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
+.rp-cal__title { font-size: 14px; font-weight: 500; color: var(--color-black); }
+.rp-cal__grid { width: 100%; }
+.rp-cal__note { margin: 0; padding: 12px 16px; border-top: 1px solid var(--color-shade-200);
+  font-size: 12px; font-weight: 300; line-height: 16px; color: var(--color-shade-700); }
+.rp-cal__foot { display: flex; align-items: center; gap: 8px; padding: 12px 16px; border-top: 1px solid var(--color-shade-200); }

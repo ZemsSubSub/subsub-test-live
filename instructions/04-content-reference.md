@@ -443,3 +443,20 @@ M4 18.96V9.92057C4 9.65434 4.06552 9.40232 4.19657 9.16451C4.32762 8.9267 4.5081
 ## Что ещё не собрано (нужно доснять с прода при сборке соответствующих страниц)
 
 Analytics, Fan Funding (кроме того что на Home), Wallet (кроме баланса "$1,340.30" замеченного один раз), Network (кроме карточек на Home), Media Library, Content Export, Admin — для всех этих разделов ничего, кроме заголовка/иконки, не подтверждено. Собирать по методологии из `01-source-of-truth-and-workflow.md`, по одному разделу за раз.
+
+## Analytics → Reports (`analytics-reports.html`)
+
+Прод: `/analytics/reports/market` и `/analytics/reports/performance`. Пункт `Reports` в саб-панели Analytics — рабочий, остальные пункты остаются статичными.
+
+- **Шапка:** `Reports` + чёрная кнопка `Create report` (иконка «+»).
+- **Баннер** (синий, иконка info, крестик): «All saved reports are also available in Media Library — find them there for easy access and download.» Закрытие запоминается (`subsub_rep_note`).
+- **Табы:** `Market insights` (отчёты по коллекциям) и `My performance` (по своим каналам), у каждого своя таблица; активный таб в `?tab=market|performance`.
+- **Таблица Market insights:** `NAME · CREATED · PERIOD · COLLECTION · TYPE · STATUS · ACTIONS`. `TYPE` — просто текст `Basic`/`Deep`, без пилюли. Затравка: `Crypto Report 2026 July / 13.07.2026 / July 2026 - July 2026 / Crypto / Basic / ✓ Created`.
+- **Таблица My performance:** `NAME · CREATED · PERIOD · CHANNEL · STATUS · ACTIONS` — колонки `TYPE` здесь нет (на проде так же, хотя тип запрашивается при создании; несоответствие повторено осознанно). Затравка: `Eugene Zemskov / 07.08.2026 / January 2026 - August 2026 / Zems Racing / ⧖ In progress`.
+- **Статусы:** `In progress` — оранжевая пилюля с иконкой, `Created` — зелёная с галочкой (те же пилюли, что у статусов коллекций).
+- **Actions:** `Download` (заглушка + тост), «показать в Media Library» (папка; для `In progress` заблокирована — файла ещё нет), `Delete` (красная, с подтверждением).
+- **Пагинация** под таблицей — обычная: `‹ [1] ›` + размер страницы (по умолчанию 30), без инфинайт-скролла.
+- **Модалка `New report`:** `Select report type` (дропдаун, у каждой опции «i» с тултипом — `Basic report`: «Includes basic metrics like subs, subs+ views, views+», `Deep report`: «Includes basic metrics plus extended metrics (VIDS, PVN, PVC etc.)»), `Report name` (обязательное), `Collection` (на табе My performance — `Channel`) с поиском, `Period` — заблокирован до выбора коллекции/канала.
+- **Календарь периода:** слева быстрый переход по месяцам двух лет, справа сетка дней с выбором диапазона (первый клик — начало, второй — конец), снизу строка «The 1st channel in this collection was added on 19.05.2023. Therefore growth period is available by year and month starting from 19.05.2023.» и кнопки `Clear` / `Apply`. После Apply поле показывает `DD.MM.YYYY - DD.MM.YYYY`. `Create report` активна только когда заполнено всё.
+- **После создания:** модалка закрывается, строка добавляется со статусом `In progress`, через 4 с статус меняется на `Created`, появляется карточка-уведомление `Report ready` с `Dismiss` / `View`.
+- **Media Library:** ровно в момент перехода в `Created` в папке `Analytics` появляется файл `<slug>-<basic|deep>-report-<n>.xlsx` (категория spreadsheet). Мост односторонний: аналитика пишет запись в `subsub_ml_files`, `js/media.js` дорисовывает строку при загрузке. `View` и иконка папки ведут на `media-library-files.html?folder=analytics&file=<имя>` — папка открывается сразу, строка подсвечивается.

@@ -13,6 +13,7 @@ const PAGE_URL = {
   "Basic data": "analytics-basic-data.html",
   "Deep data": "analytics-deep-data.html",
   "My collections": "analytics-collections.html",
+  "Reports": "analytics-reports.html",
   "Files": "media-library-files.html",
   "Streams": "live-streams.html",
 };

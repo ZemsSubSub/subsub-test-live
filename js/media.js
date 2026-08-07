@@ -1811,5 +1811,78 @@
     if (_vrow) openModal(_vrow.getAttribute("data-kind"), _vrow.getAttribute("data-name"), _vrow.getAttribute("data-src"));
   }
 
+
+  // ----- отчёты из Analytics: файл появляется в папке Analytics -----
+  // Мост односторонний: страница Reports пишет запись в localStorage, Media Library
+  // дорисовывает строку при загрузке — тот же принцип, что у Metadata/Transcriptions,
+  // только состояние переживает переход между страницами прототипа.
+  var ML_EXTRA_KEY = "subsub_ml_files";
+  function mlExtraLoad() {
+    try { var v = JSON.parse(localStorage.getItem(ML_EXTRA_KEY) || "[]"); return Array.isArray(v) ? v : []; }
+    catch (e) { return []; }
+  }
+  function makeSheetRow(rec) {
+    var tr = document.createElement("tr");
+    tr.className = "ml-row";
+    tr.setAttribute("data-kind", rec.kind || "spreadsheet");
+    tr.setAttribute("data-name", rec.name);
+    if (rec.src) tr.setAttribute("data-src", "files/" + rec.src);
+    tr.innerHTML =
+      '<td class="c-check"><input class="ml-check" type="checkbox" aria-label="Select" /></td>' +
+      '<td class="c-drag"><svg class="ml-drag"><use href="#ml-drag"></use></svg></td>' +
+      '<td class="c-name"><div class="ml-name"><div class="ml-preview ml-preview--spreadsheet" data-preview>' +
+        '<svg class="ml-preview__icon"><use href="#ml-spreadsheet"></use></svg></div>' +
+        '<span class="ml-name__text" data-preview>' + rec.name + '</span></div></td>' +
+      '<td class="c-created">' + (rec.created || "") + '</td>' +
+      '<td class="c-storage">' + (rec.size || "") + '</td>' +
+      '<td class="c-author"><span class="ml-you">You</span></td>' +
+      '<td class="c-shared"><span class="ml-notshared"><svg><use href="#ml-eyeslash"></use></svg>Not shared</span></td>' +
+      '<td class="c-actions c-actions-cell"><button class="ml-more" type="button" aria-label="Actions"><svg><use href="#ml-more"></use></svg></button></td>';
+    return tr;
+  }
+  (function () {
+    var list = mlExtraLoad();
+    if (!list.length) return;
+    var touched = {};
+    list.forEach(function (rec) {
+      if (!rec || !rec.name) return;
+      var fid = rec.folder || "analytics";
+      var tb = document.querySelector('tbody[data-folder="' + fid + '"]');
+      if (!tb) return;
+      if (tb.querySelector('tr[data-name="' + rec.name + '"]')) return;   // не дублируем
+      tb.appendChild(makeSheetRow(rec));
+      touched[fid] = true;
+    });
+    // счётчик файлов в строке папки в корне
+    Object.keys(touched).forEach(function (fid) {
+      var tb = document.querySelector('tbody[data-folder="' + fid + '"]');
+      var rowsCount = tb ? tb.querySelectorAll("tr.ml-row:not(.ml-row--folder)").length : 0;
+      var folderRow = document.querySelector('tr[data-enter-folder="' + fid + '"]');
+      var meta = folderRow ? folderRow.querySelector(".ml-name__meta span") : null;
+      if (meta) meta.textContent = rowsCount + (rowsCount === 1 ? " file" : " files");
+    });
+    applyFilter();
+  })();
+  // deep-link со страницы Reports: ?folder=analytics&file=<имя> — войти в папку и подсветить файл
+  (function () {
+    var qs = new URLSearchParams(location.search);
+    var fid = qs.get("folder");
+    if (!fid) return;
+    if (!document.querySelector('tbody[data-folder="' + fid + '"]')) return;
+    enterFolder(fid);
+    var want = qs.get("file");
+    if (!want) return;
+    var rows = document.querySelectorAll('tbody[data-folder="' + fid + '"] tr.ml-row');
+    for (var i = 0; i < rows.length; i++) {
+      if (rows[i].getAttribute("data-name") === want) {
+        rows[i].classList.remove("ml-row--flash");
+        void rows[i].offsetWidth;
+        rows[i].classList.add("ml-row--flash");
+        if (rows[i].scrollIntoView) rows[i].scrollIntoView({ block: "center" });
+        break;
+      }
+    }
+  })();
+
   window.addEventListener("resize", closeActions);
 })();

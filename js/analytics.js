@@ -176,6 +176,76 @@
     // --- B1: один переключатель типа контента на все метрики ---
     var ctB = e.target.closest("[data-an-ctype-set]");
     if (ctB) { ctSet(ctB.getAttribute("data-an-ctype-set")); return; }
+    // ---- Reports ----
+    if (e.target.closest("[data-rep-open]")) { repOpen(); return; }
+    if (e.target.closest("[data-rep-note-x]")) {
+      var note = document.querySelector("[data-rep-note]");
+      if (note) note.hidden = true;
+      try { localStorage.setItem(REP_NOTE_KEY, "off"); } catch (e2) {}
+      if (typeof tblFit === "function") tblFit();
+      return;
+    }
+    if (e.target.closest("[data-rep-close]")) { closeModal(document.getElementById("repModal")); return; }
+    var rpT = e.target.closest("[data-rp-trig]");
+    if (rpT) {
+      var root = rpT.closest("[data-rp-sel]"), which = root.getAttribute("data-rp-sel");
+      var menu = root.querySelector("[data-rp-menu]");
+      var willOpen = menu.hidden;
+      repMenusClose();
+      repMenu(which, willOpen);
+      return;
+    }
+    var rpO = e.target.closest("[data-rp-opt]");
+    if (rpO) {
+      if (e.target.closest("[data-rp-hint]")) return;      // клик по «i» не выбирает тип
+      repSetSel("type", rpO.getAttribute("data-rp-opt"));
+      repMenu("type", false);
+      return;
+    }
+    var rpTg = e.target.closest("[data-rp-opt-target]");
+    if (rpTg) { repSetSel("target", rpTg.getAttribute("data-rp-opt-target")); repMenu("target", false); return; }
+    if (e.target.closest("[data-rp-cal-trig]")) {
+      var pop = document.querySelector("[data-rp-cal-pop]");
+      rpCalOpen(pop ? pop.hidden : true);
+      return;
+    }
+    var rpJump = e.target.closest("[data-rp-cal-jump]");
+    if (rpJump) {
+      var jp = rpJump.getAttribute("data-rp-cal-jump").split("-");
+      rpMonth = new Date(+jp[0], +jp[1], 1);
+      rpCalRender();
+      return;
+    }
+    var rpDay = e.target.closest("[data-rp-cal-day]");
+    if (rpDay) { rpPickDay(rpDay.getAttribute("data-rp-cal-day")); return; }
+    if (e.target.closest("[data-rp-cal-prev]")) { rpMonth = new Date(rpMonth.getFullYear(), rpMonth.getMonth() - 1, 1); rpCalRender(); return; }
+    if (e.target.closest("[data-rp-cal-next]")) { rpMonth = new Date(rpMonth.getFullYear(), rpMonth.getMonth() + 1, 1); rpCalRender(); return; }
+    if (e.target.closest("[data-rp-cal-clear]")) { rpCalClear(); return; }
+    if (e.target.closest("[data-rp-cal-apply]")) { rpCalApply(); return; }
+    if (e.target.closest("[data-rp-submit]")) { repSubmit(); return; }
+    if (e.target.closest("[data-rep-ready-dismiss]")) {
+      var rc = document.querySelector("[data-rep-ready]"); if (rc) rc.hidden = true;
+      return;
+    }
+    if (e.target.closest("[data-rep-ready-view]")) {
+      var rc2 = document.querySelector("[data-rep-ready]");
+      repOpenInMl(rc2 ? rc2.getAttribute("data-file") : "");
+      return;
+    }
+    if (e.target.closest("[data-rep-download]")) { toast("Report download started"); return; }
+    var repMl = e.target.closest("[data-rep-inml]");
+    if (repMl) {
+      if (repMl.hasAttribute("disabled")) return;
+      repOpenInMl(repMl.getAttribute("data-rep-inml"));
+      return;
+    }
+    var repD = e.target.closest("[data-rep-del]");
+    if (repD) { repDelAsk(repD.closest("[data-rep-row]")); return; }
+    if (e.target.closest("[data-rep-c-close]")) { closeModal(document.getElementById("repConfirm")); return; }
+    if (e.target.closest("[data-rep-c-confirm]")) { repDel(); return; }
+    // клик вне дропдаунов модалки — закрыть
+    if (!e.target.closest("[data-rp-sel]")) repMenusClose();
+    if (!e.target.closest("[data-rp-cal]")) rpCalClose();
     // копирование ссылки на канал (страница коллекции)
     var ceCp = e.target.closest("[data-ce-copy]");
     if (ceCp) {
@@ -958,7 +1028,9 @@
     basic: { per: 30, sizes: [30, 50, 100], sort: null, page: 1 },
     deep:  { per: 30, sizes: [30, 50, 100], sort: null, page: 1 },
     coll:  { per: 15, sizes: [15, 30, 50],  sort: null, page: 1 },
-    video: { per: 10, sizes: [10, 25, 50],  sort: null, page: 1 }   // P1.9: на проде 10
+    video: { per: 10, sizes: [10, 25, 50],  sort: null, page: 1 },  // P1.9: на проде 10
+    repm:  { per: 30, sizes: [30, 50, 100], sort: null, page: 1 }, // Reports → Market insights
+    repp:  { per: 30, sizes: [30, 50, 100], sort: null, page: 1 }  // Reports → My performance
   };
   function tblBody(key) { return document.querySelector('[data-an-table-body="' + key + '"]'); }
   function tblPagi(key) { return document.querySelector('[data-an-table="' + key + '"]'); }
@@ -1057,7 +1129,8 @@
     tblUpdateTotal(key, rows.length);
   }
   // B3: пустое состояние таблицы — тексты как на проде
-  var TBL_EMPTY = { basic: "No channels found", deep: "No channels found", video: "No videos found", coll: "No collections found" };
+  var TBL_EMPTY = { basic: "No channels found", deep: "No channels found", video: "No videos found",
+    coll: "No collections found", repm: "No reports yet", repp: "No reports yet" };
   function tblEmpty(key, n) {
     var b = tblBody(key); if (!b) return;
     var body = b.querySelector(".an-tbody"); if (!body) return;
@@ -1156,7 +1229,7 @@
     ["basic", "deep"].forEach(function (key) {
       if (tblBody(key) && tblColIndex(key, "views") >= 0) tblSort(key, "views");
     });
-    ["basic", "deep", "coll", "video"].forEach(function (key) {
+    ["basic", "deep", "coll", "video", "repm", "repp"].forEach(function (key) {
       if (tblBody(key)) tblApply(key);
     });
     tblHugAll();
@@ -3023,6 +3096,8 @@
   // раньше это лежало внутри обработчика AI-модалки и не срабатывало вне неё.
   document.addEventListener("input", function (e) {
     if (e.target.closest("[data-anf-text],[data-anf-from],[data-anf-to]")) { flTouch(); return; }
+    if (e.target.closest("[data-rp-search]")) { repTargetFill(e.target.value); return; }
+    if (e.target.closest("[data-rp-name]")) { repSync(); return; }
     var fSearch = e.target.closest("[data-anf-search]");
     if (fSearch) {
       var q = fSearch.value.trim().toLowerCase();
@@ -3277,6 +3352,315 @@
     if (allBtn) allBtn.classList.toggle("is-checked", ceRows().length > 0 && n === ceRows().length);
   }
   var ceAsk = null;            // что подтверждаем: remove | delete | deactivate
+
+  // ================= Analytics → Reports =================
+  // Два таба (Market insights / My performance) со своими таблицами. Отчёт создаётся
+  // со статусом In progress, через мок-задержку становится Created — и ровно в этот
+  // момент файл появляется в Media Library (папка Analytics), как у Converting/Transcribing.
+  var REP_NOTE_KEY = "subsub_rep_note";
+  var REP_ML_KEY = "subsub_ml_files";       // мост в Media Library: файлы, созданные из аналитики
+  var REP_BUILD_MS = 4000;
+  var repSeq = 1;
+
+  function repMode() {
+    var t = (new URLSearchParams(location.search).get("tab") || "market").toLowerCase();
+    return t === "performance" ? "performance" : "market";
+  }
+  function repIsMarket() { return repMode() === "market"; }
+  function repKey() { return repIsMarket() ? "repm" : "repp"; }
+  function repInit() {
+    if (!document.querySelector("[data-rep-tabs]")) return;
+    var cur = repMode();
+    [].slice.call(document.querySelectorAll("[data-rep-panel]")).forEach(function (p) {
+      p.hidden = p.getAttribute("data-rep-panel") !== cur;
+    });
+    [].slice.call(document.querySelectorAll("[data-rep-tab]")).forEach(function (a) {
+      a.classList.toggle("is-active", a.getAttribute("data-rep-tab") === cur);
+    });
+    // подсказка про Media Library закрывается навсегда
+    var note = document.querySelector("[data-rep-note]");
+    try { if (note && localStorage.getItem(REP_NOTE_KEY) === "off") note.hidden = true; } catch (e) {}
+    var m = document.getElementById("repModal");
+    if (m) m.setAttribute("data-rep-mode", cur);
+    repTargetFill();
+    if (typeof tblFit === "function") tblFit();
+  }
+  // список в поле Collection / Channel — по табу
+  function repTargetList() {
+    if (repIsMarket()) return (typeof aiAllColls === "function" ? aiAllColls() : []).map(function (c) { return c.name; });
+    var d = window.SUBSUB_DICT || {};
+    return d.ownChannels || [];
+  }
+  function repTargetFill(q) {
+    var box = document.querySelector("[data-rp-target-opts]");
+    if (!box) return;
+    var lbl = document.querySelector("[data-rp-target-lbl]");
+    var ph = document.querySelector('[data-rp-sel="target"] [data-rp-val]');
+    if (lbl) lbl.textContent = repIsMarket() ? "Collection" : "Channel";
+    if (ph && ph.classList.contains("is-ph")) {
+      ph.textContent = repIsMarket() ? "Select collection" : "Select channel";
+      ph.setAttribute("data-rp-ph", ph.textContent);
+    }
+    var s = (q || "").trim().toLowerCase();
+    var list = repTargetList().filter(function (n) { return !s || n.toLowerCase().indexOf(s) !== -1; });
+    box.innerHTML = list.map(function (n) {
+      return '<button class="anf-opt" type="button" role="option" data-rp-opt-target="' + escHtml(n) + '">' + escHtml(n) + "</button>";
+    }).join("") || '<div class="anf-empty">Nothing found</div>';
+  }
+  function repSelVal(sel) {
+    var el = document.querySelector('[data-rp-sel="' + sel + '"] [data-rp-val]');
+    return el && !el.classList.contains("is-ph") ? el.textContent.trim() : "";
+  }
+  function repSetSel(sel, val) {
+    var el = document.querySelector('[data-rp-sel="' + sel + '"] [data-rp-val]');
+    if (!el) return;
+    el.textContent = val;
+    el.classList.remove("is-ph");
+    repSync();
+  }
+  function repMenu(sel, open) {
+    var root = document.querySelector('[data-rp-sel="' + sel + '"]');
+    if (!root) return;
+    var menu = root.querySelector("[data-rp-menu]"), trig = root.querySelector("[data-rp-trig]");
+    if (menu) menu.hidden = !open;
+    if (trig) trig.setAttribute("aria-expanded", open ? "true" : "false");
+  }
+  function repMenusClose() { repMenu("type", false); repMenu("target", false); }
+  // период доступен только после выбора коллекции/канала
+  function repSync() {
+    var name = (document.querySelector("[data-rp-name]") || {}).value || "";
+    var target = repSelVal("target");
+    var calTrig = document.querySelector("[data-rp-cal-trig]");
+    if (calTrig) calTrig.disabled = !target;
+    var ok = !!repSelVal("type") && !!name.trim() && !!target && !!rpRange.from && !!rpRange.to;
+    var btn = document.querySelector("[data-rp-submit]");
+    if (btn) btn.disabled = !ok;
+  }
+  function repOpen() {
+    rpRange = { from: null, to: null };
+    var m = document.getElementById("repModal");
+    if (!m) return;
+    m.setAttribute("data-rep-mode", repMode());
+    var nm = document.querySelector("[data-rp-name]"); if (nm) nm.value = "";
+    ["type", "target"].forEach(function (sel) {
+      var el = document.querySelector('[data-rp-sel="' + sel + '"] [data-rp-val]');
+      if (!el) return;
+      el.classList.add("is-ph");
+      el.textContent = sel === "type" ? "Select report type" : (repIsMarket() ? "Select collection" : "Select channel");
+    });
+    var cv = document.querySelector("[data-rp-cal-val]");
+    if (cv) { cv.textContent = "Select period"; cv.classList.add("is-ph"); }
+    repMenusClose();
+    rpCalClose();
+    repTargetFill();
+    repSync();
+    openModal("repModal");
+  }
+
+  // ---- календарь периода: слева быстрый переход по месяцам, справа сетка дней ----
+  var rpRange = { from: null, to: null }, rpMonth = null;
+  function rpDict() { return window.SUBSUB_DICT || {}; }
+  function rpToday() {
+    var t = (rpDict().today || "2026-08-03").split("-");
+    return new Date(+t[0], +t[1] - 1, +t[2]);
+  }
+  function rpFmt(d) {
+    return ("0" + d.getDate()).slice(-2) + "." + ("0" + (d.getMonth() + 1)).slice(-2) + "." + d.getFullYear();
+  }
+  function rpKey(d) { return d.getFullYear() * 10000 + d.getMonth() * 100 + d.getDate(); }
+  function rpCalOpen(open) {
+    var pop = document.querySelector("[data-rp-cal-pop]"), trig = document.querySelector("[data-rp-cal-trig]");
+    if (!pop) return;
+    pop.hidden = !open;
+    if (trig) trig.setAttribute("aria-expanded", open ? "true" : "false");
+    if (open) {
+      if (!rpMonth) rpMonth = new Date(rpToday().getFullYear(), rpToday().getMonth(), 1);
+      rpCalRender();
+    }
+  }
+  function rpCalClose() { rpCalOpen(false); }
+  function rpCalRender() {
+    var months = rpDict().months || [];
+    var grid = document.querySelector("[data-rp-cal-grid]");
+    var title = document.querySelector("[data-rp-cal-title]");
+    var side = document.querySelector("[data-rp-cal-months]");
+    var note = document.querySelector("[data-rp-cal-note]");
+    if (!grid) return;
+    if (title) title.textContent = months[rpMonth.getMonth()] + " " + rpMonth.getFullYear();
+    if (note) {
+      var since = rpDict().firstChannelAdded || "19.05.2023";
+      note.textContent = "The 1st channel in this collection was added on " + since +
+        ". Therefore growth period is available by year and month starting from " + since + ".";
+    }
+    // левая колонка: месяцы двух последних лет, быстрый переход
+    if (side) {
+      var y0 = rpToday().getFullYear();
+      var html = "";
+      [y0 - 1, y0].forEach(function (y) {
+        html += '<div class="rp-cal__year">' + y + "</div>";
+        months.forEach(function (mn, mi) {
+          var on = rpMonth.getFullYear() === y && rpMonth.getMonth() === mi;
+          html += '<button class="rp-cal__mbtn' + (on ? " is-on" : "") + '" type="button" data-rp-cal-jump="' +
+            y + "-" + mi + '">' + mn + "</button>";
+        });
+      });
+      side.innerHTML = html;
+      // прокручиваем только сам список месяцев: scrollIntoView увёл бы и тело модалки
+      var onBtn = side.querySelector(".rp-cal__mbtn.is-on");
+      if (onBtn) side.scrollTop = Math.max(0, onBtn.offsetTop - side.clientHeight / 2);
+    }
+    // сетка дней
+    var wd = rpDict().weekdays || ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"];
+    var cells = wd.map(function (w) { return '<span class="an-dr__wd">' + w + "</span>"; }).join("");
+    var first = new Date(rpMonth.getFullYear(), rpMonth.getMonth(), 1);
+    var shift = (first.getDay() + 6) % 7;                       // неделя с понедельника
+    var days = new Date(rpMonth.getFullYear(), rpMonth.getMonth() + 1, 0).getDate();
+    for (var i = 0; i < shift; i++) cells += '<span class="an-dr__day an-dr__day--out"></span>';
+    var a = rpRange.from ? rpKey(rpRange.from) : null, bb = rpRange.to ? rpKey(rpRange.to) : null;
+    for (var d = 1; d <= days; d++) {
+      var cur = new Date(rpMonth.getFullYear(), rpMonth.getMonth(), d), k = rpKey(cur);
+      var cls = "an-dr__day";
+      if (a && bb && k > a && k < bb) cls += " an-dr__day--in";
+      if (a && k === a) cls += " an-dr__day--edge" + (bb ? " an-dr__day--start" : "");
+      if (bb && k === bb) cls += " an-dr__day--edge an-dr__day--end";
+      cells += '<button class="' + cls + '" type="button" data-rp-cal-day="' + cur.getFullYear() + "-" +
+        cur.getMonth() + "-" + d + '"><span class="an-dr__d">' + d + "</span></button>";
+    }
+    grid.innerHTML = cells;
+  }
+  function rpPickDay(val) {
+    var p = val.split("-");
+    var d = new Date(+p[0], +p[1], +p[2]);
+    if (!rpRange.from || (rpRange.from && rpRange.to)) { rpRange = { from: d, to: null }; }
+    else if (rpKey(d) < rpKey(rpRange.from)) { rpRange = { from: d, to: rpRange.from }; }
+    else { rpRange.to = d; }
+    rpCalRender();
+  }
+  function rpCalApply() {
+    if (!rpRange.from || !rpRange.to) { toast("Pick the period start and end"); return; }
+    var val = document.querySelector("[data-rp-cal-val]");
+    if (val) { val.textContent = rpFmt(rpRange.from) + " - " + rpFmt(rpRange.to); val.classList.remove("is-ph"); }
+    rpCalClose();
+    repSync();
+  }
+  function rpCalClear() {
+    rpRange = { from: null, to: null };
+    var val = document.querySelector("[data-rp-cal-val]");
+    if (val) { val.textContent = "Select period"; val.classList.add("is-ph"); }
+    rpCalRender();
+    repSync();
+  }
+
+  // ---- создание отчёта ----
+  function repSlug(s) {
+    return String(s).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "report";
+  }
+  function repFileName(target, type) {
+    return repSlug(target) + "-" + (type.indexOf("Deep") === 0 ? "deep" : "basic") + "-report-" + (repSeq++) + ".xlsx";
+  }
+  function repMlAdd(file) {
+    // мост в Media Library: файл появляется в папке Analytics (её создаёт media.js)
+    try {
+      var list = JSON.parse(localStorage.getItem(REP_ML_KEY) || "[]");
+      if (!Array.isArray(list)) list = [];
+      list.push({ folder: "analytics", name: file, kind: "spreadsheet", src: "revenue-report.xlsx",
+                  created: rpFmt(rpToday()), size: "92.15 KB" });
+      localStorage.setItem(REP_ML_KEY, JSON.stringify(list));
+    } catch (e) {}
+  }
+  function repSubmit() {
+    var type = repSelVal("type"), target = repSelVal("target");
+    var name = ((document.querySelector("[data-rp-name]") || {}).value || "").trim();
+    if (!type || !target || !name || !rpRange.from || !rpRange.to) return;
+    var key = repKey();
+    var body = tblBody(key);
+    if (!body) return;
+    var tbody = body.querySelector(".an-tbody");
+    var file = repFileName(target, type);
+    var period = rpFmt(rpRange.from) + " - " + rpFmt(rpRange.to);
+    var row = document.createElement("div");
+    row.className = "an-tr";
+    row.setAttribute("data-rep-row", "");
+    row.setAttribute("data-file", file);
+    var cells = [
+      '<div class="an-td an-td--plain" style="width:300px" data-col="name">' + escHtml(name) + "</div>",
+      '<div class="an-td an-td--plain" style="width:140px" data-col="created">' + rpFmt(rpToday()) + "</div>",
+      '<div class="an-td an-td--plain" style="width:240px" data-col="period">' + escHtml(period) + "</div>",
+      '<div class="an-td an-td--plain" style="width:220px" data-col="' + (repIsMarket() ? "collection" : "channel") + '">' + escHtml(target) + "</div>"
+    ];
+    if (repIsMarket()) cells.push('<div class="an-td an-td--plain" style="width:120px" data-col="type">' +
+      escHtml(type.indexOf("Deep") === 0 ? "Deep" : "Basic") + "</div>");
+    cells.push('<div class="an-td" style="width:160px" data-col="status">' + repStatusHtml("progress") + "</div>");
+    cells.push('<div class="an-td" style="width:140px" data-col="actions">' + repActsHtml(false, file) + "</div>");
+    row.innerHTML = cells.join("");
+    tbody.insertBefore(row, tbody.firstChild);
+    closeModal(document.getElementById("repModal"));
+    toast("Report is being prepared");
+    if (typeof tblApply === "function") tblApply(key);
+    setTimeout(function () {
+      var st = row.querySelector('[data-col="status"]');
+      if (st) st.innerHTML = repStatusHtml("created");
+      var act = row.querySelector('[data-col="actions"]');
+      if (act) act.innerHTML = repActsHtml(true, file);
+      repMlAdd(file);                      // файл появляется в Media Library ровно сейчас
+      repReady(name, file);
+    }, REP_BUILD_MS);
+  }
+  // разметку статуса и действий копируем из уже отрисованной строки, чтобы не дублировать SVG
+  function repStatusHtml(kind) {
+    var proto = document.querySelector('[data-rep-row] [data-col="status"] .mc-status');
+    var green = kind === "created";
+    if (!proto) return green ? "Created" : "In progress";
+    var clone = proto.cloneNode(true);
+    clone.classList.toggle("mc-status--green", green);
+    clone.classList.toggle("mc-status--orange", !green);
+    var t = clone.querySelector(".mc-status__t");
+    if (t) t.textContent = green ? "Created" : "In progress";
+    return clone.outerHTML;
+  }
+  function repActsHtml(ready, file) {
+    var proto = document.querySelector('[data-rep-row] [data-col="actions"] .rep-acts');
+    if (!proto) return "";
+    var clone = proto.cloneNode(true);
+    var inml = clone.querySelector("[data-rep-inml]");
+    if (inml) {
+      inml.setAttribute("data-rep-inml", file || "");
+      if (ready) inml.removeAttribute("disabled"); else inml.setAttribute("disabled", "");
+    }
+    return clone.outerHTML;
+  }
+  function repReady(name, file) {
+    var card = document.querySelector("[data-rep-ready]");
+    if (!card) { toast("Report ready"); return; }
+    var n = card.querySelector("[data-rep-ready-name]");
+    if (n) n.textContent = name;
+    card.setAttribute("data-file", file || "");
+    card.hidden = false;
+  }
+  function repOpenInMl(file) {
+    var url = "media-library-files.html?folder=analytics";
+    if (file) url += "&file=" + encodeURIComponent(file);
+    location.href = url;
+  }
+  function repDelAsk(row) {
+    repDelRow = row;
+    var nm = row.querySelector('[data-col="name"]');
+    var t = document.querySelector("[data-rep-c-text]");
+    if (t) t.textContent = "“" + (nm ? nm.textContent.trim() : "This report") + "” will be deleted. This can't be undone.";
+    openModal("repConfirm");
+  }
+  var repDelRow = null;
+  function repDel() {
+    if (repDelRow) {
+      var key = repKey();
+      repDelRow.remove();
+      repDelRow = null;
+      if (typeof tblApply === "function") tblApply(key);
+    }
+    closeModal(document.getElementById("repConfirm"));
+    toast("Report deleted");
+  }
+
   // ================= страница коллекции: догрузка каналов по скроллу =================
   // В прототипе список берём из того же пула каналов, что и Basic data: сервер отдаёт
   // первую порцию, остальное дописываем батчами по 10, пока пул не закончится.
@@ -3438,6 +3822,7 @@
   slInit();                          // P1.6: выбранные срезы по типу контента
   mcCtypeInit();                     // тип коллекции на My collections из localStorage
   ceScrollInit();                    // страница коллекции: догрузка каналов по скроллу
+  repInit();                         // Reports: активный таб, подсказка, списки в модалке
   gsInit();                          // P1.8: режим сводной строки
   flInit();                          // P1.13: панель открыта по умолчанию
   aiRenderCollectionView();
