@@ -2272,6 +2272,10 @@ body.is-open:not(.is-collapsed) .main { margin-left: 306px; }
 }
 .an-ctype__btn svg { width: 16px; height: 16px; }
 .an-ctype__btn.is-on { background: #fff; color: var(--color-black); box-shadow: 0 0 4px 0 rgba(0,0,0,.1); }
+/* количество коллекций бейджем внутри сегмента */
+.an-ctype__qty { display: inline-flex; align-items: center; justify-content: center; min-width: 20px; height: 18px;
+  margin-left: 6px; padding: 0 5px; border-radius: 4px; background: var(--color-shade-200); box-sizing: border-box;
+  font-size: 11px; font-weight: 500; color: var(--color-shade-800); }
 /* бейджи применённых фильтров над таблицей */
 .an-fchips { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 .an-fchips[hidden] { display: none; }

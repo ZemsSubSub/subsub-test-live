@@ -1147,6 +1147,8 @@
   // На Basic число не трогаем — там показан размер всей базы (2.2m channels).
   function tblUpdateTotal(key, n) {
     if (key === "basic") return;
+    // на My collections счётчика в строке пагинации нет — число живёт в бейдже у All
+    if (key === "coll") { mcCountSync(); return; }
     var pagi = tblPagi(key); if (!pagi) return;
     var tot = pagi.querySelector(".an-pagi__total");
     if (tot) tot.textContent = n.toLocaleString("en-US");   // без слова-единицы
@@ -1870,11 +1872,18 @@
     var more = row.querySelector("[data-mc-more]");
     if (more) more.setAttribute("data-status", status);
   }
-  function updateCollCount() {
-    var n = document.querySelectorAll("[data-mc-row]").length;
-    var tot = document.querySelector(".an-pagi__total");
-    if (tot) tot.textContent = String(n);
+  // общее количество коллекций — бейдж у All в переключателе типа
+  function mcCountSync() {
+    var badges = [].slice.call(document.querySelectorAll("[data-mc-count]"));
+    if (!badges.length) return;
+    var rows = [].slice.call(document.querySelectorAll("[data-mc-row]"));
+    var samples = rows.filter(function (r) { return r.hasAttribute("data-sample"); }).length;
+    badges.forEach(function (badge) {
+      var kind = badge.getAttribute("data-mc-count");
+      badge.textContent = String(kind === "Samples" ? samples : kind === "Own" ? rows.length - samples : rows.length);
+    });
   }
+  function updateCollCount() { mcCountSync(); }
 
   document.addEventListener("click", function (e) {
     // ⋮ — открыть меню у строки (пункты по статусу, как на проде)
@@ -2567,8 +2576,7 @@
     }
     aiPaintTargets();
     if (typeof tblApply === "function" && tblBody("coll")) tblApply("coll");
-    var tot = document.querySelector(".an-pagi__total");
-    if (tot && document.querySelector("[data-mc-tbody]")) tot.textContent = String(document.querySelectorAll("[data-mc-row]").length);
+    mcCountSync();
   }
 
   // --- Deep data: блок Query + фильтры + бейдж (только для AI-коллекций) ---
