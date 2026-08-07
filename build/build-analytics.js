@@ -1465,25 +1465,24 @@ const collInner = `
         </div>
       </header>
 
-      <section class="an-toolbar">
+      <!-- одна строка: поиск, переключатель типа, фильтры и пагинация справа -->
+      <section class="an-toolbar mc-toolbar">
+        <div class="mc-search">${IC.search}<input type="text" placeholder="Search..." data-mc-search /></div>
         <!-- тип коллекции — тот же сегмент, что переключатель типа контента на Deep data -->
-        <div class="an-ctype" data-mc-ctype role="radiogroup" aria-label="Collection type">${["All", "Samples", "Own"].map(function (t) {
-          // общее количество коллекций показываем бейджем у All — отдельной строки-счётчика больше нет
+        <div class="an-ctype" data-mc-ctype role="radiogroup" aria-label="Collection type">${[["All", "All collections"], ["Own", "My collections"], ["Shared", "Shared with me"]].map(function (pair) {
+          const t = pair[0], label = pair[1];
+          // порядок и смысл как у табов Media Library: всё / свои / расшаренные мне
+          const own = function (r) { return r.owner.name === "You"; };
           const cnt = t === "All" ? COLL_ROWS.length
-            : t === "Samples" ? COLL_ROWS.filter(function (r) { return r.sample; }).length
-            : COLL_ROWS.filter(function (r) { return !r.sample; }).length;
+            : t === "Own" ? COLL_ROWS.filter(own).length
+            : COLL_ROWS.filter(function (r) { return !own(r); }).length;
           const qty = '<span class="an-ctype__qty" data-mc-count="' + t + '">' + cnt + '</span>';
           return '<button class="an-ctype__btn' + (t === "All" ? " is-on" : "") + '" type="button" role="radio" ' +
-            'aria-checked="' + (t === "All" ? "true" : "false") + '" data-mc-ctype-set="' + t + '">' + t + qty + '</button>';
+            'aria-checked="' + (t === "All" ? "true" : "false") + '" data-mc-ctype-set="' + t + '">' + label + qty + '</button>';
         }).join("")}</div>
-        <div class="mc-search">${IC.search}<input type="text" placeholder="Search..." data-mc-search /></div>
         <button class="an-btn an-btn--secondary" type="button" data-an-filters-toggle>${IC.filter}Filters<span class="an-btn__dot" data-an-filters-dot hidden></span></button>
-      </section>
-
-      <section class="an-pagi" data-an-table="coll">
-        <div class="an-pagi__label">
-        </div>
-        <div class="an-pagi__ctrls">
+        <!-- пагинация прижата к правому краю строки -->
+        <div class="an-pagi__ctrls" data-an-table="coll">
           <span class="an-pagi__pages">Pages: 1</span>
           <div class="an-pagi__nav">
             <button class="an-pagi__arrow" type="button" data-an-prev aria-label="Previous Page">${IC.arrowL}</button>
@@ -1496,6 +1495,7 @@ const collInner = `
           </div>
         </div>
       </section>
+
 
       <!-- бейджи применённых фильтров: рисуются из состояния панели -->
       <div class="an-fchips" data-an-fchips="coll" hidden></div>

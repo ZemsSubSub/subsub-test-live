@@ -2044,6 +2044,10 @@ body.is-open:not(.is-collapsed) .main { margin-left: 306px; }
 .an-tab.is-active { color: var(--color-black); }
 .an-tab.is-active::after { content: ""; position: absolute; left: 0; right: 0; bottom: -1px; height: 2px; background: var(--color-black); }
 .an-toolbar { display: flex; justify-content: flex-end; align-items: center; gap: 16px; }
+/* My collections: поиск → переключатель → фильтры слева, пагинация у правого края */
+.mc-toolbar { justify-content: flex-start; }
+.mc-toolbar .an-ctype { margin-right: 0; }
+.mc-toolbar > [data-an-table] { margin-left: auto; }
 
 .an-sort--metric { position: relative; }
 .and-colx { display: inline-flex; margin-left: 2px; color: var(--color-shade-500); }
@@ -2274,7 +2278,7 @@ body.is-open:not(.is-collapsed) .main { margin-left: 306px; }
 .an-ctype__btn.is-on { background: #fff; color: var(--color-black); box-shadow: 0 0 4px 0 rgba(0,0,0,.1); }
 /* количество коллекций бейджем внутри сегмента */
 .an-ctype__qty { display: inline-flex; align-items: center; justify-content: center; min-width: 20px; height: 18px;
-  margin-left: 6px; padding: 0 5px; border-radius: 4px; background: var(--color-shade-200); box-sizing: border-box;
+  margin-left: 0; padding: 0 5px; border-radius: 4px; background: var(--color-shade-200); box-sizing: border-box;
   font-size: 11px; font-weight: 500; color: var(--color-shade-800); }
 /* бейджи применённых фильтров над таблицей */
 .an-fchips { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }

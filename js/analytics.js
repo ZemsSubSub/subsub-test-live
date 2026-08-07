@@ -1701,8 +1701,10 @@
       var chips = [].slice.call(row.querySelectorAll(".mc-chip")).map(function (c) { return c.textContent.trim(); }).join(" ").toLowerCase();
       var ok = true;
       // P1.10: Samples — это public-коллекции (владелец не ты), Own — свои
-      if (ctype === "Samples" && !row.hasAttribute("data-sample")) ok = false;
-      if (ctype === "Own" && row.hasAttribute("data-sample")) ok = false;
+      // Own — где владелец «You», Shared — расшаренные мне (владелец другой)
+      var mine = mcRowIsOwn(row);
+      if (ctype === "Own" && !mine) ok = false;
+      if (ctype === "Shared" && mine) ok = false;
       if (v.status && st !== v.status) ok = false;
       if (v.channels && chips.indexOf(v.channels.toLowerCase()) === -1) ok = false;
       if (v.qtyFrom != null && !isNaN(qty) && qty < v.qtyFrom) ok = false;
@@ -1873,14 +1875,19 @@
     if (more) more.setAttribute("data-status", status);
   }
   // общее количество коллекций — бейдж у All в переключателе типа
+  // «своя» коллекция — та, где владелец «You»
+  function mcRowIsOwn(row) {
+    var o = row.querySelector(".mc-owner__name");
+    return !o || o.textContent.trim() === "You";
+  }
   function mcCountSync() {
     var badges = [].slice.call(document.querySelectorAll("[data-mc-count]"));
     if (!badges.length) return;
     var rows = [].slice.call(document.querySelectorAll("[data-mc-row]"));
-    var samples = rows.filter(function (r) { return r.hasAttribute("data-sample"); }).length;
+    var own = rows.filter(mcRowIsOwn).length;
     badges.forEach(function (badge) {
       var kind = badge.getAttribute("data-mc-count");
-      badge.textContent = String(kind === "Samples" ? samples : kind === "Own" ? rows.length - samples : rows.length);
+      badge.textContent = String(kind === "Own" ? own : kind === "Shared" ? rows.length - own : rows.length);
     });
   }
   function updateCollCount() { mcCountSync(); }

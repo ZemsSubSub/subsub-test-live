@@ -349,17 +349,14 @@
         </div>
       </header>
 
-      <section class="an-toolbar">
-        <!-- тип коллекции — тот же сегмент, что переключатель типа контента на Deep data -->
-        <div class="an-ctype" data-mc-ctype role="radiogroup" aria-label="Collection type"><button class="an-ctype__btn is-on" type="button" role="radio" aria-checked="true" data-mc-ctype-set="All">All<span class="an-ctype__qty" data-mc-count="All">4</span></button><button class="an-ctype__btn" type="button" role="radio" aria-checked="false" data-mc-ctype-set="Samples">Samples<span class="an-ctype__qty" data-mc-count="Samples">2</span></button><button class="an-ctype__btn" type="button" role="radio" aria-checked="false" data-mc-ctype-set="Own">Own<span class="an-ctype__qty" data-mc-count="Own">2</span></button></div>
+      <!-- одна строка: поиск, переключатель типа, фильтры и пагинация справа -->
+      <section class="an-toolbar mc-toolbar">
         <div class="mc-search"><svg viewBox="0 0 24 24" fill="none"><path d="M10.6154 18.2307C14.8212 18.2307 18.2307 14.8212 18.2307 10.6154C18.2307 6.40951 14.8212 3 10.6154 3C6.40951 3 3 6.40951 3 10.6154C3 14.8212 6.40951 18.2307 10.6154 18.2307Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M21.0004 20.9985L16.1543 16.1523" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg><input type="text" placeholder="Search..." data-mc-search /></div>
+        <!-- тип коллекции — тот же сегмент, что переключатель типа контента на Deep data -->
+        <div class="an-ctype" data-mc-ctype role="radiogroup" aria-label="Collection type"><button class="an-ctype__btn is-on" type="button" role="radio" aria-checked="true" data-mc-ctype-set="All">All collections<span class="an-ctype__qty" data-mc-count="All">4</span></button><button class="an-ctype__btn" type="button" role="radio" aria-checked="false" data-mc-ctype-set="Own">My collections<span class="an-ctype__qty" data-mc-count="Own">2</span></button><button class="an-ctype__btn" type="button" role="radio" aria-checked="false" data-mc-ctype-set="Shared">Shared with me<span class="an-ctype__qty" data-mc-count="Shared">2</span></button></div>
         <button class="an-btn an-btn--secondary" type="button" data-an-filters-toggle><svg viewBox="0 0 24 24" fill="none"><path d="M3 7H21" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M6 12H18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M10 17H14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>Filters<span class="an-btn__dot" data-an-filters-dot hidden></span></button>
-      </section>
-
-      <section class="an-pagi" data-an-table="coll">
-        <div class="an-pagi__label">
-        </div>
-        <div class="an-pagi__ctrls">
+        <!-- пагинация прижата к правому краю строки -->
+        <div class="an-pagi__ctrls" data-an-table="coll">
           <span class="an-pagi__pages">Pages: 1</span>
           <div class="an-pagi__nav">
             <button class="an-pagi__arrow" type="button" data-an-prev aria-label="Previous Page"><svg viewBox="0 0 24 24" fill="none"><path fill-rule="evenodd" clip-rule="evenodd" d="M14.8 3L6 12L14.8 21L17 18.75L10.4 12L17 5.25L14.8 3Z" fill="currentColor"/></svg></button>
@@ -372,6 +369,7 @@
           </div>
         </div>
       </section>
+
 
       <!-- бейджи применённых фильтров: рисуются из состояния панели -->
       <div class="an-fchips" data-an-fchips="coll" hidden></div>
