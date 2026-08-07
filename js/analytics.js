@@ -2575,7 +2575,7 @@
         '<div class="an-td" style="width:140px">' + escHtml(c.created) + '</div>' +
         '<div class="an-td" style="width:160px"><span class="mc-owner"><span class="mc-ava" style="background:var(--color-avatar-1)">Y</span><span class="mc-owner__name">You</span></span></div>' +
         // «Not shared» — как в сборке: иконку берём из уже отрисованной строки
-        '<div class="an-td" style="width:120px">' + noShareHtml() + '</div>' +
+        '<div class="an-td" style="width:150px">' + noShareHtml() + '</div>' +
         '<div class="an-td" style="width:120px"><button class="mc-more" type="button" aria-label="Actions" data-mc-more data-status="' +
           escHtml(c.status) + '" data-name="' + escHtml(c.name) + '">' +
           (document.querySelector("[data-mc-more]") ? document.querySelector("[data-mc-more]").innerHTML : "") + '</button></div>';

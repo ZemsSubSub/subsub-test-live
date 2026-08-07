@@ -2126,7 +2126,7 @@ body.is-open:not(.is-collapsed) .main { margin-left: 306px; }
 /* C1: пояснение в меню, почему чужую коллекцию нельзя менять */
 .mc-menu__note { margin: 4px 8px 4px; max-width: 220px; font-size: 12px; line-height: 1.4; color: var(--color-shade-700); }
 .mc-menu__note[hidden] { display: none; }
-.mc-noshare { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 500; color: var(--color-shade-700); }
+.mc-noshare { display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; font-size: 14px; font-weight: 500; color: var(--color-shade-700); }  /* «Not shared» одной строкой */
 .mc-noshare svg { width: 24px; height: 24px; flex-shrink: 0; }
 .mc-search { display: flex; align-items: center; gap: 8px; width: 280px; height: 40px; padding: 0 16px; border: 1px solid var(--color-shade-300); border-radius: 8px; background: #fff; box-sizing: border-box; }
 .mc-search:focus-within { border-color: var(--color-black); }

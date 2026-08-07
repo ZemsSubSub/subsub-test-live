@@ -906,10 +906,10 @@ function toNum(v){ v=String(v).replace("+","").trim(); var m=v.match(/^([\d.]+)\
 
 const COLL_ROWS = [
   { name:"News UA - Big Media", status:"activated", qty:15, includes:["24 Канал","Телеканал Прямий"], more:13,
-    created:"19.05.2023", sample:true, owner:{ name:"Oleh", c:"--color-avatar-1", i:"O" },
+    created:"19.05.2023", sample:true, owner:{ name:"SubSub", c:"--color-avatar-0", i:"S" },
     shared:[{c:"--color-avatar-3",i:"N",n:"Nick Rohynets"},{c:"--color-avatar-1",i:"O",n:"Oleh"}] },
   { name:"Crypto", status:"activated", qty:35, includes:["Crypto Moon","Smart Risk"], more:33,
-    created:"27.06.2025", sample:true, owner:{ name:"Olena Bakhtii", c:"--color-avatar-5", i:"O" },
+    created:"27.06.2025", sample:true, owner:{ name:"SubSub", c:"--color-avatar-0", i:"S" },
     shared:[{c:"--color-avatar-3",i:"O",n:"Oleh"}] },
   // остальные статусы (created / pending / inactive) — как на проде у новых коллекций
   { name:"Gaming UA", status:"created", qty:8, includes:["Zems Racing","Hunt Squad"], more:6,
@@ -1403,7 +1403,7 @@ const COLL_COLS = [
   { id:"includes", w:350, label:"Includes" },
   { id:"created", w:140, label:"Created on", sort:true },
   { id:"owner", w:160, label:"Owner" },
-  { id:"shared", w:120, label:"Shared with" },
+  { id:"shared", w:150, label:"Shared with" },
   { id:"actions", w:120, label:"" },
 ];
 
@@ -1446,7 +1446,7 @@ function collRow(r){
   const sharedCell = r.shared.length
     ? '<span class="mc-shared">' + r.shared.map(function (a) { return ava(a); }).join("") + '</span>'
     : '<span class="mc-noshare">' + IC.shareOff + 'Not shared</span>';
-  cells.push('<div class="an-td" style="width:120px">' + sharedCell + '</div>');
+  cells.push('<div class="an-td" style="width:150px">' + sharedCell + '</div>');
   cells.push('<div class="an-td" style="width:120px"><button class="mc-more" type="button" aria-label="Actions" data-mc-more data-status="' + r.status + '" data-name="' + esc(r.name) + '">' + IC.dots + '</button></div>');
   return '<div class="an-tr" data-mc-row data-name="' + esc(r.name) + '"' +
     (r.sample ? ' data-sample="1"' : '') + ' data-owner="' + esc(r.owner.name) + '"' +
