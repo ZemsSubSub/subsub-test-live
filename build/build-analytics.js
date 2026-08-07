@@ -601,7 +601,7 @@ function ncModal(opts) {
           </section>` : ""}
         </div>
         <div class="an-modal__foot nc-foot">
-          <button class="an-btn an-btn--primary an-btn--huge" type="button" data-nc-submit disabled>Add channels</button>
+          <button class="an-btn an-btn--primary an-btn--small" type="button" data-nc-submit disabled>Add channels</button>
         </div>
       </div>
     </div>`;
@@ -633,7 +633,7 @@ const acModalHtml = `
           </section>
         </div>
         <div class="an-modal__foot nc-foot">
-          <button class="an-btn an-btn--primary an-btn--huge" type="button" data-ac-submit disabled>Add channels</button>
+          <button class="an-btn an-btn--primary an-btn--small" type="button" data-ac-submit disabled>Add channels</button>
         </div>
       </div>
     </div>`;
