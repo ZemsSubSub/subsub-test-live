@@ -806,7 +806,7 @@ const mainInner = `
 
       <section class="an-pagi" data-an-table="basic">
         <div class="an-pagi__label">
-          <span class="an-pagi__name">Channels</span>
+          <span class="an-pagi__name">Collections</span>
           ${collSel("basic", "", "Select collection")}
         </div>
         <div class="an-pagi__ctrls">
@@ -1255,7 +1255,7 @@ const videosPanel = `
 
       <section class="an-pagi" data-an-table="video">
         <div class="an-pagi__label">
-          <span class="an-pagi__name">Videos</span>
+          <span class="an-pagi__name">Collections</span>
           ${collSel("video", DEEP_DEFAULT_COLL, "Select collection")}
         </div>
         <div class="an-pagi__ctrls">
@@ -1315,7 +1315,7 @@ const deepInner = `
 
       <section class="an-pagi" data-an-table="deep">
         <div class="an-pagi__label">
-          <span class="an-pagi__name">Channels</span>
+          <span class="an-pagi__name">Collections</span>
           ${collSel("deep", DEEP_DEFAULT_COLL, "Select collection")}
           <span class="ai-badge" data-ai-badge hidden>${IC.aiStarsSolid}${AI_BADGE}</span>
         </div>
@@ -1720,16 +1720,16 @@ function buildPage(src, title, inner, current){
     if (!isCur) return;
     h = h.replace('<a class="m-item" href="' + url + '"', '<a class="m-item is-current" href="' + url + '"');
   };
-  // второй вариант: Deep data ведёт на свою страницу, под ним появляется пункт Videos data
-  if (current === "deep2" || current === "videos") {
+  // основной вариант навигации: под Deep data стоит отдельный пункт Videos data.
+  // Исключение — альтернативная страница со свичем (current === "deepTabs").
+  if (current !== "deepTabs") {
     h = h.replace('<a class="m-item" href="analytics-deep-data.html"><span class="m-ico"></span>Deep data</a>',
-      '<a class="m-item" href="analytics-deep-data-v2.html"><span class="m-ico"></span>Deep data</a>' +
+      '<a class="m-item" href="analytics-deep-data.html"><span class="m-ico"></span>Deep data</a>' +
       '<a class="m-item" href="analytics-videos-data.html"><span class="m-ico"></span>Videos data</a>');
   }
   markCurrent("analytics-basic-data.html", current === "basic");
-  markCurrent("analytics-deep-data.html", current === "deep");
+  markCurrent("analytics-deep-data.html", current === "deep" || current === "deepTabs");
   markCurrent("analytics-collections.html", current === "collections");
-  markCurrent("analytics-deep-data-v2.html", current === "deep2");
   markCurrent("analytics-videos-data.html", current === "videos");
   // базовые коллекции (те же, что в списке My collections) — единый источник для дропдауна
   // назначения в модалке sourcing; страницы Basic data / My collections читают их из window
@@ -1768,9 +1768,10 @@ function buildPage(src, title, inner, current){
 }
 
 
-// ================= второй вариант навигации (для сравнения) =================
-// Deep data без свича Channels/Videos, а видео — отдельным пунктом меню под ним.
-// Первый вариант (analytics-deep-data.html) остаётся как есть.
+// ================= варианты навигации по видео =================
+// ОСНОВНОЙ вариант: Deep data без свича, видео — отдельная страница Videos data
+// (analytics-deep-data.html + analytics-videos-data.html).
+// Альтернатива для сравнения: analytics-deep-data-tabs.html — свич Channels/Videos в заголовке.
 const NAV_BLOCK = deepInner.slice(
   deepInner.indexOf("          <!-- переключатель Channels / Videos"),
   deepInner.indexOf("</nav>") + "</nav>\n".length
@@ -1780,6 +1781,9 @@ const deepV2Inner = deepInner
   .split(NAV_BLOCK).join("")                       // свича нет
   .split(VIDEOS_PANEL_BLOCK).join("")              // таба с видео тоже
   .split(FILTERS_DEEP_VIDEOS).join("");            // и его панели фильтров
+
+// в альтернативной версии свич ведёт на её собственный файл
+const deepTabsInner = deepInner.split("analytics-deep-data.html?tab=").join("analytics-deep-data-tabs.html?tab=");
 
 const videosInner = `
     <section class="an-page">
@@ -1798,10 +1802,10 @@ const videosInner = `
     <div class="an-toast" data-an-toast hidden></div>`;
 
 fs.writeFileSync(DIR + "analytics-basic-data.html", buildPage(html, "Basic data", mainInner, "basic"));
-fs.writeFileSync(DIR + "analytics-deep-data.html", buildPage(html, "Deep data", deepInner, "deep"));
+fs.writeFileSync(DIR + "analytics-deep-data.html", buildPage(html, "Deep data", deepV2Inner, "deep"));
 fs.writeFileSync(DIR + "analytics-collections.html", buildPage(html, "My collections", collInner, "collections"));
 fs.writeFileSync(DIR + "analytics-collection-edit.html", buildPage(html, "Editing collection", editInner, "collections"));
-// второй вариант навигации
-fs.writeFileSync(DIR + "analytics-deep-data-v2.html", buildPage(html, "Deep data", deepV2Inner, "deep2"));
 fs.writeFileSync(DIR + "analytics-videos-data.html", buildPage(html, "Videos data", videosInner, "videos"));
-console.log("written: basic-data (" + ROWS.length + "), deep-data (" + DEEP_ROWS.length + "), collections (" + COLL_ROWS.length + "), collection-edit (" + CE_ROWS.length + "), + вариант 2: deep-data-v2, videos-data");
+// альтернатива для сравнения: свич Channels / Videos в заголовке
+fs.writeFileSync(DIR + "analytics-deep-data-tabs.html", buildPage(html, "Deep data", deepTabsInner, "deepTabs"));
+console.log("written: basic-data (" + ROWS.length + "), deep-data (" + DEEP_ROWS.length + "), collections (" + COLL_ROWS.length + "), collection-edit (" + CE_ROWS.length + "), videos-data + альтернатива deep-data-tabs");

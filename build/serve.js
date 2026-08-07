@@ -4,11 +4,12 @@ const path = require("path");
 
 const ROOT = "E:/Dev SubSub/subsub_front_prototype_31.07.26";
 // node build/serve.js [порт] [вариант]
-// вариант v2 — сборка с разнесёнными страницами: /analytics-deep-data.html отдаёт
-// версию без свича Channels/Videos, а видео живут отдельным пунктом меню (Videos data).
+// По умолчанию — основной вариант: Deep data без свича, видео отдельной страницей.
+// Вариант tabs — альтернатива для сравнения: /analytics-deep-data.html отдаёт версию
+// со свичем Channels / Videos в заголовке.
 const PORT = parseInt(process.argv[2], 10) || 8778;
 const VARIANT = (process.argv[3] || "").toLowerCase();
-const ALIAS = VARIANT === "v2" ? { "/analytics-deep-data.html": "/analytics-deep-data-v2.html" } : {};
+const ALIAS = VARIANT === "tabs" ? { "/analytics-deep-data.html": "/analytics-deep-data-tabs.html" } : {};
 const TYPES = {
   ".html": "text/html; charset=utf-8",
   ".css": "text/css; charset=utf-8",
