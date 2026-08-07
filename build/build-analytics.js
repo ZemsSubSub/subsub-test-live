@@ -1469,8 +1469,9 @@ const collInner = `
       <section class="an-toolbar mc-toolbar">
         <div class="mc-search">${IC.search}<input type="text" placeholder="Search..." data-mc-search /></div>
         <!-- тип коллекции — тот же сегмент, что переключатель типа контента на Deep data -->
-        <div class="an-ctype" data-mc-ctype role="radiogroup" aria-label="Collection type">${[["All", "All collections"], ["Own", "My collections"], ["Shared", "Shared with me"]].map(function (pair) {
-          const t = pair[0], label = pair[1];
+        <div class="an-ctype" data-mc-ctype role="radiogroup" aria-label="Collection type">${[["All", "All collections", "All"], ["Own", "My collections", "My"], ["Shared", "Shared with me", "Shared"]].map(function (pair) {
+          // две подписи: полная и короткая — короткая включается, когда строка перестаёт влезать
+          const t = pair[0], label = '<span class="an-ctype__full">' + pair[1] + '</span><span class="an-ctype__short">' + pair[2] + '</span>';
           // порядок и смысл как у табов Media Library: всё / свои / расшаренные мне
           const own = function (r) { return r.owner.name === "You"; };
           const cnt = t === "All" ? COLL_ROWS.length

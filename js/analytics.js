@@ -1258,7 +1258,7 @@
   var tblFitT = null;
   window.addEventListener("resize", function () {
     clearTimeout(tblFitT);
-    tblFitT = setTimeout(function () { tblHugAll(); tblFit(); }, 100);
+    tblFitT = setTimeout(function () { mcToolbarFit(); tblHugAll(); tblFit(); }, 100);
   });
 
   // ================= P1.9: табы Channels / Videos (?tab=) =================
@@ -1303,6 +1303,7 @@
     flSyncActive();
     // контент сужается: заголовок может перенести Growth period на вторую строку,
     // поэтому высоту скролл-бокса таблицы пересчитываем после перекладки
+    mcToolbarFit();                    // с открытой панелью ширина контента меньше
     if (typeof tblFit === "function") { tblFit(); requestAnimationFrame(tblFit); }
   }
   // список коллекций в поле Collection заполняем динамически: часть создана на клиенте
@@ -1666,6 +1667,17 @@
       }
       if (ok) row.removeAttribute("data-filtered"); else row.setAttribute("data-filtered", "");
     });
+  }
+  // Строка управления на My collections: если поиск + сегмент + фильтры + пагинация
+  // перестают влезать в ширину контента, подписи сегментов сокращаются.
+  function mcToolbarFit() {
+    var t = document.querySelector(".mc-toolbar");
+    if (!t) return;
+    t.classList.remove("is-tight");
+    var gap = parseFloat(getComputedStyle(t).gap) || 16;
+    var kids = [].slice.call(t.children);
+    var need = kids.reduce(function (s, c) { return s + c.getBoundingClientRect().width; }, 0) + gap * (kids.length - 1);
+    if (need > t.clientWidth - 1) t.classList.add("is-tight");
   }
   // ---- тип коллекции: сегмент в тулбаре страницы My collections ----
   var MC_CTYPE_KEY = "subsub_coll_ctype";
@@ -3842,6 +3854,7 @@
   cvInit();                          // P1.7: видимость колонок из localStorage
   slInit();                          // P1.6: выбранные срезы по типу контента
   mcCtypeInit();                     // тип коллекции на My collections из localStorage
+  mcToolbarFit();                    // подписи сегментов по доступной ширине
   ceScrollInit();                    // страница коллекции: догрузка каналов по скроллу
   repInit();                         // Reports: активный таб, подсказка, списки в модалке
   gsInit();                          // P1.8: режим сводной строки
