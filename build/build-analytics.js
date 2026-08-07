@@ -1618,13 +1618,20 @@ function ceChanUrl(name, i) {
   for (let k = 0; k < 22; k++) id += abc[Math.floor(r() * abc.length)];
   return "https://www.youtube.com/channel/UC" + id;
 }
-function ceLinkCell(name, i) {
+// LINK — переход на страницу канала внутри продукта (как на проде)
+function ceLinkCell() {
+  return '<div class="an-td ce-linkcell" style="width:260px">' +
+    '<a class="ce-view" href="analytics-channel.html">View channel</a>' +
+  '</div>';
+}
+// внешняя ссылка на YouTube — вторичной строкой под именем канала
+function ceChanSub(name, i) {
   const url = ceChanUrl(name, i);
   const short = url.replace(/^https?:\/\/(www\.)?/, "");
-  return '<div class="an-td ce-linkcell" style="width:260px">' +
-    '<a class="ce-view" href="' + esc(url) + '" target="_blank" rel="noopener" title="' + esc(url) + '">' + esc(short) + '</a>' +
+  return '<span class="ce-chan__sub">' +
+    '<a class="ce-chan__yt" href="' + esc(url) + '" target="_blank" rel="noopener" title="' + esc(url) + '">' + esc(short) + '</a>' +
     '<button class="ce-copy" type="button" data-ce-copy="' + esc(url) + '" aria-label="Copy link" title="Copy link">' + IC.copy + '</button>' +
-  '</div>';
+  '</span>';
 }
 // каналы коллекции берём из того же каталога, что и Basic data: первая порция приходит
 // со сборкой (её должно быть больше высоты бокса, чтобы был виден скролл), остальное
@@ -1640,47 +1647,82 @@ const ceHead = '<div class="an-tr an-tr--head">' + CE_COLS.map(function (c) {
 const ceBody = CE_ROWS.map(function (r, i) {
   return '<div class="an-tr" data-ce-row>' +
     '<div class="an-td an-td--check" style="width:40px"><button class="an-check" type="button" data-an-check aria-label="Select">' + IC.check + '</button></div>' +
-    '<div class="an-td" style="width:240px"><span class="ce-chan"><span class="mc-ava ce-ava" style="background:var(' + r[2] + ')">' + esc(r[1]) + '</span>' +
-      '<span class="ce-chan__name">' + esc(r[0]) + '</span></span></div>' +
+    '<div class="an-td"><span class="ce-chan"><span class="mc-ava ce-ava" style="background:var(' + r[2] + ')">' + esc(r[1]) + '</span>' +
+      '<span class="ce-chan__txt"><span class="ce-chan__name">' + esc(r[0]) + '</span>' + ceChanSub(r[0], i) + '</span></span></div>' +
     '<div class="an-td ce-num" style="width:120px">' + esc(r[3]) + '</div>' +
     '<div class="an-td ce-num" style="width:120px">' + esc(r[4]) + '</div>' +
-    ceLinkCell(r[0], i) +
+    ceLinkCell() +
     '<div class="an-td" style="width:100px"><button class="ce-trash" type="button" aria-label="Remove channel" data-ce-remove>' + IC.trash + '</button></div>' +
   '</div>';
 }).join("\n          ");
 
+
+// ---- шеринг коллекции: участники организации и текущий доступ ----
+// Композиция попапа повторяет шеринг Media Library, но без «Anyone with the link»:
+// у коллекций публичной ссылки нет, доступ выдаётся только людям.
+const CE_MEMBERS = [
+  { name: "Arthur Verbetskyi", email: "arthur@subsub.cc", c: "--color-avatar-3" },
+  { name: "Oleg Kravets", email: "oleg@subsub.cc", c: "--color-avatar-1" },
+  { name: "Mariia", email: "mariya.tonkoshkur@gmail.com", c: "--color-avatar-5" },
+  { name: "Max Ivanov", email: "max@subsub.cc", c: "--color-avatar-2" },
+  { name: "Anna Koval", email: "anna@subsub.cc", c: "--color-avatar-4" },
+  { name: "Dmytro Bondar", email: "dmytro@subsub.cc", c: "--color-avatar-6" },
+];
+const CE_ACCESS = [
+  { name: "You", email: "zemskov.yevhenii@gen.tech", c: "--color-avatar-1", owner: true },
+  { name: "Arthur Verbetskyi", email: "arthur@subsub.cc", c: "--color-avatar-3" },
+];
+function ceAccRow(a) {
+  return '<div class="ce-acc" data-ce-acc="' + esc(a.email) + '">' +
+    '<span class="mc-ava ce-acc__ava" style="background:var(' + a.c + ')">' + esc(a.name.charAt(0)) + '</span>' +
+    '<span class="ce-acc__info"><span class="ce-acc__name">' + esc(a.name) + '</span>' +
+      '<span class="ce-acc__mail">' + esc(a.email) + '</span></span>' +
+    (a.owner ? '<span class="ce-acc__role">owner</span>'
+             : '<button class="ce-acc__revoke" type="button" data-ce-revoke>Revoke</button>') +
+  '</div>';
+}
+
 const editInner = `
     <section class="an-page ce-page">
       <a class="ce-back" href="analytics-collections.html">${IC.arrowL}Back</a>
+      <!-- H1 — имя коллекции: страница не форма, а набор мгновенных действий -->
       <header class="an-head an-head--between">
         <div class="an-head__left">
-          <h1 class="an-title">Editing collection</h1>
+          <h1 class="an-title" data-ce-title>Test Collection</h1>
           <span class="ai-badge ce-badge" data-ai-badge hidden>${IC.aiStarsSolid}${AI_BADGE}</span>
         </div>
-        <!-- действия страницы: снизу их забрал футер выбора каналов -->
         <div class="an-head__btns">
-          <button class="an-btn an-btn--plain ce-head__del" type="button" data-ce-delete>${IC.trash}Delete</button>
-          <button class="an-btn an-btn--plain" type="button" data-ce-deactivate>${IC.archive}Deactivate</button>
-          <span class="an-head__sep"></span>
-          <button class="an-btn an-btn--secondary" type="button" data-nc-open>${IC.plus}Add channels</button>
-          <!-- шаринг переехал из формы сюда, на место Save -->
+          <button class="an-btn an-btn--primary" type="button" data-nc-open>${IC.plus}Add channels</button>
+          <!-- шеринг: попап с поиском участников и списком доступа -->
           <div class="ce-share" data-ce-share>
-            <button class="an-btn an-btn--secondary" type="button" data-ce-share-trig aria-haspopup="listbox" aria-expanded="false">${IC.share}<span data-ce-share-lbl>Shared with</span>${IC.chevSelect}</button>
-            <div class="anf-menu ce-share__menu" data-ce-share-menu hidden role="listbox" aria-label="Shared with">
-              <div class="anf-opts">${USER_LIST.map(function (u) {
-                return '<button class="anf-opt" type="button" role="option" data-ce-share-opt="' + esc(u) + '">' + esc(u) + '</button>';
-              }).join("")}</div>
+            <button class="an-btn an-btn--secondary" type="button" data-ce-share-trig aria-haspopup="dialog" aria-expanded="false">${IC.share}<span data-ce-share-lbl>Shared with 1</span></button>
+            <div class="ce-sharepop" data-ce-share-pop hidden role="dialog" aria-label="Share collection">
+              <div class="ce-sharepop__head">
+                <span class="ce-sharepop__title">Share collection</span>
+                <button class="ce-sharepop__x" type="button" data-ce-share-close aria-label="Close">${IC.closeBold}</button>
+              </div>
+              <div class="ce-sharepop__invite">
+                <div class="an-search ce-sharepop__search">${IC.search}<input class="an-search__input" type="text" placeholder="Add people by name or email" data-ce-share-search /></div>
+                <button class="an-btn an-btn--secondary an-btn--small" type="button" data-ce-invite disabled>Invite</button>
+              </div>
+              <div class="ce-sharepop__results" data-ce-share-results hidden></div>
+              <div class="ce-sharepop__list" data-ce-share-list>${CE_ACCESS.map(ceAccRow).join("")}</div>
+            </div>
+          </div>
+          <!-- редкие действия — под «⋮» -->
+          <div class="ce-menu" data-ce-menu>
+            <button class="an-btn an-btn--secondary ce-menu__trig" type="button" data-ce-menu-trig aria-haspopup="menu" aria-expanded="false" aria-label="Collection actions">${IC.dots}</button>
+            <div class="ce-menu__pop" data-ce-menu-pop hidden role="menu">
+              <button class="ce-menu__item" type="button" role="menuitem" data-ce-rename>${IC.edit}Rename collection</button>
+              <hr class="ce-menu__sep" />
+              <button class="ce-menu__item" type="button" role="menuitem" data-ce-deactivate>${IC.archive}Deactivate</button>
+              <button class="ce-menu__item ce-menu__item--danger" type="button" role="menuitem" data-ce-delete>${IC.trash}Delete</button>
             </div>
           </div>
         </div>
       </header>
 
       <div class="ce-form">
-        <div class="ce-field">
-          <label class="ce-lbl" for="ceName">Name collection</label>
-          <input class="an-input" id="ceName" type="text" value="Test Collection" data-ce-name />
-        </div>
-
         <section class="ai-block ce-aiblock" data-ai-block hidden>
           <div class="ai-block__line">
             <span class="ai-block__k">Sourcing query</span>
@@ -1692,13 +1734,16 @@ const editInner = `
           </div>
         </section>
 
-        <div class="mc-search ce-search">${IC.search}<input type="text" placeholder="Search by channel title, link" /></div>
+        <!-- фильтр по уже добавленным каналам (добавление — через Add channels) -->
+        <div class="mc-search ce-search">${IC.search}<input type="text" placeholder="Search by channel title, link" data-ce-search /></div>
         <section class="an-tablewrap an-tablewrap--surface an-tablewrap--stick" data-an-tablewrap="ce" data-ce-scroll>
           <div class="an-table an-table--fill ce-table">
             <div class="an-thead">${ceHead}</div>
             <div class="an-tbody" data-ce-tbody>
             ${ceBody}
             </div>
+            <!-- пустой результат фильтра по каналам -->
+            <div class="ce-empty" data-ce-empty hidden>No channels found</div>
             <!-- маячок конца списка: по нему наблюдатель понимает, что пора догружать -->
             <div class="ce-sentinel" data-ce-sentinel aria-hidden="true"></div>
             <!-- догрузка каналов по скроллу: строка-статус внизу списка -->
@@ -1711,8 +1756,27 @@ const editInner = `
     <!-- D1: массовое удаление выбранных каналов -->
     <div class="an-footer" data-an-footer hidden>
       <div class="an-footer__inner">
-        <button class="an-btn an-btn--danger an-btn--small" type="button" data-ce-bulk-remove>${IC.trash}<span data-ce-bulk-lbl>Remove 1 channel</span></button>
+        <span class="an-footer__count" data-ce-bulk-count>1 selected</span>
+        <button class="an-btn an-btn--danger an-btn--small" type="button" data-ce-bulk-remove>${IC.trash}Remove selected</button>
         <button class="an-footer__close" type="button" data-an-footer-close aria-label="Clear channels selection">${IC.closeBold}</button>
+      </div>
+    </div>
+
+    <!-- переименование — отдельная модалка, а не инлайн-правка заголовка -->
+    <div class="an-modal" id="ceRename"><div class="an-modal__overlay" data-ce-rename-close></div>
+      <div class="an-modal__dialog an-modal__dialog--sm">
+        <div class="an-modal__head">
+          <h2 class="an-modal__title">Rename collection</h2>
+          <button class="an-modal__x" type="button" data-ce-rename-close aria-label="Close">${IC.closeBold}</button>
+        </div>
+        <div class="an-modal__body">
+          <label class="an-label" for="ceRenameInput">Collection name</label>
+          <input class="an-input" id="ceRenameInput" type="text" data-ce-rename-input />
+        </div>
+        <div class="an-modal__foot">
+          <button class="an-btn an-btn--secondary an-btn--small" type="button" data-ce-rename-close>Cancel</button>
+          <button class="an-btn an-btn--primary an-btn--small" type="button" data-ce-rename-save>Save</button>
+        </div>
       </div>
     </div>
 
@@ -1784,6 +1848,8 @@ function buildPage(src, title, inner, current){
     // база прироста за 30 дней числами — кастомный период масштабируется от неё
     growthBase: CH_META.map(function (m) { return [Math.round(m.subsG30), Math.round(m.viewsG30)]; }),
     // Reports: варианты типов, свои каналы и дата добавления первого канала коллекции
+    // участники организации — подсказки в шеринге коллекции
+    orgMembers: CE_MEMBERS,
     reportTypes: REP_TYPES,
     ownChannels: REP_OWN_CHANNELS,
     firstChannelAdded: "19.05.2023"

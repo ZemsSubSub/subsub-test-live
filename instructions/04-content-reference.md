@@ -460,3 +460,20 @@ Analytics, Fan Funding (кроме того что на Home), Wallet (кром�
 - **Календарь периода:** слева быстрый переход по месяцам двух лет, справа сетка дней с выбором диапазона (первый клик — начало, второй — конец), снизу строка «The 1st channel in this collection was added on 19.05.2023. Therefore growth period is available by year and month starting from 19.05.2023.» и кнопки `Clear` / `Apply`. После Apply поле показывает `DD.MM.YYYY - DD.MM.YYYY`. `Create report` активна только когда заполнено всё.
 - **После создания:** модалка закрывается, строка добавляется со статусом `In progress`, через 4 с статус меняется на `Created`, появляется карточка-уведомление `Report ready` с `Dismiss` / `View`.
 - **Media Library:** ровно в момент перехода в `Created` в папке `Analytics` появляется файл `<slug>-<basic|deep>-report-<n>.xlsx` (категория spreadsheet). Мост односторонний: аналитика пишет запись в `subsub_ml_files`, `js/media.js` дорисовывает строку при загрузке. `View` и иконка папки ведут на `media-library-files.html?folder=analytics&file=<имя>` — папка открывается сразу, строка подсвечивается.
+
+## Страница коллекции (`analytics-collection-edit.html`) — обновлено
+
+Страница перестала быть «одной большой формой с сохранением»: имя правится в модалке, всё остальное — мгновенные действия с автосохранением.
+
+- **H1 — имя коллекции** (как имя канала на странице канала), рядом бейдж `AI collection` у коллекций автоподбора. Поля `Name collection` в теле страницы больше нет.
+- **Тулбар в шапке:** `Add channels` (чёрная) · `Shared with N` (открывает попап шеринга) · `⋮`.
+- **`⋮`-меню:** `Rename collection` — разделитель — `Deactivate` · `Delete` (красный, внизу).
+  - `Rename collection` → модалка `Rename collection`: поле с текущим именем + `Cancel` / `Save`.
+  - `Deactivate` и `Delete` → подтверждения (`Deactivate collection?` / `Delete collection?` с текстом «This action cannot be undone»).
+- **Попап `Shared with`** — композиция как в шеринге Media Library, но без строки «Anyone with the link» (у коллекций нет публичной ссылки): поиск участников организации с подсказками (аватар + имя + email, `Already added` у уже добавленных), кнопка `Invite` для email вне организации, список доступа (аватар, имя, email, `owner` у владельца, `Revoke` у остальных с подтверждением `Remove {имя}?`).
+- **Автосохранение:** после каждого действия (rename, add/remove channel, share/revoke) — тост `Changes saved automatically`. Общей кнопки сохранения нет.
+- **Удаление канала из строки** — подтверждение `Remove {channel} from collection?` (`Cancel` / `Remove`), затем тост об удалении и автосохранении.
+- **Выбор чекбоксами** — контекстная плашка снизу: `N selected` + `Remove selected` (то же подтверждение, что у одиночного удаления).
+- **Колонка `LINK`** — текстовая ссылка `View channel` на страницу канала (`analytics-channel.html`). Внешняя ссылка на YouTube осталась вторичной строкой под именем канала в колонке `CHANNEL` вместе с иконкой копирования.
+- **Поиск `Search by channel title, link`** — фильтр по уже добавленным каналам (добавление — только через `Add channels`), при нулевом результате пустое состояние `No channels found`.
+- Блок `Sourcing query` / `Applied filters` у коллекций автоподбора — без изменений.

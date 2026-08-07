@@ -165,8 +165,40 @@
     if (!e.target.closest("[data-an-dr]")) drOpen(false);
     // --- D1/D3: массовые действия и футер страницы коллекции ---
     if (e.target.closest("[data-ce-bulk-remove]")) { ceConfirm("remove"); return; }
-    if (e.target.closest("[data-ce-delete]")) { ceConfirm("delete"); return; }
-    if (e.target.closest("[data-ce-deactivate]")) { ceConfirm("deactivate"); return; }
+    if (e.target.closest("[data-ce-delete]")) { ceMenu(false); ceConfirm("delete"); return; }
+    // ---- страница коллекции ----
+    if (e.target.closest("[data-ce-menu-trig]")) {
+      var cePop = document.querySelector("[data-ce-menu-pop]");
+      ceMenu(cePop ? cePop.hidden : true);
+      return;
+    }
+    if (e.target.closest("[data-ce-rename]")) { ceRenameOpen(); return; }
+    if (e.target.closest("[data-ce-rename-close]")) { closeModal(document.getElementById("ceRename")); return; }
+    if (e.target.closest("[data-ce-rename-save]")) { ceRenameSave(); return; }
+    if (e.target.closest("[data-ce-share-trig]")) {
+      var shPop = document.querySelector("[data-ce-share-pop]");
+      ceShareOpen(shPop ? shPop.hidden : true);
+      return;
+    }
+    if (e.target.closest("[data-ce-share-close]")) { ceShareOpen(false); return; }
+    var cePick = e.target.closest("[data-ce-share-pick]");
+    if (cePick) {
+      if (cePick.hasAttribute("disabled")) return;
+      ceShareAdd(cePick.getAttribute("data-name"), cePick.getAttribute("data-ce-share-pick"), cePick.getAttribute("data-color"));
+      return;
+    }
+    if (e.target.closest("[data-ce-invite]")) {
+      var mailInp = document.querySelector("[data-ce-share-search]");
+      var mail = mailInp ? mailInp.value.trim() : "";
+      if (mail) { ceShareAdd(mail.split("@")[0], mail, "--color-avatar-2"); mailInp.value = ""; ceShareSuggest(""); }
+      return;
+    }
+    var ceRev = e.target.closest("[data-ce-revoke]");
+    if (ceRev) { ceRevokeAsk(ceRev.closest("[data-ce-acc]")); return; }
+    // клик вне попапов страницы коллекции — закрыть
+    if (!e.target.closest("[data-ce-menu]")) ceMenu(false);
+    if (!e.target.closest("[data-ce-share]")) ceShareOpen(false);
+    if (e.target.closest("[data-ce-deactivate]")) { ceMenu(false); ceConfirm("deactivate"); return; }
     if (e.target.closest("[data-ce-close]")) { closeModal(document.getElementById("ceConfirm")); return; }
     if (e.target.closest("[data-ce-c-confirm]")) { ceDoConfirm(); return; }
     if (e.target.closest("[data-ce-save]")) { toast("Collection saved successfully"); return; }
@@ -3126,6 +3158,8 @@
   // раньше это лежало внутри обработчика AI-модалки и не срабатывало вне неё.
   document.addEventListener("input", function (e) {
     if (e.target.closest("[data-anf-text],[data-anf-from],[data-anf-to]")) { flTouch(); return; }
+    if (e.target.closest("[data-ce-search]")) { ceSearchApply(); return; }
+    if (e.target.closest("[data-ce-share-search]")) { ceShareSuggest(e.target.value); return; }
     if (e.target.closest("[data-rp-search]")) { repTargetFill(e.target.value); return; }
     if (e.target.closest("[data-rp-name]")) { repSync(); return; }
     var fSearch = e.target.closest("[data-anf-search]");
@@ -3376,8 +3410,8 @@
     if (!footer) return;
     var n = ceChecked().length;
     footer.hidden = !n;
-    var lbl = footer.querySelector("[data-ce-bulk-lbl]");
-    if (lbl) lbl.textContent = "Remove " + n + (n === 1 ? " channel" : " channels");
+    var cnt = footer.querySelector("[data-ce-bulk-count]");
+    if (cnt) cnt.textContent = n + " selected";
     var allBtn = document.querySelector("[data-an-check-all]");
     if (allBtn) allBtn.classList.toggle("is-checked", ceRows().length > 0 && n === ceRows().length);
   }
@@ -3693,6 +3727,153 @@
     toast("Report deleted");
   }
 
+
+  // ================= страница коллекции: мгновенные действия =================
+  // Страница — не форма с сохранением: имя правится в модалке Rename, всё остальное
+  // (добавить/убрать канал, шеринг, деактивация, удаление) применяется сразу,
+  // после каждого действия — тост об автосохранении.
+  function ceName() {
+    var h = document.querySelector("[data-ce-title]");
+    return h ? h.textContent.trim() : "collection";
+  }
+  function ceSaved() { toast("Changes saved automatically"); }
+  // ---- «⋮»-меню страницы ----
+  function ceMenu(open) {
+    var pop = document.querySelector("[data-ce-menu-pop]"), trig = document.querySelector("[data-ce-menu-trig]");
+    if (!pop) return;
+    pop.hidden = !open;
+    if (trig) trig.setAttribute("aria-expanded", open ? "true" : "false");
+  }
+  // ---- переименование ----
+  function ceRenameOpen() {
+    ceMenu(false);
+    var inp = document.querySelector("[data-ce-rename-input]");
+    if (inp) inp.value = ceName();
+    openModal("ceRename");
+    if (inp) inp.focus();
+  }
+  function ceRenameSave() {
+    var inp = document.querySelector("[data-ce-rename-input]");
+    var val = inp ? inp.value.trim() : "";
+    if (!val) { toast("Name can't be empty"); return; }
+    var h = document.querySelector("[data-ce-title]");
+    if (h) h.textContent = val;
+    closeModal(document.getElementById("ceRename"));
+    ceSaved();
+  }
+  // ---- шеринг коллекции ----
+  function ceShareOpen(open) {
+    var pop = document.querySelector("[data-ce-share-pop]"), trig = document.querySelector("[data-ce-share-trig]");
+    if (!pop) return;
+    pop.hidden = !open;
+    if (trig) trig.setAttribute("aria-expanded", open ? "true" : "false");
+    if (open) {
+      var s = document.querySelector("[data-ce-share-search]");
+      if (s) { s.value = ""; s.focus(); }
+      ceShareSuggest("");
+    }
+  }
+  function ceShareMembers() {
+    var d = window.SUBSUB_DICT || {};
+    return d.orgMembers || [];
+  }
+  function ceShareHas(email) {
+    return !!document.querySelector('[data-ce-acc="' + email + '"]');
+  }
+  function ceShareCount() {
+    return document.querySelectorAll("[data-ce-acc]").length;
+  }
+  function ceShareLabel() {
+    var lbl = document.querySelector("[data-ce-share-lbl]");
+    if (lbl) lbl.textContent = "Shared with " + ceShareCount();
+  }
+  function ceShareSuggest(q) {
+    var box = document.querySelector("[data-ce-share-results]");
+    if (!box) return;
+    var s = (q || "").trim().toLowerCase();
+    var btn = document.querySelector("[data-ce-invite]");
+    var isMail = /^[^@\s]+@[^@\s]+\.[a-z]{2,}$/i.test(s);
+    if (btn) btn.disabled = !isMail || ceShareHas(s);
+    if (!s) { box.hidden = true; box.innerHTML = ""; return; }
+    var hits = ceShareMembers().filter(function (m) {
+      return m.name.toLowerCase().indexOf(s) !== -1 || m.email.toLowerCase().indexOf(s) !== -1;
+    });
+    box.innerHTML = hits.length
+      ? hits.map(function (m) {
+          var added = ceShareHas(m.email);
+          return '<button class="ce-sug" type="button" data-ce-share-pick="' + escHtml(m.email) +
+            '" data-name="' + escHtml(m.name) + '" data-color="' + escHtml(m.c) + '"' + (added ? " disabled" : "") + '>' +
+            '<span class="mc-ava ce-sug__ava" style="background:var(' + escHtml(m.c) + ')">' + escHtml(m.name.charAt(0)) + '</span>' +
+            '<span class="ce-sug__info"><span class="ce-sug__name">' + escHtml(m.name) + '</span>' +
+              '<span class="ce-sug__mail">' + escHtml(m.email) + '</span></span>' +
+            (added ? '<span class="ce-sug__added">Already added</span>' : "") +
+          '</button>';
+        }).join("")
+      : '<div class="ce-sug__empty">No people found</div>';
+    box.hidden = false;
+  }
+  function ceShareAdd(name, email, color) {
+    if (!email || ceShareHas(email)) return;
+    var list = document.querySelector("[data-ce-share-list]");
+    if (!list) return;
+    var row = document.createElement("div");
+    row.className = "ce-acc";
+    row.setAttribute("data-ce-acc", email);
+    row.innerHTML =
+      '<span class="mc-ava ce-acc__ava" style="background:var(' + (color || "--color-avatar-3") + ')">' +
+        escHtml((name || email).charAt(0).toUpperCase()) + '</span>' +
+      '<span class="ce-acc__info"><span class="ce-acc__name">' + escHtml(name || email) + '</span>' +
+        '<span class="ce-acc__mail">' + escHtml(email) + '</span></span>' +
+      '<button class="ce-acc__revoke" type="button" data-ce-revoke>Revoke</button>';
+    list.appendChild(row);
+    ceShareLabel();
+    ceShareSuggest((document.querySelector("[data-ce-share-search]") || {}).value || "");
+    ceSaved();
+  }
+  var ceRevokeRow = null;
+  var ceRowToRemove = null;
+  function ceRemoveOneAsk(row) {
+    if (!row) return;
+    ceRowToRemove = row;
+    ceAsk = "remove-one";
+    var nm = (row.querySelector(".ce-chan__name") || {}).textContent || "this channel";
+    var t = document.querySelector("[data-ce-c-title]"), x = document.querySelector("[data-ce-c-text]");
+    var btn = document.querySelector("[data-ce-c-confirm]");
+    if (t) t.textContent = "Remove " + nm.trim() + " from collection?";
+    if (x) x.textContent = "The channel will be removed from «" + ceName() + "». You can add it back at any time.";
+    if (btn) btn.textContent = "Remove";
+    openModal("ceConfirm");
+  }
+  function ceRevokeAsk(row) {
+    ceRevokeRow = row;
+    var nm = row.querySelector(".ce-acc__name");
+    var t = document.querySelector("[data-ce-c-title]"), x = document.querySelector("[data-ce-c-text]");
+    var btn = document.querySelector("[data-ce-c-confirm]");
+    ceAsk = "revoke";
+    if (t) t.textContent = "Remove " + (nm ? nm.textContent.trim() : "this person") + "?";
+    if (x) x.textContent = "They will lose access to «" + ceName() + "».";
+    if (btn) btn.textContent = "Remove";
+    openModal("ceConfirm");
+  }
+  // ---- фильтр по добавленным каналам ----
+  function ceSearchApply() {
+    var inp = document.querySelector("[data-ce-search]");
+    var q = inp ? inp.value.trim().toLowerCase() : "";
+    var rows = [].slice.call(document.querySelectorAll("[data-ce-row]"));
+    var shown = 0;
+    rows.forEach(function (r) {
+      var nm = (r.querySelector(".ce-chan__name") || {}).textContent || "";
+      var yt = (r.querySelector(".ce-chan__yt") || {}).textContent || "";
+      var ok = !q || (nm + " " + yt).toLowerCase().indexOf(q) !== -1;
+      r.hidden = !ok;
+      if (ok) shown++;
+    });
+    var empty = document.querySelector("[data-ce-empty]");
+    if (empty) empty.hidden = shown > 0;
+    var more = document.querySelector("[data-ce-more]");
+    if (more && q) more.hidden = true;             // при поиске догрузка не нужна
+  }
+
   // ================= страница коллекции: догрузка каналов по скроллу =================
   // В прототипе список берём из того же пула каналов, что и Basic data: сервер отдаёт
   // первую порцию, остальное дописываем батчами по 10, пока пул не закончится.
@@ -3772,7 +3953,7 @@
   function ceConfirm(kind) {
     var t = document.querySelector("[data-ce-c-title]"), x = document.querySelector("[data-ce-c-text]");
     var btn = document.querySelector("[data-ce-c-confirm]");
-    var nm = (document.querySelector("[data-ce-name]") || {}).value || "collection";
+    var nm = ceName();
     ceAsk = kind;
     if (kind === "remove") {
       var picked = ceChecked();
@@ -3794,7 +3975,29 @@
     openModal("ceConfirm");
   }
   function ceDoConfirm() {
-    var nm = (document.querySelector("[data-ce-name]") || {}).value || "";
+    var nm = ceName();
+    // отзыв доступа
+    if (ceAsk === "revoke") {
+      if (ceRevokeRow) { ceRevokeRow.remove(); ceRevokeRow = null; }
+      ceShareLabel();
+      closeModal(document.getElementById("ceConfirm"));
+      ceSaved();
+      return;
+    }
+    // удаление одного канала из строки таблицы
+    if (ceAsk === "remove-one") {
+      if (ceRowToRemove) {
+        var oneName = (ceRowToRemove.querySelector(".ce-chan__name") || {}).textContent || "";
+        ceRowToRemove.remove();
+        ceRowToRemove = null;
+        ceFooter();
+        ceSearchApply();
+        toast("«" + oneName.trim() + "» removed from collection");
+        setTimeout(ceSaved, 900);
+      }
+      closeModal(document.getElementById("ceConfirm"));
+      return;
+    }
     if (ceAsk === "remove") {
       var picked = ceChecked();
       var names = picked.map(function (r) { return r.querySelector(".ce-chan__name").textContent.trim(); });
@@ -3811,7 +4014,9 @@
       }
       closeModal(document.getElementById("ceConfirm"));
       ceFooter();
+      ceSearchApply();
       toast(names.length + (names.length === 1 ? " channel" : " channels") + " removed from collection");
+      setTimeout(ceSaved, 900);            // один паттерн автосохранения на все действия
       return;
     }
     if (ceAsk === "delete") {
@@ -3830,16 +4035,16 @@
     toast("Collection deactivated successfully");
   }
   function ceInit() {
-    var inp = document.querySelector("[data-ce-name]");
-    if (!inp) return;
+    var title = document.querySelector("[data-ce-title]");
+    if (!title) return;                 // поля имени больше нет — ориентируемся на заголовок
     var nm = new URLSearchParams(window.location.search).get("name");
-    if (nm) inp.value = nm;
+    if (nm) title.textContent = nm;
     // удаление канала из коллекции (мок)
     document.addEventListener("click", function (e) {
       var rm = e.target.closest("[data-ce-remove]");
       if (!rm) return;
-      var row = rm.closest("[data-ce-row]");
-      if (row) { row.remove(); toast("Channel removed from collection"); }
+      // удаление канала теперь с подтверждением, как массовое
+      ceRemoveOneAsk(rm.closest("[data-ce-row]"));
     });
   }
 
@@ -3855,6 +4060,7 @@
   mcCtypeInit();                     // тип коллекции на My collections из localStorage
   mcToolbarFit();                    // подписи сегментов по доступной ширине
   ceScrollInit();                    // страница коллекции: догрузка каналов по скроллу
+  if (document.querySelector("[data-ce-share-list]")) ceShareLabel();
   repInit();                         // Reports: активный таб, подсказка, списки в модалке
   gsInit();                          // P1.8: режим сводной строки
   flInit();                          // P1.13: панель открыта по умолчанию
