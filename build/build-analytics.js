@@ -1400,7 +1400,6 @@ const COLL_COLS = [
   { id:"name", w:240, label:"Name", sort:true, grow:true },
   { id:"status", w:320, label:"Status", sort:true },
   { id:"quantity", w:120, label:"Quantity", sort:true },
-  { id:"includes", w:350, label:"Includes" },
   { id:"created", w:140, label:"Created on", sort:true },
   { id:"owner", w:160, label:"Owner" },
   { id:"shared", w:150, label:"Shared with" },
@@ -1433,13 +1432,6 @@ function collRow(r){
   }
   cells.push('<div class="an-td" style="width:320px"><div class="mc-statuscell">' + st + '</div></div>');
   cells.push('<div class="an-td" style="width:120px">' + r.qty + '</div>');
-  // includes (grow)
-  // имена в отдельном контейнере (они ужимаются), бейдж «+N» рядом и не сжимается —
-  // иначе при нехватке ширины обрезался именно он
-  let chips = '<span class="mc-chips__list">' +
-    r.includes.map(function (n) { return '<span class="mc-chip">' + esc(n) + '</span>'; }).join("") + '</span>';
-  if (r.more) chips += '<span class="mc-chip mc-chip--more" title="' + r.more + ' more channels">+' + r.more + '</span>';
-  cells.push('<div class="an-td" style="width:350px"><div class="mc-chips">' + chips + '</div></div>');
   cells.push('<div class="an-td" style="width:140px">' + esc(r.created) + '</div>');
   cells.push('<div class="an-td" style="width:160px"><span class="mc-owner">' + ava(r.owner) + '<span class="mc-owner__name">' + esc(r.owner.name) + '</span></span></div>');
   // пустая колонка Shared with на проде показывает «Not shared» с иконкой
@@ -1449,6 +1441,7 @@ function collRow(r){
   cells.push('<div class="an-td" style="width:150px">' + sharedCell + '</div>');
   cells.push('<div class="an-td" style="width:120px"><button class="mc-more" type="button" aria-label="Actions" data-mc-more data-status="' + r.status + '" data-name="' + esc(r.name) + '">' + IC.dots + '</button></div>');
   return '<div class="an-tr" data-mc-row data-name="' + esc(r.name) + '"' +
+    ' data-channels="' + esc(r.includes.join("|")) + '"' +
     (r.sample ? ' data-sample="1"' : '') + ' data-owner="' + esc(r.owner.name) + '"' +
     ' data-shared="' + esc(r.shared.map(function (a) { return a.n || a.i; }).join("|")) + '">' + cells.join("") + '</div>';
 }

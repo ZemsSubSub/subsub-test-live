@@ -1710,7 +1710,8 @@
       var st = statusEl ? statusEl.textContent.trim() : "";
       var qtyEl = row.querySelectorAll(".an-td")[2];
       var qty = qtyEl ? parseInt(String(qtyEl.textContent).replace(/\D/g, ""), 10) : NaN;
-      var chips = [].slice.call(row.querySelectorAll(".mc-chip")).map(function (c) { return c.textContent.trim(); }).join(" ").toLowerCase();
+      // колонки Includes больше нет — состав каналов лежит в data-channels
+      var chips = (row.getAttribute("data-channels") || "").toLowerCase();
       var ok = true;
       // P1.10: Samples — это public-коллекции (владелец не ты), Own — свои
       // Own — где владелец «You», Shared — расшаренные мне (владелец другой)
@@ -2070,7 +2071,7 @@
     tblAllRows("coll").forEach(function (row) {
       var nm = (row.getAttribute("data-name") || "").toLowerCase();
       if (!nm) return;
-      var chips = [].slice.call(row.querySelectorAll(".mc-chip")).map(function (c) { return c.textContent.toLowerCase(); }).join(" ");
+      var chips = (row.getAttribute("data-channels") || "").toLowerCase();
       var ok = !q || nm.indexOf(q) !== -1 || chips.indexOf(q) !== -1;
       if (ok) row.removeAttribute("data-search-off"); else row.setAttribute("data-search-off", "");
       // сводим с фильтрами панели: строка видна, если прошла и поиск, и фильтры
@@ -2101,7 +2102,7 @@
     if (more) { more.setAttribute("data-status", "created"); more.setAttribute("data-name", name); }
     // сбросить прочие поля
     row.children[2].textContent = "0";
-    var chips = row.children[3].querySelector(".mc-chips"); if (chips) chips.innerHTML = '<span class="mc-chip">No channels</span>';
+    row.setAttribute("data-channels", "");
     row.children[4].textContent = "28.07.2026";
     var own = row.children[5].querySelector(".mc-owner__name"); if (own) own.textContent = "You";
     row.children[6].innerHTML = noShareHtml();
@@ -2551,7 +2552,7 @@
     var tds = row.querySelectorAll(".an-td");
     var total = (base ? base.qty : 0) + extra.channels.length;
     if (tds[2]) tds[2].textContent = String(total);
-    var chips = tds[3] ? tds[3].querySelector(".mc-chips") : null;
+    var chips = null;                       // ячейки Includes больше нет
     if (chips) {
       var head = (base ? base.channels : []).slice(0, 2);
       chips.innerHTML = '<span class="mc-chips__list">' +
@@ -2582,9 +2583,7 @@
           '<span class="mc-name">' + escHtml(c.name) + '</span></div>' +
         '<div class="an-td" style="width:320px"><div class="mc-statuscell">' + aiStatusHtml(c.status, c.id) + '</div></div>' +
         '<div class="an-td" style="width:120px">' + (c.status === "pending" ? "—" : String((c.channels || []).length)) + '</div>' +
-        // Includes — каналы коллекции; у AI-коллекции их ещё нет (фильтры показываем в её представлении)
-        '<div class="an-td" style="width:350px"><div class="mc-chips">' +
-          aiChipsHtml(c) + '</div></div>' +
+
         '<div class="an-td" style="width:140px">' + escHtml(c.created) + '</div>' +
         '<div class="an-td" style="width:160px"><span class="mc-owner"><span class="mc-ava" style="background:var(--color-avatar-1)">Y</span><span class="mc-owner__name">You</span></span></div>' +
         // «Not shared» — как в сборке: иконку берём из уже отрисованной строки
