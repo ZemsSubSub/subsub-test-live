@@ -1714,10 +1714,11 @@ const collInner = `
 const CE_COLS = [
   { w: 40, check: true },
   { w: 240, label: "Channel" },
-  { w: 120, label: "Views" },
-  { w: 120, label: "Subs" },
-  { w: 260, label: "Link" },
-  { w: 100, label: "" },
+  { w: 150, label: "Youtube topics" },
+  { w: 110, label: "Views" },
+  { w: 110, label: "Subs" },
+  { w: 220, label: "Link" },
+  { w: 60, label: "" },
 ];
 // ссылка на канал: латинские имена → @handle, остальные → channel/UC… (детерминированно)
 function ceChanUrl(name, i) {
@@ -1730,11 +1731,18 @@ function ceChanUrl(name, i) {
   return "https://www.youtube.com/channel/UC" + id;
 }
 // LINK — переход на страницу канала внутри продукта (как на проде)
+// топики — теми же баджами, что в Basic data: первый + «+N» с поповером
+function ceTopicsCell(topics) {
+  const tops = Array.isArray(topics) ? topics : [topics];
+  const html = '<span class="an-topic" data-an-topic="' + esc(tops[0]) + '">' + esc(tops[0]) + '</span>' +
+    (tops.length > 1 ? '<span class="an-topic__more" data-an-topics-more="' + esc(tops.join("|")) + '">+' + (tops.length - 1) + '</span>' : "");
+  return '<div class="an-td an-td--topics" style="width:150px"><span class="an-topics">' + html + '</span></div>';
+}
 // колонка LINK: настоящая ссылка на YouTube + копирование (страница канала открывается по имени)
 function ceLinkCell(name, i) {
   const url = ceChanUrl(name, i);
   const short = url.replace(/^https?:\/\/(www\.)?/, "");
-  return '<div class="an-td ce-linkcell" style="width:260px">' +
+  return '<div class="an-td ce-linkcell" style="width:220px">' +
     '<a class="ce-view" href="' + esc(url) + '" target="_blank" rel="noopener" title="' + esc(url) + '">' + esc(short) + '</a>' +
     '<button class="ce-copy" type="button" data-ce-copy="' + esc(url) + '" aria-label="Copy link" title="Copy link">' + IC.copy + '</button>' +
   '</div>';
@@ -1743,7 +1751,7 @@ function ceLinkCell(name, i) {
 // со сборкой (её должно быть больше высоты бокса, чтобы был виден скролл), остальное
 // клиент догружает батчами при прокрутке
 const CE_ROWS = ROWS.slice(0, 14).map(function (r, i) {
-  return [r[0], r[1], AVA[i % AVA.length], r[7], r[6]];
+  return [r[0], r[1], AVA[i % AVA.length], r[7], r[6], r[2]];
 });
 const ceHead = '<div class="an-tr an-tr--head">' + CE_COLS.map(function (c) {
   if (c.check) return '<div class="an-th an-th--check" style="width:40px">' +
@@ -1755,10 +1763,11 @@ const ceBody = CE_ROWS.map(function (r, i) {
     '<div class="an-td an-td--check" style="width:40px"><button class="an-check" type="button" data-an-check aria-label="Select">' + IC.check + '</button></div>' +
     '<div class="an-td"><span class="ce-chan"><span class="mc-ava ce-ava" style="background:var(' + r[2] + ')">' + esc(r[1]) + '</span>' +
       '<a class="ce-chan__name" href="analytics-channel.html?name=' + encodeURIComponent(r[0]) + '">' + esc(r[0]) + '</a></span></div>' +
-    '<div class="an-td ce-num" style="width:120px">' + esc(r[3]) + '</div>' +
-    '<div class="an-td ce-num" style="width:120px">' + esc(r[4]) + '</div>' +
+    ceTopicsCell(r[5]) +
+    '<div class="an-td ce-num" style="width:110px">' + esc(r[3]) + '</div>' +
+    '<div class="an-td ce-num" style="width:110px">' + esc(r[4]) + '</div>' +
     ceLinkCell(r[0], i) +
-    '<div class="an-td" style="width:100px"><button class="ce-trash" type="button" aria-label="Remove channel" data-ce-remove>' + IC.trash + '</button></div>' +
+    '<div class="an-td" style="width:60px"><button class="ce-trash" type="button" aria-label="Remove channel" data-ce-remove>' + IC.trash + '</button></div>' +
   '</div>';
 }).join("\n          ");
 

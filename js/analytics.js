@@ -3648,6 +3648,8 @@
       if (yt) { yt.setAttribute("href", url); yt.setAttribute("title", url); yt.textContent = url.replace(/^https?:\/\/(www\.)?/, ""); }
       var cp = row.querySelector("[data-ce-copy]");
       if (cp) cp.setAttribute("data-ce-copy", url);
+      var tp = row.querySelector(".an-td--topics");
+      if (tp) tp.innerHTML = ceTopicsHtml(info && info.topics);
       var nums = row.querySelectorAll(".ce-num");
       if (nums[0]) nums[0].textContent = (info && info.views) || "—";
       if (nums[1]) nums[1].textContent = (info && info.subs) || "—";
@@ -4207,6 +4209,14 @@
     var slug = String(name).toLowerCase().replace(/[^a-z0-9]+/g, "");
     return slug ? "https://www.youtube.com/@" + slug : "https://www.youtube.com/channel/UC" + String(name).length + "prototype000000000";
   }
+  // топики канала — те же баджи, что в Basic data
+  function ceTopicsHtml(topics) {
+    var tops = Object.prototype.toString.call(topics) === "[object Array]" ? topics : (topics ? [topics] : []);
+    if (!tops.length) return '<span class="an-topics"><span class="an-muted">—</span></span>';
+    return '<span class="an-topics"><span class="an-topic" data-an-topic="' + escHtml(tops[0]) + '">' + escHtml(tops[0]) + '</span>' +
+      (tops.length > 1 ? '<span class="an-topic__more" data-an-topics-more="' + escHtml(tops.join("|")) + '">+' +
+        (tops.length - 1) + '</span>' : "") + '</span>';
+  }
   function ceRowHtml(c, i) {
     var color = c.color || "--color-avatar-1";
     return '<div class="an-tr" data-ce-row>' +
@@ -4214,14 +4224,15 @@
       '<div class="an-td"><span class="ce-chan"><span class="mc-ava ce-ava" style="background:var(' + color + ')">' +
         escHtml(c.initial || (c.name || "?").charAt(0)) + '</span><a class="ce-chan__name" href="analytics-channel.html?name=' +
         encodeURIComponent(c.name) + '">' + escHtml(c.name) + '</a></span></div>' +
-      '<div class="an-td ce-num" style="width:120px">' + escHtml(c.views || "—") + '</div>' +
-      '<div class="an-td ce-num" style="width:120px">' + escHtml(c.subs || "—") + '</div>' +
-      '<div class="an-td ce-linkcell" style="width:260px">' +
+      '<div class="an-td an-td--topics" style="width:150px">' + ceTopicsHtml(c.topics) + '</div>' +
+      '<div class="an-td ce-num" style="width:110px">' + escHtml(c.views || "—") + '</div>' +
+      '<div class="an-td ce-num" style="width:110px">' + escHtml(c.subs || "—") + '</div>' +
+      '<div class="an-td ce-linkcell" style="width:220px">' +
         '<a class="ce-view" href="' + ceUrl(c.name) + '" target="_blank" rel="noopener" title="' + ceUrl(c.name) + '">' +
           escHtml(ceUrl(c.name).replace(/^https?:\/\/(www\.)?/, "")) + '</a>' +
         '<button class="ce-copy" type="button" data-ce-copy="' + ceUrl(c.name) + '" aria-label="Copy link" title="Copy link"></button>' +
       '</div>' +
-      '<div class="an-td" style="width:100px"><button class="ce-trash" type="button" aria-label="Remove channel" data-ce-remove></button></div>' +
+      '<div class="an-td" style="width:60px"><button class="ce-trash" type="button" aria-label="Remove channel" data-ce-remove></button></div>' +
     '</div>';
   }
   function ceLoadMore() {

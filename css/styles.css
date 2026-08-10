@@ -2449,11 +2449,11 @@ body.is-open:not(.is-collapsed) .main { margin-left: 306px; }
 .nc-empty { padding: 12px; font-size: 14px; color: var(--color-shade-700); }
 
 /* --- расширение коллекции ИИ-поиском (третий вход модалки) --- */
-.nc-ai { gap: 20px; }
-.nc-ai__note { display: flex; align-items: flex-start; gap: 8px; margin: 0; padding: 12px 16px; border-radius: 8px;
+.nc-ai { gap: 28px; }   /* воздуха между блоками больше, чем в остальных панелях */
+.nc-ai__note { display: flex; align-items: flex-start; gap: 10px; margin: 0; padding: 14px 16px; border-radius: 8px;
   background: var(--color-purple-10, #f3f0ff); font-size: 14px; font-weight: 300; color: var(--color-black); }
 .nc-ai__note svg { width: 16px; height: 16px; margin-top: 2px; flex-shrink: 0; color: var(--color-purple, #6f3ff5); }
-.nc-ai__field { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.nc-ai__field { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
 .nc-ai .nc-textarea { min-height: 96px; font-size: 16px; font-weight: 300; line-height: 1.5; }
 .nc-ai__lblrow { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .nc-ai__regen { display: inline-flex; align-items: center; gap: 6px; padding: 0; border: 0; background: none; cursor: pointer;
@@ -2462,19 +2462,19 @@ body.is-open:not(.is-collapsed) .main { margin-left: 306px; }
 .nc-ai__regen:disabled { opacity: .5; cursor: default; }
 .nc-ai__help { margin: 0; font-size: 12px; font-weight: 300; color: var(--color-shade-700); }
 .nc-ai__cnt { margin-left: 6px; color: var(--color-shade-700); font-weight: 400; }
-.nc-ai__refs { display: flex; flex-wrap: wrap; gap: 6px; }
+.nc-ai__refs { display: flex; flex-wrap: wrap; gap: 8px; }
 .nc-ai__chip { display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 10px 0 4px; border-radius: 9999px;
   background: var(--color-shade-100); font-size: 13px; color: var(--color-black); }
 .nc-ai__chip .mc-ava { width: 20px; height: 20px; font-size: 10px; }
 .nc-ai__chip--more { padding: 0 10px; color: var(--color-shade-700); }
-.nc-ai__adv { border-top: 1px solid var(--color-shade-200); padding-top: 12px; }
+.nc-ai__adv { padding-top: 0; }
 .nc-ai__sum { display: flex; align-items: center; gap: 6px; cursor: pointer; list-style: none; font-size: 14px; font-weight: 400; color: var(--color-black); }
 .nc-ai__sum::-webkit-details-marker { display: none; }
 .nc-ai__chev { display: inline-flex; transition: transform .15s ease; }
 .nc-ai__chev svg { width: 16px; height: 16px; }
 .nc-ai__adv[open] .nc-ai__chev { transform: rotate(180deg); }
-.nc-ai__advbody { display: flex; flex-direction: column; gap: 12px; padding-top: 12px; }
-.nc-ai__grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.nc-ai__advbody { display: flex; flex-direction: column; gap: 16px; padding-top: 16px; }
+.nc-ai__grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
 .nc-ai__grid--2 { grid-template-columns: repeat(2, 1fr); }
 .nc-ai__f { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
 .nc-ai__f .an-input { width: 100%; box-sizing: border-box; }
@@ -2775,7 +2775,7 @@ body.is-open:not(.is-collapsed) .main { margin-left: 306px; }
 @keyframes ce-spin { to { transform: rotate(360deg); } }
 /* колонки тянутся на всю ширину серфейса: свободное место забирает колонка канала,
    остальные остаются фиксированными (иначе справа оставался пустой хвост) */
-.ce-table .an-tr > *:nth-child(2) { flex: 1 1 240px; min-width: 240px; }
+.ce-table .an-tr > *:nth-child(2) { flex: 1 1 240px; min-width: 180px; }
 .ce-table .an-tbody .an-tr { height: 56px; }
 .ce-chan { display: inline-flex; align-items: center; gap: 12px; min-width: 0; }
 .ce-ava { width: 24px; height: 24px; font-size: 12px; font-weight: 400; }
