@@ -352,7 +352,7 @@
           <button class="an-btn an-btn--primary" type="button" data-nc-open><svg viewBox="0 0 24 24" fill="none"><path d="M12 5V19M5 12H19" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>Add channels</button>
           <!-- шеринг: попап с поиском участников и списком доступа -->
           <div class="ce-share" data-ce-share>
-            <button class="an-btn an-btn--secondary" type="button" data-ce-share-trig aria-haspopup="dialog" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3V17M12 3L19 9.42857M12 3L5 9.42857" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M20 18V19.8C20 20.4627 19.3488 21 18.5455 21H5.45455C4.65122 21 4 20.4627 4 19.8V18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg><span data-ce-share-lbl>Shared with 1</span></button>
+            <button class="an-btn an-btn--secondary" type="button" data-ce-share-trig aria-haspopup="dialog" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3V17M12 3L19 9.42857M12 3L5 9.42857" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M20 18V19.8C20 20.4627 19.3488 21 18.5455 21H5.45455C4.65122 21 4 20.4627 4 19.8V18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg><span data-ce-share-lbl>Share</span></button>
             <div class="ce-sharepop" data-ce-share-pop hidden role="dialog" aria-label="Share collection">
               <div class="ce-sharepop__head">
                 <span class="ce-sharepop__title">Share collection</span>
@@ -427,6 +427,8 @@
     <div class="an-footer" data-an-footer hidden>
       <div class="an-footer__inner">
         <span class="an-footer__count" data-ce-bulk-count>1 selected</span>
+        <button class="an-btn an-btn--secondary an-btn--small" type="button" data-ce-bulk-new><svg viewBox="0 0 24 24" fill="none"><path d="M12 5V19M5 12H19" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>Create new collection</button>
+        <button class="an-btn an-btn--secondary an-btn--small" type="button" data-ce-bulk-similar><svg viewBox="0 0 16 16" fill="none"><path d="M6.65952 6.11513L7.24284 4.07484C7.46142 3.31113 8.54378 3.31113 8.76236 4.07484L9.34502 6.11513C9.38191 6.2442 9.45108 6.36173 9.54599 6.45665C9.64091 6.55157 9.75845 6.62074 9.88751 6.65763L11.9278 7.24029C12.6915 7.45887 12.6915 8.54123 11.9278 8.75981L9.88751 9.34246C9.75845 9.37935 9.64091 9.44852 9.54599 9.54344C9.45108 9.63836 9.38191 9.7559 9.34502 9.88496L8.76236 11.9253C8.54378 12.689 7.46142 12.689 7.24284 11.9253L6.66018 9.88496C6.62329 9.7559 6.55412 9.63836 6.4592 9.54344C6.36429 9.44852 6.24675 9.37935 6.11768 9.34246L4.07739 8.75981C3.31368 8.54123 3.31368 7.45887 4.07739 7.24029L6.11768 6.65763C6.24675 6.62074 6.36429 6.55157 6.4592 6.45665C6.55412 6.36173 6.62329 6.2442 6.66018 6.11513M12.0213 10.9673C12.2116 10.4123 13.0115 10.4117 13.2011 10.9673L13.2182 11.0246L13.4131 11.8067L14.1952 12.0023C14.8273 12.1603 14.8273 13.057 14.1952 13.215L13.4131 13.4105L13.2182 14.1927C13.0602 14.8241 12.1628 14.8241 12.0048 14.1927L11.8093 13.4105L11.0272 13.215C10.3951 13.057 10.3951 12.1596 11.0272 12.0023L11.8093 11.8067L12.0048 11.0246L12.0213 10.9673ZM2.8041 1.74947C3.0003 1.17603 3.84762 1.19513 4.00102 1.80675L4.1959 2.5889L4.97804 2.78443C5.61008 2.94244 5.61008 3.83914 4.97804 3.99715L4.1959 4.19269L4.00102 4.97483C3.84301 5.60621 2.94565 5.60621 2.78764 4.97483L2.59211 4.19269L1.80996 3.99715C1.17793 3.83914 1.17793 2.94178 1.80996 2.78443L2.59211 2.5889L2.78764 1.80675L2.8041 1.74947Z" fill="currentColor"/></svg>Find similar channels</button>
         <button class="an-btn an-btn--danger an-btn--small" type="button" data-ce-bulk-remove><svg viewBox="0 0 24 24" fill="none"><path d="M3.00146 6.75033H21.0003" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M5.25098 6.75033H18.7501V20.2495C18.7501 20.6473 18.592 21.0288 18.3108 21.3101C18.0296 21.5913 17.648 21.7494 17.2502 21.7494H6.75088C6.35308 21.7494 5.97158 21.5913 5.69028 21.3101C5.40901 21.0288 5.25098 20.6473 5.25098 20.2495V6.75033Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M8.25098 6.75033V6.00038C8.25098 5.00588 8.64604 4.0521 9.34925 3.34889C10.0525 2.64567 11.0062 2.25061 12.0007 2.25061C12.9952 2.25061 13.949 2.64567 14.6522 3.34889C15.3555 4.0521 15.7505 5.00588 15.7505 6.00038V6.75033" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M9.75049 11.2523V17.2542" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M14.251 11.2523V17.2542" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Remove selected</button>
         <button class="an-footer__close" type="button" data-an-footer-close aria-label="Clear channels selection"><svg viewBox="0 0 24 24" fill="none"><path d="M19.172 6.42187C19.6126 5.98124 19.6126 5.26874 19.172 4.83281C18.7314 4.39687 18.0189 4.39218 17.583 4.83281L12.0048 10.4109L6.42202 4.82812C5.9814 4.38749 5.2689 4.38749 4.83296 4.82812C4.39702 5.26874 4.39233 5.98124 4.83296 6.41718L10.4111 11.9953L4.82827 17.5781C4.38765 18.0187 4.38765 18.7312 4.82827 19.1672C5.2689 19.6031 5.9814 19.6078 6.41733 19.1672L11.9955 13.5891L17.5783 19.1719C18.0189 19.6125 18.7314 19.6125 19.1673 19.1719C19.6033 18.7312 19.608 18.0187 19.1673 17.5828L13.5892 12.0047L19.172 6.42187Z" fill="currentColor"/></svg></button>
       </div>
@@ -498,6 +500,148 @@
         </div>
         <div class="an-modal__foot nc-foot">
           <button class="an-btn an-btn--primary an-btn--small" type="button" data-nc-submit disabled>Add channels</button>
+        </div>
+      </div>
+    </div>
+
+    
+    <div class="an-modal an-modal--nested" id="mcModal-create"><div class="an-modal__overlay" data-mc-close></div>
+      <div class="an-modal__dialog">
+        <div class="an-modal__head">
+          <h2 class="an-modal__title" data-mc-create-title>Create collection</h2>
+          <button class="an-modal__x" type="button" data-mc-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none"><path d="M19.172 6.42187C19.6126 5.98124 19.6126 5.26874 19.172 4.83281C18.7314 4.39687 18.0189 4.39218 17.583 4.83281L12.0048 10.4109L6.42202 4.82812C5.9814 4.38749 5.2689 4.38749 4.83296 4.82812C4.39702 5.26874 4.39233 5.98124 4.83296 6.41718L10.4111 11.9953L4.82827 17.5781C4.38765 18.0187 4.38765 18.7312 4.82827 19.1672C5.2689 19.6031 5.9814 19.6078 6.41733 19.1672L11.9955 13.5891L17.5783 19.1719C18.0189 19.6125 18.7314 19.6125 19.1673 19.1719C19.6033 18.7312 19.608 18.0187 19.1673 17.5828L13.5892 12.0047L19.172 6.42187Z" fill="currentColor"/></svg></button>
+        </div>
+        <div class="an-modal__body">
+          <label class="an-label" for="mcName">Name collection</label>
+          <input class="an-input" id="mcName" type="text" placeholder="Name collection" data-mc-name />
+        </div>
+        <div class="an-modal__foot">
+          <button class="an-btn an-btn--secondary an-btn--small" type="button" data-mc-close>Cancel</button>
+          <button class="an-btn an-btn--primary an-btn--small" type="button" data-mc-create-submit>Create</button>
+        </div>
+      </div>
+    </div>
+
+    
+    <div class="an-modal" id="aiModal" data-ai-mode="single"><div class="an-modal__overlay" data-ai-close></div>
+      <div class="an-modal__dialog an-modal__dialog--lg">
+        <!-- шапка вне скроллящегося тела: не уезжает при прокрутке, отделена разделителем -->
+        <header class="ai-head">
+          <h2 class="ai-title">Set up collection sourcing</h2>
+          <p class="ai-sub">Describe the channels you want — we'll find and collect them for you.</p>
+        </header>
+        <div class="an-modal__body ai-form">
+          <!-- Назначение: куда попадут найденные каналы.
+               Случай 1 (коллекций ещё нет) — только поле имени новой коллекции.
+               Случай 2 (коллекции есть) — дропдаун выбора + чёрная кнопка «+». -->
+          <div class="ai-field" data-ai-dest-new hidden>
+            <label class="ai-lbl" for="aiName">Collection name *</label>
+            <input class="an-input" id="aiName" type="text" placeholder="e.g. Fortnite gamers — US" data-ai-name />
+          </div>
+
+          <div class="ai-field" data-ai-dest-pick hidden>
+            <label class="ai-lbl" for="aiCollTrig">Collection</label>
+            <div class="ai-destrow">
+              <div class="ai-select" data-ai-select>
+                <button class="ai-select__trig" id="aiCollTrig" type="button" data-ai-select-trig aria-haspopup="listbox" aria-expanded="false">
+                  <span class="ai-select__val" data-ai-select-val>Select collection</span>
+                  <span class="ai-select__chev" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path fill-rule="evenodd" clip-rule="evenodd" d="M4.43057 8.51191C4.70014 8.19741 5.17361 8.16099 5.48811 8.43056L12 14.0122L18.5119 8.43056C18.8264 8.16099 19.2999 8.19741 19.5695 8.51191C19.839 8.8264 19.8026 9.29988 19.4881 9.56944L12.4881 15.5694C12.2072 15.8102 11.7928 15.8102 11.5119 15.5694L4.51192 9.56944C4.19743 9.29988 4.161 8.8264 4.43057 8.51191Z" fill="currentColor"/></svg></span>
+                </button>
+                <div class="ai-select__menu" data-ai-select-menu hidden role="listbox" aria-label="Destination collection">
+                  <div class="ai-select__list" data-ai-select-list></div>
+                  <div class="ai-select__foot">
+                    <button class="ai-select__new" type="button" data-ai-newcoll><svg viewBox="0 0 24 24" fill="none"><path d="M12 5V19M5 12H19" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>Create new collection</button>
+                  </div>
+                </div>
+              </div>
+              <button class="ai-plus" type="button" data-ai-newcoll aria-label="Create new collection"><svg viewBox="0 0 24 24" fill="none"><path d="M12 5V19M5 12H19" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>
+            </div>
+          </div>
+
+          <!-- Референс-каналы: единый контейнер примеров. Сценарий 1 (кнопка AI collection) —
+               пустой, канал добавляется ссылкой; сценарий 2 (Find similar channels) —
+               предзаполнен выбранными в таблице. Любое изменение набора перезапускает подбор описания. -->
+          <div class="ai-field" data-ai-refs-field>
+            <label class="ai-lbl">Reference channels</label>
+            <div class="ai-refs" data-ai-refs>
+              <div class="ai-refs__list" data-ai-refs-list></div>
+              <p class="ai-refs__empty" data-ai-refs-empty>No reference channels yet — add one to draft the description automatically.</p>
+              <div class="ai-refs__addrow">
+                <!-- в покое — только кнопка; поле ввода раскрывается по клику -->
+                <button class="ai-refs__addbtn" type="button" data-ai-ref-open><svg viewBox="0 0 24 24" fill="none"><path fill-rule="evenodd" clip-rule="evenodd" d="M13.0552 5.30971L11.5397 6.82533C10.9261 7.43904 9.93107 7.43911 9.31734 6.82546C8.70363 6.2118 8.70356 5.21681 9.31721 4.60308L10.8327 3.08747C13.6161 0.304056 18.1289 0.303993 20.9124 3.08741C23.6958 5.8708 23.6958 10.3836 20.9124 13.167L19.3969 14.6826C18.7832 15.2963 17.7884 15.2964 17.1746 14.6827C16.5609 14.069 16.5608 13.0741 17.1746 12.4603L18.6899 10.9447C20.246 9.3887 20.246 6.86581 18.6899 5.30977C17.134 3.75377 14.6112 3.75374 13.0552 5.30971ZM6.82506 9.31731C7.43878 9.93096 7.43884 10.926 6.82519 11.5397L5.30974 13.0553C3.75371 14.6113 3.75365 17.1343 5.30968 18.6903C6.8657 20.2462 9.38846 20.2462 10.9445 18.6903L12.4599 17.1746C13.0736 16.561 14.0686 16.5609 14.6823 17.1746C15.296 17.7883 15.2961 18.7832 14.6824 19.397L13.167 20.9125C10.3836 23.6959 5.87072 23.696 3.08732 20.9127C0.303922 18.1291 0.303902 13.6165 3.08726 10.8331L4.60269 9.31743C5.21634 8.70372 6.21133 8.70365 6.82506 9.31731ZM15.4683 10.754C16.082 10.1403 16.082 9.14534 15.4683 8.53164C14.8546 7.91796 13.8596 7.91796 13.2459 8.53164L8.53155 13.246C7.91787 13.8597 7.91787 14.8547 8.53155 15.4684C9.14525 16.0821 10.1402 16.0821 10.7539 15.4684L15.4683 10.754Z" fill="currentColor"/></svg>Add channel</button>
+                <div class="ai-refs__form" data-ai-ref-form hidden>
+                  <!-- комбобокс: поле + прикреплённый снизу список подсказок -->
+                  <div class="ai-seedwrap">
+                    <label class="ai-seed">
+                      <span class="ai-seed__ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path fill-rule="evenodd" clip-rule="evenodd" d="M13.0552 5.30971L11.5397 6.82533C10.9261 7.43904 9.93107 7.43911 9.31734 6.82546C8.70363 6.2118 8.70356 5.21681 9.31721 4.60308L10.8327 3.08747C13.6161 0.304056 18.1289 0.303993 20.9124 3.08741C23.6958 5.8708 23.6958 10.3836 20.9124 13.167L19.3969 14.6826C18.7832 15.2963 17.7884 15.2964 17.1746 14.6827C16.5609 14.069 16.5608 13.0741 17.1746 12.4603L18.6899 10.9447C20.246 9.3887 20.246 6.86581 18.6899 5.30977C17.134 3.75377 14.6112 3.75374 13.0552 5.30971ZM6.82506 9.31731C7.43878 9.93096 7.43884 10.926 6.82519 11.5397L5.30974 13.0553C3.75371 14.6113 3.75365 17.1343 5.30968 18.6903C6.8657 20.2462 9.38846 20.2462 10.9445 18.6903L12.4599 17.1746C13.0736 16.561 14.0686 16.5609 14.6823 17.1746C15.296 17.7883 15.2961 18.7832 14.6824 19.397L13.167 20.9125C10.3836 23.6959 5.87072 23.696 3.08732 20.9127C0.303922 18.1291 0.303902 13.6165 3.08726 10.8331L4.60269 9.31743C5.21634 8.70372 6.21133 8.70365 6.82506 9.31731ZM15.4683 10.754C16.082 10.1403 16.082 9.14534 15.4683 8.53164C14.8546 7.91796 13.8596 7.91796 13.2459 8.53164L8.53155 13.246C7.91787 13.8597 7.91787 14.8547 8.53155 15.4684C9.14525 16.0821 10.1402 16.0821 10.7539 15.4684L15.4683 10.754Z" fill="currentColor"/></svg></span>
+                      <input class="ai-seed__inp" type="text" placeholder="Paste a channel link or type a name" data-ai-refseed aria-label="Add a reference channel" role="combobox" aria-expanded="false" aria-autocomplete="list" />
+                    </label>
+                    <div class="ai-refs__sug" data-ai-ref-sug hidden role="listbox"></div>
+                  </div>
+                  <button class="ai-auto" type="button" data-ai-ref-add disabled><svg viewBox="0 0 24 24" fill="none"><path d="M12 5V19M5 12H19" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>Add</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="ai-field">
+            <label class="ai-lbl" for="aiQuery">Describe the channels you're looking for</label>
+            <div class="ai-desc">
+              <textarea class="ai-desc__ta" id="aiQuery" rows="3" placeholder="e.g. Fortnite gamers with a US audience" data-ai-query></textarea>
+              <div class="ai-desc__foot" data-ai-foot>
+                <!-- режим single: строка «вставь ссылку» + Auto-fill (в режиме refs скрыта) -->
+                <div class="ai-desc__row">
+                  <label class="ai-seed">
+                    <span class="ai-seed__ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path fill-rule="evenodd" clip-rule="evenodd" d="M13.0552 5.30971L11.5397 6.82533C10.9261 7.43904 9.93107 7.43911 9.31734 6.82546C8.70363 6.2118 8.70356 5.21681 9.31721 4.60308L10.8327 3.08747C13.6161 0.304056 18.1289 0.303993 20.9124 3.08741C23.6958 5.8708 23.6958 10.3836 20.9124 13.167L19.3969 14.6826C18.7832 15.2963 17.7884 15.2964 17.1746 14.6827C16.5609 14.069 16.5608 13.0741 17.1746 12.4603L18.6899 10.9447C20.246 9.3887 20.246 6.86581 18.6899 5.30977C17.134 3.75377 14.6112 3.75374 13.0552 5.30971ZM6.82506 9.31731C7.43878 9.93096 7.43884 10.926 6.82519 11.5397L5.30974 13.0553C3.75371 14.6113 3.75365 17.1343 5.30968 18.6903C6.8657 20.2462 9.38846 20.2462 10.9445 18.6903L12.4599 17.1746C13.0736 16.561 14.0686 16.5609 14.6823 17.1746C15.296 17.7883 15.2961 18.7832 14.6824 19.397L13.167 20.9125C10.3836 23.6959 5.87072 23.696 3.08732 20.9127C0.303922 18.1291 0.303902 13.6165 3.08726 10.8331L4.60269 9.31743C5.21634 8.70372 6.21133 8.70365 6.82506 9.31731ZM15.4683 10.754C16.082 10.1403 16.082 9.14534 15.4683 8.53164C14.8546 7.91796 13.8596 7.91796 13.2459 8.53164L8.53155 13.246C7.91787 13.8597 7.91787 14.8547 8.53155 15.4684C9.14525 16.0821 10.1402 16.0821 10.7539 15.4684L15.4683 10.754Z" fill="currentColor"/></svg></span>
+                    <input class="ai-seed__inp" type="url" placeholder="Paste a channel link to autofill" data-ai-seed aria-label="Paste a channel link to autofill" />
+                  </label>
+                  <button class="ai-auto" type="button" data-ai-detect disabled><svg viewBox="0 0 20 20" fill="none"><path d="M8.32147 7.6441L9.05062 5.09373C9.32384 4.1391 10.6768 4.1391 10.95 5.09373L11.6783 7.6441C11.7245 7.80543 11.8109 7.95235 11.9296 8.071C12.0482 8.18964 12.1951 8.2761 12.3565 8.32222L14.9068 9.05054C15.8615 9.32376 15.8615 10.6767 14.9068 10.9499L12.3565 11.6783C12.1951 11.7244 12.0482 11.8108 11.9296 11.9295C11.8109 12.0481 11.7245 12.1951 11.6783 12.3564L10.95 14.9067C10.6768 15.8614 9.32384 15.8614 9.05062 14.9067L8.3223 12.3564C8.27618 12.1951 8.18972 12.0481 8.07108 11.9295C7.95243 11.8108 7.80551 11.7244 7.64418 11.6783L5.09381 10.9499C4.13917 10.6767 4.13917 9.32376 5.09381 9.05054L7.64418 8.32222C7.80551 8.2761 7.95243 8.18964 8.07108 8.071C8.18972 7.95235 8.27536 7.80543 8.32147 7.6441ZM15.0237 13.7093C15.2615 13.0156 16.2614 13.0148 16.4984 13.7093L16.5198 13.7809L16.7634 14.7586L17.7411 15.003C18.5312 15.2005 18.5312 16.3214 17.7411 16.5189L16.7634 16.7634L16.5198 17.741C16.3223 18.5303 15.2006 18.5303 15.0031 17.741L14.7587 16.7634L13.781 16.5189C12.991 16.3214 12.991 15.1997 13.781 15.003L14.7587 14.7586L15.0031 13.7809L15.0237 13.7093ZM15.7611 15.5939C15.7137 15.6574 15.6574 15.7136 15.594 15.761C15.6574 15.8083 15.7137 15.8646 15.7611 15.928C15.8084 15.8646 15.8647 15.8083 15.9281 15.761C15.8646 15.7134 15.8084 15.6576 15.7611 15.5939ZM3.5022 2.18703C3.74744 1.47023 4.8066 1.49409 4.99835 2.25862L5.24195 3.2363L6.21963 3.48072C7.00967 3.67824 7.00967 4.79911 6.21963 4.99662L5.24195 5.24104L4.99835 6.21872C4.80084 7.00795 3.67914 7.00795 3.48163 6.21872L3.23721 5.24104L2.25953 4.99662C1.46948 4.79911 1.46948 3.67741 2.25953 3.48072L3.23721 3.2363L3.48163 2.25862L3.5022 2.18703ZM4.23958 4.07244C4.19215 4.13558 4.13589 4.19156 4.07251 4.23867C4.136 4.28629 4.19227 4.34283 4.23958 4.40656C4.28688 4.34283 4.34315 4.28629 4.40664 4.23867C4.34321 4.19131 4.28694 4.13587 4.23958 4.07244Z" fill="currentColor"/></svg><span data-ai-detect-label>Auto-fill</span></button>
+                </div>
+                <!-- строка-лоадер: в single кросс-фейдом на месте строки, в refs — только на время подбора -->
+                <div class="ai-genrow" data-ai-genrow hidden aria-live="polite" aria-busy="false">
+                  <span class="ai-genrow__spin" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8" stroke="#CB7E3959" stroke-width="2"/><path d="M12 3C14.3869 3 16.6761 3.94821 18.364 5.63604C20.0518 7.32387 21 9.61305 21 12H19C19 10.1435 18.2625 8.36301 16.9497 7.05025C15.637 5.7375 13.8565 5 12 5V3Z" fill="#BD6414"/></svg>
+                  </span>
+                  <span class="ai-genrow__txt" data-ai-genstatus>Reading the channel…</span>
+                </div>
+              </div>
+            </div>
+            <p class="ai-help">We turn this into real YouTube search queries in your audience's language and use it to judge whether a channel fits.</p>
+          </div>
+
+          <details class="ai-adv">
+            <summary class="ai-adv__sum"><span class="ai-adv__chev" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path fill-rule="evenodd" clip-rule="evenodd" d="M4.43057 8.51191C4.70014 8.19741 5.17361 8.16099 5.48811 8.43056L12 14.0122L18.5119 8.43056C18.8264 8.16099 19.2999 8.19741 19.5695 8.51191C19.839 8.8264 19.8026 9.29988 19.4881 9.56944L12.4881 15.5694C12.2072 15.8102 11.7928 15.8102 11.5119 15.5694L4.51192 9.56944C4.19743 9.29988 4.161 8.8264 4.43057 8.51191Z" fill="currentColor"/></svg></span>Advanced filters<span class="ai-adv__sumry" data-ai-advsum hidden></span></summary>
+            <div class="ai-adv__body">
+              <div class="ai-grid">
+                <div class="ai-field">
+                  <label class="ai-lbl" for="aiSubs">Min subscribers</label>
+                  <input class="an-input" id="aiSubs" type="number" min="0" value="10000" data-ai-subs />
+                </div>
+                <div class="ai-field">
+                  <label class="ai-lbl" for="aiVideos">Min videos</label>
+                  <input class="an-input" id="aiVideos" type="number" min="0" value="0" data-ai-videos />
+                </div>
+                <div class="ai-field">
+                  <label class="ai-lbl" for="aiViews">Min total views</label>
+                  <input class="an-input" id="aiViews" type="number" min="0" value="0" data-ai-views />
+                </div>
+              </div>
+              <div class="ai-grid ai-grid--2">
+                <div class="ai-field">
+                  <label class="ai-lbl" for="aiAvg">Min avg views (last 3 videos)</label>
+                  <input class="an-input" id="aiAvg" type="number" min="0" value="0" data-ai-avg />
+                </div>
+                <div class="ai-field">
+                  <label class="ai-lbl" for="aiLast">Max days since last video</label>
+                  <input class="an-input" id="aiLast" type="number" min="0" value="0" data-ai-last />
+                </div>
+              </div>
+            </div>
+          </details>
+        </div>
+        <div class="an-modal__foot">
+          <button class="an-btn an-btn--plain an-btn--huge" type="button" data-ai-close>Cancel</button>
+          <button class="an-btn an-btn--ai an-btn--huge" type="button" data-ai-submit disabled>Start sourcing</button>
         </div>
       </div>
     </div>

@@ -459,6 +459,31 @@ const PERIOD_BAR = `<section class="an-periodbar" data-an-period>
           </div>
         </section>`;
 
+// ---- шеринг коллекции: участники организации и текущий доступ ----
+// Композиция попапа повторяет шеринг Media Library, но без «Anyone with the link»:
+// у коллекций публичной ссылки нет, доступ выдаётся только людям.
+const CE_MEMBERS = [
+  { name: "Arthur Verbetskyi", email: "arthur@subsub.cc", c: "--color-avatar-3" },
+  { name: "Oleg Kravets", email: "oleg@subsub.cc", c: "--color-avatar-1" },
+  { name: "Mariia", email: "mariya.tonkoshkur@gmail.com", c: "--color-avatar-5" },
+  { name: "Max Ivanov", email: "max@subsub.cc", c: "--color-avatar-2" },
+  { name: "Anna Koval", email: "anna@subsub.cc", c: "--color-avatar-4" },
+  { name: "Dmytro Bondar", email: "dmytro@subsub.cc", c: "--color-avatar-6" },
+];
+const CE_ACCESS = [
+  { name: "You", email: "zemskov.yevhenii@gen.tech", c: "--color-avatar-1", owner: true },
+  { name: "Arthur Verbetskyi", email: "arthur@subsub.cc", c: "--color-avatar-3" },
+];
+function ceAccRow(a) {
+  return '<div class="ce-acc" data-ce-acc="' + esc(a.email) + '">' +
+    '<span class="mc-ava ce-acc__ava" style="background:var(' + a.c + ')">' + esc(a.name.charAt(0)) + '</span>' +
+    '<span class="ce-acc__info"><span class="ce-acc__name">' + esc(a.name) + '</span>' +
+      '<span class="ce-acc__mail">' + esc(a.email) + '</span></span>' +
+    (a.owner ? '<span class="ce-acc__role">owner</span>'
+             : '<button class="ce-acc__revoke" type="button" data-ce-revoke>Revoke</button>') +
+  '</div>';
+}
+
 // ---- данные-примеры (реальные каналы/значения с прода app.subsub.io/analytics/basic-data) ----
 const AVA = ["--color-avatar-1","--color-avatar-3","--color-avatar-5","--color-avatar-1","--color-avatar-3"];
 const ROWS = basicRows("30");   // дефолтный период — 30 дней (P1.2)
@@ -1439,7 +1464,11 @@ function collRow(r){
     ? '<span class="mc-shared">' + r.shared.map(function (a) { return ava(a); }).join("") + '</span>'
     : '<span class="mc-noshare">' + IC.shareOff + 'Not shared</span>';
   cells.push('<div class="an-td" style="width:150px">' + sharedCell + '</div>');
-  cells.push('<div class="an-td" style="width:120px"><button class="mc-more" type="button" aria-label="Actions" data-mc-more data-status="' + r.status + '" data-name="' + esc(r.name) + '">' + IC.dots + '</button></div>');
+  // действия строки: шеринг вынесен отдельной иконкой, остальное — под «⋮»
+  cells.push('<div class="an-td mc-acts" style="width:120px">' +
+    '<button class="mc-more" type="button" aria-label="Share collection" title="Share" data-mc-share-btn>' + IC.share + '</button>' +
+    '<button class="mc-more" type="button" aria-label="Actions" data-mc-more data-status="' + r.status + '" data-name="' + esc(r.name) + '">' + IC.dots + '</button>' +
+  '</div>');
   return '<div class="an-tr" data-mc-row data-name="' + esc(r.name) + '"' +
     ' data-channels="' + esc(r.includes.join("|")) + '"' +
     (r.sample ? ' data-sample="1"' : '') + ' data-owner="' + esc(r.owner.name) + '"' +
@@ -1522,15 +1551,31 @@ const collInner = `
 
     <!-- меню действий строки (⋮) -->
     <!-- меню действий строки (⋮): состав зависит от владельца (C1) + Duplicate (C2) -->
+    <!-- меню строки: сначала просмотр, потом управление, внизу деструктивное (как у файла в Media Library) -->
     <div class="mc-menu" id="mcMenu" hidden>
-      <button class="mc-menu__item" type="button" data-mc-act="view">${IC.graph}View deep data</button>
       <button class="mc-menu__item" type="button" data-mc-act="open">${IC.collections}View collection</button>
+      <button class="mc-menu__item" type="button" data-mc-act="view">${IC.graph}View deep data</button>
+      <hr class="mc-menu__sep" data-mc-sep="1" />
       <button class="mc-menu__item" type="button" data-mc-act="edit">${IC.edit}Edit collection</button>
       <button class="mc-menu__item" type="button" data-mc-act="duplicate">${IC.copy}Duplicate collection</button>
-      <button class="mc-menu__item" type="button" data-mc-act="share">${IC.share}Share collection</button>
-      <button class="mc-menu__item mc-menu__item--danger" type="button" data-mc-act="deactivate">${IC.archive}Deactivate collection</button>
+      <hr class="mc-menu__sep" data-mc-sep="2" />
+      <button class="mc-menu__item" type="button" data-mc-act="deactivate">${IC.archive}Deactivate collection</button>
       <button class="mc-menu__item mc-menu__item--danger" type="button" data-mc-act="delete">${IC.trash}Delete collection</button>
       <p class="mc-menu__note" data-mc-note hidden>You cannot edit this collection. Please ask the owner to make changes.</p>
+    </div>
+
+    <!-- шеринг из строки: та же композиция, что на странице коллекции -->
+    <div class="ce-sharepop mc-sharepop" data-mc-sharepop hidden role="dialog" aria-label="Share collection">
+      <div class="ce-sharepop__head">
+        <span class="ce-sharepop__title" data-mc-sharepop-title>Share collection</span>
+        <button class="ce-sharepop__x" type="button" data-mc-share-close aria-label="Close">${IC.closeBold}</button>
+      </div>
+      <div class="ce-sharepop__invite">
+        <div class="an-search ce-sharepop__search">${IC.search}<input class="an-search__input" type="text" placeholder="Add people by name or email" data-ce-share-search /></div>
+        <button class="an-btn an-btn--secondary an-btn--small" type="button" data-ce-invite disabled>Invite</button>
+      </div>
+      <div class="ce-sharepop__results" data-ce-share-results hidden></div>
+      <div class="ce-sharepop__list" data-ce-share-list>${CE_ACCESS.map(ceAccRow).join("")}</div>
     </div>
 
     ${mcCreateModalHtml}
@@ -1657,30 +1702,6 @@ const ceBody = CE_ROWS.map(function (r, i) {
 }).join("\n          ");
 
 
-// ---- шеринг коллекции: участники организации и текущий доступ ----
-// Композиция попапа повторяет шеринг Media Library, но без «Anyone with the link»:
-// у коллекций публичной ссылки нет, доступ выдаётся только людям.
-const CE_MEMBERS = [
-  { name: "Arthur Verbetskyi", email: "arthur@subsub.cc", c: "--color-avatar-3" },
-  { name: "Oleg Kravets", email: "oleg@subsub.cc", c: "--color-avatar-1" },
-  { name: "Mariia", email: "mariya.tonkoshkur@gmail.com", c: "--color-avatar-5" },
-  { name: "Max Ivanov", email: "max@subsub.cc", c: "--color-avatar-2" },
-  { name: "Anna Koval", email: "anna@subsub.cc", c: "--color-avatar-4" },
-  { name: "Dmytro Bondar", email: "dmytro@subsub.cc", c: "--color-avatar-6" },
-];
-const CE_ACCESS = [
-  { name: "You", email: "zemskov.yevhenii@gen.tech", c: "--color-avatar-1", owner: true },
-  { name: "Arthur Verbetskyi", email: "arthur@subsub.cc", c: "--color-avatar-3" },
-];
-function ceAccRow(a) {
-  return '<div class="ce-acc" data-ce-acc="' + esc(a.email) + '">' +
-    '<span class="mc-ava ce-acc__ava" style="background:var(' + a.c + ')">' + esc(a.name.charAt(0)) + '</span>' +
-    '<span class="ce-acc__info"><span class="ce-acc__name">' + esc(a.name) + '</span>' +
-      '<span class="ce-acc__mail">' + esc(a.email) + '</span></span>' +
-    (a.owner ? '<span class="ce-acc__role">owner</span>'
-             : '<button class="ce-acc__revoke" type="button" data-ce-revoke>Revoke</button>') +
-  '</div>';
-}
 
 const editInner = `
     <section class="an-page ce-page">
@@ -1695,7 +1716,7 @@ const editInner = `
           <button class="an-btn an-btn--primary" type="button" data-nc-open>${IC.plus}Add channels</button>
           <!-- шеринг: попап с поиском участников и списком доступа -->
           <div class="ce-share" data-ce-share>
-            <button class="an-btn an-btn--secondary" type="button" data-ce-share-trig aria-haspopup="dialog" aria-expanded="false">${IC.share}<span data-ce-share-lbl>Shared with 1</span></button>
+            <button class="an-btn an-btn--secondary" type="button" data-ce-share-trig aria-haspopup="dialog" aria-expanded="false">${IC.share}<span data-ce-share-lbl>Share</span></button>
             <div class="ce-sharepop" data-ce-share-pop hidden role="dialog" aria-label="Share collection">
               <div class="ce-sharepop__head">
                 <span class="ce-sharepop__title">Share collection</span>
@@ -1757,6 +1778,8 @@ const editInner = `
     <div class="an-footer" data-an-footer hidden>
       <div class="an-footer__inner">
         <span class="an-footer__count" data-ce-bulk-count>1 selected</span>
+        <button class="an-btn an-btn--secondary an-btn--small" type="button" data-ce-bulk-new>${IC.plus}Create new collection</button>
+        <button class="an-btn an-btn--secondary an-btn--small" type="button" data-ce-bulk-similar>${IC.aiStarsSolid}Find similar channels</button>
         <button class="an-btn an-btn--danger an-btn--small" type="button" data-ce-bulk-remove>${IC.trash}Remove selected</button>
         <button class="an-footer__close" type="button" data-an-footer-close aria-label="Clear channels selection">${IC.closeBold}</button>
       </div>
@@ -1796,6 +1819,10 @@ const editInner = `
     </div>
 
     ${ceAddModalHtml}
+
+    ${mcCreateModalHtml}
+
+    ${aiModalHtml}
 
     <div class="an-toast" data-an-toast hidden></div>`;
 

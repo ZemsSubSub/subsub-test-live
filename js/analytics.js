@@ -165,6 +165,9 @@
     if (!e.target.closest("[data-an-dr]")) drOpen(false);
     // --- D1/D3: массовые действия и футер страницы коллекции ---
     if (e.target.closest("[data-ce-bulk-remove]")) { ceConfirm("remove"); return; }
+    // из выбранных каналов можно собрать новую коллекцию или запустить подбор похожих
+    if (e.target.closest("[data-ce-bulk-new]")) { ceBulkNew(); return; }
+    if (e.target.closest("[data-ce-bulk-similar]")) { ceBulkSimilar(); return; }
     if (e.target.closest("[data-ce-delete]")) { ceMenu(false); ceConfirm("delete"); return; }
     // ---- страница коллекции ----
     if (e.target.closest("[data-ce-menu-trig]")) {
@@ -1939,6 +1942,34 @@
 
   document.addEventListener("click", function (e) {
     // ⋮ — открыть меню у строки (пункты по статусу, как на проде)
+    var shareBtn = e.target.closest("[data-mc-share-btn]");
+    if (shareBtn) {
+      e.stopPropagation();
+      closeMcMenu();
+      mcRow = shareBtn.closest("[data-mc-row]");
+      var pop = document.querySelector("[data-mc-sharepop]");
+      if (!pop) return;
+      var ttl = pop.querySelector("[data-mc-sharepop-title]");
+      if (ttl) ttl.textContent = "Share «" + (mcRow ? mcRow.getAttribute("data-name") : "collection") + "»";
+      pop.hidden = false;
+      var rb = shareBtn.getBoundingClientRect();
+      var pw = pop.offsetWidth || 420;
+      pop.style.top = Math.min(rb.bottom + 6, window.innerHeight - pop.offsetHeight - 8) + "px";
+      pop.style.left = Math.max(8, rb.right - pw) + "px";
+      var si = pop.querySelector("[data-ce-share-search]");
+      if (si) { si.value = ""; si.focus(); }
+      ceShareSuggest("");
+      return;
+    }
+    if (e.target.closest("[data-mc-share-close]")) {
+      var pop2 = document.querySelector("[data-mc-sharepop]");
+      if (pop2) pop2.hidden = true;
+      return;
+    }
+    if (!e.target.closest("[data-mc-sharepop]") && !e.target.closest("[data-mc-share-btn]")) {
+      var pop3 = document.querySelector("[data-mc-sharepop]");
+      if (pop3 && !pop3.hidden) pop3.hidden = true;
+    }
     var moreBtn = e.target.closest("[data-mc-more]");
     if (moreBtn) {
       e.stopPropagation();
@@ -1952,10 +1983,12 @@
       // C1: чужую (sample) коллекцию нельзя менять — остаются просмотр и Duplicate
       var mine = !(mcRow && mcRow.hasAttribute("data-sample"));
       menu.querySelector('[data-mc-act="edit"]').hidden = !mine;
-      menu.querySelector('[data-mc-act="share"]').hidden = !mine;
       menu.querySelector('[data-mc-act="delete"]').hidden = !mine;
       if (!mine) menu.querySelector('[data-mc-act="deactivate"]').hidden = true;
       menu.querySelector("[data-mc-note]").hidden = mine;
+      // разделитель прячем, если группа под ним целиком скрыта
+      var sep2 = menu.querySelector('[data-mc-sep="2"]');
+      if (sep2) sep2.hidden = !mine && menu.querySelector('[data-mc-act="deactivate"]').hidden;
       menu.hidden = false;
       var r = moreBtn.getBoundingClientRect();
       var mw = menu.offsetWidth || 200;
@@ -1994,6 +2027,25 @@
     }
     // submit Create/Save
     if (e.target.closest("[data-mc-create-submit]")) {
+      // создание со страницы коллекции: в новую коллекцию кладём выбранные каналы
+      if (ceBulkNames && ceBulkNames.length && document.querySelector("[data-ce-title]")) {
+        var newName = ((document.querySelector("[data-mc-name]") || {}).value || "").trim();
+        if (newName) {
+          var extra = aiExtraLoad();
+          extra[newName] = { channels: ceBulkNames.slice() };
+          aiExtraSave(extra);
+          var list = aiLoad();
+          list.push({ id: "cc" + list.length, name: newName, isAi: false, status: "created",
+                      created: aiToday(), channels: ceBulkNames.slice() });
+          aiSave(list);
+          closeModal(document.getElementById("mcModal-create"));
+          toast("«" + newName + "» created with " + ceBulkNames.length +
+                (ceBulkNames.length === 1 ? " channel" : " channels"));
+          setTimeout(ceSaved, 900);
+          ceBulkNames = [];
+          return;
+        }
+      }
       var val = (document.querySelector("[data-mc-name]") || {}).value || "";
       if (mcMode === "edit") {
         if (mcRow && val.trim()) {
@@ -2620,9 +2672,13 @@
         '<div class="an-td" style="width:160px"><span class="mc-owner"><span class="mc-ava" style="background:var(--color-avatar-1)">Y</span><span class="mc-owner__name">You</span></span></div>' +
         // «Not shared» — как в сборке: иконку берём из уже отрисованной строки
         '<div class="an-td" style="width:150px">' + noShareHtml() + '</div>' +
-        '<div class="an-td" style="width:120px"><button class="mc-more" type="button" aria-label="Actions" data-mc-more data-status="' +
-          escHtml(c.status) + '" data-name="' + escHtml(c.name) + '">' +
-          (document.querySelector("[data-mc-more]") ? document.querySelector("[data-mc-more]").innerHTML : "") + '</button></div>';
+        '<div class="an-td mc-acts" style="width:120px">' +
+          '<button class="mc-more" type="button" aria-label="Share collection" title="Share" data-mc-share-btn>' +
+            (document.querySelector("[data-mc-share-btn]") ? document.querySelector("[data-mc-share-btn]").innerHTML : "") + '</button>' +
+          '<button class="mc-more" type="button" aria-label="Actions" data-mc-more data-status="' +
+            escHtml(c.status) + '" data-name="' + escHtml(c.name) + '">' +
+            (document.querySelector("[data-mc-more]") ? document.querySelector("[data-mc-more]").innerHTML : "") + '</button>' +
+        '</div>';
       tbody.insertBefore(row, tbody.firstChild);
     }
     aiPaintTargets();
@@ -3266,7 +3322,8 @@
       for (var pi = 0; pi < boxes.length; pi++) {
         var row = boxes[pi].closest(".an-tr");
         if (!row) continue;
-        var nmEl = row.querySelector(".an-chan__name"), avEl = row.querySelector(".an-chan__ava");
+        var nmEl = row.querySelector(".an-chan__name") || row.querySelector(".ce-chan__name");
+        var avEl = row.querySelector(".an-chan__ava") || row.querySelector(".ce-ava");
         if (!nmEl) continue;
         picked.push({
           name: nmEl.textContent.trim(),
@@ -3783,10 +3840,8 @@
   function ceShareCount() {
     return document.querySelectorAll("[data-ce-acc]").length;
   }
-  function ceShareLabel() {
-    var lbl = document.querySelector("[data-ce-share-lbl]");
-    if (lbl) lbl.textContent = "Shared with " + ceShareCount();
-  }
+  // подпись кнопки статична — просто «Share», количество видно в самом попапе
+  function ceShareLabel() {}
   function ceShareSuggest(q) {
     var box = document.querySelector("[data-ce-share-results]");
     if (!box) return;
@@ -3832,6 +3887,43 @@
   }
   var ceRevokeRow = null;
   var ceRowToRemove = null;
+  // новая коллекция из выбранных каналов — через обычную модалку создания
+  function ceBulkNew() {
+    var picked = ceChecked();
+    if (!picked.length) return;
+    ceBulkNames = picked.map(function (r) { return (r.querySelector(".ce-chan__name") || {}).textContent.trim(); });
+    mcMode = "create";
+    var t = document.querySelector("[data-mc-create-title]");
+    if (t) t.textContent = "Create collection";
+    var nm = document.querySelector("[data-mc-name]");
+    if (nm) nm.value = ceBulkNames.length === 1 ? ceBulkNames[0] : ceBulkNames[0] + " +" + (ceBulkNames.length - 1);
+    var sb = document.querySelector("[data-mc-create-submit]");
+    if (sb) sb.textContent = "Create";
+    openModal("mcModal-create");
+    if (nm) nm.focus();
+  }
+  var ceBulkNames = [];
+  // подбор похожих: те же выбранные каналы становятся референсами
+  function ceBulkSimilar() {
+    var picked = ceChecked();
+    if (!picked.length) return;
+    aiOpen();
+    aiSetMode("refs");
+    picked.forEach(function (r) {
+      var nmEl = r.querySelector(".ce-chan__name"), avEl = r.querySelector(".ce-ava");
+      if (!nmEl) return;
+      var color = avEl ? (avEl.getAttribute("style") || "").replace(/.*var\(([^)]+)\).*/, "$1") : null;
+      aiRefAdd(nmEl.textContent.trim(), avEl ? avEl.textContent.trim() : "", color);
+    });
+    aiRenderRefs();
+    var nameInp = aiEl("[data-ai-name]");
+    if (nameInp && !nameInp.value) {
+      var first = (picked[0].querySelector(".ce-chan__name") || {}).textContent.trim();
+      nameInp.value = "Similar to " + first + (picked.length > 1 ? " +" + (picked.length - 1) : "");
+    }
+    aiSync();
+    if (aiRefs.length) aiGenStart();
+  }
   function ceRemoveOneAsk(row) {
     if (!row) return;
     ceRowToRemove = row;
