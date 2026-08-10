@@ -1800,12 +1800,6 @@ const editInner = `
                 title="Upgrade the plan to keep more than ${CE_LIMIT} channels in one collection">${IC.rocket}Upgrade</button>
             </span>
           </div>
-          <!-- владелец: у своих коллекций «You», у расшаренных — имя владельца -->
-          <span class="ce-owner" data-ce-owner>
-            <span class="ce-owner__k">Owner</span>
-            <span class="mc-ava ce-owner__ava" data-ce-owner-ava style="background:var(--color-avatar-1)">Y</span>
-            <span class="ce-owner__name" data-ce-owner-name>You</span>
-          </span>
         </div>
         <div class="an-head__btns">
           <button class="an-btn an-btn--primary" type="button" data-nc-open>${IC.plus}Add channels</button>
@@ -1841,6 +1835,12 @@ const editInner = `
         </div>
       </header>
 
+      <!-- владелец: у своих коллекций «You», у расшаренных — имя владельца -->
+      <span class="ce-owner" data-ce-owner>
+        <span class="ce-owner__k">Owner</span>
+        <span class="mc-ava ce-owner__ava" data-ce-owner-ava style="background:var(--color-avatar-1)">Y</span>
+        <span class="ce-owner__name" data-ce-owner-name>You</span>
+      </span>
 
       <div class="ce-form">
 
