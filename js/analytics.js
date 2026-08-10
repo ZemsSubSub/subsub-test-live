@@ -1199,6 +1199,8 @@
       if (last) last.disabled = st.page >= pages;
     }
     tblUpdateTotal(key, rows.length);
+    // смена страницы/размера меняет наличие скроллбара — колонки пересчитываем
+    if (HUG_SHRINK[key]) { tblHug(key); tblHugFix(key); }
   }
   // номера страниц: первая, последняя, текущая с соседями, между ними «…»
   function tblPageBtns(page, pages) {
@@ -1345,8 +1347,26 @@
       g.cells.forEach(function (c) { c.style.width = w + "px"; });
     });
   }
+  var hugRetry = {};
+  // вертикальный скроллбар мог появиться после замера — тогда сумма колонок вылезает
+  // за бокс и получается «мёртвая» горизонтальная полоса. Пересчитываем один раз.
+  function tblHugFix(key) {
+    if (!HUG_SHRINK[key] || hugRetry[key]) return;
+    var wrap = document.querySelector('[data-an-tablewrap="' + key + '"]');
+    var b = tblBody(key);
+    if (!wrap || !b) return;
+    var total = 0;
+    [].slice.call(b.querySelectorAll(".an-thead .an-tr--head > *")).forEach(function (h) {
+      if (h.hidden || h.classList.contains("is-colhidden")) return;
+      total += h.getBoundingClientRect().width;
+    });
+    if (total <= wrap.clientWidth + 0.5) return;
+    hugRetry[key] = 1;
+    tblHug(key);
+    delete hugRetry[key];
+  }
   function tblHugAll() {
-    ["basic", "deep", "coll", "repm", "repp"].forEach(function (key) { if (tblBody(key)) tblHug(key); });
+    ["basic", "deep", "coll", "repm", "repp"].forEach(function (key) { if (tblBody(key)) { tblHug(key); tblHugFix(key); } });
   }
   function tblInitAll() {
     // дефолтная сортировка таблиц каналов — по Views, от большего (первый клик по колонке даёт desc)

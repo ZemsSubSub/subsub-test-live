@@ -2089,34 +2089,38 @@ function repWithName(r) {
   r.name = (r.coll || r.chan) + " " + r.type + " " + repShortPeriod(r.period);
   return r;
 }
-// строки-затравки: как на проде
+// строки-затравки: история отчётов (детерминированная), чтобы пагинация была не декоративной
+const REP_PERIODS = [
+  "July 2026 - July 2026", "June 2026 - June 2026", "May 2026 - July 2026",
+  "April 2026 - June 2026", "January 2026 - June 2026", "July 2026 - August 2026",
+  "March 2026 - May 2026", "February 2026 - February 2026", "January 2026 - March 2026",
+  "November 2025 - January 2026", "October 2025 - December 2025", "August 2025 - October 2025",
+];
+const REP_TYPE_WORDS = ["Basic", "Deep", "Videos"];
+function repSlugB(s) { return String(s).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""); }
+function repGen(targets, field, count, seed) {
+  const rnd = prng(seed);
+  const out = [];
+  for (let i = 0; i < count; i++) {
+    const target = targets[i % targets.length];
+    const type = REP_TYPE_WORDS[Math.floor(rnd() * 3)];
+    const period = REP_PERIODS[Math.floor(rnd() * REP_PERIODS.length)];
+    // даты по убыванию: свежие сверху, дальше вглубь истории
+    const day = 1 + ((i * 7 + 3) % 28), mon = 8 - (i % 8), year = i < 24 ? 2026 : 2025;
+    const created = ("0" + day).slice(-2) + "." + ("0" + (mon || 1)).slice(-2) + "." + year;
+    const status = i === 0 || i === 5 ? "progress" : "created";
+    const row = { created: created, period: period, type: type, status: status,
+      file: status === "created" ? repSlugB(target) + "-" + type.toLowerCase() + "-report-" + (i + 1) + ".xlsx" : "" };
+    row[field] = target;
+    out.push(row);
+  }
+  return out;
+}
 // имя собирается из коллекции/канала, типа и периода — как в модалке создания
-const REP_ROWS_M = [
-  { created: "13.07.2026", period: "July 2026 - July 2026",
-    coll: "Crypto", type: "Basic", status: "created", file: "crypto-basic-report-1.xlsx" },
-  { created: "02.08.2026", period: "May 2026 - July 2026",
-    coll: "News UA - Big Media", type: "Deep", status: "created", file: "news-ua-deep-report-1.xlsx" },
-  { created: "29.07.2026", period: "April 2026 - June 2026",
-    coll: "Gaming UA", type: "Basic", status: "created", file: "gaming-ua-basic-report-1.xlsx" },
-  { created: "21.07.2026", period: "January 2026 - June 2026",
-    coll: "Tech Reviews", type: "Deep", status: "created", file: "tech-reviews-deep-report-1.xlsx" },
-  { created: "05.07.2026", period: "June 2026 - June 2026",
-    coll: "Crypto", type: "Videos", status: "created", file: "crypto-videos-report-1.xlsx" },
-  { created: "09.08.2026", period: "July 2026 - August 2026",
-    coll: "News UA - Big Media", type: "Basic", status: "progress", file: "" },
-].map(repWithName);
-const REP_ROWS_P = [
-  { created: "07.08.2026", period: "January 2026 - August 2026",
-    chan: "Zems Racing", type: "Deep", status: "progress", file: "" },
-  { created: "01.08.2026", period: "June 2026 - July 2026",
-    chan: "Zems Racing", type: "Basic", status: "created", file: "zems-racing-report-1.xlsx" },
-  { created: "24.07.2026", period: "June 2026 - June 2026",
-    chan: "Hunt Squad", type: "Videos", status: "created", file: "hunt-squad-report-1.xlsx" },
-  { created: "10.07.2026", period: "January 2026 - June 2026",
-    chan: "Hunt Squad", type: "Basic", status: "created", file: "hunt-squad-report-2.xlsx" },
-  { created: "28.06.2026", period: "March 2026 - May 2026",
-    chan: "Eugene Zemskov", type: "Deep", status: "created", file: "eugene-zemskov-report-1.xlsx" },
-].map(repWithName);
+const REP_COLLS = ["Crypto", "News UA - Big Media", "Gaming UA", "Tech Reviews", "Fortnite US pool", "Thai cooking channels"];
+const REP_OWN = ["Zems Racing", "Hunt Squad", "Eugene Zemskov"];
+const REP_ROWS_M = repGen(REP_COLLS, "coll", 50, 9311).map(repWithName);
+const REP_ROWS_P = repGen(REP_OWN, "chan", 18, 4177).map(repWithName);
 function repRowM(r) {
   return '<div class="an-tr" data-rep-row data-file="' + esc(r.file || "") + '">' +
     '<div class="an-td an-td--plain rep-name" style="width:300px" data-col="name"><span class="rep-cell">' + esc(r.name) + '</span></div>' +
