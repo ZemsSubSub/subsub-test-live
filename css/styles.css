@@ -2402,7 +2402,9 @@ body.is-open:not(.is-collapsed) .main { margin-left: 306px; }
 .nc-baseitem > svg { width: 24px; height: 24px; color: var(--color-black); flex-shrink: 0; }
 .nc-baseava { width: 32px; height: 32px; font-size: 13px; }
 /* подписчики — мелким бейджем, чтобы не читались как ещё одна строка текста */
-.nc-subs { justify-self: end; background: #fff; border: 1px solid var(--color-shade-200); }
+.nc-subs { justify-self: end; height: 20px; padding: 0 8px; font-size: 11px; background: #fff; border: 1px solid var(--color-shade-200); }
+/* имя канала в списке базы — medium, чтобы читалось раньше числа подписчиков */
+.nc-baseitem .nc-item__name { font-weight: 500; }
 /* D3: разделитель деструктивных действий в футере страницы коллекции */
 
 /* --- P1.4: модалка «New channels» (Add to base) --- */
