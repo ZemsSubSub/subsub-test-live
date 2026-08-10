@@ -2227,7 +2227,14 @@ const repModalHtml = `
 const reportsInner = `
     <section class="an-page">
       <header class="an-head an-head--between">
-        <div class="an-head__left"><h1 class="an-title">Reports</h1></div>
+        <div class="an-head__left">
+          <h1 class="an-title">Reports</h1>
+          <!-- переключатель табов — тот же сегмент, что тип коллекций в My collections -->
+          <nav class="an-ctype rep-seg" data-rep-tabs>
+            <a class="an-ctype__btn is-active" href="analytics-reports.html?tab=market" data-rep-tab="market">Market insights<span class="an-ctype__qty" data-rep-count="market">${REP_ROWS_M.length}</span></a>
+            <a class="an-ctype__btn" href="analytics-reports.html?tab=performance" data-rep-tab="performance">My performance<span class="an-ctype__qty" data-rep-count="performance">${REP_ROWS_P.length}</span></a>
+          </nav>
+        </div>
         <div class="an-head__btns">
           <button class="an-btn an-btn--primary" type="button" data-rep-open>${IC.plus}Create report</button>
         </div>
@@ -2240,10 +2247,6 @@ const reportsInner = `
         <button class="rep-note__x" type="button" data-rep-note-x aria-label="Dismiss">${IC.closeBold}</button>
       </div>
 
-      <nav class="an-tabs" data-rep-tabs>
-        <a class="an-tab is-active" href="analytics-reports.html?tab=market" data-rep-tab="market">Market insights</a>
-        <a class="an-tab" href="analytics-reports.html?tab=performance" data-rep-tab="performance">My performance</a>
-      </nav>
 
       <div data-rep-panel="market">
         ${repPagi("repm")}

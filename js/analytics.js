@@ -3728,8 +3728,18 @@
     var m = document.getElementById("repModal");
     if (m) m.setAttribute("data-rep-mode", cur);
     repTargetFill();
+    repCountSync();
     if (typeof tblHugAll === "function") tblHugAll();   // колонки по содержимому + добор ширины
     if (typeof tblFit === "function") tblFit();
+  }
+  // числа в табах: считаем строки в каждой таблице
+  function repCountSync() {
+    [["market", "repm"], ["performance", "repp"]].forEach(function (p) {
+      var badge = document.querySelector('[data-rep-count="' + p[0] + '"]');
+      var body = tblBody(p[1]);
+      if (!badge || !body) return;
+      badge.textContent = String(body.querySelectorAll(".an-tbody .an-tr").length);
+    });
   }
   // список в поле Collection / Channel — по табу
   function repTargetList() {
@@ -3977,6 +3987,7 @@
     toast("Report is being prepared");
     if (typeof tblApply === "function") tblApply(key);
     if (typeof tblHug === "function") tblHug(key);   // новая строка получает те же ширины
+    repCountSync();
     setTimeout(function () {
       var st = row.querySelector('[data-col="status"]');
       if (st) st.innerHTML = repStatusHtml("created");
@@ -4086,6 +4097,7 @@
       repDelRow.remove();
       repDelRow = null;
       if (typeof tblApply === "function") tblApply(key);
+      repCountSync();
     }
     closeModal(document.getElementById("repConfirm"));
     toast("Report deleted");

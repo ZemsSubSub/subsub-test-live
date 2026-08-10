@@ -342,7 +342,14 @@
   <main class="main">
     <section class="an-page">
       <header class="an-head an-head--between">
-        <div class="an-head__left"><h1 class="an-title">Reports</h1></div>
+        <div class="an-head__left">
+          <h1 class="an-title">Reports</h1>
+          <!-- переключатель табов — тот же сегмент, что тип коллекций в My collections -->
+          <nav class="an-ctype rep-seg" data-rep-tabs>
+            <a class="an-ctype__btn is-active" href="analytics-reports.html?tab=market" data-rep-tab="market">Market insights<span class="an-ctype__qty" data-rep-count="market">6</span></a>
+            <a class="an-ctype__btn" href="analytics-reports.html?tab=performance" data-rep-tab="performance">My performance<span class="an-ctype__qty" data-rep-count="performance">5</span></a>
+          </nav>
+        </div>
         <div class="an-head__btns">
           <button class="an-btn an-btn--primary" type="button" data-rep-open><svg viewBox="0 0 24 24" fill="none"><path d="M12 5V19M5 12H19" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>Create report</button>
         </div>
@@ -355,10 +362,6 @@
         <button class="rep-note__x" type="button" data-rep-note-x aria-label="Dismiss"><svg viewBox="0 0 24 24" fill="none"><path d="M19.172 6.42187C19.6126 5.98124 19.6126 5.26874 19.172 4.83281C18.7314 4.39687 18.0189 4.39218 17.583 4.83281L12.0048 10.4109L6.42202 4.82812C5.9814 4.38749 5.2689 4.38749 4.83296 4.82812C4.39702 5.26874 4.39233 5.98124 4.83296 6.41718L10.4111 11.9953L4.82827 17.5781C4.38765 18.0187 4.38765 18.7312 4.82827 19.1672C5.2689 19.6031 5.9814 19.6078 6.41733 19.1672L11.9955 13.5891L17.5783 19.1719C18.0189 19.6125 18.7314 19.6125 19.1673 19.1719C19.6033 18.7312 19.608 18.0187 19.1673 17.5828L13.5892 12.0047L19.172 6.42187Z" fill="currentColor"/></svg></button>
       </div>
 
-      <nav class="an-tabs" data-rep-tabs>
-        <a class="an-tab is-active" href="analytics-reports.html?tab=market" data-rep-tab="market">Market insights</a>
-        <a class="an-tab" href="analytics-reports.html?tab=performance" data-rep-tab="performance">My performance</a>
-      </nav>
 
       <div data-rep-panel="market">
         <section class="an-pagi" data-an-table="repm"><div class="an-pagi__label"><span class="an-pagi__name">Reports</span><span class="an-pagi__total">6</span></div><div class="an-pagi__ctrls"><span class="an-pagi__pages">Pages: 1</span><div class="an-pagi__nav"><button class="an-pagi__arrow" type="button" data-an-prev aria-label="Previous Page"><svg viewBox="0 0 24 24" fill="none"><path fill-rule="evenodd" clip-rule="evenodd" d="M14.8 3L6 12L14.8 21L17 18.75L10.4 12L17 5.25L14.8 3Z" fill="currentColor"/></svg></button><input class="an-pagi__page" type="text" value="1" aria-label="Page number" data-an-page /><button class="an-pagi__arrow" type="button" data-an-next aria-label="Next Page"><svg viewBox="0 0 24 24" fill="none"><path fill-rule="evenodd" clip-rule="evenodd" d="M9.2 3L18 12L9.2 21L7 18.75L13.6 12L7 5.25L9.2 3Z" fill="currentColor"/></svg></button></div><div class="an-perpage-wrap" data-an-perpage-wrap><button class="an-perpage" type="button" data-an-perpage-trig>30 <svg viewBox="0 0 24 24" fill="none"><path fill-rule="evenodd" clip-rule="evenodd" d="M21.5 8.7L12.5 17.5L3.5 8.7L5.75 6.5L12.5 13.1L19.25 6.5L21.5 8.7Z" fill="currentColor"/></svg></button><div class="an-perpage__menu" data-an-perpage-menu hidden role="listbox"></div></div></div></section>

@@ -2391,7 +2391,15 @@ body.is-open:not(.is-collapsed) .main { margin-left: 306px; }
 .nc-seg__btn { flex: 1; display: flex; align-items: center; justify-content: center; border: 0; border-radius: 6px;
   background: transparent; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 400;
   color: var(--color-shade-700); white-space: nowrap; }
+.nc-seg__btn { text-decoration: none; }
 .nc-seg__btn.is-active { background: var(--color-white); color: var(--color-black); box-shadow: var(--shadow); }
+/* тот же сегмент на странице отчётов — вне модалки у него свои отступы */
+/* сегмент табов на странице отчётов: размеры как у типа коллекций, без auto-отступа */
+.rep-seg { margin: 0; }
+/* заголовок, сегмент и кнопка — по одной центральной линии */
+.an-page .an-head__left { align-items: center; }
+.rep-seg .an-ctype__btn { text-decoration: none; }
+.an-ctype__btn.is-active { background: #fff; color: var(--color-black); box-shadow: 0 0 4px 0 rgba(0,0,0,.1); }
 .nc-tabs { flex-shrink: 0; display: flex; gap: 24px; padding: 0 24px; border-bottom: 1px solid var(--color-shade-200); }
 .nc-tab { padding: 0 0 10px; border: 0; background: none; cursor: pointer; font-family: inherit; font-size: 16px; font-weight: 300; color: var(--color-shade-700); border-bottom: 2px solid transparent; margin-bottom: -1px; }
 .nc-tab.is-active { color: var(--color-black); border-bottom-color: var(--color-black); }
