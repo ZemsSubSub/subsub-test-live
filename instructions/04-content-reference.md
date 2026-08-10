@@ -589,9 +589,8 @@ Analytics, Fan Funding (кроме того что на Home), Wallet (кром�
 
 ## Reports — действия в строке и сортировка (обновлено)
 
-- В строке остаются иконки `Download` и `Show in Media Library`, остальное — под `⋮` (меню как у файла в Media Library): `Share` · `Copy file link` — `Create similar report` — `Delete report` (красный). Пока отчёт `In progress`, все три кнопки неактивны.
+- В строке остаются иконки `Download` и `Show in Media Library`, остальное — под `⋮` (меню как у файла в Media Library): `Share` · `Copy file link` — `Delete report` (красный). Пока отчёт `In progress`, все три кнопки неактивны.
   - `Share` уводит к файлу в Media Library и сразу открывает его шеринг (`?folder=analytics&share=1&file=…`) — у отчётов нет своего шеринга, файл живёт в библиотеке.
-  - `Create similar report` открывает модалку с тем же типом и коллекцией/каналом, период выбирается заново.
 - Строки и отступы как в таблице коллекций (56px, первая ячейка 16px), бейджи статусов того же размера.
 - Сортировка по статусу — по смыслу, а не по алфавиту: сверху то, что в работе (`Collecting data` / `In progress` / `Sourcing…`), затем `Activated`, `Created`, `Inactive`.
 

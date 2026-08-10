@@ -4147,22 +4147,6 @@
       } else toast("Failed to copy link");
       return;
     }
-    if (type === "similar") {                     // те же тип и коллекция/канал, период выбирают заново
-      var typeTxt = (row.querySelector('[data-col="type"]') || {}).textContent || "";
-      var tgt = (row.querySelector('[data-col="collection"]') || row.querySelector('[data-col="channel"]') || {}).textContent || "";
-      repOpen();
-      if (typeTxt.trim()) repPick("type", typeTxt.trim() + " report");
-      if (tgt.trim()) repPick("target", tgt.trim());
-      repSync();
-      toast("Pick a period for the new report");
-    }
-  }
-  // проставить значение в дропдаун модалки (как при клике по пункту)
-  function repPick(sel, val) {
-    var el = document.querySelector('[data-rp-sel="' + sel + '"] [data-rp-val]');
-    if (!el) return;
-    el.textContent = val;
-    el.classList.remove("is-ph");
   }
   function repDelAsk(row) {
     repDelRow = row;

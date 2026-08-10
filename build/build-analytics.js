@@ -2307,8 +2307,6 @@ const reportsInner = `
       <button class="mc-menu__item" type="button" data-rep-act="share">${IC.share}Share</button>
       <button class="mc-menu__item" type="button" data-rep-act="link">${IC.linkThin}Copy file link</button>
       <hr class="mc-menu__sep" />
-      <button class="mc-menu__item" type="button" data-rep-act="similar">${IC.copy}Create similar report</button>
-      <hr class="mc-menu__sep" />
       <button class="mc-menu__item mc-menu__item--danger" type="button" data-rep-act="delete">${IC.trash}Delete report</button>
     </div>
 
