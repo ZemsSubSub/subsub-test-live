@@ -2072,7 +2072,8 @@ body.is-open:not(.is-collapsed) .main { margin-left: 306px; }
 /* то же для таблиц отчётов */
 /* отступы и высота строк — как в таблице коллекций (an-table--fill) */
 [data-an-table-body="repm"] .an-td--plain, [data-an-table-body="repp"] .an-td--plain { padding: 0 24px 0 0; }
-.an-heat { display: flex; align-items: center; width: 100%; height: 100%; padding: 0 8px; box-sizing: border-box; }
+/* плашки метрик — со слегка скруглёнными краями (и в Basic, и в Deep) */
+.an-heat { display: flex; align-items: center; width: 100%; height: 100%; padding: 0 8px; box-sizing: border-box; border-radius: 6px; }
 .an-heat--pos { background: rgba(155, 230, 153, 0.16); color: #1bbc40; }
 .an-heat--neg { background: rgba(255, 153, 153, 0.16); color: #e92929; }
 .an-heat--flat { background: var(--color-shade-90); color: var(--color-black); }
