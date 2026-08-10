@@ -1789,9 +1789,10 @@ body.is-open:not(.is-collapsed) .main { margin-left: 306px; }
 .an-collsel__txt { font-size: 16px; font-weight: 500; color: var(--color-black); } /* text-body-semi-16 */
 .an-collsel__txt--ph { color: var(--color-shade-500); } /* плейсхолдер «Select colleciton» */
 /* бейдж с количеством каналов — такой же, как в дропдауне */
-.an-collsel__qty { display: inline-flex; align-items: center; justify-content: center; min-width: 24px; height: 20px;
-  padding: 0 6px; border-radius: 4px; background: #fff; box-sizing: border-box;
-  font-size: 11px; font-weight: 500; color: var(--color-black); }
+/* бейдж с рамкой — как счётчики в сегменте табов */
+.an-collsel__qty { display: inline-flex; align-items: center; justify-content: center; min-width: 22px; height: 22px;
+  padding: 0 6px; border: 1px solid var(--color-shade-200); border-radius: 6px; background: #fff; box-sizing: border-box;
+  font-size: 12px; font-weight: 500; color: var(--color-shade-800); }
 .an-collsel__qty[hidden] { display: none; }
 .an-collsel svg { width: 16px; height: 16px; color: var(--color-black); flex-shrink: 0; }
 /* P1.1: дропдаун выбора коллекции — меню переиспользует стили полей панели фильтров */
