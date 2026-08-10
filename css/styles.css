@@ -2961,7 +2961,8 @@ body.filters-open .an-filters.is-active { display: flex; }
 /* карта таблицы отчётов: скролл только у строк, пагинация всегда внизу карты */
 .rp-card { display: flex; flex-direction: column; min-width: 0; overflow: hidden;
   border: 1px solid var(--color-shade-200); border-radius: 12px; background: var(--color-white); }
-.rp-card .an-tablewrap { overflow-x: hidden; overflow-y: auto; border: 0; border-radius: 0; }
+/* скроллбары только по необходимости: колонки ужимаются, но если места совсем нет — появляется горизонтальный */
+.rp-card .an-tablewrap { overflow: auto; border: 0; border-radius: 0; }
 .rp-pagi { flex-shrink: 0; flex-wrap: nowrap; gap: 16px;
   padding: 10px 16px; background: #fff; border-top: 1px solid var(--color-shade-200); }
 .rp-pagi__left { display: flex; align-items: center; gap: 12px; min-width: 0; }

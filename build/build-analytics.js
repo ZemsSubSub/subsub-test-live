@@ -2067,9 +2067,10 @@ const REP_COLS_P = [
 ];
 function repHead(cols) {
   return '<div class="an-tr an-tr--head">' + cols.map(function (c) {
+    // ярлык в span, чтобы на узком экране обрезался многоточием, а не наезжал на соседа
     const inner = c.sort
       ? '<span class="an-sort" role="button" tabindex="0" data-an-sort="' + c.id + '">' + c.label + IC.sort + '</span>'
-      : c.label;
+      : '<span class="rep-cell">' + c.label + '</span>';
     return '<div class="an-th" style="width:' + c.w + 'px" data-col="' + c.id + '">' + inner + '</div>';
   }).join("") + '</div>';
 }
