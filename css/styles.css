@@ -1902,7 +1902,8 @@ body.is-open:not(.is-collapsed) .main { margin-left: 306px; }
   position: relative; display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px;
   border: 0; background: none; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 400; color: var(--color-black); padding: 0;
 }
-.an-dr__d { position: relative; z-index: 1; display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px; border-radius: 50%; }
+/* выделенный день — скруглённый квадрат, а не кружок */
+.an-dr__d { position: relative; z-index: 1; display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px; border-radius: 8px; }
 .an-dr__day:hover .an-dr__d { background: var(--color-shade-200); }
 .an-dr__day--out { color: var(--color-shade-500); }
 /* непрерывная полоса промежутка: середина заливается целиком, у краёв — половина */
