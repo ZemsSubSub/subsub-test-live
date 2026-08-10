@@ -175,6 +175,8 @@
       ceMenu(cePop ? cePop.hidden : true);
       return;
     }
+    if (e.target.closest("[data-ce-deep]")) { ceMenu(false); window.location.href = "analytics-deep-data.html"; return; }
+    if (e.target.closest("[data-ce-duplicate]")) { ceMenu(false); ceDuplicate(); return; }
     if (e.target.closest("[data-ce-rename]")) { ceRenameOpen(); return; }
     if (e.target.closest("[data-ce-rename-close]")) { closeModal(document.getElementById("ceRename")); return; }
     if (e.target.closest("[data-ce-rename-save]")) { ceRenameSave(); return; }
@@ -368,7 +370,12 @@
     if (ncBi) {
       var bn = ncBi.getAttribute("data-nc-base-item");
       if (ncBaseSel[bn]) delete ncBaseSel[bn]; else ncBaseSel[bn] = true;
-      ncBaseRender();
+      // отметку ставим на месте: перерисовка списка сбрасывала бы скролл
+      var bOn = !!ncBaseSel[bn];
+      ncBi.classList.toggle("is-on", bOn);
+      var bCk = ncBi.querySelector(".an-check");
+      if (bCk) bCk.classList.toggle("is-checked", bOn);
+      ncBaseCount();
       return;
     }
     var ncIt = e.target.closest("[data-nc-item]");
@@ -1982,7 +1989,7 @@
       menu.querySelector('[data-mc-act="deactivate"]').hidden = st !== "activated";
       // C1: чужую (sample) коллекцию нельзя менять — остаются просмотр и Duplicate
       var mine = !(mcRow && mcRow.hasAttribute("data-sample"));
-      menu.querySelector('[data-mc-act="edit"]').hidden = !mine;
+      menu.querySelector('[data-mc-act="rename"]').hidden = !mine;
       menu.querySelector('[data-mc-act="delete"]').hidden = !mine;
       if (!mine) menu.querySelector('[data-mc-act="deactivate"]').hidden = true;
       menu.querySelector("[data-mc-note]").hidden = mine;
@@ -2002,8 +2009,16 @@
       var type = act.getAttribute("data-mc-act");
       closeMcMenu();
       if (type === "view") { window.location.href = "analytics-deep-data.html"; return; }
-      if (type === "edit") {                       // как на проде — отдельная страница коллекции
-        window.location.href = mcCollectionUrl(mcRow);
+      if (type === "rename") {                     // правится только имя — та же модалка, что и создание
+        mcMode = "edit";
+        var rt = document.querySelector("[data-mc-create-title]");
+        if (rt) rt.textContent = "Rename collection";
+        var ri = document.querySelector("[data-mc-name]");
+        if (ri) ri.value = mcRow ? mcRow.getAttribute("data-name") : "";
+        var rs = document.querySelector("[data-mc-create-submit]");
+        if (rs) rs.textContent = "Save";
+        openModal("mcModal-create");
+        if (ri) { ri.focus(); ri.select(); }
         return;
       }
       if (type === "open") { window.location.href = mcCollectionUrl(mcRow); return; }
@@ -2048,12 +2063,21 @@
       }
       var val = (document.querySelector("[data-mc-name]") || {}).value || "";
       if (mcMode === "edit") {
-        if (mcRow && val.trim()) {
+        var nv = val.trim();
+        if (!nv) { toast("Name can't be empty"); return; }
+        if (mcRow) {
+          var old = mcRow.getAttribute("data-name");
           var nmEl = mcRow.querySelector(".mc-name");
-          if (nmEl) nmEl.textContent = val.trim();
-          mcRow.setAttribute("data-name", val.trim());
+          if (nmEl) nmEl.textContent = nv;
+          mcRow.setAttribute("data-name", nv);
+          var st = aiLoad(), touched = false;
+          st.forEach(function (c) { if (c.name === old) { c.name = nv; touched = true; } });
+          if (touched) aiSave(st);
+          var ex = aiExtraLoad();
+          if (ex[old]) { ex[nv] = ex[old]; delete ex[old]; aiExtraSave(ex); }
         }
-        closeModals(); toast("Collection saved successfully");
+        closeModals(); toast("Collection renamed");
+        mcMode = "create";
       } else {
         var newName = val.trim() || "New collection";
         aiCreatePlain(newName);                       // коллекция живёт в состоянии, а не только в DOM
@@ -2317,8 +2341,9 @@
   // Коллекции не выбраны → каналы уходят только в базу (на проде это addChannelsToBase).
   // Выбраны → те же ссылки дописываются в каждую выбранную коллекцию.
   var NC_MAX = 30;
-  var NC_ICON_ON = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 3h12a1 1 0 0 1 1 1v16.2a.8.8 0 0 1-1.24.66L12 17.4l-5.76 3.46A.8.8 0 0 1 5 20.2V4a1 1 0 0 1 1-1z"/></svg>';
-  var NC_ICON_OFF = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M6 3.8h12a.7.7 0 0 1 .7.7v15.7L12 16.5 5.3 20.2V4.5a.7.7 0 0 1 .7-.7z"/></svg>';
+  // выбор канала/коллекции в модалках — обычный чекбокс (DS BaseCheckbox)
+  var NC_CHECK_ICO = '<svg viewBox="0 0 24 24" fill="none"><path fill-rule="evenodd" clip-rule="evenodd" d="M20.5334 4.285C21.0807 4.72253 21.1578 5.50641 20.7054 6.03585L10.3685 18.1353L10.3653 18.1389C10.1302 18.412 9.83512 18.631 9.50152 18.7798C9.1679 18.9288 8.80418 19.0039 8.43679 18.9998C8.06339 18.9954 7.69473 18.9091 7.36071 18.7475C7.02782 18.5866 6.73682 18.3549 6.50939 18.07C6.50862 18.069 6.50786 18.0681 6.50709 18.0671L3.27113 14.0428C2.83519 13.5007 2.93616 12.7193 3.49666 12.2977C4.05716 11.876 4.86493 11.9737 5.30087 12.5158L8.46828 16.4549L18.7232 4.45145C19.1756 3.92201 19.9861 3.84749 20.5334 4.285Z" fill="currentColor" /></svg>';
+  function ncCheck(on) { return '<span class="an-check' + (on ? " is-checked" : "") + '" aria-hidden="true">' + NC_CHECK_ICO + "</span>"; }
   var ncSel = {};            // выбранные коллекции: name → true
   function ncEl(sel) { var m = document.getElementById("ncModal"); return m ? m.querySelector(sel) : null; }
   // ссылки: одна строка = один канал; имя канала берём из хэндла или последнего сегмента
@@ -2344,7 +2369,7 @@
     box.innerHTML = list.map(function (c) {
       var on = !!ncSel[c.name];
       return '<button class="nc-item' + (on ? " is-on" : "") + '" type="button" data-nc-item="' + escHtml(c.name) + '">' +
-        (on ? NC_ICON_ON : NC_ICON_OFF) +
+        ncCheck(on) +
         '<span class="nc-item__name">' + escHtml(c.name) + "</span>" +
         '<span class="nc-item__qty">Channels in collection:&nbsp;' + (aiChannelsOf(c.name).length + (on ? ncLinks().length : 0)) + "</span>" +
       "</button>";
@@ -2361,12 +2386,17 @@
     box.innerHTML = list.map(function (c) {
       var on = !!ncBaseSel[c.name];
       return '<button class="nc-baseitem' + (on ? " is-on" : "") + '" type="button" data-nc-base-item="' + escHtml(c.name) + '">' +
-        (on ? NC_ICON_ON : NC_ICON_OFF) +
+        ncCheck(on) +
         '<span class="mc-ava nc-baseava" style="background:var(' + (c.color || "--color-avatar-3") + ')">' + escHtml(c.initial || c.name.charAt(0)) + "</span>" +
         '<span class="nc-item__name">' + escHtml(c.name) + "</span>" +
         '<span class="nc-item__qty">' + escHtml(c.subs || "") + " subs</span>" +
       "</button>";
     }).join("") || '<div class="nc-empty">No channels found</div>';
+    var cnt = ncEl("[data-nc-base-count]");
+    if (cnt) cnt.textContent = String(Object.keys(ncBaseSel).length);
+    ncSync();
+  }
+  function ncBaseCount() {
     var cnt = ncEl("[data-nc-base-count]");
     if (cnt) cnt.textContent = String(Object.keys(ncBaseSel).length);
     ncSync();
@@ -2379,6 +2409,8 @@
     [].slice.call(document.querySelectorAll("[data-nc-pane]")).forEach(function (pane) {
       pane.hidden = pane.getAttribute("data-nc-pane") !== tab;
     });
+    var selw = document.querySelector("[data-nc-selwrap]");
+    if (selw) selw.hidden = tab !== "base";
     ncSync();
   }
   function ncSync() {
@@ -2394,8 +2426,8 @@
     return !!(m && m.hasAttribute("data-nc-collpage"));
   }
   function ncPageColl() {
-    var n = document.querySelector("[data-ce-name]");
-    return n ? (n.value || "").trim() : "";
+    var n = document.querySelector("[data-ce-title]");   // имя коллекции теперь в H1, а не в поле
+    return n ? (n.textContent || "").trim() : "";
   }
   function ncOpen() {
     ncSel = {};
@@ -2499,7 +2531,7 @@
     box.innerHTML = list.map(function (c) {
       var on = !!acSel[c.name];
       return '<button class="nc-item' + (on ? " is-on" : "") + '" type="button" data-ac-item="' + escHtml(c.name) + '">' +
-        (on ? NC_ICON_ON : NC_ICON_OFF) +
+        ncCheck(on) +
         '<span class="nc-item__name">' + escHtml(c.name) + "</span>" +
         '<span class="nc-item__qty">Channels in collection:&nbsp;' + (aiChannelsOf(c.name).length + (on ? picked : 0)) + "</span>" +
       "</button>";
@@ -3808,6 +3840,29 @@
     if (inp) inp.value = ceName();
     openModal("ceRename");
     if (inp) inp.focus();
+  }
+  // копия коллекции с теми же каналами — как «Duplicate collection» в списке
+  function ceDuplicate() {
+    var src = ceName();
+    var base = src + " (copy)", name = base, i = 2;
+    while (aiAllColls().some(function (c) { return c.name === name; })) { name = base + " " + i; i++; }
+    var chans = aiChannelsOf(src);
+    if (!chans.length) chans = ceRowNames();
+    var list = aiLoad();
+    list.push({ id: "c" + list.length + "d", name: name, isAi: false, mode: "new", status: "created",
+                channels: chans, created: aiToday(), query: "",
+                filters: { subs: 0, videos: 0, views: 0, avg: 0, lastDays: 0 } });
+    aiSave(list);
+    var extra = aiExtraLoad();
+    extra[name] = { channels: chans.slice() };
+    aiExtraSave(extra);
+    toast("Collection duplicated as «" + name + "»");
+  }
+  // имена каналов из таблицы — на случай семпловой коллекции, которой нет в состоянии
+  function ceRowNames() {
+    return [].slice.call(document.querySelectorAll("[data-ce-row] .ce-chan__name")).map(function (n) {
+      return n.textContent.trim();
+    });
   }
   function ceRenameSave() {
     var inp = document.querySelector("[data-ce-rename-input]");

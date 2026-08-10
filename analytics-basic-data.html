@@ -664,7 +664,6 @@
               <svg viewBox="0 0 24 24" fill="none"><path d="M10.6154 18.2307C14.8212 18.2307 18.2307 14.8212 18.2307 10.6154C18.2307 6.40951 14.8212 3 10.6154 3C6.40951 3 3 6.40951 3 10.6154C3 14.8212 6.40951 18.2307 10.6154 18.2307Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M21.0004 20.9985L16.1543 16.1523" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg><input class="an-search__input" type="text" placeholder="Search by channel title" data-nc-base-search />
             </div>
             <div class="nc-base" data-nc-base></div>
-            <p class="nc-count">Selected:&nbsp;<span class="nc-count__n" data-nc-base-count>0</span></p>
           </div>
           <div class="nc-pane" data-nc-pane="links">
           <div class="nc-links">
@@ -696,7 +695,11 @@
           </section>
         </div>
         <div class="an-modal__foot nc-foot">
-          <button class="an-btn an-btn--primary an-btn--small" type="button" data-nc-submit disabled>Add channels</button>
+          <p class="nc-count nc-foot__sel" data-nc-selwrap hidden>Selected:&nbsp;<span class="nc-count__n" data-nc-base-count>0</span></p>
+          <div class="nc-foot__btns">
+            <button class="an-btn an-btn--secondary an-btn--small" type="button" data-nc-close>Cancel</button>
+            <button class="an-btn an-btn--primary an-btn--small" type="button" data-nc-submit disabled>Add channels</button>
+          </div>
         </div>
       </div>
     </div>
@@ -727,7 +730,10 @@
           </section>
         </div>
         <div class="an-modal__foot nc-foot">
-          <button class="an-btn an-btn--primary an-btn--small" type="button" data-ac-submit disabled>Add channels</button>
+          <div class="nc-foot__btns">
+            <button class="an-btn an-btn--secondary an-btn--small" type="button" data-ac-close>Cancel</button>
+            <button class="an-btn an-btn--primary an-btn--small" type="button" data-ac-submit disabled>Add channels</button>
+          </div>
         </div>
       </div>
     </div>

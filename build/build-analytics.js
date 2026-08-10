@@ -594,7 +594,6 @@ function ncModal(opts) {
               ${IC.search}<input class="an-search__input" type="text" placeholder="Search by channel title" data-nc-base-search />
             </div>
             <div class="nc-base" data-nc-base></div>
-            <p class="nc-count">Selected:&nbsp;<span class="nc-count__n" data-nc-base-count>0</span></p>
           </div>
           <div class="nc-pane" data-nc-pane="links">
           <div class="nc-links">
@@ -626,7 +625,11 @@ function ncModal(opts) {
           </section>` : ""}
         </div>
         <div class="an-modal__foot nc-foot">
-          <button class="an-btn an-btn--primary an-btn--small" type="button" data-nc-submit disabled>Add channels</button>
+          <p class="nc-count nc-foot__sel" data-nc-selwrap hidden>Selected:&nbsp;<span class="nc-count__n" data-nc-base-count>0</span></p>
+          <div class="nc-foot__btns">
+            <button class="an-btn an-btn--secondary an-btn--small" type="button" data-nc-close>Cancel</button>
+            <button class="an-btn an-btn--primary an-btn--small" type="button" data-nc-submit disabled>Add channels</button>
+          </div>
         </div>
       </div>
     </div>`;
@@ -658,7 +661,10 @@ const acModalHtml = `
           </section>
         </div>
         <div class="an-modal__foot nc-foot">
-          <button class="an-btn an-btn--primary an-btn--small" type="button" data-ac-submit disabled>Add channels</button>
+          <div class="nc-foot__btns">
+            <button class="an-btn an-btn--secondary an-btn--small" type="button" data-ac-close>Cancel</button>
+            <button class="an-btn an-btn--primary an-btn--small" type="button" data-ac-submit disabled>Add channels</button>
+          </div>
         </div>
       </div>
     </div>`;
@@ -1556,7 +1562,7 @@ const collInner = `
       <button class="mc-menu__item" type="button" data-mc-act="open">${IC.collections}View collection</button>
       <button class="mc-menu__item" type="button" data-mc-act="view">${IC.graph}View deep data</button>
       <hr class="mc-menu__sep" data-mc-sep="1" />
-      <button class="mc-menu__item" type="button" data-mc-act="edit">${IC.edit}Edit collection</button>
+      <button class="mc-menu__item" type="button" data-mc-act="rename">${IC.edit}Rename collection</button>
       <button class="mc-menu__item" type="button" data-mc-act="duplicate">${IC.copy}Duplicate collection</button>
       <hr class="mc-menu__sep" data-mc-sep="2" />
       <button class="mc-menu__item" type="button" data-mc-act="deactivate">${IC.archive}Deactivate collection</button>
@@ -1734,10 +1740,13 @@ const editInner = `
           <div class="ce-menu" data-ce-menu>
             <button class="an-btn an-btn--secondary ce-menu__trig" type="button" data-ce-menu-trig aria-haspopup="menu" aria-expanded="false" aria-label="Collection actions">${IC.dots}</button>
             <div class="ce-menu__pop" data-ce-menu-pop hidden role="menu">
-              <button class="ce-menu__item" type="button" role="menuitem" data-ce-rename>${IC.edit}Rename collection</button>
+              <button class="ce-menu__item" type="button" role="menuitem" data-ce-deep>${IC.graph}View deep data</button>
               <hr class="ce-menu__sep" />
-              <button class="ce-menu__item" type="button" role="menuitem" data-ce-deactivate>${IC.archive}Deactivate</button>
-              <button class="ce-menu__item ce-menu__item--danger" type="button" role="menuitem" data-ce-delete>${IC.trash}Delete</button>
+              <button class="ce-menu__item" type="button" role="menuitem" data-ce-rename>${IC.edit}Rename collection</button>
+              <button class="ce-menu__item" type="button" role="menuitem" data-ce-duplicate>${IC.copy}Duplicate collection</button>
+              <hr class="ce-menu__sep" />
+              <button class="ce-menu__item" type="button" role="menuitem" data-ce-deactivate>${IC.archive}Deactivate collection</button>
+              <button class="ce-menu__item ce-menu__item--danger" type="button" role="menuitem" data-ce-delete>${IC.trash}Delete collection</button>
             </div>
           </div>
         </div>

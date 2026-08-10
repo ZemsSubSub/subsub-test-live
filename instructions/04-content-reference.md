@@ -494,3 +494,16 @@ Analytics, Fan Funding (кроме того что на Home), Wallet (кром�
 - В плашке выбора каналов: `N selected` · `Create new collection` · `Find similar channels` · `Remove selected`.
   - `Create new collection` открывает обычную модалку создания с подставленным именем по первому выбранному каналу; новая коллекция создаётся сразу с выбранными каналами (тост с количеством + автосохранение).
   - `Find similar channels` открывает модалку sourcing в режиме референсов с выбранными каналами (тот же вход, что из футера Basic data).
+
+## Меню коллекции и модалка Add channels (обновлено)
+
+- **`⋮` на странице коллекции** — тот же набор, что в строке списка, без пунктов, которые на этой странице не нужны (`View collection`, `Share` — он отдельной кнопкой):
+  1. `View deep data`
+  2. `Rename collection` · `Duplicate collection`
+  3. `Deactivate collection` · `Delete collection` (красный)
+  - `Duplicate collection` создаёт `{название} (copy)` с теми же каналами и тостом `Collection duplicated as «…»`.
+- **В строке My collections** пункт называется `Rename collection` (не `Edit collection`): правится только имя, поэтому открывается модалка `Rename collection` с текущим именем и кнопкой `Save`, а не переход на страницу коллекции. Переименование меняет имя в строке и в состоянии, тост — `Collection renamed`.
+- **Модалка `Add channels` / `New channels`:**
+  - в списках мультивыбора (`Find in base`, `Add to collection`) — обычные чекбоксы DS вместо иконок-закладок;
+  - футер как в остальных модалках: `Cancel` + основная кнопка, слева счётчик `Selected: N` (только на вкладке `Find in base` — у `Paste links` свой счётчик `One-time addition of channels: N/30`);
+  - заголовок на странице коллекции — `Add channels to {название}`.
