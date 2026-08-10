@@ -3071,7 +3071,7 @@ body.filters-open .an-filters.is-active { display: flex; }
 /* имя канала — ссылка на страницу канала */
 /* владелец коллекции рядом с названием */
 /* название с лимитом и кнопки — одной строкой, владелец строкой ниже */
-.ce-titlerow { display: flex; align-items: center; gap: 24px; flex-wrap: wrap; min-width: 0; }   /* как gap в шапке страницы */
+.ce-titlerow { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; min-width: 0; }
 .ce-page .an-head { align-items: center; margin-bottom: 4px; }
 /* если строка не влезает — кнопки уходят вниз, но остаются справа */
 .ce-page .an-head__btns { margin-left: auto; }
@@ -3101,8 +3101,8 @@ body.filters-open .an-filters.is-active { display: flex; }
 .ce-menu { position: relative; display: inline-flex; }
 /* квадратная кнопка «⋮»: общее правило кнопок в шапке даёт паддинг 16px, перебиваем */
 .an-page .an-head__btns .ce-menu__trig { width: 40px; padding: 0; justify-content: center; flex-shrink: 0; }
-/* иконка «⋮» крупнее общего правила 20px для кнопок в шапке */
-.an-page .an-head__btns .ce-menu__trig svg { width: 24px; height: 24px; color: var(--color-black); }
+/* «⋮» того же размера, что иконки остальных кнопок шапки */
+.an-page .an-head__btns .ce-menu__trig svg { width: 20px; height: 20px; color: var(--color-black); }
 /* меню коллекции — один в один как меню строки в списке коллекций (.mc-menu) */
 .ce-menu__pop { position: absolute; top: calc(100% + 6px); right: 0; z-index: 60; min-width: 210px; padding: 12px 8px;
   border: 1px solid var(--color-shade-200); border-radius: 12px; background: var(--color-white);
