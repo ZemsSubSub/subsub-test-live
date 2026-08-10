@@ -1318,7 +1318,8 @@
     });
     // если в таблице есть растущая колонка — раздачей остатка занимается flex, а не мы
     if (b.querySelector(".an-th--grow")) return;
-    var extra = Math.floor(wrap.clientWidth - total);
+    var avail = wrap.clientWidth - 1;   // 1px запаса: при дробном зуме иначе вылезает мёртвый скролл
+    var extra = Math.floor(avail - total);
     if (extra <= 0) {
       if (!HUG_SHRINK[key] || !extra) return;
       // не хватает ширины: отнимаем пропорционально, но не ниже HUG_MIN
@@ -1361,7 +1362,10 @@
       if (h.hidden || h.classList.contains("is-colhidden")) return;
       total += h.getBoundingClientRect().width;
     });
-    if (total <= wrap.clientWidth + 0.5) return;
+    // пересчитываем и когда вылезли за бокс, и когда после исчезновения скроллбара
+    // осталась заметная пустота справа (замер был сделан в другом состоянии)
+    var avail = wrap.clientWidth - 1;
+    if (total > avail - 4 && total <= avail) return;
     hugRetry[key] = 1;
     tblHug(key);
     delete hugRetry[key];
