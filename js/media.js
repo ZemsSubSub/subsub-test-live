@@ -1879,6 +1879,8 @@
         void rows[i].offsetWidth;
         rows[i].classList.add("ml-row--flash");
         if (rows[i].scrollIntoView) rows[i].scrollIntoView({ block: "center" });
+        // ?share=1 — сразу открыть шеринг файла (приход из меню отчёта)
+        if (qs.get("share") === "1" && typeof openShare === "function") openShare(want);
         break;
       }
     }

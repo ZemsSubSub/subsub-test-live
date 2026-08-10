@@ -2036,7 +2036,7 @@ function repActions(status, file) {
   return '<span class="rep-acts">' +
     '<button class="rep-act" type="button" data-rep-download aria-label="Download report" title="Download"' + dis + '>' + IC.save + '</button>' +
     '<button class="rep-act" type="button" data-rep-inml="' + esc(file || "") + '" aria-label="Show in Media Library" title="Show in Media Library"' + dis + '>' + IC.folder + '</button>' +
-    '<button class="rep-act rep-act--del" type="button" data-rep-del aria-label="Delete report" title="Delete"' + dis + '>' + IC.trash + '</button>' +
+    '<button class="rep-act" type="button" data-rep-more aria-label="Actions"' + dis + '>' + IC.dots + '</button>' +
   '</span>';
 }
 const REP_COLS_M = [
@@ -2245,7 +2245,7 @@ const reportsInner = `
       <div data-rep-panel="market">
         ${repPagi("repm")}
         <section class="an-tablewrap an-tablewrap--surface an-tablewrap--stick" data-an-tablewrap="repm">
-          <div class="an-table" data-an-table-body="repm">
+          <div class="an-table an-table--fill" data-an-table-body="repm">
             <div class="an-thead">${repHead(REP_COLS_M)}</div>
             <div class="an-tbody">${REP_ROWS_M.map(repRowM).join("")}</div>
           </div>
@@ -2255,13 +2255,23 @@ const reportsInner = `
       <div data-rep-panel="performance" hidden>
         ${repPagi("repp")}
         <section class="an-tablewrap an-tablewrap--surface an-tablewrap--stick" data-an-tablewrap="repp">
-          <div class="an-table" data-an-table-body="repp">
+          <div class="an-table an-table--fill" data-an-table-body="repp">
             <div class="an-thead">${repHead(REP_COLS_P)}</div>
             <div class="an-tbody">${REP_ROWS_P.map(repRowP).join("")}</div>
           </div>
         </section>
       </div>
     </section>
+
+    <!-- меню строки отчёта: как «⋮» у файла в Media Library -->
+    <div class="mc-menu" id="repMenu" hidden>
+      <button class="mc-menu__item" type="button" data-rep-act="share">${IC.share}Share</button>
+      <button class="mc-menu__item" type="button" data-rep-act="link">${IC.link}Copy file link</button>
+      <hr class="mc-menu__sep" />
+      <button class="mc-menu__item" type="button" data-rep-act="similar">${IC.copy}Create similar report</button>
+      <hr class="mc-menu__sep" />
+      <button class="mc-menu__item mc-menu__item--danger" type="button" data-rep-act="delete">${IC.trash}Delete report</button>
+    </div>
 
     ${repModalHtml}
 

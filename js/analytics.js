@@ -251,6 +251,11 @@
       return;
     }
     if (e.target.closest("[data-rp-submit]")) { repSubmit(); return; }
+    var repMoreBtn = e.target.closest("[data-rep-more]");
+    if (repMoreBtn) { e.stopPropagation(); repMenuOpen(repMoreBtn); return; }
+    var repAct = e.target.closest("[data-rep-act]");
+    if (repAct) { repMenuAct(repAct.getAttribute("data-rep-act")); return; }
+    if (!e.target.closest("#repMenu")) repMenuClose();
     if (e.target.closest("[data-rep-ready-dismiss]")) {
       var rc = document.querySelector("[data-rep-ready]"); if (rc) rc.hidden = true;
       return;
@@ -1087,8 +1092,15 @@
     return -1;
   }
   // «314m» → 314000000, «+3.6m» → 3600000, «19.11.2005» → таймстемп, иначе строка
+  // статусы сортируются по смыслу, а не по алфавиту: сначала то, что в работе
+  var STATUS_RANK = { "collecting data": 5, "in progress": 5, "sourcing…": 5, activated: 4, created: 3, inactive: 2 };
   function tblVal(row, idx) {
     var cell = row.children[idx];
+    var pill = cell ? cell.querySelector(".mc-status__t") : null;
+    if (pill) {
+      var rank = STATUS_RANK[String(pill.textContent || "").trim().toLowerCase()];
+      if (rank) return rank;
+    }
     var t = cell ? String(cell.textContent || "").trim() : "";
     if (!t || t === "—" || t === "–") return -Infinity;
     var d = t.match(/^(\d{2})\.(\d{2})\.(\d{4})$/);
@@ -4010,6 +4022,55 @@
     var url = "media-library-files.html?folder=analytics";
     if (file) url += "&file=" + encodeURIComponent(file);
     location.href = url;
+  }
+  // меню строки отчёта: позиционируем у кнопки, как меню строки в списке коллекций
+  var repMenuRow = null;
+  function repMenuClose() {
+    var m = document.getElementById("repMenu");
+    if (m) m.hidden = true;
+  }
+  function repMenuOpen(btn) {
+    var m = document.getElementById("repMenu");
+    if (!m) return;
+    repMenuRow = btn.closest("[data-rep-row]");
+    m.hidden = false;
+    var r = btn.getBoundingClientRect(), mw = m.offsetWidth || 200, mh = m.offsetHeight || 180;
+    m.style.top = Math.min(r.bottom + 6, window.innerHeight - mh - 8) + "px";
+    m.style.left = Math.max(8, r.right - mw) + "px";
+  }
+  function repMenuAct(type) {
+    var row = repMenuRow;
+    repMenuClose();
+    if (!row) return;
+    var file = row.getAttribute("data-file") || "";
+    if (type === "delete") { repDelAsk(row); return; }
+    if (type === "share") {                       // сам файл живёт в Media Library — там и шеринг
+      location.href = "media-library-files.html?folder=analytics&share=1&file=" + encodeURIComponent(file);
+      return;
+    }
+    if (type === "link") {
+      var url = "https://app.subsub.io/media/analytics/" + file;
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(url).then(function () { toast("Link copied"); }, function () { toast("Failed to copy link"); });
+      } else toast("Failed to copy link");
+      return;
+    }
+    if (type === "similar") {                     // те же тип и коллекция/канал, период выбирают заново
+      var typeTxt = (row.querySelector('[data-col="type"]') || {}).textContent || "";
+      var tgt = (row.querySelector('[data-col="collection"]') || row.querySelector('[data-col="channel"]') || {}).textContent || "";
+      repOpen();
+      if (typeTxt.trim()) repPick("type", typeTxt.trim() + " report");
+      if (tgt.trim()) repPick("target", tgt.trim());
+      repSync();
+      toast("Pick a period for the new report");
+    }
+  }
+  // проставить значение в дропдаун модалки (как при клике по пункту)
+  function repPick(sel, val) {
+    var el = document.querySelector('[data-rp-sel="' + sel + '"] [data-rp-val]');
+    if (!el) return;
+    el.textContent = val;
+    el.classList.remove("is-ph");
   }
   function repDelAsk(row) {
     repDelRow = row;
