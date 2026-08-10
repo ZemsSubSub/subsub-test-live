@@ -1215,17 +1215,20 @@
   // hug: колонка сужается до своего содержимого (шапка + видимые строки).
   // Исходная ширина остаётся потолком (data-w0) — колонки только ужимаются, не разъезжаются.
   // Закреплённые check/name и распорка stub не трогаются: от них зависят left-смещения.
-  var HUG_SKIP = { check: 1, name: 1, stub: 1 };
+  var HUG_SKIP = { check: 1, stub: 1 };
   function tblHug(key) {
     var b = tblBody(key);
     if (!b || b.offsetParent === null) return;
     var heads = [].slice.call(b.querySelectorAll(".an-thead .an-tr--head > *"));
     var all = tblAllRows(key);
+    // в таблицах каналов name закреплён слева: его ширина участвует в left-смещениях
+    var pinned = !!b.querySelector('[data-col="check"]') || !!b.querySelector(".an-th--stub");
     var grown = [];
     heads.forEach(function (h, i) {
       var col = h.getAttribute("data-col");
       // скрытые колонки пропускаем: их ширина 0, иначе запомним нулевой потолок
       if (!col || HUG_SKIP[col] || h.hidden || h.classList.contains("is-colhidden")) return;
+      if (col === "name" && pinned) return;
       if (h.classList.contains("an-th--grow")) return;   // растущая колонка сама заберёт остаток
       if (!h.getBoundingClientRect().width) return;
       // меряем по видимым строкам, а ширину ставим всем — иначе скрытые строки другой
@@ -2389,7 +2392,7 @@
         ncCheck(on) +
         '<span class="mc-ava nc-baseava" style="background:var(' + (c.color || "--color-avatar-3") + ')">' + escHtml(c.initial || c.name.charAt(0)) + "</span>" +
         '<span class="nc-item__name">' + escHtml(c.name) + "</span>" +
-        '<span class="nc-item__qty">' + escHtml(c.subs || "") + " subs</span>" +
+        '<span class="nc-subs mc-status mc-status--gray mc-status--sm">' + escHtml(c.subs || "") + " subs</span>" +
       "</button>";
     }).join("") || '<div class="nc-empty">No channels found</div>';
     var cnt = ncEl("[data-nc-base-count]");

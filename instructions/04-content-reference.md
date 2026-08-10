@@ -507,3 +507,13 @@ Analytics, Fan Funding (кроме того что на Home), Wallet (кром�
   - в списках мультивыбора (`Find in base`, `Add to collection`) — обычные чекбоксы DS вместо иконок-закладок;
   - футер как в остальных модалках: `Cancel` + основная кнопка, слева счётчик `Selected: N` (только на вкладке `Find in base` — у `Paste links` свой счётчик `One-time addition of channels: N/30`);
   - заголовок на странице коллекции — `Add channels to {название}`.
+
+## Reports — иконки, статус и ширина колонок (обновлено)
+
+- **Действия в строке** — прод-иконки (`ActionsCell.vue`): `OutlineIconSave` (скачать), `OutlineFolderIcon` (показать в Media Library), `OutlineIconDelete` (удалить, красная). Пока репорт `In progress`, все три неактивны — как в проде.
+- **Бейдж статуса** — `BaseStatus` mode green/orange: 32px, скругление полное, текст 14px medium, иконка в квадрате 16×16.
+- **Колонки** обеих таблиц (`Market insights`, `My performance`) ужимаются по содержимому и добирают ширину страницы; горизонтальный скролл появляется только когда содержимое реально не влезает (узкое окно).
+
+## Add channels — подписчики бейджем
+
+- В списке `Find in base` число подписчиков — мелкий серый бейдж (`BaseStatus` size sm, 24px), а не второй текст в строке.
