@@ -1918,7 +1918,8 @@ body.is-open:not(.is-collapsed) .main { margin-left: 306px; }
 .an-dr__day--end::before { left: 0; }
 .an-dr__day--edge .an-dr__d { background: var(--color-black); color: #fff; }
 .an-dr__day--edge:hover .an-dr__d { background: var(--color-black); }
-/* сегодня — фиолетовая точка (и на чёрном квадрате края тоже) */
+/* сегодня — фиолетовая точка; у выбранного дня она не нужна: он и так выделен */
+.an-dr__day--edge.an-dr__day--today::after { display: none; }
 .an-dr__day--today::after { content: ""; position: absolute; bottom: 2px; left: 50%; transform: translateX(-50%);
   width: 4px; height: 4px; border-radius: 50%; background: var(--color-purple-900); z-index: 2; }
 .an-dr__foot { display: flex; align-items: center; gap: 8px; padding: 12px 20px; border-top: 1px solid var(--color-shade-200); }
