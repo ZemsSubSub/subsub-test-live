@@ -1730,19 +1730,14 @@ function ceChanUrl(name, i) {
   return "https://www.youtube.com/channel/UC" + id;
 }
 // LINK — переход на страницу канала внутри продукта (как на проде)
-function ceLinkCell() {
-  return '<div class="an-td ce-linkcell" style="width:260px">' +
-    '<a class="ce-view" href="analytics-channel.html">View channel</a>' +
-  '</div>';
-}
-// внешняя ссылка на YouTube — вторичной строкой под именем канала
-function ceChanSub(name, i) {
+// колонка LINK: настоящая ссылка на YouTube + копирование (страница канала открывается по имени)
+function ceLinkCell(name, i) {
   const url = ceChanUrl(name, i);
   const short = url.replace(/^https?:\/\/(www\.)?/, "");
-  return '<span class="ce-chan__sub">' +
-    '<a class="ce-chan__yt" href="' + esc(url) + '" target="_blank" rel="noopener" title="' + esc(url) + '">' + esc(short) + '</a>' +
+  return '<div class="an-td ce-linkcell" style="width:260px">' +
+    '<a class="ce-view" href="' + esc(url) + '" target="_blank" rel="noopener" title="' + esc(url) + '">' + esc(short) + '</a>' +
     '<button class="ce-copy" type="button" data-ce-copy="' + esc(url) + '" aria-label="Copy link" title="Copy link">' + IC.copy + '</button>' +
-  '</span>';
+  '</div>';
 }
 // каналы коллекции берём из того же каталога, что и Basic data: первая порция приходит
 // со сборкой (её должно быть больше высоты бокса, чтобы был виден скролл), остальное
@@ -1759,10 +1754,10 @@ const ceBody = CE_ROWS.map(function (r, i) {
   return '<div class="an-tr" data-ce-row>' +
     '<div class="an-td an-td--check" style="width:40px"><button class="an-check" type="button" data-an-check aria-label="Select">' + IC.check + '</button></div>' +
     '<div class="an-td"><span class="ce-chan"><span class="mc-ava ce-ava" style="background:var(' + r[2] + ')">' + esc(r[1]) + '</span>' +
-      '<span class="ce-chan__txt"><span class="ce-chan__name">' + esc(r[0]) + '</span>' + ceChanSub(r[0], i) + '</span></span></div>' +
+      '<a class="ce-chan__name" href="analytics-channel.html?name=' + encodeURIComponent(r[0]) + '">' + esc(r[0]) + '</a></span></div>' +
     '<div class="an-td ce-num" style="width:120px">' + esc(r[3]) + '</div>' +
     '<div class="an-td ce-num" style="width:120px">' + esc(r[4]) + '</div>' +
-    ceLinkCell() +
+    ceLinkCell(r[0], i) +
     '<div class="an-td" style="width:100px"><button class="ce-trash" type="button" aria-label="Remove channel" data-ce-remove>' + IC.trash + '</button></div>' +
   '</div>';
 }).join("\n          ");

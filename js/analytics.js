@@ -3640,16 +3640,17 @@
       var ava = row.querySelector(".ce-ava");
       if (ava) { ava.textContent = ini; ava.setAttribute("style", "background:var(" + col + ")"); }
       var nmEl = row.querySelector(".ce-chan__name");
-      if (nmEl) nmEl.textContent = nm;
-      var yt = row.querySelector(".ce-chan__yt");
+      if (nmEl) {
+        nmEl.textContent = nm;
+        if (nmEl.tagName === "A") nmEl.setAttribute("href", "analytics-channel.html?name=" + encodeURIComponent(nm));
+      }
+      var yt = row.querySelector(".ce-view");
       if (yt) { yt.setAttribute("href", url); yt.setAttribute("title", url); yt.textContent = url.replace(/^https?:\/\/(www\.)?/, ""); }
       var cp = row.querySelector("[data-ce-copy]");
       if (cp) cp.setAttribute("data-ce-copy", url);
       var nums = row.querySelectorAll(".ce-num");
       if (nums[0]) nums[0].textContent = (info && info.views) || "—";
       if (nums[1]) nums[1].textContent = (info && info.subs) || "—";
-      var view = row.querySelector(".ce-view");
-      if (view) view.setAttribute("href", "analytics-channel.html?name=" + encodeURIComponent(nm));
       body.appendChild(row);
     });
     if (typeof ceFooter === "function") ceFooter();
@@ -4183,7 +4184,7 @@
     var shown = 0;
     rows.forEach(function (r) {
       var nm = (r.querySelector(".ce-chan__name") || {}).textContent || "";
-      var yt = (r.querySelector(".ce-chan__yt") || {}).textContent || "";
+      var yt = (r.querySelector(".ce-view") || {}).textContent || "";   // поиск и по ссылке канала
       var ok = !q || (nm + " " + yt).toLowerCase().indexOf(q) !== -1;
       r.hidden = !ok;
       if (ok) shown++;
@@ -4211,10 +4212,15 @@
     return '<div class="an-tr" data-ce-row>' +
       '<div class="an-td an-td--check" style="width:40px"><button class="an-check" type="button" data-an-check aria-label="Select"></button></div>' +
       '<div class="an-td"><span class="ce-chan"><span class="mc-ava ce-ava" style="background:var(' + color + ')">' +
-        escHtml(c.initial || (c.name || "?").charAt(0)) + '</span><span class="ce-chan__name">' + escHtml(c.name) + '</span></span></div>' +
+        escHtml(c.initial || (c.name || "?").charAt(0)) + '</span><a class="ce-chan__name" href="analytics-channel.html?name=' +
+        encodeURIComponent(c.name) + '">' + escHtml(c.name) + '</a></span></div>' +
       '<div class="an-td ce-num" style="width:120px">' + escHtml(c.views || "—") + '</div>' +
       '<div class="an-td ce-num" style="width:120px">' + escHtml(c.subs || "—") + '</div>' +
-      '<div class="an-td" style="width:200px"><a class="ce-view" href="#" tabindex="-1">View channel</a></div>' +
+      '<div class="an-td ce-linkcell" style="width:260px">' +
+        '<a class="ce-view" href="' + ceUrl(c.name) + '" target="_blank" rel="noopener" title="' + ceUrl(c.name) + '">' +
+          escHtml(ceUrl(c.name).replace(/^https?:\/\/(www\.)?/, "")) + '</a>' +
+        '<button class="ce-copy" type="button" data-ce-copy="' + ceUrl(c.name) + '" aria-label="Copy link" title="Copy link"></button>' +
+      '</div>' +
       '<div class="an-td" style="width:100px"><button class="ce-trash" type="button" aria-label="Remove channel" data-ce-remove></button></div>' +
     '</div>';
   }

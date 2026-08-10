@@ -3009,12 +3009,9 @@ body.filters-open .an-filters.is-active { display: flex; }
 
 /* ================= страница коллекции: тулбар, шеринг, «⋮»-меню ================= */
 /* вторичная строка под именем канала: внешняя ссылка + копирование */
-.ce-chan__txt { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
-.ce-chan__sub { display: flex; align-items: center; gap: 4px; min-width: 0; }
-.ce-chan__yt { max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-  font-size: 12px; font-weight: 300; color: var(--color-shade-700); text-decoration: none; }
-.ce-chan__yt:hover { color: var(--color-black); text-decoration: underline; }
-.ce-chan__sub .ce-copy svg { width: 14px; height: 14px; }
+/* имя канала — ссылка на страницу канала */
+.ce-chan__name { text-decoration: none; }
+.ce-chan__name:hover { text-decoration: underline; text-underline-offset: 3px; }
 /* «⋮»-меню действий коллекции */
 .ce-menu { position: relative; display: inline-flex; }
 /* квадратная кнопка «⋮»: общее правило кнопок в шапке даёт паддинг 16px, перебиваем */
