@@ -2143,7 +2143,8 @@ body.is-open:not(.is-collapsed) .main { margin-left: 306px; }
 .mc-status__t { white-space: nowrap; }
 .mc-status__sep { width: 1px; height: 16px; margin: 0 4px; flex-shrink: 0; background: currentColor; opacity: .3; }
 .mc-status__link { border: 0; background: transparent; padding: 0; font-family: inherit; font-size: 14px; font-weight: 400; color: var(--color-black); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; white-space: nowrap; }
-.mc-status__link:hover { text-decoration: none; }
+/* подчёркивание снимается и при наведении на всю пилюлю/ячейку, а не только на текст */
+.mc-status__link:hover, .mc-status:hover .mc-status__link, .mc-statuscell:hover .mc-status__link { text-decoration: none; }
 .mc-status--green { background: var(--color-green-10); color: var(--color-green-dark); }
 .mc-status--orange { background: #fbead7; color: var(--color-orange); }
 .mc-status--gray { background: var(--color-shade-100); color: var(--color-shade-700); }
@@ -2170,7 +2171,9 @@ body.is-open:not(.is-collapsed) .main { margin-left: 306px; }
 .an-table--fill .an-tbody .an-tr:hover .an-td { background: var(--color-shade-90); }
 /* название коллекции кликабельно → курсор и подчёркивание на ховере строки */
 [data-mc-row] .mc-name { cursor: pointer; }
-[data-mc-row]:hover .mc-name { text-decoration: underline; text-underline-offset: 3px; }
+/* клик в любом месте ячейки названия открывает коллекцию */
+[data-mc-row] .an-td--grow { cursor: pointer; }
+/* подчёркивание на ховере не нужно: вся ячейка и так кликабельна */
 /* чипы каналов и аватары чуть контрастнее на подсвеченной строке */
 .an-table--fill .an-tbody .an-tr:hover .mc-chip { background: var(--color-shade-200); }
 
@@ -2180,12 +2183,16 @@ body.is-open:not(.is-collapsed) .main { margin-left: 306px; }
 .mc-search--full { width: 100%; }
 
 /* меню действий строки (⋮) */
-.mc-menu { position: fixed; z-index: 1200; min-width: 200px; /* выше топбара, ниже модалок */ padding: 6px; background: #fff; border: 2px solid var(--color-shade-100); border-radius: 8px; box-shadow: 0 4px 19px rgba(0,0,0,.08); }
+.mc-menu { position: fixed; z-index: 1200; min-width: 210px; /* выше топбара, ниже модалок */ padding: 12px 8px;
+  background: var(--color-white); border: 1px solid var(--color-shade-200); border-radius: 12px;
+  box-shadow: 0 4px 24px rgba(34, 41, 47, 0.12); }
 .mc-menu[hidden] { display: none; }
-.mc-menu__item { display: flex; align-items: center; gap: 8px; width: 100%; padding: 9px 12px; border: 0; background: transparent; border-radius: 6px; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 400; color: var(--color-black); text-align: left; white-space: nowrap; }
+.mc-menu__item { display: flex; align-items: center; gap: 8px; width: 100%; padding: 8px 12px; border: 0; background: none;
+  border-radius: 8px; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 400; color: var(--color-black);
+  text-align: left; white-space: nowrap; }
 .mc-menu__item[hidden] { display: none; }   /* display: flex перебивал скрытие пункта */
 .mc-menu__item:hover { background: var(--color-shade-100); }
-.mc-menu__sep { height: 1px; margin: 6px 8px; border: 0; background: var(--color-shade-200); }
+.mc-menu__sep { height: 1px; margin: 6px 4px; border: 0; background: var(--color-shade-200); }
 .mc-menu__sep[hidden] { display: none; }
 /* действия строки: шеринг + «⋮» */
 .mc-acts { display: flex; align-items: center; justify-content: flex-end; gap: 4px; }
@@ -3059,18 +3066,19 @@ body.filters-open .an-filters.is-active { display: flex; }
 /* иконка «⋮» крупнее общего правила 20px для кнопок в шапке */
 .an-page .an-head__btns .ce-menu__trig svg { width: 24px; height: 24px; color: var(--color-black); }
 /* меню коллекции — один в один как меню строки в списке коллекций (.mc-menu) */
-.ce-menu__pop { position: absolute; top: calc(100% + 6px); right: 0; z-index: 60; min-width: 200px; padding: 6px;
-  border: 2px solid var(--color-shade-100); border-radius: 8px; background: #fff; box-shadow: 0 4px 19px rgba(0,0,0,.08); }
+.ce-menu__pop { position: absolute; top: calc(100% + 6px); right: 0; z-index: 60; min-width: 210px; padding: 12px 8px;
+  border: 1px solid var(--color-shade-200); border-radius: 12px; background: var(--color-white);
+  box-shadow: 0 4px 24px rgba(34, 41, 47, 0.12); }
 .ce-menu__pop[hidden] { display: none; }
-.ce-menu__item { display: flex; align-items: center; gap: 8px; width: 100%; padding: 9px 12px; border: 0; border-radius: 6px;
-  background: transparent; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 400; color: var(--color-black);
+.ce-menu__item { display: flex; align-items: center; gap: 8px; width: 100%; padding: 8px 12px; border: 0; border-radius: 8px;
+  background: none; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 400; color: var(--color-black);
   text-align: left; white-space: nowrap; }
 .ce-menu__item[hidden] { display: none; }   /* display: flex перебивал скрытие пункта */
 .ce-menu__item svg { width: 16px; height: 16px; flex-shrink: 0; }
 .ce-menu__item:hover { background: var(--color-shade-100); }
 .ce-menu__item--danger { color: var(--color-red); }
 .ce-menu__item--danger:hover { background: var(--color-red-shade-100, #ffebeb); }
-.ce-menu__sep { height: 1px; margin: 6px 8px; border: 0; background: var(--color-shade-200); }
+.ce-menu__sep { height: 1px; margin: 6px 4px; border: 0; background: var(--color-shade-200); }
 .ce-menu__sep[hidden] { display: none; }
 /* попап шеринга — композиция как в шеринге Media Library, но без публичной ссылки */
 /* попап шеринга: те же размеры, что у шеринга в Media Library (.ml-share*) */

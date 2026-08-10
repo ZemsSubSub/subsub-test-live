@@ -2207,7 +2207,7 @@
       return;
     }
     // клик по названию коллекции в списке → страница открытой коллекции
-    var nameCell = e.target.closest(".mc-name");
+    var nameCell = e.target.closest(".mc-name") || e.target.closest("[data-mc-row] .an-td--grow");
     if (nameCell && nameCell.closest("[data-mc-row]")) {
       window.location.href = mcCollectionUrl(nameCell.closest("[data-mc-row]"));
       return;
