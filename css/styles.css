@@ -2300,9 +2300,11 @@ body.is-open:not(.is-collapsed) .main { margin-left: 306px; }
 .mc-toolbar.is-tight .an-ctype__full { display: none; }
 .mc-toolbar.is-tight .an-ctype__short { display: inline; }
 .mc-toolbar.is-tight .mc-search { width: 200px; }
-.an-ctype__qty { display: inline-flex; align-items: center; justify-content: center; min-width: 20px; height: 18px;
-  margin-left: 0; padding: 0 5px; border-radius: 4px; background: var(--color-shade-200); box-sizing: border-box;
-  font-size: 11px; font-weight: 500; color: var(--color-shade-800); }
+/* бейдж-счётчик в сегменте: белая плашка с рамкой, как в табах настроек */
+.an-ctype__qty { display: inline-flex; align-items: center; justify-content: center; min-width: 22px; height: 22px;
+  margin-left: 0; padding: 0 6px; border: 1px solid var(--color-shade-200); border-radius: 6px; background: #fff;
+  box-sizing: border-box; font-size: 12px; font-weight: 500; color: var(--color-shade-800); }
+.an-ctype__btn.is-on .an-ctype__qty { border-color: var(--color-shade-200); color: var(--color-black); }
 /* бейджи применённых фильтров над таблицей */
 .an-fchips { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 .an-fchips[hidden] { display: none; }
