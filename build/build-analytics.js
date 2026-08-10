@@ -586,10 +586,12 @@ function ncModal(opts) {
           <h2 class="an-modal__title" data-nc-title>${esc(opts.title)}</h2>
           <button class="an-modal__x" type="button" data-nc-close aria-label="Close">${IC.closeBold}</button>
         </header>
-        <!-- D2: два входа — вставить ссылки или найти канал в базе -->
-        <nav class="nc-tabs" data-nc-tabs>
-          <button class="nc-tab is-active" type="button" data-nc-tab="links">Paste links</button>
-          <button class="nc-tab" type="button" data-nc-tab="base">Find in base</button>
+        <!-- входы: вставить ссылки, найти в базе и (на странице коллекции) расширить коллекцию ИИ-поиском.
+             Переключатель — сегментом, как табы в Media Library. -->
+        <nav class="nc-seg" data-nc-tabs>
+          <button class="nc-seg__btn is-active" type="button" data-nc-tab="links">Paste links</button>
+          <button class="nc-seg__btn" type="button" data-nc-tab="base">Find in base</button>${withColls ? "" : `
+          <button class="nc-seg__btn" type="button" data-nc-tab="ai">Expand with AI</button>`}
         </nav>
         <div class="an-modal__body nc-body">
           <div class="nc-pane" data-nc-pane="base" hidden>
@@ -598,7 +600,42 @@ function ncModal(opts) {
             </div>
             <div class="nc-base" data-nc-base></div>
           </div>
-          <div class="nc-pane" data-nc-pane="links">
+${withColls ? "" : `          <div class="nc-pane nc-ai" data-nc-pane="ai" hidden>
+            <p class="nc-ai__note">${IC.aiStarsSolid}<span>We build the prompt from this collection — its channels and their niche. Check it before you start.</span></p>
+            <div class="nc-ai__field">
+              <div class="nc-ai__lblrow">
+                <label class="an-label" for="ncAiPrompt">Describe the channels you're looking for</label>
+                <button class="nc-ai__regen" type="button" data-nc-ai-regen>${IC.aiStars}Rebuild from collection</button>
+              </div>
+              <textarea class="an-input nc-textarea" id="ncAiPrompt" rows="4" data-nc-ai-prompt placeholder="Describe the channels you want to add"></textarea>
+              <p class="nc-ai__help">We turn this into real YouTube search queries in your audience's language and judge every candidate against it.</p>
+            </div>
+            <div class="nc-ai__field">
+              <span class="an-label">Reference channels<span class="nc-ai__cnt" data-nc-ai-cnt>0</span></span>
+              <div class="nc-ai__refs" data-nc-ai-refs></div>
+              <p class="nc-ai__help">The whole collection is used as a reference. Channels that are already here are skipped in the results.</p>
+            </div>
+            <details class="nc-ai__adv">
+              <summary class="nc-ai__sum"><span class="nc-ai__chev" aria-hidden="true">${IC.chevSelect}</span>Advanced filters</summary>
+              <div class="nc-ai__advbody">
+                <div class="nc-ai__grid">
+                  <div class="nc-ai__f"><label class="an-label" for="ncAiSubs">Min subscribers</label>
+                    <input class="an-input" id="ncAiSubs" type="number" min="0" value="10000" data-nc-ai-subs /></div>
+                  <div class="nc-ai__f"><label class="an-label" for="ncAiVideos">Min videos</label>
+                    <input class="an-input" id="ncAiVideos" type="number" min="0" value="0" data-nc-ai-videos /></div>
+                  <div class="nc-ai__f"><label class="an-label" for="ncAiViews">Min total views</label>
+                    <input class="an-input" id="ncAiViews" type="number" min="0" value="0" data-nc-ai-views /></div>
+                </div>
+                <div class="nc-ai__grid nc-ai__grid--2">
+                  <div class="nc-ai__f"><label class="an-label" for="ncAiAvg">Min avg views (last 3 videos)</label>
+                    <input class="an-input" id="ncAiAvg" type="number" min="0" value="0" data-nc-ai-avg /></div>
+                  <div class="nc-ai__f"><label class="an-label" for="ncAiLast">Max days since last video</label>
+                    <input class="an-input" id="ncAiLast" type="number" min="0" value="0" data-nc-ai-last /></div>
+                </div>
+              </div>
+            </details>
+          </div>
+`}          <div class="nc-pane" data-nc-pane="links">
           <div class="nc-links">
             <label class="an-label" for="ncLinks">YouTube channels links</label>
             <textarea class="an-input nc-textarea" id="ncLinks" rows="4" data-nc-links
@@ -1991,36 +2028,56 @@ function repHead(cols) {
 const REP_ROWS_M = [
   { name: "Crypto Report 2026 July", created: "13.07.2026", period: "July 2026 - July 2026",
     coll: "Crypto", type: "Basic", status: "created", file: "crypto-basic-report-1.xlsx" },
+  { name: "News UA deep dive", created: "02.08.2026", period: "May 2026 - July 2026",
+    coll: "News UA - Big Media", type: "Deep", status: "created", file: "news-ua-deep-report-1.xlsx" },
+  { name: "Gaming UA quarterly", created: "29.07.2026", period: "April 2026 - June 2026",
+    coll: "Gaming UA", type: "Basic", status: "created", file: "gaming-ua-basic-report-1.xlsx" },
+  { name: "Tech Reviews H1", created: "21.07.2026", period: "January 2026 - June 2026",
+    coll: "Tech Reviews", type: "Deep", status: "created", file: "tech-reviews-deep-report-1.xlsx" },
+  { name: "Crypto Report 2026 June", created: "05.07.2026", period: "June 2026 - June 2026",
+    coll: "Crypto", type: "Basic", status: "created", file: "crypto-basic-report-2.xlsx" },
+  { name: "News UA August", created: "09.08.2026", period: "July 2026 - August 2026",
+    coll: "News UA - Big Media", type: "Basic", status: "progress", file: "" },
 ];
 const REP_ROWS_P = [
   { name: "Eugene Zemskov", created: "07.08.2026", period: "January 2026 - August 2026",
     chan: "Zems Racing", status: "progress", file: "" },
+  { name: "Zems Racing — summer", created: "01.08.2026", period: "June 2026 - July 2026",
+    chan: "Zems Racing", status: "created", file: "zems-racing-report-1.xlsx" },
+  { name: "Hunt Squad monthly", created: "24.07.2026", period: "June 2026 - June 2026",
+    chan: "Hunt Squad", status: "created", file: "hunt-squad-report-1.xlsx" },
+  { name: "Hunt Squad H1", created: "10.07.2026", period: "January 2026 - June 2026",
+    chan: "Hunt Squad", status: "created", file: "hunt-squad-report-2.xlsx" },
+  { name: "Eugene Zemskov — spring", created: "28.06.2026", period: "March 2026 - May 2026",
+    chan: "Eugene Zemskov", status: "created", file: "eugene-zemskov-report-1.xlsx" },
 ];
 function repRowM(r) {
   return '<div class="an-tr" data-rep-row data-file="' + esc(r.file || "") + '">' +
-    '<div class="an-td an-td--plain" style="width:300px" data-col="name">' + esc(r.name) + '</div>' +
-    '<div class="an-td an-td--plain" style="width:140px" data-col="created">' + esc(r.created) + '</div>' +
-    '<div class="an-td an-td--plain" style="width:240px" data-col="period">' + esc(r.period) + '</div>' +
-    '<div class="an-td an-td--plain" style="width:220px" data-col="collection">' + esc(r.coll) + '</div>' +
-    '<div class="an-td an-td--plain" style="width:120px" data-col="type">' + esc(r.type) + '</div>' +
+    '<div class="an-td an-td--plain rep-name" style="width:300px" data-col="name"><span class="rep-cell">' + esc(r.name) + '</span></div>' +
+    '<div class="an-td an-td--plain" style="width:140px" data-col="created"><span class="rep-cell">' + esc(r.created) + '</span></div>' +
+    '<div class="an-td an-td--plain" style="width:240px" data-col="period"><span class="rep-cell">' + esc(r.period) + '</span></div>' +
+    '<div class="an-td an-td--plain" style="width:220px" data-col="collection">' +
+      '<a class="rep-collink rep-cell" href="analytics-collection-edit.html?name=' + encodeURIComponent(r.coll) + '">' + esc(r.coll) + '</a></div>' +
+    '<div class="an-td an-td--plain" style="width:120px" data-col="type"><span class="rep-cell">' + esc(r.type) + '</span></div>' +
     '<div class="an-td" style="width:160px" data-col="status">' + REP_STATUS[r.status] + '</div>' +
     '<div class="an-td" style="width:140px" data-col="actions">' + repActions(r.status, r.file) + '</div>' +
   '</div>';
 }
 function repRowP(r) {
   return '<div class="an-tr" data-rep-row data-file="' + esc(r.file || "") + '">' +
-    '<div class="an-td an-td--plain" style="width:300px" data-col="name">' + esc(r.name) + '</div>' +
-    '<div class="an-td an-td--plain" style="width:140px" data-col="created">' + esc(r.created) + '</div>' +
-    '<div class="an-td an-td--plain" style="width:240px" data-col="period">' + esc(r.period) + '</div>' +
-    '<div class="an-td an-td--plain" style="width:220px" data-col="channel">' + esc(r.chan) + '</div>' +
+    '<div class="an-td an-td--plain rep-name" style="width:300px" data-col="name"><span class="rep-cell">' + esc(r.name) + '</span></div>' +
+    '<div class="an-td an-td--plain" style="width:140px" data-col="created"><span class="rep-cell">' + esc(r.created) + '</span></div>' +
+    '<div class="an-td an-td--plain" style="width:240px" data-col="period"><span class="rep-cell">' + esc(r.period) + '</span></div>' +
+    '<div class="an-td an-td--plain" style="width:220px" data-col="channel"><span class="rep-cell">' + esc(r.chan) + '</span></div>' +
     '<div class="an-td" style="width:160px" data-col="status">' + REP_STATUS[r.status] + '</div>' +
     '<div class="an-td" style="width:140px" data-col="actions">' + repActions(r.status, r.file) + '</div>' +
   '</div>';
 }
 function repPagi(key) {
+  const total = key === "repm" ? REP_ROWS_M.length : REP_ROWS_P.length;
   return '<section class="an-pagi" data-an-table="' + key + '">' +
     '<div class="an-pagi__label"><span class="an-pagi__name">Reports</span>' +
-      '<span class="an-pagi__total">1</span></div>' +
+      '<span class="an-pagi__total">' + total + '</span></div>' +
     '<div class="an-pagi__ctrls">' +
       '<span class="an-pagi__pages">Pages: 1</span>' +
       '<div class="an-pagi__nav">' +

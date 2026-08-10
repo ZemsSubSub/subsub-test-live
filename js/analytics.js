@@ -366,6 +366,7 @@
     if (e.target.closest("[data-nc-submit]")) { ncSubmit(); return; }
     var ncTb = e.target.closest("[data-nc-tab]");
     if (ncTb) { ncSetTab(ncTb.getAttribute("data-nc-tab")); return; }        // D2
+    if (e.target.closest("[data-nc-ai-regen]")) { ncAiRegen(); return; }
     var ncBi = e.target.closest("[data-nc-base-item]");
     if (ncBi) {
       var bn = ncBi.getAttribute("data-nc-base-item");
@@ -540,6 +541,8 @@
   if (ncSq) ncSq.addEventListener("input", ncRender);
   var ncBq = document.querySelector("[data-nc-base-search]");
   if (ncBq) ncBq.addEventListener("input", ncBaseRender);
+  var ncAiTa = document.querySelector("[data-nc-ai-prompt]");
+  if (ncAiTa) ncAiTa.addEventListener("input", ncSync);
   var ncNi = document.querySelector("[data-nc-new-name]");
   if (ncNi) ncNi.addEventListener("keyup", function (e) { if (e.key === "Enter") ncCreate(); });
   // C3: поиск по коллекциям — мгновенно
@@ -1216,6 +1219,13 @@
   // Исходная ширина остаётся потолком (data-w0) — колонки только ужимаются, не разъезжаются.
   // Закреплённые check/name и распорка stub не трогаются: от них зависят left-смещения.
   var HUG_SKIP = { check: 1, stub: 1 };
+  // колонки, которые не участвуют в доборе ширины: кнопки не должны разъезжаться
+  var HUG_NOFILL = { actions: 1 };
+  // таблицы, которые всегда влезают в серфейс: не хватает места — ужимаем колонки с обрезкой
+  var HUG_SHRINK = { repm: 1, repp: 1 };
+  // колонки фиксированного формата (дата, тип, статус) не обрезаем — ужимаем только текстовые
+  var HUG_NOSHRINK = { created: 1, type: 1, status: 1 };
+  var HUG_MIN = 72;
   function tblHug(key) {
     var b = tblBody(key);
     if (!b || b.offsetParent === null) return;
@@ -1246,9 +1256,9 @@
       meas.forEach(function (c) { c.style.width = "max-content"; });
       var need = 0;
       meas.forEach(function (c) { need = Math.max(need, c.getBoundingClientRect().width); });
-      var w = Math.min(Math.ceil(need) + 8, w0);
+      var w = Math.min(Math.ceil(need) + (HUG_SHRINK[key] ? 2 : 8), w0);   // где ширина в дефиците, запас минимальный
       cells.forEach(function (c) { c.style.width = w + "px"; });
-      grown.push({ w: w, cells: cells });
+      if (!HUG_NOFILL[col]) grown.push({ w: w, cells: cells, col: col });
     });
     // колонки уже серфейса — растягиваем их до его ширины (fill), шире — оставляем hug и скролл
     var wrap = document.querySelector('[data-an-tablewrap="' + key + '"]');
@@ -1261,7 +1271,26 @@
     // если в таблице есть растущая колонка — раздачей остатка занимается flex, а не мы
     if (b.querySelector(".an-th--grow")) return;
     var extra = Math.floor(wrap.clientWidth - total);
-    if (extra <= 0) return;
+    if (extra <= 0) {
+      if (!HUG_SHRINK[key] || !extra) return;
+      // не хватает ширины: отнимаем пропорционально, но не ниже HUG_MIN
+      var need2 = -extra;
+      for (var pass = 0; pass < 3 && need2 > 0; pass++) {
+        var pool = grown.filter(function (g) { return g.w > HUG_MIN && !HUG_NOSHRINK[g.col]; });
+        if (!pool.length) break;
+        var poolW = pool.reduce(function (s, g) { return s + g.w; }, 0);
+        var cut = 0;
+        pool.forEach(function (g, i) {
+          var take = i === pool.length - 1 ? need2 - cut : Math.floor(need2 * g.w / poolW);
+          var w2 = Math.max(HUG_MIN, g.w - take);
+          cut += g.w - w2;
+          g.w = w2;
+          g.cells.forEach(function (c) { c.style.width = w2 + "px"; });
+        });
+        need2 -= cut;
+      }
+      return;
+    }
     var base = grown.reduce(function (s, g) { return s + g.w; }, 0);
     var used = 0;
     grown.forEach(function (g, i) {
@@ -2327,6 +2356,9 @@
             var res = aiAppendFound(done.target, done);   // дедуп внутри
             msg = "Added " + res.added + " channel" + (res.added === 1 ? "" : "s") + " to “" + done.target + "”" +
                   (res.skipped ? " · " + res.skipped + " already there" : "");
+            // открыта эта же коллекция — дорисовываем строки, чтобы не перезагружать страницу
+            if (res.names.length && typeof ceAddRows === "function" &&
+                typeof ceName === "function" && ceName() === done.target) ceAddRows(res.names);
           } else if (done) {
             done.channels = AI_FOUND.slice();
           }
@@ -2404,6 +2436,99 @@
     if (cnt) cnt.textContent = String(Object.keys(ncBaseSel).length);
     ncSync();
   }
+  // ---- третий вход: расширение коллекции ИИ-поиском ----
+  // промпт собираем из текущего состояния коллекции: её каналы и (если была) исходная заявка
+  function ncAiPrompt() {
+    var ta = ncEl("[data-nc-ai-prompt]");
+    return ta ? ta.value.trim() : "";
+  }
+  function ncAiDraft() {
+    var coll = ncPageColl(), chans = ncAiRefs();
+    if (!chans.length) return "Channels for “" + coll + "” — same niche, format and audience language. " +
+      "Mid-size creators publishing regularly; exclude compilations and reuploads.";
+    var head = "More channels like " + chans.slice(0, 3).join(", ") +
+      (chans.length > 3 ? " and " + (chans.length - 3) + " more from “" + coll + "”" : "");
+    var rec = (typeof aiCollByName === "function" ? aiCollByName(coll) : null);
+    var extra = (typeof aiExtraLoad === "function" ? aiExtraLoad()[coll] : null);
+    var was = (rec && rec.query) || (extra && extra.sourcing && extra.sourcing.query) || "";
+    return head + " — same niche, format and audience language. " +
+      (was ? "Keep the original request: " + was + " " : "") +
+      "Mid-size creators publishing regularly with steady growth; exclude compilations and reuploads.";
+  }
+  function ncAiRefs() {
+    // референс — то, что реально в открытой коллекции: строки таблицы, иначе состояние
+    var out = [].slice.call(document.querySelectorAll("[data-ce-row] .ce-chan__name")).map(function (n) {
+      return n.textContent.trim();
+    });
+    if (out.length) return out;
+    return (typeof aiChannelsOf === "function" ? aiChannelsOf(ncPageColl()) : []);
+  }
+  function ncAiRefsRender() {
+    var box = ncEl("[data-nc-ai-refs]"), cnt = ncEl("[data-nc-ai-cnt]");
+    if (!box) return;
+    var list = ncAiRefs(), pool = (typeof aiChannelPool === "function" ? aiChannelPool() : []);
+    if (cnt) cnt.textContent = String(list.length);
+    var shown = list.slice(0, 8);
+    box.innerHTML = shown.map(function (n) {
+      var meta = null;
+      for (var i = 0; i < pool.length; i++) if (pool[i].name === n) meta = pool[i];
+      var ava = '<span class="mc-ava" style="background:var(' + ((meta && meta.color) || "--color-avatar-3") + ')">' +
+        escHtml((meta && meta.initial) || n.charAt(0)) + "</span>";
+      return '<span class="nc-ai__chip">' + ava + escHtml(n) + "</span>";
+    }).join("") + (list.length > shown.length
+      ? '<span class="nc-ai__chip nc-ai__chip--more">+' + (list.length - shown.length) + " more</span>" : "");
+  }
+  // открытие таба: референсы и черновик промпта (правки пользователя не перетираем)
+  function ncAiPrepare() {
+    ncAiRefsRender();
+    var ta = ncEl("[data-nc-ai-prompt]");
+    if (ta && !ta.value.trim()) ta.value = ncAiDraft();
+  }
+  var ncAiRegenT = null;
+  function ncAiRegen() {
+    var btn = ncEl("[data-nc-ai-regen]"), ta = ncEl("[data-nc-ai-prompt]");
+    if (!btn || !ta || ncAiRegenT) return;
+    var was = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = "Reading the collection…";
+    ta.value = "";
+    ta.placeholder = "Reading the collection…";
+    ncSync();
+    ncAiRegenT = setTimeout(function () {
+      ncAiRegenT = null;
+      btn.disabled = false;
+      btn.innerHTML = was;
+      ta.placeholder = "Describe the channels you want to add";
+      ta.value = ncAiDraft();
+      ncAiRefsRender();
+      ncSync();
+      toast("Prompt rebuilt from the collection — edit it before starting");
+    }, 1400);
+  }
+  function ncAiFilters() {
+    function v(sel, def) {
+      var el = ncEl(sel), n = el ? parseInt(el.value, 10) : NaN;
+      return isNaN(n) ? def : n;
+    }
+    return { subs: v("[data-nc-ai-subs]", 10000), videos: v("[data-nc-ai-videos]", 0),
+             views: v("[data-nc-ai-views]", 0), avg: v("[data-nc-ai-avg]", 0), lastDays: v("[data-nc-ai-last]", 0) };
+  }
+  // запуск: та же очередь sourcing, что у AI-коллекции, только в режиме «дописать в коллекцию»
+  function ncAiStart() {
+    var coll = ncPageColl(), query = ncAiPrompt();
+    if (!coll || !query) { toast("Describe the channels you're looking for"); return; }
+    var now = Date.now(), d = new Date(now);
+    var list = aiLoad();
+    list.push({ id: "ai" + now, mode: "append", target: coll, name: coll, isAi: false,
+                query: query, seed: "", filters: ncAiFilters(), status: "pending",
+                readyAt: now + AI_BUILD_MS,
+                created: ("0" + d.getDate()).slice(-2) + "." + ("0" + (d.getMonth() + 1)).slice(-2) + "." + d.getFullYear() });
+    aiSave(list);
+    closeModal(document.getElementById("ncModal"));
+    toast("AI search started — new channels will be added to “" + coll + "”");
+    aiTick();
+    if (typeof aiRenderCollections === "function") aiRenderCollections();
+  }
   function ncSetTab(tab) {
     ncTab = tab;
     [].slice.call(document.querySelectorAll("[data-nc-tab]")).forEach(function (b) {
@@ -2414,9 +2539,17 @@
     });
     var selw = document.querySelector("[data-nc-selwrap]");
     if (selw) selw.hidden = tab !== "base";
+    var sb = ncEl("[data-nc-submit]");
+    if (sb) sb.textContent = tab === "ai" ? "Start AI search" : "Add channels";
+    if (tab === "ai") ncAiPrepare();
     ncSync();
   }
   function ncSync() {
+    if (ncTab === "ai") {
+      var sbAi = ncEl("[data-nc-submit]");
+      if (sbAi) sbAi.disabled = !ncAiPrompt();
+      return;
+    }
     var n = ncTab === "base" ? Object.keys(ncBaseSel).length : ncLinks().length;
     var cnt = ncEl("[data-nc-count]"); if (cnt) cnt.textContent = String(ncLinks().length);
     var lim = ncEl("[data-nc-limit]"); if (lim) lim.hidden = ncLinks().length <= NC_MAX;
@@ -2443,6 +2576,8 @@
     ncNewForm(false);
     ncBaseSel = {};
     var bq = ncEl("[data-nc-base-search]"); if (bq) bq.value = "";
+    var aiTa2 = ncEl("[data-nc-ai-prompt]");
+    if (aiTa2) aiTa2.value = "";                 // промпт пересобираем от текущего состояния коллекции
     if (document.querySelector("[data-nc-tab]")) { ncSetTab("links"); ncBaseRender(); }
     ncSync();
     openModal("ncModal");
@@ -2482,6 +2617,7 @@
     if (touched) aiSave(list);
   }
   function ncSubmit() {
+    if (ncTab === "ai") { ncAiStart(); return; }
     // D2: из таба «Find in base» берём выбранные каналы, иначе — разобранные ссылки
     var names;
     if (ncTab === "base") {
@@ -2614,7 +2750,7 @@
       }
     });
     if (touched) aiSave(list);
-    return { added: added.length, skipped: skipped };
+    return { added: added.length, skipped: skipped, names: added };
   }
 
   // --- My collections: строки AI-коллекций (сверху списка) ---
@@ -3463,31 +3599,37 @@
   // страница открытой коллекции: имя из ?name= (заголовок формы)
   // P1.11: строки для добавленных каналов — цифр по ним нет, ставим «—»
   function ceAddRows(names) {
-    var body = document.querySelector(".ce-table .an-tbody") ||
-               (document.querySelector("[data-ce-row]") && document.querySelector("[data-ce-row]").parentNode);
-    if (!body) return;
+    var proto = document.querySelector("[data-ce-row]");
+    if (!proto) return;
+    var body = proto.parentNode;
     var pool = (typeof aiChannelPool === "function" ? aiChannelPool() : []);
-    var proto = document.querySelector("[data-ce-remove]");
-    var trash = proto ? proto.innerHTML : "";
     names.forEach(function (nm) {
       var info = null;
       for (var i = 0; i < pool.length; i++) if (pool[i].name === nm) info = pool[i];
       var ini = (info && info.initial) || nm.replace(/^@/, "").charAt(0).toUpperCase();
       var col = (info && info.color) || "--color-avatar-3";
-      var html = '<div class="an-tr" data-ce-row>' +
-        '<div class="an-td" style="width:240px"><span class="ce-chan"><span class="mc-ava ce-ava" style="background:var(' + col + ')">' + escHtml(ini) + '</span>' +
-          '<span class="ce-chan__name">' + escHtml(nm) + '</span></span></div>' +
-        '<div class="an-td ce-num" style="width:120px">' + escHtml(info ? info.views : "—") + '</div>' +
-        '<div class="an-td ce-num" style="width:120px">' + escHtml(info ? info.subs : "—") + '</div>' +
-        '<div class="an-td ce-linkcell" style="width:260px">' +
-        '<a class="ce-view" href="' + ceUrl(c.name) + '" target="_blank" rel="noopener" title="' + ceUrl(c.name) + '">' +
-          escHtml(ceUrl(c.name).replace(/^https?:\/\/(www\.)?/, "")) + '</a>' +
-        '<button class="ce-copy" type="button" data-ce-copy="' + ceUrl(c.name) + '" aria-label="Copy link" title="Copy link"></button>' +
-      '</div>' +
-        '<div class="an-td" style="width:100px"><button class="ce-trash" type="button" aria-label="Remove channel" data-ce-remove>' + trash + '</button></div>' +
-      '</div>';
-      body.insertAdjacentHTML("beforeend", html);
+      var url = ceUrl(nm);
+      var row = proto.cloneNode(true);        // разметка строки живёт в билде — не дублируем её здесь
+      row.classList.remove("is-selected");
+      var chk = row.querySelector("[data-an-check]");
+      if (chk) chk.classList.remove("is-checked");
+      var ava = row.querySelector(".ce-ava");
+      if (ava) { ava.textContent = ini; ava.setAttribute("style", "background:var(" + col + ")"); }
+      var nmEl = row.querySelector(".ce-chan__name");
+      if (nmEl) nmEl.textContent = nm;
+      var yt = row.querySelector(".ce-chan__yt");
+      if (yt) { yt.setAttribute("href", url); yt.setAttribute("title", url); yt.textContent = url.replace(/^https?:\/\/(www\.)?/, ""); }
+      var cp = row.querySelector("[data-ce-copy]");
+      if (cp) cp.setAttribute("data-ce-copy", url);
+      var nums = row.querySelectorAll(".ce-num");
+      if (nums[0]) nums[0].textContent = (info && info.views) || "—";
+      if (nums[1]) nums[1].textContent = (info && info.subs) || "—";
+      var view = row.querySelector(".ce-view");
+      if (view) view.setAttribute("href", "analytics-channel.html?name=" + encodeURIComponent(nm));
+      body.appendChild(row);
     });
+    if (typeof ceFooter === "function") ceFooter();
+    if (typeof ceCountSync === "function") ceCountSync();
   }
   // ================= D1/D3: массовые действия и футер страницы коллекции =================
   function ceRows() { return [].slice.call(document.querySelectorAll("[data-ce-row]")); }
@@ -3740,10 +3882,13 @@
     row.setAttribute("data-rep-row", "");
     row.setAttribute("data-file", file);
     var cells = [
-      '<div class="an-td an-td--plain" style="width:300px" data-col="name">' + escHtml(name) + "</div>",
+      '<div class="an-td an-td--plain rep-name" style="width:300px" data-col="name">' + escHtml(name) + "</div>",
       '<div class="an-td an-td--plain" style="width:140px" data-col="created">' + rpFmt(rpToday()) + "</div>",
       '<div class="an-td an-td--plain" style="width:240px" data-col="period">' + escHtml(period) + "</div>",
-      '<div class="an-td an-td--plain" style="width:220px" data-col="' + (repIsMarket() ? "collection" : "channel") + '">' + escHtml(target) + "</div>"
+      '<div class="an-td an-td--plain" style="width:220px" data-col="' + (repIsMarket() ? "collection" : "channel") + '">' +
+        (repIsMarket()
+          ? '<a class="rep-collink" href="analytics-collection-edit.html?name=' + encodeURIComponent(target) + '">' + escHtml(target) + "</a>"
+          : escHtml(target)) + "</div>"
     ];
     if (repIsMarket()) cells.push('<div class="an-td an-td--plain" style="width:120px" data-col="type">' +
       escHtml(type.indexOf("Deep") === 0 ? "Deep" : "Basic") + "</div>");
@@ -3781,10 +3926,11 @@
     if (!proto) return "";
     var clone = proto.cloneNode(true);
     var inml = clone.querySelector("[data-rep-inml]");
-    if (inml) {
-      inml.setAttribute("data-rep-inml", file || "");
-      if (ready) inml.removeAttribute("disabled"); else inml.setAttribute("disabled", "");
-    }
+    if (inml) inml.setAttribute("data-rep-inml", file || "");
+    // пока репорт готовится, недоступны все три действия (как в проде)
+    [].slice.call(clone.querySelectorAll("button")).forEach(function (btn) {
+      if (ready) btn.removeAttribute("disabled"); else btn.setAttribute("disabled", "");
+    });
     return clone.outerHTML;
   }
   function repReady(name, file) {
