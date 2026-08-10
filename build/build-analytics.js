@@ -33,6 +33,11 @@ const IC = {
   circleDown: '<svg viewBox="0 0 24 24" fill="none"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 22.75C6.063 22.75 1.25 17.937 1.25 12C1.25 6.063 6.063 1.25 12 1.25C17.937 1.25 22.75 6.063 22.75 12C22.75 17.937 17.937 22.75 12 22.75ZM16.03 13.03L12.53 16.53C12.3894 16.6705 12.1988 16.7493 12 16.7493C11.8012 16.7493 11.6106 16.6705 11.47 16.53L7.97 13.03C7.89631 12.9613 7.83721 12.8785 7.79622 12.7865C7.75523 12.6945 7.73319 12.5952 7.73141 12.4945C7.72963 12.3938 7.74816 12.2938 7.78588 12.2004C7.8236 12.107 7.87974 12.0222 7.95096 11.951C8.02218 11.8797 8.10701 11.8236 8.2004 11.7859C8.29379 11.7482 8.39382 11.7296 8.49452 11.7314C8.59522 11.7332 8.69454 11.7552 8.78654 11.7962C8.87854 11.8372 8.96134 11.8963 9.03 11.97L11.25 14.19V8C11.25 7.80109 11.329 7.61032 11.4697 7.46967C11.6103 7.32902 11.8011 7.25 12 7.25C12.1989 7.25 12.3897 7.32902 12.5303 7.46967C12.671 7.61032 12.75 7.80109 12.75 8V14.19L14.97 11.97C15.0387 11.8963 15.1215 11.8372 15.2135 11.7962C15.3055 11.7552 15.4048 11.7332 15.5055 11.7314C15.6062 11.7296 15.7062 11.7482 15.7996 11.7859C15.893 11.8236 15.9778 11.8797 16.049 11.951C16.1203 12.0222 16.1764 12.107 16.2141 12.2004C16.2518 12.2938 16.2704 12.3938 16.2686 12.4945C16.2668 12.5952 16.2448 12.6945 16.2038 12.7865C16.1628 12.8785 16.1037 12.9613 16.03 13.03Z" fill="currentColor"/></svg>',
   // апгрейд плана (та же ракета, что в лайвстримах)
   rocket: '<svg viewBox="0 0 24 24" fill="none"><path d="M17.2792 12.7837L16.7293 12.2737L17.2792 12.7837ZM11.2163 6.72082L11.7263 7.27072L11.2163 6.72082ZM20.1579 5.46426L20.9015 5.56153L20.1579 5.46426ZM18.5357 3.84214L18.633 4.58581L18.633 4.58581L18.5357 3.84214ZM7.15375 12.648L7.82718 12.9781L7.15375 12.648ZM11.352 16.8463L11.0219 16.1728L11.352 16.8463ZM8.71522 10.4345C8.42232 10.1416 7.94745 10.1416 7.65456 10.4345C7.36166 10.7274 7.36166 11.2022 7.65456 11.4951L8.71522 10.4345ZM12.5049 16.3454C12.7978 16.6383 13.2726 16.6383 13.5655 16.3454C13.8584 16.0525 13.8584 15.5777 13.5655 15.2848L12.5049 16.3454ZM7.1995 17.8612C7.49239 17.5683 7.49239 17.0934 7.1995 16.8005C6.9066 16.5076 6.43173 16.5076 6.13884 16.8005L7.1995 17.8612ZM3.71368 19.2257C3.42079 19.5185 3.42079 19.9934 3.71368 20.2863C4.00658 20.5792 4.48145 20.5792 4.77434 20.2863L3.71368 19.2257ZM5.38063 16.0423C5.67353 15.7494 5.67353 15.2745 5.38063 14.9816C5.08774 14.6887 4.61286 14.6887 4.31997 14.9816L5.38063 16.0423ZM3.1074 16.1942C2.8145 16.4871 2.8145 16.962 3.1074 17.2549C3.40029 17.5478 3.87516 17.5478 4.16806 17.2549L3.1074 16.1942ZM9.01836 19.68C9.31125 19.3871 9.31125 18.9123 9.01836 18.6194C8.72547 18.3265 8.25059 18.3265 7.9577 18.6194L9.01836 19.68ZM6.74512 19.8319C6.45223 20.1248 6.45223 20.5997 6.74512 20.8926C7.03802 21.1855 7.51289 21.1855 7.80578 20.8926L6.74512 19.8319ZM10.6707 19.8772L11.4131 19.7712L10.6707 19.8772ZM15.0966 16.9064L15.839 16.8004L15.0966 16.9064ZM4.12274 13.3293L4.2288 12.5869L4.2288 12.5869L4.12274 13.3293ZM7.09355 8.90344L6.98748 9.64591L6.98748 9.64591L7.09355 8.90344ZM10.021 15.9844L8.01564 13.979L6.95498 15.0396L8.96036 17.045L10.021 15.9844ZM16.7293 12.2737C15.1201 14.0087 12.4996 15.4484 11.0219 16.1728L11.6822 17.5197C13.1754 16.7876 16.0169 15.2476 17.8291 13.2937L16.7293 12.2737ZM7.82718 12.9781C8.55161 11.5004 9.99129 8.8799 11.7263 7.27072L10.7063 6.17093C8.75238 7.98311 7.21236 10.8246 6.48032 12.3178L7.82718 12.9781ZM19.4142 5.367C19.154 7.35655 18.4646 10.4027 16.7293 12.2737L17.8291 13.2937C19.9075 11.0528 20.6367 7.58673 20.9015 5.56153L19.4142 5.367ZM11.7263 7.27072C13.5973 5.5354 16.6435 4.84602 18.633 4.58581L18.4385 3.09848C16.4133 3.36335 12.9472 4.09251 10.7063 6.17093L11.7263 7.27072ZM20.9015 5.56153C21.0916 4.10811 19.8919 2.90839 18.4385 3.09848L18.633 4.58581C19.1095 4.52349 19.4765 4.8905 19.4142 5.367L20.9015 5.56153ZM8.01564 13.979C7.73451 13.6979 7.66993 13.2989 7.82718 12.9781L6.48032 12.3178C6.02321 13.2502 6.24924 14.3339 6.95498 15.0396L8.01564 13.979ZM8.96036 17.045C9.6661 17.7508 10.7498 17.9768 11.6822 17.5197L11.0219 16.1728C10.7011 16.3301 10.3021 16.2655 10.021 15.9844L8.96036 17.045ZM7.65456 11.4951L12.5049 16.3454L13.5655 15.2848L8.71522 10.4345L7.65456 11.4951ZM6.13884 16.8005L3.71368 19.2257L4.77434 20.2863L7.1995 17.8612L6.13884 16.8005ZM4.31997 14.9816L3.1074 16.1942L4.16806 17.2549L5.38063 16.0423L4.31997 14.9816ZM7.9577 18.6194L6.74512 19.8319L7.80578 20.8926L9.01836 19.68L7.9577 18.6194ZM12.808 7.70618C11.8454 8.66876 11.8454 10.2294 12.808 11.192L13.8687 10.1313C13.4919 9.75454 13.4919 9.14363 13.8687 8.76684L12.808 7.70618ZM12.808 11.192C13.7706 12.1546 15.3312 12.1546 16.2938 11.192L15.2332 10.1313C14.8564 10.5081 14.2455 10.5081 13.8687 10.1313L12.808 11.192ZM16.2938 11.192C17.2564 10.2294 17.2564 8.66876 16.2938 7.70618L15.2332 8.76684C15.61 9.14363 15.61 9.75454 15.2332 10.1313L16.2938 11.192ZM16.2938 7.70618C15.3312 6.7436 13.7706 6.7436 12.808 7.70618L13.8687 8.76684C14.2455 8.39005 14.8564 8.39005 15.2332 8.76684L16.2938 7.70618ZM14.3237 17.1036L11.5954 19.8319L12.6561 20.8926L15.3844 18.1643L14.3237 17.1036ZM11.4131 19.7712L11.0494 17.2248L9.56443 17.4369L9.92821 19.9833L11.4131 19.7712ZM14.1116 15.3149L14.3541 17.0125L15.839 16.8004L15.5965 15.1028L14.1116 15.3149ZM11.5954 19.8319C11.5743 19.853 11.5574 19.8595 11.5445 19.8623C11.5286 19.8657 11.5078 19.8653 11.4855 19.8579C11.4632 19.8505 11.4464 19.8383 11.4357 19.826C11.427 19.8161 11.4174 19.8007 11.4131 19.7712L9.92821 19.9833C10.1155 21.2946 11.7195 21.8292 12.6561 20.8926L11.5954 19.8319ZM15.3844 18.1643C15.7421 17.8065 15.9106 17.3012 15.839 16.8004L14.3541 17.0125C14.3589 17.046 14.3476 17.0797 14.3237 17.1036L15.3844 18.1643ZM5.83567 8.61563L3.10738 11.3439L4.16804 12.4046L6.89633 9.67629L5.83567 8.61563ZM4.01667 14.0718L6.56308 14.4356L6.77521 12.9507L4.2288 12.5869L4.01667 14.0718ZM8.89722 8.4035L7.19962 8.16098L6.98748 9.64591L8.68509 9.88842L8.89722 8.4035ZM3.10738 11.3439C2.17075 12.2806 2.7054 13.8845 4.01667 14.0718L4.2288 12.5869C4.19926 12.5827 4.18391 12.573 4.17395 12.5643C4.16171 12.5537 4.14952 12.5368 4.14209 12.5145C4.13465 12.4922 4.13429 12.4714 4.1377 12.4556C4.14046 12.4426 4.14693 12.4257 4.16804 12.4046L3.10738 11.3439ZM6.89633 9.67629C6.92024 9.65238 6.95401 9.64112 6.98748 9.64591L7.19962 8.16098C6.69875 8.08943 6.19343 8.25787 5.83567 8.61563L6.89633 9.67629Z" fill="currentColor"/></svg>',
+  // «в начало» / «в конец» страниц
+  chevDoubleL: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M17 6l-6 6 6 6M12 6l-6 6 6 6"/></svg>',
+  chevDoubleR: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 6l6 6-6 6M12 6l6 6-6 6"/></svg>',
+  chevL: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 6l-6 6 6 6"/></svg>',
+  chevR: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M10 6l6 6-6 6"/></svg>',
   // деактивация (OutlineIconOff) — перечёркнутый круг понятнее архивной коробки
   off: '<svg viewBox="0 0 24 24" fill="none"><path d="M5.75 5.75L18.25 18.25M12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12C21 16.9706 16.9706 21 12 21Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>',
   // выход из расшаренной коллекции (OutlineIconLogout)
@@ -2023,6 +2028,7 @@ const videosInner = `
 // Прод: /analytics/reports/market и /analytics/reports/performance — два таба со своими
 // таблицами. Отчёт физически появляется в Media Library (папка Analytics) в момент,
 // когда статус меняется на Created — тот же паттерн, что у Converting/Transcribing.
+const REP_PER = 10;                 // строк на страницу по умолчанию
 const REP_TYPES = [
   { id: "basic", label: "Basic report", hint: "Includes basic metrics like subs, subs+ views, views+" },
   { id: "deep", label: "Deep report", hint: "Includes basic metrics plus extended metrics (VIDS, PVN, PVC etc.)" },
@@ -2067,33 +2073,47 @@ function repHead(cols) {
     return '<div class="an-th" style="width:' + c.w + 'px" data-col="' + c.id + '">' + inner + '</div>';
   }).join("") + '</div>';
 }
+// имя строки-затравки: «коллекция тип период», период — коротко месяцами
+function repShortPeriod(period) {
+  const p = String(period).split(" - ");
+  if (p.length !== 2) return period;
+  const a = p[0].split(" "), z = p[1].split(" ");
+  if (a[0] === z[0] && a[1] === z[1]) return p[0];
+  if (a[1] === z[1]) return a[0] + " – " + z[0] + " " + z[1];
+  return p[0] + " – " + p[1];
+}
+function repWithName(r) {
+  r.name = (r.coll || r.chan) + " " + r.type + " " + repShortPeriod(r.period);
+  return r;
+}
 // строки-затравки: как на проде
+// имя собирается из коллекции/канала, типа и периода — как в модалке создания
 const REP_ROWS_M = [
-  { name: "Crypto Report 2026 July", created: "13.07.2026", period: "July 2026 - July 2026",
+  { created: "13.07.2026", period: "July 2026 - July 2026",
     coll: "Crypto", type: "Basic", status: "created", file: "crypto-basic-report-1.xlsx" },
-  { name: "News UA deep dive", created: "02.08.2026", period: "May 2026 - July 2026",
+  { created: "02.08.2026", period: "May 2026 - July 2026",
     coll: "News UA - Big Media", type: "Deep", status: "created", file: "news-ua-deep-report-1.xlsx" },
-  { name: "Gaming UA quarterly", created: "29.07.2026", period: "April 2026 - June 2026",
+  { created: "29.07.2026", period: "April 2026 - June 2026",
     coll: "Gaming UA", type: "Basic", status: "created", file: "gaming-ua-basic-report-1.xlsx" },
-  { name: "Tech Reviews H1", created: "21.07.2026", period: "January 2026 - June 2026",
+  { created: "21.07.2026", period: "January 2026 - June 2026",
     coll: "Tech Reviews", type: "Deep", status: "created", file: "tech-reviews-deep-report-1.xlsx" },
-  { name: "Crypto Report 2026 June", created: "05.07.2026", period: "June 2026 - June 2026",
-    coll: "Crypto", type: "Basic", status: "created", file: "crypto-basic-report-2.xlsx" },
-  { name: "News UA August", created: "09.08.2026", period: "July 2026 - August 2026",
+  { created: "05.07.2026", period: "June 2026 - June 2026",
+    coll: "Crypto", type: "Videos", status: "created", file: "crypto-videos-report-1.xlsx" },
+  { created: "09.08.2026", period: "July 2026 - August 2026",
     coll: "News UA - Big Media", type: "Basic", status: "progress", file: "" },
-];
+].map(repWithName);
 const REP_ROWS_P = [
-  { name: "Eugene Zemskov", created: "07.08.2026", period: "January 2026 - August 2026",
-    chan: "Zems Racing", status: "progress", file: "" },
-  { name: "Zems Racing — summer", created: "01.08.2026", period: "June 2026 - July 2026",
-    chan: "Zems Racing", status: "created", file: "zems-racing-report-1.xlsx" },
-  { name: "Hunt Squad monthly", created: "24.07.2026", period: "June 2026 - June 2026",
-    chan: "Hunt Squad", status: "created", file: "hunt-squad-report-1.xlsx" },
-  { name: "Hunt Squad H1", created: "10.07.2026", period: "January 2026 - June 2026",
-    chan: "Hunt Squad", status: "created", file: "hunt-squad-report-2.xlsx" },
-  { name: "Eugene Zemskov — spring", created: "28.06.2026", period: "March 2026 - May 2026",
-    chan: "Eugene Zemskov", status: "created", file: "eugene-zemskov-report-1.xlsx" },
-];
+  { created: "07.08.2026", period: "January 2026 - August 2026",
+    chan: "Zems Racing", type: "Deep", status: "progress", file: "" },
+  { created: "01.08.2026", period: "June 2026 - July 2026",
+    chan: "Zems Racing", type: "Basic", status: "created", file: "zems-racing-report-1.xlsx" },
+  { created: "24.07.2026", period: "June 2026 - June 2026",
+    chan: "Hunt Squad", type: "Videos", status: "created", file: "hunt-squad-report-1.xlsx" },
+  { created: "10.07.2026", period: "January 2026 - June 2026",
+    chan: "Hunt Squad", type: "Basic", status: "created", file: "hunt-squad-report-2.xlsx" },
+  { created: "28.06.2026", period: "March 2026 - May 2026",
+    chan: "Eugene Zemskov", type: "Deep", status: "created", file: "eugene-zemskov-report-1.xlsx" },
+].map(repWithName);
 function repRowM(r) {
   return '<div class="an-tr" data-rep-row data-file="' + esc(r.file || "") + '">' +
     '<div class="an-td an-td--plain rep-name" style="width:300px" data-col="name"><span class="rep-cell">' + esc(r.name) + '</span></div>' +
@@ -2116,29 +2136,31 @@ function repRowP(r) {
     '<div class="an-td" style="width:140px" data-col="actions">' + repActions(r.status, r.file) + '</div>' +
   '</div>';
 }
+// пагинация отчётов: прибита к низу серфейса таблицы — слева страница и размер, справа номера
 function repPagi(key) {
-  const total = key === "repm" ? REP_ROWS_M.length : REP_ROWS_P.length;
-  return '<section class="an-pagi" data-an-table="' + key + '">' +
-    '<div class="an-pagi__label"><span class="an-pagi__name">Reports</span>' +
-      '<span class="an-pagi__total">' + total + '</span></div>' +
-    '<div class="an-pagi__ctrls">' +
-      '<span class="an-pagi__pages">Pages: 1</span>' +
-      '<div class="an-pagi__nav">' +
-        '<button class="an-pagi__arrow" type="button" data-an-prev aria-label="Previous Page">' + IC.arrowL + '</button>' +
-        '<input class="an-pagi__page" type="text" value="1" aria-label="Page number" data-an-page />' +
-        '<button class="an-pagi__arrow" type="button" data-an-next aria-label="Next Page">' + IC.arrowR + '</button>' +
-      '</div>' +
+  const per = key === "repm" ? REP_PER : REP_PER;
+  return '<div class="an-pagi rp-pagi" data-an-table="' + key + '">' +
+    '<div class="rp-pagi__left">' +
+      '<span class="rp-pagi__lbl">Page</span>' +
+      '<input class="an-pagi__page rp-pagi__inp" type="text" value="1" aria-label="Page number" data-an-page />' +
+      '<span class="rp-pagi__of" data-rp-of>of 1</span>' +
+      '<span class="rp-pagi__div"></span>' +
+      '<span class="rp-pagi__lbl">Rows per page</span>' +
       '<div class="an-perpage-wrap" data-an-perpage-wrap>' +
-        '<button class="an-perpage" type="button" data-an-perpage-trig>30 ' + IC.arrowDown + '</button>' +
+        '<button class="an-perpage rp-pagi__per" type="button" data-an-perpage-trig>' + per + ' ' + IC.arrowDown + '</button>' +
         '<div class="an-perpage__menu" data-an-perpage-menu hidden role="listbox"></div>' +
       '</div>' +
     '</div>' +
-  '</section>';
+    '<div class="rp-pagi__nav">' +
+      '<button class="rp-pg" type="button" data-rp-first aria-label="First page">' + IC.chevDoubleL + '</button>' +
+      '<button class="rp-pg" type="button" data-an-prev aria-label="Previous page">' + IC.chevL + '</button>' +
+      '<span class="rp-pagi__nums" data-rp-pages></span>' +
+      '<button class="rp-pg" type="button" data-an-next aria-label="Next page">' + IC.chevR + '</button>' +
+      '<button class="rp-pg" type="button" data-rp-last aria-label="Last page">' + IC.chevDoubleR + '</button>' +
+    '</div>' +
+  '</div>';
 }
 
-
-// Модалка «New report»: тип отчёта с подсказками, имя, коллекция/канал с поиском,
-// период с календарём (быстрый переход по месяцам слева, сетка дней справа).
 const repModalHtml = `
     <div class="an-modal" id="repModal" data-rep-mode="market"><div class="an-modal__overlay" data-rep-close></div>
       <div class="an-modal__dialog an-modal__dialog--lg">
@@ -2249,22 +2271,26 @@ const reportsInner = `
 
 
       <div data-rep-panel="market">
-        ${repPagi("repm")}
-        <section class="an-tablewrap an-tablewrap--surface an-tablewrap--stick" data-an-tablewrap="repm">
-          <div class="an-table an-table--fill" data-an-table-body="repm">
-            <div class="an-thead">${repHead(REP_COLS_M)}</div>
-            <div class="an-tbody">${REP_ROWS_M.map(repRowM).join("")}</div>
+        <section class="rp-card">
+          <div class="an-tablewrap an-tablewrap--stick" data-an-tablewrap="repm">
+            <div class="an-table an-table--fill" data-an-table-body="repm">
+              <div class="an-thead">${repHead(REP_COLS_M)}</div>
+              <div class="an-tbody">${REP_ROWS_M.map(repRowM).join("")}</div>
+            </div>
           </div>
+          ${repPagi("repm")}
         </section>
       </div>
 
       <div data-rep-panel="performance" hidden>
-        ${repPagi("repp")}
-        <section class="an-tablewrap an-tablewrap--surface an-tablewrap--stick" data-an-tablewrap="repp">
-          <div class="an-table an-table--fill" data-an-table-body="repp">
-            <div class="an-thead">${repHead(REP_COLS_P)}</div>
-            <div class="an-tbody">${REP_ROWS_P.map(repRowP).join("")}</div>
+        <section class="rp-card">
+          <div class="an-tablewrap an-tablewrap--stick" data-an-tablewrap="repp">
+            <div class="an-table an-table--fill" data-an-table-body="repp">
+              <div class="an-thead">${repHead(REP_COLS_P)}</div>
+              <div class="an-tbody">${REP_ROWS_P.map(repRowP).join("")}</div>
+            </div>
           </div>
+          ${repPagi("repp")}
         </section>
       </div>
     </section>

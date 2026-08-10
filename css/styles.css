@@ -2958,6 +2958,30 @@ body.filters-open .an-filters.is-active { display: flex; }
 .rep-name { font-weight: 500; }
 /* ячейки репортов ужимаются вместе с колонками: текст обрезается многоточием */
 .rep-cell { display: block; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+/* карта таблицы отчётов: скролл только у строк, пагинация всегда внизу карты */
+.rp-card { display: flex; flex-direction: column; min-width: 0; overflow: hidden;
+  border: 1px solid var(--color-shade-200); border-radius: 12px; background: var(--color-white); }
+.rp-card .an-tablewrap { overflow-x: hidden; overflow-y: auto; border: 0; border-radius: 0; }
+.rp-pagi { flex-shrink: 0; flex-wrap: nowrap; gap: 16px;
+  padding: 10px 16px; background: #fff; border-top: 1px solid var(--color-shade-200); }
+.rp-pagi__left { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.rp-pagi__lbl { font-size: 14px; font-weight: 400; color: var(--color-black); white-space: nowrap; }
+.rp-pagi__of { font-size: 14px; font-weight: 400; color: var(--color-shade-700); white-space: nowrap; }
+.rp-pagi__inp { width: 48px; }
+.rp-pagi__div { width: 1px; height: 20px; background: var(--color-shade-200); }
+.rp-pagi__per { height: 36px; }
+.rp-pagi__nav { display: flex; align-items: center; gap: 4px; margin-left: auto; }
+.rp-pagi__nums { display: flex; align-items: center; gap: 4px; }
+.rp-pg { display: inline-flex; align-items: center; justify-content: center; min-width: 36px; height: 36px; padding: 0 8px;
+  border: 1px solid var(--color-shade-200); border-radius: 8px; background: #fff; cursor: pointer;
+  font-family: inherit; font-size: 14px; font-weight: 400; color: var(--color-shade-700); box-sizing: border-box; }
+.rp-pg svg { width: 16px; height: 16px; }
+.rp-pg:hover:not(:disabled):not(.is-on) { background: var(--color-shade-90); color: var(--color-black); }
+.rp-pg:disabled { opacity: .4; cursor: not-allowed; }
+.rp-pg.is-on { background: var(--color-shade-100); border-color: var(--color-shade-200); color: var(--color-black); font-weight: 500; }
+.rp-pg--num { border-color: transparent; }
+.rp-pagi__gap { display: inline-flex; align-items: center; justify-content: center; min-width: 24px; height: 36px;
+  color: var(--color-shade-500); }
 [data-an-table-body="repm"] .an-th, [data-an-table-body="repp"] .an-th { overflow: hidden; }
 [data-an-table-body="repm"] .an-th .an-sort, [data-an-table-body="repp"] .an-th .an-sort { min-width: 0; overflow: hidden; }
 .rep-collink { color: var(--color-black); text-decoration: underline; text-underline-offset: 3px; }

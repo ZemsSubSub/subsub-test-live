@@ -449,6 +449,24 @@
       if (sKey) { tblSort(sKey, sortEl.getAttribute("data-an-sort")); return; }
     }
     // --- P1.5: пагинация ---
+    var pgBtn = e.target.closest("[data-rp-page]");
+    if (pgBtn) {
+      var pgKey = tblKeyOf(pgBtn);
+      if (pgKey && TBL[pgKey]) { TBL[pgKey].page = parseInt(pgBtn.getAttribute("data-rp-page"), 10) || 1; tblApply(pgKey); }
+      return;
+    }
+    var edgeBtn = e.target.closest("[data-rp-first], [data-rp-last]");
+    if (edgeBtn) {
+      var eKey = tblKeyOf(edgeBtn);
+      if (eKey && TBL[eKey]) {
+        var st2 = TBL[eKey];
+        st2.page = edgeBtn.hasAttribute("data-rp-first")
+          ? 1
+          : Math.max(1, Math.ceil(tblRows(eKey).length / st2.per));
+        tblApply(eKey);
+      }
+      return;
+    }
     var prevEl = e.target.closest("[data-an-prev]"), nextEl = e.target.closest("[data-an-next]");
     if (prevEl || nextEl) {
       var pKey = tblKeyOf(prevEl || nextEl);
@@ -1069,8 +1087,8 @@
     deep:  { per: 30, sizes: [30, 50, 100], sort: null, page: 1 },
     coll:  { per: 15, sizes: [15, 30, 50],  sort: null, page: 1 },
     video: { per: 10, sizes: [10, 25, 50],  sort: null, page: 1 },  // P1.9: на проде 10
-    repm:  { per: 30, sizes: [30, 50, 100], sort: null, page: 1 }, // Reports → Market insights
-    repp:  { per: 30, sizes: [30, 50, 100], sort: null, page: 1 }  // Reports → My performance
+    repm:  { per: 10, sizes: [5, 10, 25, 50], sort: null, page: 1 },  // Reports → Market insights
+    repp:  { per: 10, sizes: [5, 10, 25, 50], sort: null, page: 1 }   // Reports → My performance
   };
   function tblBody(key) { return document.querySelector('[data-an-table-body="' + key + '"]'); }
   function tblPagi(key) { return document.querySelector('[data-an-table="' + key + '"]'); }
@@ -1172,8 +1190,33 @@
       if (next) next.disabled = st.page >= pages;
       var trig = pagi.querySelector("[data-an-perpage-trig]");
       if (trig) trig.childNodes[0].nodeValue = st.per + " ";
+      var ofEl = pagi.querySelector("[data-rp-of]");
+      if (ofEl) ofEl.textContent = "of " + pages.toLocaleString("en-US");
+      var nums = pagi.querySelector("[data-rp-pages]");
+      if (nums) nums.innerHTML = tblPageBtns(st.page, pages);
+      var first = pagi.querySelector("[data-rp-first]"), last = pagi.querySelector("[data-rp-last]");
+      if (first) first.disabled = st.page <= 1;
+      if (last) last.disabled = st.page >= pages;
     }
     tblUpdateTotal(key, rows.length);
+  }
+  // номера страниц: первая, последняя, текущая с соседями, между ними «…»
+  function tblPageBtns(page, pages) {
+    var list = [], i;
+    if (pages <= 7) { for (i = 1; i <= pages; i++) list.push(i); }
+    else {
+      list.push(1);
+      var from = Math.max(2, page - 1), to = Math.min(pages - 1, page + 1);
+      if (from > 2) list.push(0);
+      for (i = from; i <= to; i++) list.push(i);
+      if (to < pages - 1) list.push(0);
+      list.push(pages);
+    }
+    return list.map(function (n) {
+      if (!n) return '<span class="rp-pagi__gap">…</span>';
+      return '<button class="rp-pg rp-pg--num' + (n === page ? " is-on" : "") + '" type="button" data-rp-page="' +
+        n + '">' + n + "</button>";
+    }).join("");
   }
   // B3: пустое состояние таблицы — тексты как на проде
   var TBL_EMPTY = { basic: "No channels found", deep: "No channels found", video: "No videos found",
@@ -1315,6 +1358,10 @@
     });
     tblHugAll();
     tblFit();
+    // веб-шрифт может примениться после первого замера — тогда текст шире и ячейки обрезаются
+    if (document.fonts && document.fonts.ready && document.fonts.ready.then) {
+      document.fonts.ready.then(function () { tblHugAll(); tblFit(); });
+    }
   }
   // высота скролл-бокса считается от реального положения таблицы, иначе страница
   // получает свой вертикальный скролл вдобавок к скроллу таблицы
@@ -1326,7 +1373,13 @@
     [].slice.call(document.querySelectorAll(".an-tablewrap--stick")).forEach(function (w) {
       if (w.offsetParent === null) return;              // скрытый таб не трогаем
       var top = w.getBoundingClientRect().top;
-      var h = Math.max(240, Math.round(window.innerHeight - top - reserve));
+      var own = reserve;
+      var card = w.closest(".rp-card");        // пагинация лежит под скролл-боксом, внутри карты
+      if (card) {
+        var pg = card.querySelector(".rp-pagi");
+        if (pg) own += Math.round(pg.getBoundingClientRect().height) + 2;
+      }
+      var h = Math.max(240, Math.round(window.innerHeight - top - own));
       w.style.height = h + "px";        // фиксированная высота: пустая таблица не «сдувается»
       w.style.maxHeight = h + "px";
     });
@@ -3801,7 +3854,7 @@
   function repAutoName() {
     var type = repSelVal("type"), target = repSelVal("target");
     if (!type || !target || !rpRange.from || !rpRange.to) return "";
-    return target + " — " + repTypeWord(type) + " report, " + repPeriodShort(rpRange.from, rpRange.to);
+    return target + " " + repTypeWord(type) + " " + repPeriodShort(rpRange.from, rpRange.to);
   }
   function repSync() {
     var target = repSelVal("target");
