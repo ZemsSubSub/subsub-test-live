@@ -1906,18 +1906,21 @@ body.is-open:not(.is-collapsed) .main { margin-left: 306px; }
 .an-dr__d { position: relative; z-index: 1; display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px; border-radius: 8px; }
 .an-dr__day:hover .an-dr__d { background: var(--color-shade-200); }
 .an-dr__day--out { color: var(--color-shade-500); }
-/* непрерывная полоса промежутка: середина заливается целиком, у краёв — половина */
-.an-dr__day--in { background: var(--color-shade-100); }
+/* непрерывная полоса промежутка: середина заливается целиком, у краёв — половина.
+   Высота полосы равна квадрату дня (30px), поэтому у ячейки 36px отступ 3px сверху и снизу. */
+.an-dr__day--in::before {
+  content: ""; position: absolute; top: 3px; bottom: 3px; left: 0; right: 0; background: var(--color-shade-100); z-index: 0;
+}
 .an-dr__day--start::before, .an-dr__day--end::before {
-  content: ""; position: absolute; top: 0; bottom: 0; width: 50%; background: var(--color-shade-100); z-index: 0;
+  content: ""; position: absolute; top: 3px; bottom: 3px; width: 50%; background: var(--color-shade-100); z-index: 0;
 }
 .an-dr__day--start::before { right: 0; }
 .an-dr__day--end::before { left: 0; }
 .an-dr__day--edge .an-dr__d { background: var(--color-black); color: #fff; }
 .an-dr__day--edge:hover .an-dr__d { background: var(--color-black); }
+/* сегодня — фиолетовая точка (и на чёрном квадрате края тоже) */
 .an-dr__day--today::after { content: ""; position: absolute; bottom: 2px; left: 50%; transform: translateX(-50%);
-  width: 4px; height: 4px; border-radius: 50%; background: var(--color-black); z-index: 2; }
-.an-dr__day--edge.an-dr__day--today::after { background: #fff; }
+  width: 4px; height: 4px; border-radius: 50%; background: var(--color-purple-900); z-index: 2; }
 .an-dr__foot { display: flex; align-items: center; gap: 8px; padding: 12px 20px; border-top: 1px solid var(--color-shade-200); }
 /* дата целиком должна влезать: .an-input задаёт 16px и паддинг 16, поэтому размеры пишем
    с большей специфичностью — 116px внутри давали 82px под текст при ширине даты 86px */
