@@ -2856,7 +2856,11 @@ body.filters-open .an-filters.is-active { display: flex; }
 .an-filters__apply { margin-left: auto; }
 
 /* красная точка на кнопке Filters при непустых фильтрах */
-.an-btn__dot { width: 6px; height: 6px; margin-left: 2px; border-radius: 50%; background: var(--color-red); }
+/* точка «фильтры применены» — в правом верхнем углу иконки, как в Media Library */
+.an-btn__ico { position: relative; display: inline-flex; align-items: center; flex-shrink: 0; }
+.an-btn__dot { position: absolute; top: -2px; right: -2px; width: 8px; height: 8px; box-sizing: border-box;
+  border-radius: 9999px; background: var(--color-red); border: 1.5px solid #fff; }
+.an-btn__dot[hidden] { display: none; }
 .an-btn__dot[hidden] { display: none; }
 
 /* группы на Basic data — аккордеоны Collection / Channel (иконка + подпись 16px) */

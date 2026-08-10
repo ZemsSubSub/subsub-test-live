@@ -884,7 +884,7 @@ const mainInner = `
         </div>
         <div class="an-searchbtns">
           <button class="an-btn an-btn--secondary" type="button" data-nc-open>Add to base</button>
-          <button class="an-btn an-btn--secondary" type="button" data-an-filters-toggle>${IC.filter}Filters<span class="an-btn__dot" data-an-filters-dot hidden></span></button>
+          <button class="an-btn an-btn--secondary" type="button" data-an-filters-toggle><span class="an-btn__ico">${IC.filter}<span class="an-btn__dot" data-an-filters-dot hidden></span></span>Filters</button>
           <button class="an-btn an-btn--ai" type="button" data-ai-open>${IC.aiStarsSolid}${AI_LABEL}</button>
         </div>
       </section>
@@ -1334,7 +1334,7 @@ const videosPanel = `
           ${IC.search}<input class="an-search__input" type="text" placeholder="Start typing name or ID" data-vid-search />
           <button class="an-search__clear" type="button" data-vid-search-clear aria-label="Clear search" hidden>${IC.close}</button>
         </div>
-        <button class="an-btn an-btn--secondary" type="button" data-an-filters-toggle>${IC.filter}Filters<span class="an-btn__dot" data-an-filters-dot hidden></span></button>
+        <button class="an-btn an-btn--secondary" type="button" data-an-filters-toggle><span class="an-btn__ico">${IC.filter}<span class="an-btn__dot" data-an-filters-dot hidden></span></span>Filters</button>
         <button class="an-btn an-btn--primary" type="button">${IC.export}Export</button>
       </section>
 
@@ -1394,7 +1394,7 @@ const deepInner = `
             'aria-checked="' + (sl === "all" ? "true" : "false") + '" data-an-ctype-set="' + sl + '">' + ico + lbl + '</button>';
         }).join("")}</div>
         ${deepColsPopover}
-        <button class="an-btn an-btn--secondary" type="button" data-an-filters-toggle>${IC.filter}Filters<span class="an-btn__dot" data-an-filters-dot hidden></span></button>
+        <button class="an-btn an-btn--secondary" type="button" data-an-filters-toggle><span class="an-btn__ico">${IC.filter}<span class="an-btn__dot" data-an-filters-dot hidden></span></span>Filters</button>
         <button class="an-btn an-btn--primary" type="button">${IC.export}Export</button>
       </section>
 
@@ -1563,7 +1563,7 @@ const collInner = `
           return '<button class="an-ctype__btn' + (t === "All" ? " is-on" : "") + '" type="button" role="radio" ' +
             'aria-checked="' + (t === "All" ? "true" : "false") + '" data-mc-ctype-set="' + t + '">' + label + qty + '</button>';
         }).join("")}</div>
-        <button class="an-btn an-btn--secondary" type="button" data-an-filters-toggle>${IC.filter}Filters<span class="an-btn__dot" data-an-filters-dot hidden></span></button>
+        <button class="an-btn an-btn--secondary" type="button" data-an-filters-toggle><span class="an-btn__ico">${IC.filter}<span class="an-btn__dot" data-an-filters-dot hidden></span></span>Filters</button>
         <!-- пагинация прижата к правому краю строки -->
         <div class="an-pagi__ctrls" data-an-table="coll">
           <span class="an-pagi__pages">Pages: 1</span>
