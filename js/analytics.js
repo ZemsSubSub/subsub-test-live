@@ -2597,10 +2597,15 @@
     var bq = ncEl("[data-nc-base-search]"); if (bq) bq.value = "";
     var aiTa2 = ncEl("[data-nc-ai-prompt]");
     if (aiTa2) aiTa2.value = "";                 // промпт пересобираем от текущего состояния коллекции
-    if (document.querySelector("[data-nc-tab]")) { ncSetTab("links"); ncBaseRender(); }
+    if (document.querySelector("[data-nc-tab]")) {
+      // открываемся на первом табе: на странице коллекции это ИИ-расширение
+      ncSetTab(document.querySelector('[data-nc-tab="ai"]') ? "ai" : "links");
+      ncBaseRender();
+    }
     ncSync();
     openModal("ncModal");
-    if (ta) ta.focus();
+    var focusEl = ncTab === "ai" ? ncEl("[data-nc-ai-prompt]") : ta;
+    if (focusEl) focusEl.focus();
   }
   function ncNewForm(open) {
     var f = ncEl("[data-nc-new-form]"), b = ncEl("[data-nc-new-open]");

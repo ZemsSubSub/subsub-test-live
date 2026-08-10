@@ -590,10 +590,10 @@ function ncModal(opts) {
         </header>
         <!-- входы: вставить ссылки, найти в базе и (на странице коллекции) расширить коллекцию ИИ-поиском.
              Переключатель — сегментом, как табы в Media Library. -->
-        <nav class="nc-seg" data-nc-tabs>
-          <button class="nc-seg__btn is-active" type="button" data-nc-tab="links">Paste links</button>
-          <button class="nc-seg__btn" type="button" data-nc-tab="base">Find in base</button>${withColls ? "" : `
+        <nav class="nc-seg" data-nc-tabs>${withColls ? "" : `
           <button class="nc-seg__btn" type="button" data-nc-tab="ai">Expand with AI</button>`}
+          <button class="nc-seg__btn is-active" type="button" data-nc-tab="links">Paste links</button>
+          <button class="nc-seg__btn" type="button" data-nc-tab="base">Find in base</button>
         </nav>
         <div class="an-modal__body nc-body">
           <div class="nc-pane" data-nc-pane="base" hidden>
@@ -669,8 +669,8 @@ ${withColls ? "" : `          <div class="nc-pane nc-ai" data-nc-pane="ai" hidde
         <div class="an-modal__foot nc-foot">
           <p class="nc-count nc-foot__sel" data-nc-selwrap hidden>Selected:&nbsp;<span class="nc-count__n" data-nc-base-count>0</span></p>
           <div class="nc-foot__btns">
-            <button class="an-btn an-btn--secondary an-btn--small" type="button" data-nc-close>Cancel</button>
-            <button class="an-btn an-btn--primary an-btn--small" type="button" data-nc-submit disabled>Add channels</button>
+            <button class="an-btn an-btn--plain an-btn--huge" type="button" data-nc-close>Cancel</button>
+            <button class="an-btn an-btn--ai an-btn--huge" type="button" data-nc-submit disabled>Add channels</button>
           </div>
         </div>
       </div>
@@ -704,8 +704,8 @@ const acModalHtml = `
         </div>
         <div class="an-modal__foot nc-foot">
           <div class="nc-foot__btns">
-            <button class="an-btn an-btn--secondary an-btn--small" type="button" data-ac-close>Cancel</button>
-            <button class="an-btn an-btn--primary an-btn--small" type="button" data-ac-submit disabled>Add channels</button>
+            <button class="an-btn an-btn--plain an-btn--huge" type="button" data-ac-close>Cancel</button>
+            <button class="an-btn an-btn--ai an-btn--huge" type="button" data-ac-submit disabled>Add channels</button>
           </div>
         </div>
       </div>
