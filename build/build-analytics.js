@@ -883,8 +883,8 @@ const mainInner = `
           <button class="an-search__clear" type="button" data-an-search-clear hidden>${IC.close}</button>
         </div>
         <div class="an-searchbtns">
-          <button class="an-btn an-btn--secondary" type="button" data-nc-open>Add to base</button>
           <button class="an-btn an-btn--secondary" type="button" data-an-filters-toggle><span class="an-btn__ico">${IC.filter}<span class="an-btn__dot" data-an-filters-dot hidden></span></span>Filters</button>
+          <button class="an-btn an-btn--secondary" type="button" data-nc-open>Add to base</button>
           <button class="an-btn an-btn--ai" type="button" data-ai-open>${IC.aiStarsSolid}${AI_LABEL}</button>
         </div>
       </section>
@@ -1393,8 +1393,8 @@ const deepInner = `
           return '<button class="an-ctype__btn' + (sl === "all" ? " is-on" : "") + '" type="button" role="radio" ' +
             'aria-checked="' + (sl === "all" ? "true" : "false") + '" data-an-ctype-set="' + sl + '">' + ico + lbl + '</button>';
         }).join("")}</div>
-        ${deepColsPopover}
         <button class="an-btn an-btn--secondary" type="button" data-an-filters-toggle><span class="an-btn__ico">${IC.filter}<span class="an-btn__dot" data-an-filters-dot hidden></span></span>Filters</button>
+        ${deepColsPopover}
         <button class="an-btn an-btn--primary" type="button">${IC.export}Export</button>
       </section>
 
