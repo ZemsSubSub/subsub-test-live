@@ -2933,8 +2933,8 @@ body.filters-open .an-filters.is-active { display: flex; }
 .rep-cell { display: block; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
 [data-an-table-body="repm"] .an-th, [data-an-table-body="repp"] .an-th { overflow: hidden; }
 [data-an-table-body="repm"] .an-th .an-sort, [data-an-table-body="repp"] .an-th .an-sort { min-width: 0; overflow: hidden; }
-.rep-collink { color: var(--color-black); text-decoration: none; }
-.rep-collink:hover { text-decoration: underline; text-underline-offset: 3px; }
+.rep-collink { color: var(--color-black); text-decoration: underline; text-underline-offset: 3px; }
+.rep-collink:hover { text-decoration: none; }
 .rep-acts { display: inline-flex; align-items: center; gap: 4px; }
 .rep-act { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px;
   padding: 0; border: 0; border-radius: 6px; background: none; color: var(--color-shade-700); cursor: pointer; }
