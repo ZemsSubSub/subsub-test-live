@@ -1532,8 +1532,9 @@ const collInner = `
       <header class="an-head an-head--between">
         <h1 class="an-title">My collections</h1>
         <div class="an-head__btns">
-          <button class="an-btn an-btn--ai" type="button" data-ai-open>${IC.aiStarsSolid}${AI_LABEL}</button>
+          <!-- праймари-кнопка справа, как на Basic data -->
           <button class="an-btn an-btn--secondary" type="button" data-mc-create-open>${IC.plus}Create Collection</button>
+          <button class="an-btn an-btn--ai" type="button" data-ai-open>${IC.aiStarsSolid}${AI_LABEL}</button>
         </div>
       </header>
 
