@@ -415,6 +415,7 @@
       <hr class="mc-menu__sep" data-mc-sep="2" />
       <button class="mc-menu__item" type="button" data-mc-act="deactivate"><svg viewBox="0 0 24 24" fill="none"><path d="M2.375 2.375H21.625C22.3855 2.375 23 2.98945 23 3.75V5.125C23 5.88555 22.3855 6.5 21.625 6.5H2.375C1.61445 6.5 1 5.88555 1 5.125V3.75C1 2.98945 1.61445 2.375 2.375 2.375ZM2.375 7.875H21.625V18.875C21.625 20.3918 20.3918 21.625 18.875 21.625H5.125C3.6082 21.625 2.375 20.3918 2.375 18.875V7.875ZM7.875 11.3125C7.875 11.6906 8.18437 12 8.5625 12H15.4375C15.8156 12 16.125 11.6906 16.125 11.3125C16.125 10.9344 15.8156 10.625 15.4375 10.625H8.5625C8.18437 10.625 7.875 10.9344 7.875 11.3125Z" fill="currentColor"/></svg>Deactivate collection</button>
       <button class="mc-menu__item mc-menu__item--danger" type="button" data-mc-act="delete"><svg viewBox="0 0 24 24" fill="none"><path d="M3.00146 6.75033H21.0003" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M5.25098 6.75033H18.7501V20.2495C18.7501 20.6473 18.592 21.0288 18.3108 21.3101C18.0296 21.5913 17.648 21.7494 17.2502 21.7494H6.75088C6.35308 21.7494 5.97158 21.5913 5.69028 21.3101C5.40901 21.0288 5.25098 20.6473 5.25098 20.2495V6.75033Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M8.25098 6.75033V6.00038C8.25098 5.00588 8.64604 4.0521 9.34925 3.34889C10.0525 2.64567 11.0062 2.25061 12.0007 2.25061C12.9952 2.25061 13.949 2.64567 14.6522 3.34889C15.3555 4.0521 15.7505 5.00588 15.7505 6.00038V6.75033" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M9.75049 11.2523V17.2542" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M14.251 11.2523V17.2542" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Delete collection</button>
+      <button class="mc-menu__item mc-menu__item--danger" type="button" data-mc-act="leave"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"><path d="M18.1625 14.9475L21 12.0675L18.1625 9.1875"/><path d="M9.65039 12.0675H20.9229"/><path d="M11.8673 21C6.96811 21 3 17.625 3 12C3 6.375 6.96811 3 11.8673 3"/></svg>Leave collection</button>
       <p class="mc-menu__note" data-mc-note hidden>You cannot edit this collection. Please ask the owner to make changes.</p>
     </div>
 
@@ -463,6 +464,23 @@
         <div class="an-modal__foot">
           <button class="an-btn an-btn--secondary an-btn--small" type="button" data-mc-close>Cancel</button>
           <button class="an-btn an-btn--danger an-btn--small" type="button" data-mc-delete-confirm>Delete</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Leave confirm (расшаренная коллекция) -->
+    <div class="an-modal" id="mcModal-leave"><div class="an-modal__overlay" data-mc-close></div>
+      <div class="an-modal__dialog an-modal__dialog--sm">
+        <div class="an-modal__head">
+          <h2 class="an-modal__title">Leave collection?</h2>
+          <button class="an-modal__x" type="button" data-mc-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none"><path d="M19.172 6.42187C19.6126 5.98124 19.6126 5.26874 19.172 4.83281C18.7314 4.39687 18.0189 4.39218 17.583 4.83281L12.0048 10.4109L6.42202 4.82812C5.9814 4.38749 5.2689 4.38749 4.83296 4.82812C4.39702 5.26874 4.39233 5.98124 4.83296 6.41718L10.4111 11.9953L4.82827 17.5781C4.38765 18.0187 4.38765 18.7312 4.82827 19.1672C5.2689 19.6031 5.9814 19.6078 6.41733 19.1672L11.9955 13.5891L17.5783 19.1719C18.0189 19.6125 18.7314 19.6125 19.1673 19.1719C19.6033 18.7312 19.608 18.0187 19.1673 17.5828L13.5892 12.0047L19.172 6.42187Z" fill="currentColor"/></svg></button>
+        </div>
+        <div class="an-modal__body">
+          <p class="an-modal__text" data-mc-leave-text>You will lose access to this collection. The owner can invite you again.</p>
+        </div>
+        <div class="an-modal__foot">
+          <button class="an-btn an-btn--secondary an-btn--small" type="button" data-mc-close>Cancel</button>
+          <button class="an-btn an-btn--danger an-btn--small" type="button" data-mc-leave-confirm>Leave</button>
         </div>
       </div>
     </div>

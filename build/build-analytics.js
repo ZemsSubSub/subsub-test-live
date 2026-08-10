@@ -31,6 +31,8 @@ const IC = {
   ytShorts: '<svg viewBox="0 0 24 24" fill="none"><path d="M19.0181 11.1693L19.0164 11.1667C18.6305 10.601 18.1151 10.1342 17.511 9.80959C18.485 9.27655 19.2168 8.38443 19.5437 7.32015C19.8769 6.24182 19.7654 5.0751 19.239 4.07898C18.7121 3.08203 17.8119 2.33531 16.7345 2.00216L16.733 2.00172C15.6563 1.67115 14.4916 1.77961 13.4943 2.30664L13.494 2.30679L5.5351 6.51678C4.82504 6.88876 4.23526 7.45304 3.83191 8.14416C3.4272 8.83761 3.22925 9.63121 3.25518 10.4304L3.25526 10.4326C3.28358 11.2327 3.53611 12.0095 3.98486 12.6731L3.98589 12.6746C4.37109 13.2414 4.88474 13.7056 5.48556 14.0295C4.53479 14.5761 3.83002 15.4682 3.52091 16.5229C3.20655 17.5889 3.32265 18.7342 3.83936 19.7157L3.83971 19.7164C4.35708 20.6968 5.23795 21.4382 6.29368 21.7807C7.3492 22.1231 8.49732 22.0406 9.49244 21.549L9.51123 21.5394L17.4679 17.3256C18.178 16.9536 18.7677 16.3893 19.1711 15.6983C19.5758 15.0048 19.7737 14.2112 19.7478 13.412L19.7477 13.4098C19.7194 12.6097 19.4669 11.833 19.0181 11.1693Z" stroke="currentColor" stroke-width="1.5"/><path d="M9.71311 13.0963C9.71311 13.7188 10.3681 14.1237 10.9249 13.8454L13.3224 12.6471C13.9397 12.3386 13.9398 11.4578 13.3226 11.1491L10.9252 9.94986C10.3684 9.67134 9.71311 10.0762 9.71311 10.6988V13.0963Z" stroke="currentColor" stroke-width="1.2"/></svg>',
   ytStream: '<svg viewBox="0 0 24 24" fill="none"><path d="M19.1414 5C20.9097 6.80375 22 9.27455 22 12C22 14.7578 20.8836 17.2549 19.0782 19.064M5 19.1414C3.14864 17.3265 2 14.7974 2 12C2 9.23497 3.12222 6.73205 4.93603 4.92184" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M16.2849 8.04397C17.3458 9.05877 18 10.4488 18 11.9822C18 13.5338 17.3302 14.9386 16.2469 15.9564M7.8 16C6.68918 14.9789 6 13.556 6 11.9822C6 10.4266 6.67333 9.01843 7.76162 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M13.6563 10.4511C14.5521 11.1088 15 11.4376 15 12C15 12.5624 14.5521 12.8913 13.6563 13.5489C13.4091 13.7305 13.1638 13.9014 12.9384 14.0438C12.7407 14.1688 12.5168 14.298 12.2849 14.4249C11.3913 14.914 10.9444 15.1586 10.5437 14.8878C10.1429 14.6171 10.1065 14.0503 10.0337 12.9166C10.0131 12.596 10 12.2818 10 12C10 11.7183 10.0131 11.404 10.0337 11.0834C10.1065 9.94979 10.1429 9.38298 10.5437 9.11222C10.9444 8.84146 11.3913 9.08602 12.2849 9.57512C12.5168 9.702 12.7407 9.83125 12.9384 9.95621C13.1638 10.0986 13.4091 10.2696 13.6563 10.4511Z" stroke="currentColor" stroke-width="1.5"/></svg>',
   circleDown: '<svg viewBox="0 0 24 24" fill="none"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 22.75C6.063 22.75 1.25 17.937 1.25 12C1.25 6.063 6.063 1.25 12 1.25C17.937 1.25 22.75 6.063 22.75 12C22.75 17.937 17.937 22.75 12 22.75ZM16.03 13.03L12.53 16.53C12.3894 16.6705 12.1988 16.7493 12 16.7493C11.8012 16.7493 11.6106 16.6705 11.47 16.53L7.97 13.03C7.89631 12.9613 7.83721 12.8785 7.79622 12.7865C7.75523 12.6945 7.73319 12.5952 7.73141 12.4945C7.72963 12.3938 7.74816 12.2938 7.78588 12.2004C7.8236 12.107 7.87974 12.0222 7.95096 11.951C8.02218 11.8797 8.10701 11.8236 8.2004 11.7859C8.29379 11.7482 8.39382 11.7296 8.49452 11.7314C8.59522 11.7332 8.69454 11.7552 8.78654 11.7962C8.87854 11.8372 8.96134 11.8963 9.03 11.97L11.25 14.19V8C11.25 7.80109 11.329 7.61032 11.4697 7.46967C11.6103 7.32902 11.8011 7.25 12 7.25C12.1989 7.25 12.3897 7.32902 12.5303 7.46967C12.671 7.61032 12.75 7.80109 12.75 8V14.19L14.97 11.97C15.0387 11.8963 15.1215 11.8372 15.2135 11.7962C15.3055 11.7552 15.4048 11.7332 15.5055 11.7314C15.6062 11.7296 15.7062 11.7482 15.7996 11.7859C15.893 11.8236 15.9778 11.8797 16.049 11.951C16.1203 12.0222 16.1764 12.107 16.2141 12.2004C16.2518 12.2938 16.2704 12.3938 16.2686 12.4945C16.2668 12.5952 16.2448 12.6945 16.2038 12.7865C16.1628 12.8785 16.1037 12.9613 16.03 13.03Z" fill="currentColor"/></svg>',
+  // выход из расшаренной коллекции (OutlineIconLogout)
+  leave: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"><path d="M18.1625 14.9475L21 12.0675L18.1625 9.1875"/><path d="M9.65039 12.0675H20.9229"/><path d="M11.8673 21C6.96811 21 3 17.625 3 12C3 6.375 6.96811 3 11.8673 3"/></svg>',
   // прод-иконки строки репорта: скачать (OutlineIconSave) и открыть в Media Library (OutlineFolderIcon)
   save: '<svg viewBox="0 0 24 24" fill="none"><path d="M6 8.33333L12 15M12 15L18 8.33333M12 15L12 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 17L3 18.3333C3 19.8061 4.15127 21 5.57143 21L18.4286 21C19.8487 21 21 19.8061 21 18.3333V17" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>',
   folder: '<svg viewBox="0 0 24 24" fill="none"><path d="M18.001 11L13.001 11" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/><path d="M10.001 4H16.501C16.9654 4 17.1976 4 17.3926 4.02567C18.7388 4.2029 19.7981 5.26222 19.9753 6.60842C20.001 6.80337 20.001 7.03558 20.001 7.5" stroke="currentColor" stroke-width="1.25"/><path d="M1.99902 7.94975C1.99902 7.06722 1.99902 6.62595 2.06837 6.25839C2.37366 4.64031 3.63933 3.37464 5.25741 3.06935C5.62497 3 6.06624 3 6.94877 3C7.33545 3 7.52879 3 7.71459 3.01738C8.51567 3.09229 9.27555 3.40704 9.89497 3.92051C10.0386 4.03961 10.1753 4.17633 10.4488 4.44975L10.999 5C11.8148 5.81578 12.2227 6.22367 12.7111 6.49543C12.9795 6.64471 13.2641 6.7626 13.5594 6.84678C14.0969 7 14.6738 7 15.8275 7H16.2011C18.8335 7 20.1497 7 21.0052 7.76946C21.0839 7.84024 21.1588 7.91514 21.2296 7.99383C21.999 8.84935 21.999 10.1655 21.999 12.7979V14C21.999 17.7712 21.999 18.6569 20.8274 19.8284C19.6559 21 17.7703 21 13.999 21H9.99902C6.22779 21 4.34217 21 3.1706 19.8284C1.99902 18.6569 1.99902 17.7712 1.99902 14V7.94975Z" stroke="currentColor" stroke-width="1.25"/></svg>',
@@ -1607,6 +1609,7 @@ const collInner = `
       <hr class="mc-menu__sep" data-mc-sep="2" />
       <button class="mc-menu__item" type="button" data-mc-act="deactivate">${IC.archive}Deactivate collection</button>
       <button class="mc-menu__item mc-menu__item--danger" type="button" data-mc-act="delete">${IC.trash}Delete collection</button>
+      <button class="mc-menu__item mc-menu__item--danger" type="button" data-mc-act="leave">${IC.leave}Leave collection</button>
       <p class="mc-menu__note" data-mc-note hidden>You cannot edit this collection. Please ask the owner to make changes.</p>
     </div>
 
@@ -1639,6 +1642,23 @@ const collInner = `
         <div class="an-modal__foot">
           <button class="an-btn an-btn--secondary an-btn--small" type="button" data-mc-close>Cancel</button>
           <button class="an-btn an-btn--danger an-btn--small" type="button" data-mc-delete-confirm>Delete</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Leave confirm (расшаренная коллекция) -->
+    <div class="an-modal" id="mcModal-leave"><div class="an-modal__overlay" data-mc-close></div>
+      <div class="an-modal__dialog an-modal__dialog--sm">
+        <div class="an-modal__head">
+          <h2 class="an-modal__title">Leave collection?</h2>
+          <button class="an-modal__x" type="button" data-mc-close aria-label="Close">${IC.closeBold}</button>
+        </div>
+        <div class="an-modal__body">
+          <p class="an-modal__text" data-mc-leave-text>You will lose access to this collection. The owner can invite you again.</p>
+        </div>
+        <div class="an-modal__foot">
+          <button class="an-btn an-btn--secondary an-btn--small" type="button" data-mc-close>Cancel</button>
+          <button class="an-btn an-btn--danger an-btn--small" type="button" data-mc-leave-confirm>Leave</button>
         </div>
       </div>
     </div>
@@ -1787,6 +1807,7 @@ const editInner = `
               <hr class="ce-menu__sep" />
               <button class="ce-menu__item" type="button" role="menuitem" data-ce-deactivate>${IC.archive}Deactivate collection</button>
               <button class="ce-menu__item ce-menu__item--danger" type="button" role="menuitem" data-ce-delete>${IC.trash}Delete collection</button>
+              <button class="ce-menu__item ce-menu__item--danger" type="button" role="menuitem" data-ce-leave hidden>${IC.leave}Leave collection</button>
             </div>
           </div>
         </div>

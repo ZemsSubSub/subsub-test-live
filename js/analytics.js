@@ -175,6 +175,7 @@
       ceMenu(cePop ? cePop.hidden : true);
       return;
     }
+    if (e.target.closest("[data-ce-leave]")) { ceMenu(false); ceConfirm("leave"); return; }
     if (e.target.closest("[data-ce-deep]")) { ceMenu(false); window.location.href = "analytics-deep-data.html"; return; }
     if (e.target.closest("[data-ce-duplicate]")) { ceMenu(false); ceDuplicate(); return; }
     if (e.target.closest("[data-ce-rename]")) { ceRenameOpen(); return; }
@@ -1929,6 +1930,7 @@
   function mcCollectionUrl(row) {
     if (!row) return "analytics-collection-edit.html";
     var url = "analytics-collection-edit.html?name=" + encodeURIComponent(row.getAttribute("data-name") || "");
+    if (row.hasAttribute("data-sample")) url += "&shared=1";   // чужая коллекция: на странице только просмотр и выход
     if (row.hasAttribute("data-ai-row")) {
       var nm = row.getAttribute("data-name");
       var list = aiLoad();
@@ -2023,11 +2025,14 @@
       var mine = !(mcRow && mcRow.hasAttribute("data-sample"));
       menu.querySelector('[data-mc-act="rename"]').hidden = !mine;
       menu.querySelector('[data-mc-act="delete"]').hidden = !mine;
+      // из чужой коллекции можно только выйти — «Leave» вместо деструктивных пунктов владельца
+      menu.querySelector('[data-mc-act="leave"]').hidden = mine;
       if (!mine) menu.querySelector('[data-mc-act="deactivate"]').hidden = true;
       menu.querySelector("[data-mc-note]").hidden = mine;
       // разделитель прячем, если группа под ним целиком скрыта
       var sep2 = menu.querySelector('[data-mc-sep="2"]');
-      if (sep2) sep2.hidden = !mine && menu.querySelector('[data-mc-act="deactivate"]').hidden;
+      if (sep2) sep2.hidden = mine && menu.querySelector('[data-mc-act="deactivate"]').hidden &&
+                              menu.querySelector('[data-mc-act="delete"]').hidden;
       menu.hidden = false;
       var r = moreBtn.getBoundingClientRect();
       var mw = menu.offsetWidth || 200;
@@ -2058,6 +2063,13 @@
       if (type === "share") { openModal("mcModal-share"); return; }
       if (type === "deactivate") { openModal("mcModal-deactivate"); return; }
       if (type === "delete") { openModal("mcModal-delete"); return; }
+      if (type === "leave") {
+        var lt = document.querySelector("[data-mc-leave-text]");
+        if (lt) lt.textContent = "You will lose access to «" + (mcRow ? mcRow.getAttribute("data-name") : "this collection") +
+                                 "». The owner can invite you again.";
+        openModal("mcModal-leave");
+        return;
+      }
       return;
     }
     // клик вне меню — закрыть
@@ -2137,6 +2149,13 @@
         mcRow.remove(); mcRow = null; updateCollCount();
       }
       closeModals(); toast("Collection deleted successfully");
+      return;
+    }
+    if (e.target.closest("[data-mc-leave-confirm]")) {
+      var leftName = mcRow ? mcRow.getAttribute("data-name") : "";
+      if (mcRow) { mcRow.remove(); mcRow = null; updateCollCount(); }
+      closeModals();
+      toast(leftName ? "You left «" + leftName + "»" : "You left the collection");
       return;
     }
     if (e.target.closest("[data-mc-deactivate-confirm]")) {
@@ -4259,6 +4278,10 @@
         ? "«" + picked[0].querySelector(".ce-chan__name").textContent.trim() + "» will be removed from «" + nm + "»."
         : picked.length + " channels will be removed from «" + nm + "».";
       if (btn) btn.textContent = "Remove";
+    } else if (kind === "leave") {
+      if (t) t.textContent = "Leave collection?";
+      if (x) x.textContent = "You will lose access to «" + nm + "». The owner can invite you again.";
+      if (btn) btn.textContent = "Leave";
     } else if (kind === "delete") {
       if (t) t.textContent = "Delete collection?";
       if (x) x.textContent = "This action cannot be undone. «" + nm + "» will be permanently deleted.";
@@ -4315,6 +4338,12 @@
       setTimeout(ceSaved, 900);            // один паттерн автосохранения на все действия
       return;
     }
+    if (ceAsk === "leave") {
+      closeModal(document.getElementById("ceConfirm"));
+      toast("You left «" + nm + "»");
+      setTimeout(function () { window.location.href = "analytics-collections.html"; }, 600);
+      return;
+    }
     if (ceAsk === "delete") {
       var list = aiLoad().filter(function (c) { return c.name !== nm; });
       aiSave(list);
@@ -4333,8 +4362,20 @@
   function ceInit() {
     var title = document.querySelector("[data-ce-title]");
     if (!title) return;                 // поля имени больше нет — ориентируемся на заголовок
-    var nm = new URLSearchParams(window.location.search).get("name");
+    var qs = new URLSearchParams(window.location.search);
+    var nm = qs.get("name");
     if (nm) title.textContent = nm;
+    // чужая коллекция (пришли из «Shared with me»): менять нечего — только дубликат и выход
+    if (qs.get("shared") === "1") {
+      ["[data-ce-rename]", "[data-ce-deactivate]", "[data-ce-delete]"].forEach(function (sel) {
+        var el = document.querySelector(sel);
+        if (el) el.hidden = true;
+      });
+      var lv = document.querySelector("[data-ce-leave]");
+      if (lv) lv.hidden = false;
+      var seps = [].slice.call(document.querySelectorAll(".ce-menu__sep"));
+      if (seps[1]) seps[1].hidden = true;      // группа владельца пуста — разделитель не нужен
+    }
     // удаление канала из коллекции (мок)
     document.addEventListener("click", function (e) {
       var rm = e.target.closest("[data-ce-remove]");
