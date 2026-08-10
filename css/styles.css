@@ -3071,7 +3071,7 @@ body.filters-open .an-filters.is-active { display: flex; }
 /* имя канала — ссылка на страницу канала */
 /* владелец коллекции рядом с названием */
 /* название с лимитом и кнопки — одной строкой, владелец строкой ниже */
-.ce-titlerow { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; min-width: 0; }
+.ce-titlerow { display: flex; align-items: center; gap: 24px; flex-wrap: wrap; min-width: 0; }   /* как gap в шапке страницы */
 .ce-page .an-head { align-items: center; margin-bottom: 4px; }
 /* если строка не влезает — кнопки уходят вниз, но остаются справа */
 .ce-page .an-head__btns { margin-left: auto; }
