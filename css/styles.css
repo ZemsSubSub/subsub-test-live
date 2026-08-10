@@ -3071,11 +3071,11 @@ body.filters-open .an-filters.is-active { display: flex; }
 /* имя канала — ссылка на страницу канала */
 /* владелец коллекции рядом с названием */
 /* название с лимитом и кнопки — одной строкой, владелец строкой ниже */
-.ce-titlerow { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; min-width: 0; }
+.ce-titlerow { display: flex; align-items: center; gap: 24px; flex-wrap: wrap; min-width: 0; }
 .ce-page .an-head { align-items: center; margin-bottom: 4px; }
 /* если строка не влезает — кнопки уходят вниз, но остаются справа */
 .ce-page .an-head__btns { margin-left: auto; }
-.ce-owner { display: inline-flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+.ce-owner { display: inline-flex; align-items: center; gap: 8px; margin: -16px 0 4px; }   /* ближе к заголовку */
 .ce-owner__k { font-size: 14px; font-weight: 300; color: var(--color-shade-700); }
 .ce-owner__ava { width: 24px; height: 24px; font-size: 11px; }
 .ce-owner__name { font-size: 14px; font-weight: 500; color: var(--color-black); }
