@@ -31,6 +31,8 @@ const IC = {
   ytShorts: '<svg viewBox="0 0 24 24" fill="none"><path d="M19.0181 11.1693L19.0164 11.1667C18.6305 10.601 18.1151 10.1342 17.511 9.80959C18.485 9.27655 19.2168 8.38443 19.5437 7.32015C19.8769 6.24182 19.7654 5.0751 19.239 4.07898C18.7121 3.08203 17.8119 2.33531 16.7345 2.00216L16.733 2.00172C15.6563 1.67115 14.4916 1.77961 13.4943 2.30664L13.494 2.30679L5.5351 6.51678C4.82504 6.88876 4.23526 7.45304 3.83191 8.14416C3.4272 8.83761 3.22925 9.63121 3.25518 10.4304L3.25526 10.4326C3.28358 11.2327 3.53611 12.0095 3.98486 12.6731L3.98589 12.6746C4.37109 13.2414 4.88474 13.7056 5.48556 14.0295C4.53479 14.5761 3.83002 15.4682 3.52091 16.5229C3.20655 17.5889 3.32265 18.7342 3.83936 19.7157L3.83971 19.7164C4.35708 20.6968 5.23795 21.4382 6.29368 21.7807C7.3492 22.1231 8.49732 22.0406 9.49244 21.549L9.51123 21.5394L17.4679 17.3256C18.178 16.9536 18.7677 16.3893 19.1711 15.6983C19.5758 15.0048 19.7737 14.2112 19.7478 13.412L19.7477 13.4098C19.7194 12.6097 19.4669 11.833 19.0181 11.1693Z" stroke="currentColor" stroke-width="1.5"/><path d="M9.71311 13.0963C9.71311 13.7188 10.3681 14.1237 10.9249 13.8454L13.3224 12.6471C13.9397 12.3386 13.9398 11.4578 13.3226 11.1491L10.9252 9.94986C10.3684 9.67134 9.71311 10.0762 9.71311 10.6988V13.0963Z" stroke="currentColor" stroke-width="1.2"/></svg>',
   ytStream: '<svg viewBox="0 0 24 24" fill="none"><path d="M19.1414 5C20.9097 6.80375 22 9.27455 22 12C22 14.7578 20.8836 17.2549 19.0782 19.064M5 19.1414C3.14864 17.3265 2 14.7974 2 12C2 9.23497 3.12222 6.73205 4.93603 4.92184" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M16.2849 8.04397C17.3458 9.05877 18 10.4488 18 11.9822C18 13.5338 17.3302 14.9386 16.2469 15.9564M7.8 16C6.68918 14.9789 6 13.556 6 11.9822C6 10.4266 6.67333 9.01843 7.76162 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M13.6563 10.4511C14.5521 11.1088 15 11.4376 15 12C15 12.5624 14.5521 12.8913 13.6563 13.5489C13.4091 13.7305 13.1638 13.9014 12.9384 14.0438C12.7407 14.1688 12.5168 14.298 12.2849 14.4249C11.3913 14.914 10.9444 15.1586 10.5437 14.8878C10.1429 14.6171 10.1065 14.0503 10.0337 12.9166C10.0131 12.596 10 12.2818 10 12C10 11.7183 10.0131 11.404 10.0337 11.0834C10.1065 9.94979 10.1429 9.38298 10.5437 9.11222C10.9444 8.84146 11.3913 9.08602 12.2849 9.57512C12.5168 9.702 12.7407 9.83125 12.9384 9.95621C13.1638 10.0986 13.4091 10.2696 13.6563 10.4511Z" stroke="currentColor" stroke-width="1.5"/></svg>',
   circleDown: '<svg viewBox="0 0 24 24" fill="none"><path fill-rule="evenodd" clip-rule="evenodd" d="M12 22.75C6.063 22.75 1.25 17.937 1.25 12C1.25 6.063 6.063 1.25 12 1.25C17.937 1.25 22.75 6.063 22.75 12C22.75 17.937 17.937 22.75 12 22.75ZM16.03 13.03L12.53 16.53C12.3894 16.6705 12.1988 16.7493 12 16.7493C11.8012 16.7493 11.6106 16.6705 11.47 16.53L7.97 13.03C7.89631 12.9613 7.83721 12.8785 7.79622 12.7865C7.75523 12.6945 7.73319 12.5952 7.73141 12.4945C7.72963 12.3938 7.74816 12.2938 7.78588 12.2004C7.8236 12.107 7.87974 12.0222 7.95096 11.951C8.02218 11.8797 8.10701 11.8236 8.2004 11.7859C8.29379 11.7482 8.39382 11.7296 8.49452 11.7314C8.59522 11.7332 8.69454 11.7552 8.78654 11.7962C8.87854 11.8372 8.96134 11.8963 9.03 11.97L11.25 14.19V8C11.25 7.80109 11.329 7.61032 11.4697 7.46967C11.6103 7.32902 11.8011 7.25 12 7.25C12.1989 7.25 12.3897 7.32902 12.5303 7.46967C12.671 7.61032 12.75 7.80109 12.75 8V14.19L14.97 11.97C15.0387 11.8963 15.1215 11.8372 15.2135 11.7962C15.3055 11.7552 15.4048 11.7332 15.5055 11.7314C15.6062 11.7296 15.7062 11.7482 15.7996 11.7859C15.893 11.8236 15.9778 11.8797 16.049 11.951C16.1203 12.0222 16.1764 12.107 16.2141 12.2004C16.2518 12.2938 16.2704 12.3938 16.2686 12.4945C16.2668 12.5952 16.2448 12.6945 16.2038 12.7865C16.1628 12.8785 16.1037 12.9613 16.03 13.03Z" fill="currentColor"/></svg>',
+  // апгрейд плана (та же ракета, что в лайвстримах)
+  rocket: '<svg viewBox="0 0 24 24" fill="none"><path d="M17.2792 12.7837L16.7293 12.2737L17.2792 12.7837ZM11.2163 6.72082L11.7263 7.27072L11.2163 6.72082ZM20.1579 5.46426L20.9015 5.56153L20.1579 5.46426ZM18.5357 3.84214L18.633 4.58581L18.633 4.58581L18.5357 3.84214ZM7.15375 12.648L7.82718 12.9781L7.15375 12.648ZM11.352 16.8463L11.0219 16.1728L11.352 16.8463ZM8.71522 10.4345C8.42232 10.1416 7.94745 10.1416 7.65456 10.4345C7.36166 10.7274 7.36166 11.2022 7.65456 11.4951L8.71522 10.4345ZM12.5049 16.3454C12.7978 16.6383 13.2726 16.6383 13.5655 16.3454C13.8584 16.0525 13.8584 15.5777 13.5655 15.2848L12.5049 16.3454ZM7.1995 17.8612C7.49239 17.5683 7.49239 17.0934 7.1995 16.8005C6.9066 16.5076 6.43173 16.5076 6.13884 16.8005L7.1995 17.8612ZM3.71368 19.2257C3.42079 19.5185 3.42079 19.9934 3.71368 20.2863C4.00658 20.5792 4.48145 20.5792 4.77434 20.2863L3.71368 19.2257ZM5.38063 16.0423C5.67353 15.7494 5.67353 15.2745 5.38063 14.9816C5.08774 14.6887 4.61286 14.6887 4.31997 14.9816L5.38063 16.0423ZM3.1074 16.1942C2.8145 16.4871 2.8145 16.962 3.1074 17.2549C3.40029 17.5478 3.87516 17.5478 4.16806 17.2549L3.1074 16.1942ZM9.01836 19.68C9.31125 19.3871 9.31125 18.9123 9.01836 18.6194C8.72547 18.3265 8.25059 18.3265 7.9577 18.6194L9.01836 19.68ZM6.74512 19.8319C6.45223 20.1248 6.45223 20.5997 6.74512 20.8926C7.03802 21.1855 7.51289 21.1855 7.80578 20.8926L6.74512 19.8319ZM10.6707 19.8772L11.4131 19.7712L10.6707 19.8772ZM15.0966 16.9064L15.839 16.8004L15.0966 16.9064ZM4.12274 13.3293L4.2288 12.5869L4.2288 12.5869L4.12274 13.3293ZM7.09355 8.90344L6.98748 9.64591L6.98748 9.64591L7.09355 8.90344ZM10.021 15.9844L8.01564 13.979L6.95498 15.0396L8.96036 17.045L10.021 15.9844ZM16.7293 12.2737C15.1201 14.0087 12.4996 15.4484 11.0219 16.1728L11.6822 17.5197C13.1754 16.7876 16.0169 15.2476 17.8291 13.2937L16.7293 12.2737ZM7.82718 12.9781C8.55161 11.5004 9.99129 8.8799 11.7263 7.27072L10.7063 6.17093C8.75238 7.98311 7.21236 10.8246 6.48032 12.3178L7.82718 12.9781ZM19.4142 5.367C19.154 7.35655 18.4646 10.4027 16.7293 12.2737L17.8291 13.2937C19.9075 11.0528 20.6367 7.58673 20.9015 5.56153L19.4142 5.367ZM11.7263 7.27072C13.5973 5.5354 16.6435 4.84602 18.633 4.58581L18.4385 3.09848C16.4133 3.36335 12.9472 4.09251 10.7063 6.17093L11.7263 7.27072ZM20.9015 5.56153C21.0916 4.10811 19.8919 2.90839 18.4385 3.09848L18.633 4.58581C19.1095 4.52349 19.4765 4.8905 19.4142 5.367L20.9015 5.56153ZM8.01564 13.979C7.73451 13.6979 7.66993 13.2989 7.82718 12.9781L6.48032 12.3178C6.02321 13.2502 6.24924 14.3339 6.95498 15.0396L8.01564 13.979ZM8.96036 17.045C9.6661 17.7508 10.7498 17.9768 11.6822 17.5197L11.0219 16.1728C10.7011 16.3301 10.3021 16.2655 10.021 15.9844L8.96036 17.045ZM7.65456 11.4951L12.5049 16.3454L13.5655 15.2848L8.71522 10.4345L7.65456 11.4951ZM6.13884 16.8005L3.71368 19.2257L4.77434 20.2863L7.1995 17.8612L6.13884 16.8005ZM4.31997 14.9816L3.1074 16.1942L4.16806 17.2549L5.38063 16.0423L4.31997 14.9816ZM7.9577 18.6194L6.74512 19.8319L7.80578 20.8926L9.01836 19.68L7.9577 18.6194ZM12.808 7.70618C11.8454 8.66876 11.8454 10.2294 12.808 11.192L13.8687 10.1313C13.4919 9.75454 13.4919 9.14363 13.8687 8.76684L12.808 7.70618ZM12.808 11.192C13.7706 12.1546 15.3312 12.1546 16.2938 11.192L15.2332 10.1313C14.8564 10.5081 14.2455 10.5081 13.8687 10.1313L12.808 11.192ZM16.2938 11.192C17.2564 10.2294 17.2564 8.66876 16.2938 7.70618L15.2332 8.76684C15.61 9.14363 15.61 9.75454 15.2332 10.1313L16.2938 11.192ZM16.2938 7.70618C15.3312 6.7436 13.7706 6.7436 12.808 7.70618L13.8687 8.76684C14.2455 8.39005 14.8564 8.39005 15.2332 8.76684L16.2938 7.70618ZM14.3237 17.1036L11.5954 19.8319L12.6561 20.8926L15.3844 18.1643L14.3237 17.1036ZM11.4131 19.7712L11.0494 17.2248L9.56443 17.4369L9.92821 19.9833L11.4131 19.7712ZM14.1116 15.3149L14.3541 17.0125L15.839 16.8004L15.5965 15.1028L14.1116 15.3149ZM11.5954 19.8319C11.5743 19.853 11.5574 19.8595 11.5445 19.8623C11.5286 19.8657 11.5078 19.8653 11.4855 19.8579C11.4632 19.8505 11.4464 19.8383 11.4357 19.826C11.427 19.8161 11.4174 19.8007 11.4131 19.7712L9.92821 19.9833C10.1155 21.2946 11.7195 21.8292 12.6561 20.8926L11.5954 19.8319ZM15.3844 18.1643C15.7421 17.8065 15.9106 17.3012 15.839 16.8004L14.3541 17.0125C14.3589 17.046 14.3476 17.0797 14.3237 17.1036L15.3844 18.1643ZM5.83567 8.61563L3.10738 11.3439L4.16804 12.4046L6.89633 9.67629L5.83567 8.61563ZM4.01667 14.0718L6.56308 14.4356L6.77521 12.9507L4.2288 12.5869L4.01667 14.0718ZM8.89722 8.4035L7.19962 8.16098L6.98748 9.64591L8.68509 9.88842L8.89722 8.4035ZM3.10738 11.3439C2.17075 12.2806 2.7054 13.8845 4.01667 14.0718L4.2288 12.5869C4.19926 12.5827 4.18391 12.573 4.17395 12.5643C4.16171 12.5537 4.14952 12.5368 4.14209 12.5145C4.13465 12.4922 4.13429 12.4714 4.1377 12.4556C4.14046 12.4426 4.14693 12.4257 4.16804 12.4046L3.10738 11.3439ZM6.89633 9.67629C6.92024 9.65238 6.95401 9.64112 6.98748 9.64591L7.19962 8.16098C6.69875 8.08943 6.19343 8.25787 5.83567 8.61563L6.89633 9.67629Z" fill="currentColor"/></svg>',
   // выход из расшаренной коллекции (OutlineIconLogout)
   leave: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"><path d="M18.1625 14.9475L21 12.0675L18.1625 9.1875"/><path d="M9.65039 12.0675H20.9229"/><path d="M11.8673 21C6.96811 21 3 17.625 3 12C3 6.375 6.96811 3 11.8673 3"/></svg>',
   // прод-иконки строки репорта: скачать (OutlineIconSave) и открыть в Media Library (OutlineFolderIcon)
@@ -535,7 +537,7 @@ function bodyRow(r, i){
   const tops = Array.isArray(r[2]) ? r[2] : [r[2]];
   const topHtml = '<span class="an-topic" data-an-topic="' + esc(tops[0]) + '">' + esc(tops[0]) + '</span>' +
     (tops.length > 1 ? '<span class="an-topic__more" data-an-topics-more="' + esc(tops.join("|")) + '">+' + (tops.length - 1) + '</span>' : "");
-  cells.push('<div class="an-td an-td--topics" style="width:130px"><span class="an-topics">' + topHtml + '</span></div>');
+  cells.push('<div class="an-td an-td--topics" style="width:140px"><span class="an-topics">' + topHtml + '</span></div>');
   cells.push('<div class="an-td" style="width:110px">' + esc(r[6]) + '</div>');   // Subs
   cells.push(deltaCell(r[9], 110));                                                  // Subs+
   cells.push('<div class="an-td" style="width:100px">' + esc(r[7]) + '</div>');   // Views
@@ -1603,6 +1605,7 @@ const collInner = `
     <div class="mc-menu" id="mcMenu" hidden>
       <button class="mc-menu__item" type="button" data-mc-act="open">${IC.collections}View collection</button>
       <button class="mc-menu__item" type="button" data-mc-act="view">${IC.graph}View deep data</button>
+      <button class="mc-menu__item" type="button" data-mc-act="activate">${IC.graph}Activate deep data</button>
       <hr class="mc-menu__sep" data-mc-sep="1" />
       <button class="mc-menu__item" type="button" data-mc-act="rename">${IC.edit}Rename collection</button>
       <button class="mc-menu__item" type="button" data-mc-act="duplicate">${IC.copy}Duplicate collection</button>
@@ -1621,7 +1624,7 @@ const collInner = `
       </div>
       <div class="ce-sharepop__invite">
         <div class="an-search ce-sharepop__search">${IC.search}<input class="an-search__input" type="text" placeholder="Add people by name or email" data-ce-share-search /></div>
-        <button class="an-btn an-btn--secondary an-btn--small" type="button" data-ce-invite disabled>Invite</button>
+        <button class="ce-sharepop__invitebtn" type="button" data-ce-invite disabled>Invite</button>
       </div>
       <div class="ce-sharepop__results" data-ce-share-results hidden></div>
       <div class="ce-sharepop__list" data-ce-share-list>${CE_ACCESS.map(ceAccRow).join("")}</div>
@@ -1716,11 +1719,11 @@ const CE_LIMIT = 30;
 const CE_COLS = [
   { w: 40, check: true },
   { w: 240, label: "Channel" },
-  { w: 130, label: "Youtube topics" },
+  { w: 110, label: "Added", sort: "added" },
   { w: 100, label: "Subs", sort: "subs" },
   { w: 100, label: "Views", sort: "views" },
-  { w: 200, label: "Link" },
-  { w: 100, label: "Added", sort: "added" },
+  { w: 190, label: "Link" },
+  { w: 130, label: "Youtube topics" },
   { w: 56, label: "" },
 ];
 // ссылка на канал: латинские имена → @handle, остальные → channel/UC… (детерминированно)
@@ -1739,13 +1742,13 @@ function ceTopicsCell(topics) {
   const tops = Array.isArray(topics) ? topics : [topics];
   const html = '<span class="an-topic" data-an-topic="' + esc(tops[0]) + '">' + esc(tops[0]) + '</span>' +
     (tops.length > 1 ? '<span class="an-topic__more" data-an-topics-more="' + esc(tops.join("|")) + '">+' + (tops.length - 1) + '</span>' : "");
-  return '<div class="an-td an-td--topics" style="width:140px"><span class="an-topics">' + html + '</span></div>';
+  return '<div class="an-td an-td--topics" style="width:130px"><span class="an-topics">' + html + '</span></div>';
 }
 // колонка LINK: настоящая ссылка на YouTube + копирование (страница канала открывается по имени)
 function ceLinkCell(name, i) {
   const url = ceChanUrl(name, i);
   const short = url.replace(/^https?:\/\/(www\.)?/, "");
-  return '<div class="an-td ce-linkcell" style="width:200px">' +
+  return '<div class="an-td ce-linkcell" style="width:190px">' +
     '<a class="ce-view" href="' + esc(url) + '" target="_blank" rel="noopener" title="' + esc(url) + '">' + esc(short) + '</a>' +
     '<button class="ce-copy" type="button" data-ce-copy="' + esc(url) + '" aria-label="Copy link" title="Copy link">' + IC.copy + '</button>' +
   '</div>';
@@ -1769,11 +1772,11 @@ const ceBody = CE_ROWS.map(function (r, i) {
     '<div class="an-td an-td--check" style="width:40px"><button class="an-check" type="button" data-an-check aria-label="Select">' + IC.check + '</button></div>' +
     '<div class="an-td"><span class="ce-chan"><span class="mc-ava ce-ava" style="background:var(' + r[2] + ')">' + esc(r[1]) + '</span>' +
       '<a class="ce-chan__name" href="analytics-channel.html?name=' + encodeURIComponent(r[0]) + '">' + esc(r[0]) + '</a></span></div>' +
-    ceTopicsCell(r[5]) +
+    '<div class="an-td ce-added" style="width:110px">' + esc(r[6]) + '</div>' +
     '<div class="an-td ce-num" style="width:100px">' + esc(r[4]) + '</div>' +
     '<div class="an-td ce-num" style="width:100px">' + esc(r[3]) + '</div>' +
     ceLinkCell(r[0], i) +
-    '<div class="an-td ce-added" style="width:100px">' + esc(r[6]) + '</div>' +
+    ceTopicsCell(r[5]) +
     '<div class="an-td" style="width:56px"><button class="ce-trash" type="button" aria-label="Remove channel" data-ce-remove>' + IC.trash + '</button></div>' +
   '</div>';
 }).join("\n          ");
@@ -1785,11 +1788,27 @@ const editInner = `
       <a class="ce-back" href="analytics-collections.html">${IC.arrowL}Back</a>
       <!-- H1 — имя коллекции: страница не форма, а набор мгновенных действий -->
       <header class="an-head an-head--between">
-        <div class="an-head__left">
-          <h1 class="an-title" data-ce-title>Test Collection</h1>
+        <div class="an-head__left ce-head__left">
+          <div class="ce-titlerow">
+            <h1 class="an-title" data-ce-title>Test Collection</h1>
+            <!-- размер коллекции ограничен планом: счётчик, полоса и апгрейд — отдельным серфейсом -->
+            <span class="ce-limit" data-ce-limit>
+              <span class="ce-limit__v"><b data-ce-limit-used>0</b> of ${CE_LIMIT} channels</span>
+              <span class="ce-limit__bar"><span class="ce-limit__fill" data-ce-limit-fill></span></span>
+              <button class="an-btn an-btn--secondary an-btn--small ce-limit__up" type="button" data-ce-upgrade
+                title="Upgrade the plan to keep more than ${CE_LIMIT} channels in one collection">${IC.rocket}Upgrade</button>
+            </span>
+          </div>
+          <!-- владелец: у своих коллекций «You», у расшаренных — имя владельца -->
+          <span class="ce-owner" data-ce-owner>
+            <span class="ce-owner__k">Owner</span>
+            <span class="mc-ava ce-owner__ava" data-ce-owner-ava style="background:var(--color-avatar-1)">Y</span>
+            <span class="ce-owner__name" data-ce-owner-name>You</span>
+          </span>
         </div>
         <div class="an-head__btns">
           <button class="an-btn an-btn--primary" type="button" data-nc-open>${IC.plus}Add channels</button>
+          <button class="an-btn an-btn--secondary" type="button" data-ce-deep>${IC.graph}View deep data</button>
           <!-- шеринг: попап с поиском участников и списком доступа -->
           <div class="ce-share" data-ce-share>
             <button class="an-btn an-btn--secondary" type="button" data-ce-share-trig aria-haspopup="dialog" aria-expanded="false">${IC.share}<span data-ce-share-lbl>Share</span></button>
@@ -1800,7 +1819,7 @@ const editInner = `
               </div>
               <div class="ce-sharepop__invite">
                 <div class="an-search ce-sharepop__search">${IC.search}<input class="an-search__input" type="text" placeholder="Add people by name or email" data-ce-share-search /></div>
-                <button class="an-btn an-btn--secondary an-btn--small" type="button" data-ce-invite disabled>Invite</button>
+                <button class="ce-sharepop__invitebtn" type="button" data-ce-invite disabled>Invite</button>
               </div>
               <div class="ce-sharepop__results" data-ce-share-results hidden></div>
               <div class="ce-sharepop__list" data-ce-share-list>${CE_ACCESS.map(ceAccRow).join("")}</div>
@@ -1810,8 +1829,6 @@ const editInner = `
           <div class="ce-menu" data-ce-menu>
             <button class="an-btn an-btn--secondary ce-menu__trig" type="button" data-ce-menu-trig aria-haspopup="menu" aria-expanded="false" aria-label="Collection actions">${IC.dots}</button>
             <div class="ce-menu__pop" data-ce-menu-pop hidden role="menu">
-              <button class="ce-menu__item" type="button" role="menuitem" data-ce-deep>${IC.graph}View deep data</button>
-              <hr class="ce-menu__sep" />
               <button class="ce-menu__item" type="button" role="menuitem" data-ce-rename>${IC.edit}Rename collection</button>
               <button class="ce-menu__item" type="button" role="menuitem" data-ce-duplicate>${IC.copy}Duplicate collection</button>
               <hr class="ce-menu__sep" />
@@ -1823,21 +1840,6 @@ const editInner = `
         </div>
       </header>
 
-      <!-- размер коллекции ограничен планом: счётчик, полоса и апгрейд при достижении лимита -->
-      <section class="ce-limit" data-ce-limit>
-        <div class="ce-limit__row">
-          <span class="ce-limit__k">Channels in collection</span>
-          <span class="ce-limit__v"><b data-ce-limit-used>0</b> of ${CE_LIMIT}</span>
-        </div>
-        <div class="ce-limit__bar"><span class="ce-limit__fill" data-ce-limit-fill></span></div>
-        <div class="ce-limit__foot" data-ce-limit-foot hidden>
-          <div class="ce-limit__note">
-            <span class="ce-limit__title">Collection limit reached</span>
-            <span class="ce-limit__sub">Upgrade the plan to keep more than ${CE_LIMIT} channels in one collection</span>
-          </div>
-          <button class="an-btn an-btn--primary an-btn--small" type="button" data-ce-upgrade>Upgrade plan</button>
-        </div>
-      </section>
 
       <div class="ce-form">
 
@@ -2021,6 +2023,7 @@ const videosInner = `
 const REP_TYPES = [
   { id: "basic", label: "Basic report", hint: "Includes basic metrics like subs, subs+ views, views+" },
   { id: "deep", label: "Deep report", hint: "Includes basic metrics plus extended metrics (VIDS, PVN, PVC etc.)" },
+  { id: "videos", label: "Videos report", hint: "Per-video rows: views, reactions, comments and publication dates" },
 ];
 // свои каналы (таб My performance) — те же, что в мок-данных Linked channels
 const REP_OWN_CHANNELS = ["Zems Racing", "Hunt Squad", "Eugene Zemskov"];
@@ -2160,10 +2163,6 @@ const repModalHtml = `
             </div>
           </div>
 
-          <div class="rp-field">
-            <label class="rp-lbl" for="repName">Report name</label>
-            <input class="an-input" id="repName" type="text" placeholder="e.g. Crypto Report 2026 July" data-rp-name />
-          </div>
 
           <div class="rp-field" data-rp-target-field>
             <label class="rp-lbl" data-rp-target-lbl>Collection</label>
@@ -2180,30 +2179,40 @@ const repModalHtml = `
 
           <div class="rp-field">
             <label class="rp-lbl">Period</label>
-            <div class="rp-cal" data-rp-cal>
+            <div class="an-dr rp-dr" data-an-dr data-rp-dr>
               <button class="rp-select__trig" type="button" data-rp-cal-trig aria-haspopup="dialog" aria-expanded="false" disabled>
-                <span class="rp-select__val is-ph" data-rp-cal-val>Select period</span>${IC.calendar}
+                <span class="rp-select__val is-ph" data-rp-cal-val data-an-dr-val>Select period</span>${IC.calendar}
               </button>
-              <div class="rp-cal__pop" data-rp-cal-pop hidden role="dialog" aria-label="Select period">
-                <div class="rp-cal__top">
-                  <aside class="rp-cal__months" data-rp-cal-months></aside>
-                  <div class="rp-cal__main">
-                    <div class="rp-cal__nav">
-                      <button class="an-dr__arrow" type="button" data-rp-cal-prev aria-label="Previous month">${IC.arrowL}</button>
-                      <span class="rp-cal__title" data-rp-cal-title></span>
-                      <button class="an-dr__arrow" type="button" data-rp-cal-next aria-label="Next month">${IC.arrowR}</button>
-                    </div>
-                    <div class="an-dr__grid rp-cal__grid" data-rp-cal-grid></div>
+              <div class="an-dr__pop" data-an-dr-pop hidden role="dialog" aria-label="Select period">
+                <aside class="an-dr__presets" data-an-dr-presets></aside>
+                <div class="an-dr__main">
+                  <div class="an-dr__nav">
+                    <button class="an-dr__arrow" type="button" data-an-dr-prev aria-label="Previous month">${IC.arrowL}</button>
+                    <span class="an-dr__mon" data-an-dr-mon="0"></span>
+                    <span class="an-dr__mon" data-an-dr-mon="1"></span>
+                    <button class="an-dr__arrow" type="button" data-an-dr-next aria-label="Next month">${IC.arrowR}</button>
                   </div>
-                </div>
-                <p class="rp-cal__note" data-rp-cal-note></p>
-                <div class="rp-cal__foot">
-                  <button class="an-btn an-btn--link an-btn--small" type="button" data-rp-cal-clear>Clear</button>
-                  <span class="an-dr__spacer"></span>
-                  <button class="an-btn an-btn--primary an-btn--small" type="button" data-rp-cal-apply>Apply</button>
+                  <div class="an-dr__grids">
+                    <div class="an-dr__grid" data-an-dr-grid="0"></div>
+                    <div class="an-dr__grid" data-an-dr-grid="1"></div>
+                  </div>
+                  <div class="an-dr__foot">
+                    <input class="an-input an-dr__inp" type="text" data-an-dr-from aria-label="From" placeholder="dd.mm.yyyy" />
+                    <span class="an-dr__dash">–</span>
+                    <input class="an-input an-dr__inp" type="text" data-an-dr-to aria-label="To" placeholder="dd.mm.yyyy" />
+                    <span class="an-dr__spacer"></span>
+                    <button class="an-btn an-btn--secondary an-btn--small" type="button" data-an-dr-cancel>Cancel</button>
+                    <button class="an-btn an-btn--primary an-btn--small" type="button" data-an-dr-apply>Apply</button>
+                  </div>
                 </div>
               </div>
             </div>
+          </div>
+
+          <!-- имя складывается из выбранных полей: показываем его до создания -->
+          <div class="rp-preview" data-rp-preview hidden>
+            <span class="rp-preview__k">Report name</span>
+            <span class="rp-preview__v" data-rp-preview-v></span>
           </div>
         </div>
         <div class="an-modal__foot">

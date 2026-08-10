@@ -246,23 +246,10 @@
     var rpTg = e.target.closest("[data-rp-opt-target]");
     if (rpTg) { repSetSel("target", rpTg.getAttribute("data-rp-opt-target")); repMenu("target", false); return; }
     if (e.target.closest("[data-rp-cal-trig]")) {
-      var pop = document.querySelector("[data-rp-cal-pop]");
-      rpCalOpen(pop ? pop.hidden : true);
+      var pop = document.querySelector("[data-rp-dr] [data-an-dr-pop]");
+      drOpen(pop ? pop.hidden : true);
       return;
     }
-    var rpJump = e.target.closest("[data-rp-cal-jump]");
-    if (rpJump) {
-      var jp = rpJump.getAttribute("data-rp-cal-jump").split("-");
-      rpMonth = new Date(+jp[0], +jp[1], 1);
-      rpCalRender();
-      return;
-    }
-    var rpDay = e.target.closest("[data-rp-cal-day]");
-    if (rpDay) { rpPickDay(rpDay.getAttribute("data-rp-cal-day")); return; }
-    if (e.target.closest("[data-rp-cal-prev]")) { rpMonth = new Date(rpMonth.getFullYear(), rpMonth.getMonth() - 1, 1); rpCalRender(); return; }
-    if (e.target.closest("[data-rp-cal-next]")) { rpMonth = new Date(rpMonth.getFullYear(), rpMonth.getMonth() + 1, 1); rpCalRender(); return; }
-    if (e.target.closest("[data-rp-cal-clear]")) { rpCalClear(); return; }
-    if (e.target.closest("[data-rp-cal-apply]")) { rpCalApply(); return; }
     if (e.target.closest("[data-rp-submit]")) { repSubmit(); return; }
     if (e.target.closest("[data-rep-ready-dismiss]")) {
       var rc = document.querySelector("[data-rep-ready]"); if (rc) rc.hidden = true;
@@ -286,7 +273,6 @@
     if (e.target.closest("[data-rep-c-confirm]")) { repDel(); return; }
     // клик вне дропдаунов модалки — закрыть
     if (!e.target.closest("[data-rp-sel]")) repMenusClose();
-    if (!e.target.closest("[data-rp-cal]")) rpCalClose();
     // копирование ссылки на канал (страница коллекции)
     var ceCp = e.target.closest("[data-ce-copy]");
     if (ceCp) {
@@ -1559,7 +1545,8 @@
     var pop = wrap.querySelector("[data-an-dr-pop]");
     if (open) {
       // открываем на диапазоне, который сейчас в поле
-      var val = (document.querySelector("[data-an-period-val]") || {}).textContent || "";
+      var val = (wrap.querySelector("[data-an-dr-val]") ||
+                 document.querySelector("[data-an-period-val]") || {}).textContent || "";
       var parts = val.split(/\s*[–-]\s*/);
       drFrom = drParse(parts[0]) || drToday();
       drTo = drParse(parts[1]) || drFrom;
@@ -1635,7 +1622,8 @@
     if (!f) return;
     if (t < f) { var sw = f; f = t; t = sw; }
     drFrom = f; drTo = t;
-    flSetCustom(f, t);
+    if (document.querySelector("[data-rp-dr]")) repSetPeriod(f, t);   // тот же календарь в модалке отчёта
+    else flSetCustom(f, t);
     drOpen(false);
   }
   // числа за произвольный период: масштаб от 30-дневной базы
@@ -1934,6 +1922,8 @@
     if (!row) return "analytics-collection-edit.html";
     var url = "analytics-collection-edit.html?name=" + encodeURIComponent(row.getAttribute("data-name") || "");
     if (row.hasAttribute("data-sample")) url += "&shared=1";   // чужая коллекция: на странице только просмотр и выход
+    var ownr = row.getAttribute("data-owner");
+    if (ownr) url += "&owner=" + encodeURIComponent(ownr);
     if (row.hasAttribute("data-ai-row")) {
       var nm = row.getAttribute("data-name");
       var list = aiLoad();
@@ -1957,6 +1947,17 @@
     var gIco = document.querySelector(".mc-status--gray svg");
     return '<span class="mc-status mc-status--gray">' + (gIco ? gIco.outerHTML : "") + '<span class="mc-status__t">Deactivated</span>' +
            '<span class="mc-status__sep"></span><button class="mc-status__link" type="button" data-mc-activate>Activate deep data</button></span>';
+  }
+  // подтверждение активации Deep data — и из статуса строки, и из «⋮»-меню
+  function mcActivateAsk(row) {
+    mcRow = row;
+    var nm = row ? (row.getAttribute("data-name") || "") : "";
+    var qtyCell = row ? row.children[2] : null;
+    var qty = qtyCell ? qtyCell.textContent.trim() : "";
+    var txt = document.querySelector("[data-mc-activate-text]");
+    if (txt) txt.textContent = "Deep data will be collected for " + (qty && qty !== "—" ? qty + " channels of " : "") +
+      "«" + nm + "». Collecting takes a few minutes and counts against your plan limits.";
+    openModal("mcModal-activate");
   }
   function setRowStatus(row, status) {
     if (!row) return;
@@ -2023,6 +2024,8 @@
       var st = moreBtn.getAttribute("data-status");
       // View deep data + Deactivate — только у активной коллекции
       menu.querySelector('[data-mc-act="view"]').hidden = st !== "activated";
+      // активация тратит лимиты плана — только своя и ещё не активированная коллекция
+      menu.querySelector('[data-mc-act="activate"]').hidden = st === "activated" || st === "pending";
       menu.querySelector('[data-mc-act="deactivate"]').hidden = st !== "activated";
       // C1: чужую (sample) коллекцию нельзя менять — остаются просмотр и Duplicate
       var mine = !(mcRow && mcRow.hasAttribute("data-sample"));
@@ -2030,6 +2033,7 @@
       menu.querySelector('[data-mc-act="delete"]').hidden = !mine;
       // из чужой коллекции можно только выйти — «Leave» вместо деструктивных пунктов владельца
       menu.querySelector('[data-mc-act="leave"]').hidden = mine;
+      if (!mine) menu.querySelector('[data-mc-act="activate"]').hidden = true;
       if (!mine) menu.querySelector('[data-mc-act="deactivate"]').hidden = true;
       menu.querySelector("[data-mc-note]").hidden = mine;
       // разделитель прячем, если группа под ним целиком скрыта
@@ -2049,6 +2053,7 @@
       var type = act.getAttribute("data-mc-act");
       closeMcMenu();
       if (type === "view") { window.location.href = "analytics-deep-data.html"; return; }
+      if (type === "activate") { mcActivateAsk(mcRow); return; }
       if (type === "rename") {                     // правится только имя — та же модалка, что и создание
         mcMode = "edit";
         var rt = document.querySelector("[data-mc-create-title]");
@@ -2168,17 +2173,7 @@
     }
     // C4: Activate deep data — сначала подтверждение (это расход лимитов плана)
     var actBtn = e.target.closest("[data-mc-activate]");
-    if (actBtn) {
-      mcRow = actBtn.closest("[data-mc-row]");
-      var nm = mcRow ? (mcRow.getAttribute("data-name") || "") : "";
-      var qtyCell = mcRow ? mcRow.children[2] : null;
-      var qty = qtyCell ? qtyCell.textContent.trim() : "";
-      var txt = document.querySelector("[data-mc-activate-text]");
-      if (txt) txt.textContent = "Deep data will be collected for " + (qty && qty !== "—" ? qty + " channels of " : "") +
-        "«" + nm + "». Collecting takes a few minutes and counts against your plan limits.";
-      openModal("mcModal-activate");
-      return;
-    }
+    if (actBtn) { mcActivateAsk(actBtn.closest("[data-mc-row]")); return; }
     if (e.target.closest("[data-mc-activate-confirm]")) {
       var row = mcRow;
       closeModals();
@@ -3423,7 +3418,6 @@
     if (e.target.closest("[data-ce-search]")) { ceSearchApply(); return; }
     if (e.target.closest("[data-ce-share-search]")) { ceShareSuggest(e.target.value); return; }
     if (e.target.closest("[data-rp-search]")) { repTargetFill(e.target.value); return; }
-    if (e.target.closest("[data-rp-name]")) { repSync(); return; }
     var fSearch = e.target.closest("[data-anf-search]");
     if (fSearch) {
       var q = fSearch.value.trim().toLowerCase();
@@ -3767,21 +3761,45 @@
   }
   function repMenusClose() { repMenu("type", false); repMenu("target", false); }
   // период доступен только после выбора коллекции/канала
+  // имя не вводят руками: оно складывается из выбранных полей
+  function repTypeWord(type) {
+    if (type.indexOf("Deep") === 0) return "Deep";
+    if (type.indexOf("Videos") === 0) return "Videos";
+    return "Basic";
+  }
+  // период в имени — коротко, месяцами: «July 2026», «January – June 2026»
+  function repPeriodShort(from, to) {
+    var d = (window.SUBSUB_DICT || {}), ms = d.months || [];
+    var mf = ms[from.getMonth()] || "", mt = ms[to.getMonth()] || "";
+    var yf = from.getFullYear(), yt = to.getFullYear();
+    if (yf === yt && from.getMonth() === to.getMonth()) return mf + " " + yf;
+    if (yf === yt) return mf + " – " + mt + " " + yf;
+    return mf + " " + yf + " – " + mt + " " + yt;
+  }
+  function repAutoName() {
+    var type = repSelVal("type"), target = repSelVal("target");
+    if (!type || !target || !rpRange.from || !rpRange.to) return "";
+    return target + " — " + repTypeWord(type) + " report, " + repPeriodShort(rpRange.from, rpRange.to);
+  }
   function repSync() {
-    var name = (document.querySelector("[data-rp-name]") || {}).value || "";
     var target = repSelVal("target");
     var calTrig = document.querySelector("[data-rp-cal-trig]");
     if (calTrig) calTrig.disabled = !target;
-    var ok = !!repSelVal("type") && !!name.trim() && !!target && !!rpRange.from && !!rpRange.to;
+    var name = repAutoName();
+    var prev = document.querySelector("[data-rp-preview]");
+    if (prev) {
+      prev.hidden = !name;
+      var pv = prev.querySelector("[data-rp-preview-v]");
+      if (pv) pv.textContent = name;
+    }
     var btn = document.querySelector("[data-rp-submit]");
-    if (btn) btn.disabled = !ok;
+    if (btn) btn.disabled = !name;
   }
   function repOpen() {
     rpRange = { from: null, to: null };
     var m = document.getElementById("repModal");
     if (!m) return;
     m.setAttribute("data-rep-mode", repMode());
-    var nm = document.querySelector("[data-rp-name]"); if (nm) nm.value = "";
     ["type", "target"].forEach(function (sel) {
       var el = document.querySelector('[data-rp-sel="' + sel + '"] [data-rp-val]');
       if (!el) return;
@@ -3791,7 +3809,7 @@
     var cv = document.querySelector("[data-rp-cal-val]");
     if (cv) { cv.textContent = "Select period"; cv.classList.add("is-ph"); }
     repMenusClose();
-    rpCalClose();
+    drOpen(false);
     repTargetFill();
     repSync();
     openModal("repModal");
@@ -3799,6 +3817,12 @@
 
   // ---- календарь периода: слева быстрый переход по месяцам, справа сетка дней ----
   var rpRange = { from: null, to: null }, rpMonth = null;
+  function repSetPeriod(from, to) {
+    rpRange = { from: from, to: to };
+    var v = document.querySelector("[data-rp-cal-val]");
+    if (v) { v.textContent = rpFmt(from) + " - " + rpFmt(to); v.classList.remove("is-ph"); }
+    repSync();
+  }
   function rpDict() { return window.SUBSUB_DICT || {}; }
   function rpToday() {
     var t = (rpDict().today || "2026-08-03").split("-");
@@ -3896,7 +3920,7 @@
     return String(s).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "report";
   }
   function repFileName(target, type) {
-    return repSlug(target) + "-" + (type.indexOf("Deep") === 0 ? "deep" : "basic") + "-report-" + (repSeq++) + ".xlsx";
+    return repSlug(target) + "-" + repTypeWord(type).toLowerCase() + "-report-" + (repSeq++) + ".xlsx";
   }
   function repMlAdd(file) {
     // мост в Media Library: файл появляется в папке Analytics (её создаёт media.js)
@@ -3910,7 +3934,7 @@
   }
   function repSubmit() {
     var type = repSelVal("type"), target = repSelVal("target");
-    var name = ((document.querySelector("[data-rp-name]") || {}).value || "").trim();
+    var name = repAutoName();
     if (!type || !target || !name || !rpRange.from || !rpRange.to) return;
     var key = repKey();
     var body = tblBody(key);
@@ -3931,8 +3955,8 @@
           ? '<a class="rep-collink" href="analytics-collection-edit.html?name=' + encodeURIComponent(target) + '">' + escHtml(target) + "</a>"
           : escHtml(target)) + "</div>"
     ];
-    if (repIsMarket()) cells.push('<div class="an-td an-td--plain" style="width:120px" data-col="type">' +
-      escHtml(type.indexOf("Deep") === 0 ? "Deep" : "Basic") + "</div>");
+    if (repIsMarket()) cells.push('<div class="an-td an-td--plain" style="width:120px" data-col="type"><span class="rep-cell">' +
+      escHtml(repTypeWord(type)) + "</span></div>");
     cells.push('<div class="an-td" style="width:160px" data-col="status">' + repStatusHtml("progress") + "</div>");
     cells.push('<div class="an-td" style="width:140px" data-col="actions">' + repActsHtml(false, file) + "</div>");
     row.innerHTML = cells.join("");
@@ -4236,8 +4260,10 @@
     var fill = box.querySelector("[data-ce-limit-fill]");
     if (fill) fill.style.width = Math.min(100, Math.round(used / CE_LIMIT * 100)) + "%";
     box.classList.toggle("is-full", full);
-    var foot = box.querySelector("[data-ce-limit-foot]");
-    if (foot) foot.hidden = !full;
+    var up = box.querySelector("[data-ce-upgrade]");
+    if (up) up.title = full
+      ? "Collection limit reached — upgrade the plan to add more channels"
+      : "Upgrade the plan to keep more than " + CE_LIMIT + " channels in one collection";
     var add = document.querySelector("[data-nc-open]");
     if (add) {
       add.disabled = full;                     // добавлять некуда, пока план не расширили
@@ -4300,15 +4326,15 @@
       '<div class="an-td"><span class="ce-chan"><span class="mc-ava ce-ava" style="background:var(' + color + ')">' +
         escHtml(c.initial || (c.name || "?").charAt(0)) + '</span><a class="ce-chan__name" href="analytics-channel.html?name=' +
         encodeURIComponent(c.name) + '">' + escHtml(c.name) + '</a></span></div>' +
-      '<div class="an-td an-td--topics" style="width:130px">' + ceTopicsHtml(c.topics) + '</div>' +
+      '<div class="an-td ce-added" style="width:110px">' + escHtml(c.added || "—") + '</div>' +
       '<div class="an-td ce-num" style="width:100px">' + escHtml(c.subs || "—") + '</div>' +
       '<div class="an-td ce-num" style="width:100px">' + escHtml(c.views || "—") + '</div>' +
-      '<div class="an-td ce-linkcell" style="width:200px">' +
+      '<div class="an-td ce-linkcell" style="width:190px">' +
         '<a class="ce-view" href="' + ceUrl(c.name) + '" target="_blank" rel="noopener" title="' + ceUrl(c.name) + '">' +
           escHtml(ceUrl(c.name).replace(/^https?:\/\/(www\.)?/, "")) + '</a>' +
         '<button class="ce-copy" type="button" data-ce-copy="' + ceUrl(c.name) + '" aria-label="Copy link" title="Copy link"></button>' +
       '</div>' +
-      '<div class="an-td ce-added" style="width:100px">' + escHtml(c.added || "—") + '</div>' +
+      '<div class="an-td an-td--topics" style="width:130px">' + ceTopicsHtml(c.topics) + '</div>' +
       '<div class="an-td" style="width:56px"><button class="ce-trash" type="button" aria-label="Remove channel" data-ce-remove></button></div>' +
     '</div>';
   }
@@ -4468,6 +4494,21 @@
     var qs = new URLSearchParams(window.location.search);
     var nm = qs.get("name");
     if (nm) title.textContent = nm;
+    // владелец: из ссылки, по умолчанию — «You»
+    var own = (qs.get("owner") || "You").trim() || "You";
+    var oName = document.querySelector("[data-ce-owner-name]");
+    if (oName) oName.textContent = own;
+    var oAva = document.querySelector("[data-ce-owner-ava]");
+    if (oAva) {
+      oAva.textContent = own.charAt(0).toUpperCase();
+      oAva.setAttribute("style", "background:var(--color-avatar-" + (own === "You" ? 1 : (own.charCodeAt(0) % 5) + 1) + ")");
+    }
+    // по умолчанию коллекция отсортирована по дате добавления, свежие сверху
+    if (document.querySelector('[data-ce-sort="added"]')) {
+      ceSortState = { col: "added", dir: "desc" };
+      ceSortApply();
+      ceMarkSort();
+    }
     ceLimitSync();
     // чужая коллекция (пришли из «Shared with me»): менять нечего — только дубликат и выход
     if (qs.get("shared") === "1") {
