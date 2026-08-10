@@ -2775,7 +2775,7 @@ body.is-open:not(.is-collapsed) .main { margin-left: 306px; }
 @keyframes ce-spin { to { transform: rotate(360deg); } }
 /* колонки тянутся на всю ширину серфейса: свободное место забирает колонка канала,
    остальные остаются фиксированными (иначе справа оставался пустой хвост) */
-.ce-table .an-tr > *:nth-child(2) { flex: 1 1 240px; min-width: 180px; }
+.ce-table .an-tr > *:nth-child(2) { flex: 1 1 240px; min-width: 150px; }
 .ce-table .an-tbody .an-tr { height: 56px; }
 .ce-chan { display: inline-flex; align-items: center; gap: 12px; min-width: 0; }
 .ce-ava { width: 24px; height: 24px; font-size: 12px; font-weight: 400; }
@@ -3010,6 +3010,25 @@ body.filters-open .an-filters.is-active { display: flex; }
 /* ================= страница коллекции: тулбар, шеринг, «⋮»-меню ================= */
 /* вторичная строка под именем канала: внешняя ссылка + копирование */
 /* имя канала — ссылка на страницу канала */
+/* лимит размера коллекции: счётчик + полоса, при достижении — апгрейд */
+.ce-limit { display: flex; flex-direction: column; gap: 8px; width: 100%; max-width: 400px; margin: 0 0 4px; }
+.ce-limit__row { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; }
+.ce-limit__k { font-size: 14px; font-weight: 400; color: var(--color-black); }
+.ce-limit__v { font-size: 14px; font-weight: 300; color: var(--color-shade-700); }
+.ce-limit__v b { font-weight: 500; color: var(--color-green-dark); }
+.ce-limit.is-full .ce-limit__v b { color: var(--color-red); }
+.ce-limit__bar { height: 6px; border-radius: 9999px; background: var(--color-shade-200); overflow: hidden; }
+.ce-limit__fill { display: block; height: 100%; width: 0; border-radius: 9999px; background: var(--color-green-dark);
+  transition: width .25s ease; }
+.ce-limit.is-full .ce-limit__fill { background: var(--color-red); }
+.ce-limit__foot { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-top: 4px;
+  padding: 12px 12px 12px 16px; border-radius: 8px; background: var(--color-shade-90); }
+.ce-limit__foot[hidden] { display: none; }
+.ce-limit__note { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.ce-limit__title { font-size: 14px; font-weight: 500; color: var(--color-black); }
+.ce-limit__sub { font-size: 12px; font-weight: 300; color: var(--color-shade-700); }
+/* дата добавления в коллекцию — как служебные даты в других таблицах */
+.ce-added { font-size: 14px; font-weight: 300; color: var(--color-shade-700); }
 .ce-chan__name { text-decoration: none; }
 .ce-chan__name:hover { text-decoration: underline; text-underline-offset: 3px; }
 /* «⋮»-меню действий коллекции */

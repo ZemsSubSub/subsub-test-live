@@ -175,6 +175,9 @@
       ceMenu(cePop ? cePop.hidden : true);
       return;
     }
+    if (e.target.closest("[data-ce-upgrade]")) { toast("Upgrade request sent — our team will contact you"); return; }
+    var ceS = e.target.closest("[data-ce-sort]");
+    if (ceS) { ceSort(ceS.getAttribute("data-ce-sort")); return; }
     if (e.target.closest("[data-ce-leave]")) { ceMenu(false); ceConfirm("leave"); return; }
     if (e.target.closest("[data-ce-deep]")) { ceMenu(false); window.location.href = "analytics-deep-data.html"; return; }
     if (e.target.closest("[data-ce-duplicate]")) { ceMenu(false); ceDuplicate(); return; }
@@ -2654,6 +2657,14 @@
     }
     // на странице коллекции добавляем в неё же и дорисовываем строки таблицы
     if (ncCollPage()) {
+      // за лимит плана коллекцию не наполняем
+      if (document.querySelector("[data-ce-limit]") && names.length > ceLimitLeft()) {
+        var left = ceLimitLeft();
+        toast(left
+          ? "Only " + left + " more channel" + (left === 1 ? "" : "s") + " fit — upgrade the plan for a bigger collection"
+          : "Collection limit reached — upgrade the plan to add more channels");
+        return;
+      }
       var coll = ncPageColl();
       if (coll) ncAppend(coll, names);
       if (typeof ceAddRows === "function") ceAddRows(names);
@@ -3648,6 +3659,8 @@
       if (yt) { yt.setAttribute("href", url); yt.setAttribute("title", url); yt.textContent = url.replace(/^https?:\/\/(www\.)?/, ""); }
       var cp = row.querySelector("[data-ce-copy]");
       if (cp) cp.setAttribute("data-ce-copy", url);
+      var ad = row.querySelector(".ce-added");
+      if (ad) ad.textContent = (typeof aiToday === "function" ? aiToday() : "");   // добавлен только что
       var tp = row.querySelector(".an-td--topics");
       if (tp) tp.innerHTML = ceTopicsHtml(info && info.topics);
       var nums = row.querySelectorAll(".ce-num");
@@ -3655,8 +3668,9 @@
       if (nums[1]) nums[1].textContent = (info && info.subs) || "—";
       body.appendChild(row);
     });
+    ceSortApply();
+    ceLimitSync();
     if (typeof ceFooter === "function") ceFooter();
-    if (typeof ceCountSync === "function") ceCountSync();
   }
   // ================= D1/D3: массовые действия и футер страницы коллекции =================
   function ceRows() { return [].slice.call(document.querySelectorAll("[data-ce-row]")); }
@@ -4210,6 +4224,68 @@
     return slug ? "https://www.youtube.com/@" + slug : "https://www.youtube.com/channel/UC" + String(name).length + "prototype000000000";
   }
   // топики канала — те же баджи, что в Basic data
+  // размер коллекции ограничен планом: 30 каналов, дальше — апгрейд
+  var CE_LIMIT = 30;
+  function ceLimitSync() {
+    var box = document.querySelector("[data-ce-limit]");
+    if (!box) return;
+    var used = ceRows().length;
+    var full = used >= CE_LIMIT;
+    var u = box.querySelector("[data-ce-limit-used]");
+    if (u) u.textContent = String(used);
+    var fill = box.querySelector("[data-ce-limit-fill]");
+    if (fill) fill.style.width = Math.min(100, Math.round(used / CE_LIMIT * 100)) + "%";
+    box.classList.toggle("is-full", full);
+    var foot = box.querySelector("[data-ce-limit-foot]");
+    if (foot) foot.hidden = !full;
+    var add = document.querySelector("[data-nc-open]");
+    if (add) {
+      add.disabled = full;                     // добавлять некуда, пока план не расширили
+      add.title = full ? "Collection limit reached — upgrade the plan" : "";
+    }
+  }
+  function ceLimitLeft() { return Math.max(0, CE_LIMIT - ceRows().length); }
+  // сортировка таблицы коллекции: она живёт вне общего движка таблиц (тут инфинайт-скролл),
+  // поэтому свой маленький сорт по трём колонкам с тем же парсером значений
+  var ceSortState = null;
+  function ceSortIdx(col) {
+    var heads = [].slice.call(document.querySelectorAll(".ce-table .an-tr--head > *"));
+    for (var i = 0; i < heads.length; i++) {
+      var s = heads[i].querySelector("[data-ce-sort]");
+      if (s && s.getAttribute("data-ce-sort") === col) return i;
+    }
+    return -1;
+  }
+  function ceMarkSort() {
+    [].slice.call(document.querySelectorAll("[data-ce-sort]")).forEach(function (el) {
+      var on = ceSortState && ceSortState.col === el.getAttribute("data-ce-sort");
+      el.classList.toggle("is-sorted", !!on);
+      el.classList.toggle("is-asc", !!on && ceSortState.dir === "asc");
+      el.setAttribute("aria-sort", on ? (ceSortState.dir === "asc" ? "ascending" : "descending") : "none");
+    });
+  }
+  function ceSortApply() {
+    if (!ceSortState) return;
+    var idx = ceSortIdx(ceSortState.col);
+    var body = document.querySelector("[data-ce-tbody]");
+    if (idx < 0 || !body) return;
+    var dir = ceSortState.dir === "asc" ? 1 : -1;
+    ceRows().map(function (r, i) { return { r: r, i: i, v: tblVal(r, idx) }; })
+      .sort(function (a, b) {
+        if (a.v === b.v) return a.i - b.i;
+        if (typeof a.v === "string" || typeof b.v === "string")
+          return String(a.v).localeCompare(String(b.v)) * dir;
+        return (a.v > b.v ? 1 : -1) * dir;
+      })
+      .forEach(function (o) { body.appendChild(o.r); });
+  }
+  function ceSort(col) {
+    ceSortState = (ceSortState && ceSortState.col === col)
+      ? { col: col, dir: ceSortState.dir === "desc" ? "asc" : "desc" }
+      : { col: col, dir: "desc" };            // первый клик — по убыванию, как в остальных таблицах
+    ceSortApply();
+    ceMarkSort();
+  }
   function ceTopicsHtml(topics) {
     var tops = Object.prototype.toString.call(topics) === "[object Array]" ? topics : (topics ? [topics] : []);
     if (!tops.length) return '<span class="an-topics"><span class="an-muted">—</span></span>';
@@ -4224,15 +4300,16 @@
       '<div class="an-td"><span class="ce-chan"><span class="mc-ava ce-ava" style="background:var(' + color + ')">' +
         escHtml(c.initial || (c.name || "?").charAt(0)) + '</span><a class="ce-chan__name" href="analytics-channel.html?name=' +
         encodeURIComponent(c.name) + '">' + escHtml(c.name) + '</a></span></div>' +
-      '<div class="an-td an-td--topics" style="width:150px">' + ceTopicsHtml(c.topics) + '</div>' +
-      '<div class="an-td ce-num" style="width:110px">' + escHtml(c.views || "—") + '</div>' +
-      '<div class="an-td ce-num" style="width:110px">' + escHtml(c.subs || "—") + '</div>' +
-      '<div class="an-td ce-linkcell" style="width:220px">' +
+      '<div class="an-td an-td--topics" style="width:130px">' + ceTopicsHtml(c.topics) + '</div>' +
+      '<div class="an-td ce-num" style="width:100px">' + escHtml(c.subs || "—") + '</div>' +
+      '<div class="an-td ce-num" style="width:100px">' + escHtml(c.views || "—") + '</div>' +
+      '<div class="an-td ce-linkcell" style="width:200px">' +
         '<a class="ce-view" href="' + ceUrl(c.name) + '" target="_blank" rel="noopener" title="' + ceUrl(c.name) + '">' +
           escHtml(ceUrl(c.name).replace(/^https?:\/\/(www\.)?/, "")) + '</a>' +
         '<button class="ce-copy" type="button" data-ce-copy="' + ceUrl(c.name) + '" aria-label="Copy link" title="Copy link"></button>' +
       '</div>' +
-      '<div class="an-td" style="width:60px"><button class="ce-trash" type="button" aria-label="Remove channel" data-ce-remove></button></div>' +
+      '<div class="an-td ce-added" style="width:100px">' + escHtml(c.added || "—") + '</div>' +
+      '<div class="an-td" style="width:56px"><button class="ce-trash" type="button" aria-label="Remove channel" data-ce-remove></button></div>' +
     '</div>';
   }
   function ceLoadMore() {
@@ -4242,7 +4319,7 @@
     var have = ceRowNames();
     var pool = (typeof aiChannelPool === "function" ? aiChannelPool() : []).filter(function (c) {
       return have.indexOf(c.name) === -1;
-    });
+    }).slice(0, ceLimitLeft());       // в коллекции не может быть больше CE_LIMIT каналов
     if (!pool.length) {
       ceDone = true;
       if (more) { more.hidden = false; var t0 = more.querySelector("[data-ce-more-txt]"); if (t0) t0.textContent = "All channels loaded"; more.classList.add("is-done"); }
@@ -4264,6 +4341,8 @@
         var cp = row.querySelector("[data-ce-copy]"); if (cp) cp.innerHTML = copyIco;
         body.appendChild(row);
       });
+      ceSortApply();                      // догруженные строки встают в текущий порядок
+      ceLimitSync();
       ceLoading = false;
       if (more) more.hidden = true;
       if (pool.length <= CE_BATCH) {
@@ -4332,6 +4411,7 @@
         ceRowToRemove.remove();
         ceRowToRemove = null;
         ceFooter();
+        ceLimitSync();
         ceSearchApply();
         toast("«" + oneName.trim() + "» removed from collection");
         setTimeout(ceSaved, 900);
@@ -4355,6 +4435,7 @@
       }
       closeModal(document.getElementById("ceConfirm"));
       ceFooter();
+      ceLimitSync();
       ceSearchApply();
       toast(names.length + (names.length === 1 ? " channel" : " channels") + " removed from collection");
       setTimeout(ceSaved, 900);            // один паттерн автосохранения на все действия
@@ -4387,6 +4468,7 @@
     var qs = new URLSearchParams(window.location.search);
     var nm = qs.get("name");
     if (nm) title.textContent = nm;
+    ceLimitSync();
     // чужая коллекция (пришли из «Shared with me»): менять нечего — только дубликат и выход
     if (qs.get("shared") === "1") {
       ["[data-ce-rename]", "[data-ce-deactivate]", "[data-ce-delete]"].forEach(function (sel) {

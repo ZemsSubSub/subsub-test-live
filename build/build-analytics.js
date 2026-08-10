@@ -535,7 +535,7 @@ function bodyRow(r, i){
   const tops = Array.isArray(r[2]) ? r[2] : [r[2]];
   const topHtml = '<span class="an-topic" data-an-topic="' + esc(tops[0]) + '">' + esc(tops[0]) + '</span>' +
     (tops.length > 1 ? '<span class="an-topic__more" data-an-topics-more="' + esc(tops.join("|")) + '">+' + (tops.length - 1) + '</span>' : "");
-  cells.push('<div class="an-td an-td--topics" style="width:140px"><span class="an-topics">' + topHtml + '</span></div>');
+  cells.push('<div class="an-td an-td--topics" style="width:130px"><span class="an-topics">' + topHtml + '</span></div>');
   cells.push('<div class="an-td" style="width:110px">' + esc(r[6]) + '</div>');   // Subs
   cells.push(deltaCell(r[9], 110));                                                  // Subs+
   cells.push('<div class="an-td" style="width:100px">' + esc(r[7]) + '</div>');   // Views
@@ -1711,14 +1711,17 @@ const collInner = `
 // ================= COLLECTION (открытая коллекция = «Editing collection») =================
 // Перенос app.subsub.io/analytics/collections/channels/<id>: форма (Name/Shared with/поиск),
 // таблица каналов коллекции и фиксированный футер с действиями.
+// размер коллекции ограничен планом: 30 каналов, дальше — апгрейд
+const CE_LIMIT = 30;
 const CE_COLS = [
   { w: 40, check: true },
   { w: 240, label: "Channel" },
-  { w: 150, label: "Youtube topics" },
-  { w: 110, label: "Views" },
-  { w: 110, label: "Subs" },
-  { w: 220, label: "Link" },
-  { w: 60, label: "" },
+  { w: 130, label: "Youtube topics" },
+  { w: 100, label: "Subs", sort: "subs" },
+  { w: 100, label: "Views", sort: "views" },
+  { w: 200, label: "Link" },
+  { w: 100, label: "Added", sort: "added" },
+  { w: 56, label: "" },
 ];
 // ссылка на канал: латинские имена → @handle, остальные → channel/UC… (детерминированно)
 function ceChanUrl(name, i) {
@@ -1736,13 +1739,13 @@ function ceTopicsCell(topics) {
   const tops = Array.isArray(topics) ? topics : [topics];
   const html = '<span class="an-topic" data-an-topic="' + esc(tops[0]) + '">' + esc(tops[0]) + '</span>' +
     (tops.length > 1 ? '<span class="an-topic__more" data-an-topics-more="' + esc(tops.join("|")) + '">+' + (tops.length - 1) + '</span>' : "");
-  return '<div class="an-td an-td--topics" style="width:150px"><span class="an-topics">' + html + '</span></div>';
+  return '<div class="an-td an-td--topics" style="width:140px"><span class="an-topics">' + html + '</span></div>';
 }
 // колонка LINK: настоящая ссылка на YouTube + копирование (страница канала открывается по имени)
 function ceLinkCell(name, i) {
   const url = ceChanUrl(name, i);
   const short = url.replace(/^https?:\/\/(www\.)?/, "");
-  return '<div class="an-td ce-linkcell" style="width:220px">' +
+  return '<div class="an-td ce-linkcell" style="width:200px">' +
     '<a class="ce-view" href="' + esc(url) + '" target="_blank" rel="noopener" title="' + esc(url) + '">' + esc(short) + '</a>' +
     '<button class="ce-copy" type="button" data-ce-copy="' + esc(url) + '" aria-label="Copy link" title="Copy link">' + IC.copy + '</button>' +
   '</div>';
@@ -1751,12 +1754,15 @@ function ceLinkCell(name, i) {
 // со сборкой (её должно быть больше высоты бокса, чтобы был виден скролл), остальное
 // клиент догружает батчами при прокрутке
 const CE_ROWS = ROWS.slice(0, 14).map(function (r, i) {
-  return [r[0], r[1], AVA[i % AVA.length], r[7], r[6], r[2]];
+  return [r[0], r[1], AVA[i % AVA.length], r[7], r[6], r[2], r[5]];
 });
 const ceHead = '<div class="an-tr an-tr--head">' + CE_COLS.map(function (c) {
   if (c.check) return '<div class="an-th an-th--check" style="width:40px">' +
     '<button class="an-check" type="button" data-an-check-all aria-label="Select all">' + IC.check + '</button></div>';
-  return '<div class="an-th" style="width:' + c.w + 'px">' + c.label + '</div>';
+  const inner = c.sort
+    ? '<span class="an-sort" role="button" tabindex="0" data-ce-sort="' + c.sort + '">' + c.label + IC.sort + '</span>'
+    : c.label;
+  return '<div class="an-th" style="width:' + c.w + 'px">' + inner + '</div>';
 }).join("") + '</div>';
 const ceBody = CE_ROWS.map(function (r, i) {
   return '<div class="an-tr" data-ce-row>' +
@@ -1764,10 +1770,11 @@ const ceBody = CE_ROWS.map(function (r, i) {
     '<div class="an-td"><span class="ce-chan"><span class="mc-ava ce-ava" style="background:var(' + r[2] + ')">' + esc(r[1]) + '</span>' +
       '<a class="ce-chan__name" href="analytics-channel.html?name=' + encodeURIComponent(r[0]) + '">' + esc(r[0]) + '</a></span></div>' +
     ceTopicsCell(r[5]) +
-    '<div class="an-td ce-num" style="width:110px">' + esc(r[3]) + '</div>' +
-    '<div class="an-td ce-num" style="width:110px">' + esc(r[4]) + '</div>' +
+    '<div class="an-td ce-num" style="width:100px">' + esc(r[4]) + '</div>' +
+    '<div class="an-td ce-num" style="width:100px">' + esc(r[3]) + '</div>' +
     ceLinkCell(r[0], i) +
-    '<div class="an-td" style="width:60px"><button class="ce-trash" type="button" aria-label="Remove channel" data-ce-remove>' + IC.trash + '</button></div>' +
+    '<div class="an-td ce-added" style="width:100px">' + esc(r[6]) + '</div>' +
+    '<div class="an-td" style="width:56px"><button class="ce-trash" type="button" aria-label="Remove channel" data-ce-remove>' + IC.trash + '</button></div>' +
   '</div>';
 }).join("\n          ");
 
@@ -1780,7 +1787,6 @@ const editInner = `
       <header class="an-head an-head--between">
         <div class="an-head__left">
           <h1 class="an-title" data-ce-title>Test Collection</h1>
-          <span class="ai-badge ce-badge" data-ai-badge hidden>${IC.aiStarsSolid}${AI_BADGE}</span>
         </div>
         <div class="an-head__btns">
           <button class="an-btn an-btn--primary" type="button" data-nc-open>${IC.plus}Add channels</button>
@@ -1817,17 +1823,23 @@ const editInner = `
         </div>
       </header>
 
+      <!-- размер коллекции ограничен планом: счётчик, полоса и апгрейд при достижении лимита -->
+      <section class="ce-limit" data-ce-limit>
+        <div class="ce-limit__row">
+          <span class="ce-limit__k">Channels in collection</span>
+          <span class="ce-limit__v"><b data-ce-limit-used>0</b> of ${CE_LIMIT}</span>
+        </div>
+        <div class="ce-limit__bar"><span class="ce-limit__fill" data-ce-limit-fill></span></div>
+        <div class="ce-limit__foot" data-ce-limit-foot hidden>
+          <div class="ce-limit__note">
+            <span class="ce-limit__title">Collection limit reached</span>
+            <span class="ce-limit__sub">Upgrade the plan to keep more than ${CE_LIMIT} channels in one collection</span>
+          </div>
+          <button class="an-btn an-btn--primary an-btn--small" type="button" data-ce-upgrade>Upgrade plan</button>
+        </div>
+      </section>
+
       <div class="ce-form">
-        <section class="ai-block ce-aiblock" data-ai-block hidden>
-          <div class="ai-block__line">
-            <span class="ai-block__k">Sourcing query</span>
-            <span class="ai-block__q" data-ai-block-query></span>
-          </div>
-          <div class="ai-block__line">
-            <span class="ai-block__k">Applied filters</span>
-            <span class="ai-chips" data-ai-block-chips></span>
-          </div>
-        </section>
 
         <!-- фильтр по уже добавленным каналам (добавление — через Add channels) -->
         <div class="mc-search ce-search">${IC.search}<input type="text" placeholder="Search by channel title, link" data-ce-search /></div>
@@ -1935,7 +1947,7 @@ function buildPage(src, title, inner, current){
     return {
       name: r[0], initial: r[1], color: AVA[i % AVA.length],
       topics: r[2], country: r[13], language: r[14],
-      subs: r[6], views: r[7]
+      subs: r[6], views: r[7], added: r[5]
     };
   }));
   // справочники + прирост по периодам (P1.2): клиент подменяет ячейки при смене периода
