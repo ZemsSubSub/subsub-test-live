@@ -1200,7 +1200,8 @@
     }
     tblUpdateTotal(key, rows.length);
     // смена страницы/размера меняет наличие скроллбара — колонки пересчитываем
-    if (HUG_SHRINK[key]) { tblHug(key); tblHugFix(key); }
+    if (HUG_SHRINK[key]) tblHug(key);
+    tblHugFix(key);
   }
   // номера страниц: первая, последняя, текущая с соседями, между ними «…»
   function tblPageBtns(page, pages) {
@@ -1351,7 +1352,7 @@
   // вертикальный скроллбар мог появиться после замера — тогда сумма колонок вылезает
   // за бокс и получается «мёртвая» горизонтальная полоса. Пересчитываем один раз.
   function tblHugFix(key) {
-    if (!HUG_SHRINK[key] || hugRetry[key]) return;
+    if (hugRetry[key]) return;
     var wrap = document.querySelector('[data-an-tablewrap="' + key + '"]');
     var b = tblBody(key);
     if (!wrap || !b) return;
@@ -1365,8 +1366,9 @@
     tblHug(key);
     delete hugRetry[key];
   }
+  var HUG_KEYS = ["basic", "deep", "coll", "repm", "repp"];
   function tblHugAll() {
-    ["basic", "deep", "coll", "repm", "repp"].forEach(function (key) { if (tblBody(key)) { tblHug(key); tblHugFix(key); } });
+    HUG_KEYS.forEach(function (key) { if (tblBody(key)) { tblHug(key); tblHugFix(key); } });
   }
   function tblInitAll() {
     // дефолтная сортировка таблиц каналов — по Views, от большего (первый клик по колонке даёт desc)
@@ -1403,6 +1405,8 @@
       w.style.height = h + "px";        // фиксированная высота: пустая таблица не «сдувается»
       w.style.maxHeight = h + "px";
     });
+    // высота изменилась → мог появиться вертикальный скроллбар и отнять ширину у колонок
+    HUG_KEYS.forEach(function (key) { if (tblBody(key)) tblHugFix(key); });
   }
   var tblFitT = null;
   window.addEventListener("resize", function () {
