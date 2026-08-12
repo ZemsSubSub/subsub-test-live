@@ -2524,7 +2524,8 @@ body.is-open:not(.is-collapsed) .main { margin-left: 306px; }
 .an-modal__dialog--lg { width: min(620px, 94vw); display: flex; flex-direction: column; max-height: calc(100vh - 80px); }
 .ai-form { flex: 1; min-height: 0; gap: 16px; padding: 20px 32px 32px; overflow-y: auto; overflow-x: hidden; }
 /* --- Create collection: три входа в одну коллекцию --- */
-.cc-seg { margin: 0; max-width: none; }
+.cc-seg { margin: 0; max-width: none; height: 40px; }   /* пониже, как переключатель типа контента */
+.cc-seg .nc-seg__btn { font-size: 14px; }
 .cc-pane { display: flex; flex-direction: column; gap: 24px; }
 /* каналы, добавленные вручную: чипы с удалением */
 .cc-picked__list { display: flex; flex-wrap: wrap; gap: 8px; }
@@ -2826,6 +2827,18 @@ body.is-open:not(.is-collapsed) .main { margin-left: 306px; }
 .ce-more__spin { width: 16px; height: 16px; border: 2px solid var(--color-shade-300); border-top-color: var(--color-black);
   border-radius: 50%; animation: ce-spin .8s linear infinite; }
 @keyframes ce-spin { to { transform: rotate(360deg); } }
+/* подбор идёт: вместо ещё не приехавших каналов — строки-заглушки */
+.ce-sourcing[hidden] { display: none; }
+.ce-skel { pointer-events: none; }
+.ce-skel__bar, .ce-skel__box, .ce-skel__ava { position: relative; display: inline-block; overflow: hidden;
+  background: var(--color-shade-100); }
+.ce-skel__bar { width: 72%; height: 12px; border-radius: 6px; vertical-align: middle; }
+.ce-skel__box { width: 18px; height: 18px; border-radius: 4px; }
+.ce-skel__ava { width: 24px; height: 24px; border-radius: 50%; margin-right: 8px; vertical-align: middle; }
+.ce-skel__bar::after, .ce-skel__box::after, .ce-skel__ava::after { content: ""; position: absolute; inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .9), transparent);
+  animation: ce-skel 1.4s ease-in-out infinite; }
+@keyframes ce-skel { from { transform: translateX(-100%); } to { transform: translateX(100%); } }
 /* колонки тянутся на всю ширину серфейса: свободное место забирает колонка канала,
    остальные остаются фиксированными (иначе справа оставался пустой хвост) */
 .ce-table .an-tr > *:nth-child(2) { flex: 1 1 240px; min-width: 150px; }
@@ -2946,6 +2959,11 @@ body.filters-open .an-filters.is-active { display: flex; }
 .anf-opt:hover { background: var(--color-shade-100); }
 .anf-opt.is-selected { background: var(--color-shade-100); font-weight: 600; }
 .anf-empty { padding: 10px; font-size: 13px; color: var(--color-shade-700); }
+/* deep data: активированные коллекции отделены от неактивированных */
+.anf-group { padding: 8px 10px 4px; font-size: 11px; font-weight: 600; letter-spacing: .04em;
+  text-transform: uppercase; color: var(--color-shade-700); }
+.anf-opt:disabled { color: var(--color-shade-700); cursor: default; }
+.anf-opt:disabled:hover { background: none; }
 .anf-menu__foot { flex: 0 0 auto; padding: 4px; border-top: 1px solid var(--color-shade-200); }
 .anf-opt--new { gap: 6px; font-weight: 500; }
 .anf-opt--new svg { width: 16px; height: 16px; color: var(--color-black); flex-shrink: 0; }

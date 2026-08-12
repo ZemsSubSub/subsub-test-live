@@ -932,8 +932,8 @@ const mainInner = `
     <div class="an-footer" data-an-footer hidden>
       <div class="an-footer__inner">
         <!-- добавить в существующую и создать новую — разные действия -->
-        <button class="an-btn an-btn--secondary an-btn--small" type="button" data-an-footer-btn>Add 1 channel to collection</button>
         <button class="an-btn an-btn--primary an-btn--small" type="button" data-cc-from-sel>${IC.plus}<span data-cc-from-sel-lbl>Create collection from 1 channel</span></button>
+        <button class="an-btn an-btn--secondary an-btn--small" type="button" data-an-footer-btn>Add 1 channel to collection</button>
         <!-- второй вход в тот же флоу автоподбора: выбранные каналы становятся референсами -->
         <button class="an-btn an-btn--secondary an-btn--small" type="button" data-ai-similar>${IC.aiStarsSolid}Find similar channels</button>
         <button class="an-footer__close" type="button" data-an-footer-close aria-label="Clear channels selection">${IC.closeBold}</button>
@@ -1465,8 +1465,8 @@ const deepInner = `
     <!-- B2: массовые действия по выбранным каналам коллекции -->
     <div class="an-footer" data-an-footer hidden>
       <div class="an-footer__inner">
-        <button class="an-btn an-btn--secondary an-btn--small" type="button" data-ac-open><span data-dp-add-lbl>Add 1 channel to collection</span></button>
         <button class="an-btn an-btn--primary an-btn--small" type="button" data-cc-from-sel>${IC.plus}<span data-cc-from-sel-lbl>Create collection from 1 channel</span></button>
+        <button class="an-btn an-btn--secondary an-btn--small" type="button" data-ac-open><span data-dp-add-lbl>Add 1 channel to collection</span></button>
         <button class="an-btn an-btn--secondary an-btn--small" type="button" data-dp-pin><span data-dp-pin-lbl>Pin on top</span></button>
         <button class="an-btn an-btn--danger an-btn--small" type="button" data-dp-remove>${IC.trash}<span data-dp-remove-lbl>Remove 1 channel</span></button>
         <button class="an-footer__close" type="button" data-an-footer-close aria-label="Clear channels selection">${IC.closeBold}</button>
@@ -1548,6 +1548,25 @@ function collRow(r){
 const collHead = '<div class="an-tr an-tr--head">' + COLL_COLS.map(collHeadCell).join("") + '</div>';
 const collBody = COLL_ROWS.map(collRow).join("\n          ");
 
+// C4: подтверждение активации deep data (списываются лимиты плана) — нужно и в списке, и на странице коллекции
+const activateModalHtml = `
+    <div class="an-modal" id="mcModal-activate"><div class="an-modal__overlay" data-mc-close></div>
+      <div class="an-modal__dialog an-modal__dialog--sm">
+        <div class="an-modal__head">
+          <h2 class="an-modal__title">Activate deep data?</h2>
+          <button class="an-modal__x" type="button" data-mc-close aria-label="Close">${IC.closeBold}</button>
+        </div>
+        <div class="an-modal__body">
+          <p class="an-modal__text" data-mc-activate-text></p>
+        </div>
+        <div class="an-modal__foot">
+          <button class="an-btn an-btn--secondary an-btn--small" type="button" data-mc-close>Cancel</button>
+          <button class="an-btn an-btn--primary an-btn--small" type="button" data-mc-activate-confirm>Activate</button>
+        </div>
+      </div>
+    </div>
+`;
+
 const collInner = `
     <section class="an-page">
       <header class="an-head an-head--between">
@@ -1603,22 +1622,8 @@ const collInner = `
       </section>
     </section>
 
-    <!-- C4: подтверждение активации deep data (списываются лимиты плана) -->
-    <div class="an-modal" id="mcModal-activate"><div class="an-modal__overlay" data-mc-close></div>
-      <div class="an-modal__dialog an-modal__dialog--sm">
-        <div class="an-modal__head">
-          <h2 class="an-modal__title">Activate deep data?</h2>
-          <button class="an-modal__x" type="button" data-mc-close aria-label="Close">${IC.closeBold}</button>
-        </div>
-        <div class="an-modal__body">
-          <p class="an-modal__text" data-mc-activate-text></p>
-        </div>
-        <div class="an-modal__foot">
-          <button class="an-btn an-btn--secondary an-btn--small" type="button" data-mc-close>Cancel</button>
-          <button class="an-btn an-btn--primary an-btn--small" type="button" data-mc-activate-confirm>Activate</button>
-        </div>
-      </div>
-    </div>
+    ${activateModalHtml}
+
 
     <!-- меню действий строки (⋮) -->
     <!-- меню действий строки (⋮): состав зависит от владельца (C1) + Duplicate (C2) -->
@@ -1804,6 +1809,9 @@ const ceBody = CE_ROWS.map(function (r, i) {
 
 
 
+// статусы коллекций из списка: на странице коллекции нужно знать, активирована ли deep data
+const COLL_STATUSES = COLL_ROWS.reduce(function (a, r) { a[r.name] = r.status; return a; }, {});
+
 const editInner = `
     <section class="an-page ce-page">
       <a class="ce-back" href="analytics-collections.html">${IC.arrowL}Back</a>
@@ -1812,6 +1820,8 @@ const editInner = `
         <div class="an-head__left ce-head__left">
           <div class="ce-titlerow">
             <h1 class="an-title" data-ce-title>Test Collection</h1>
+            <!-- подбор идёт: каналы приезжают по одному, бадж как в списке коллекций -->
+            <span class="mc-status mc-status--orange ce-sourcing" data-ce-sourcing hidden>${IC.progress}<span class="mc-status__t">Collecting data</span></span>
             <!-- размер коллекции ограничен планом: счётчик, полоса и апгрейд — отдельным серфейсом -->
             <span class="ce-limit" data-ce-limit>
               <span class="ce-limit__v"><b data-ce-limit-used>0</b> of ${CE_LIMIT} channels</span>
@@ -1823,7 +1833,8 @@ const editInner = `
         </div>
         <div class="an-head__btns">
           <button class="an-btn an-btn--primary" type="button" data-nc-open>${IC.plus}Add channels</button>
-          <button class="an-btn an-btn--secondary" type="button" data-ce-deep>${IC.graph}View deep data</button>
+          <!-- deep data доступна только у активированной коллекции: иначе кнопка активирует -->
+          <button class="an-btn an-btn--secondary" type="button" data-ce-deep>${IC.graph}<span data-ce-deep-lbl>View deep data</span></button>
           <!-- шеринг: попап с поиском участников и списком доступа -->
           <div class="ce-share" data-ce-share>
             <button class="an-btn an-btn--secondary" type="button" data-ce-share-trig aria-haspopup="dialog" aria-expanded="false">${IC.share}<span data-ce-share-lbl>Share</span></button>
@@ -1927,6 +1938,8 @@ const editInner = `
       </div>
     </div>
 
+    ${activateModalHtml}
+
     ${ceAddModalHtml}
 
     ${mcCreateModalHtml}
@@ -1940,7 +1953,8 @@ function buildPage(src, title, inner, current){
   h = h.replace("<title>Home — SubSub</title>", "<title>" + title + " — SubSub</title>");
   h = h.replace('class="sidebar-item sidebar-item--home is-active"', 'class="sidebar-item sidebar-item--home"');
   h = h.replace('id="space-analytics" value="analytics" />', 'id="space-analytics" value="analytics" checked />');
-  h = h.replace("<body>", '<body class="is-open" data-space="analytics">');
+  h = h.replace("<body>", '<body class="is-open" data-space="analytics" data-ce-statuses="' +
+    JSON.stringify(COLL_STATUSES).replace(/"/g, "&quot;") + '">');
   h = h.replace('<p class="submenu__title" id="submenuTitle"></p>', '<p class="submenu__title" id="submenuTitle">Analytics</p>');
   h = h.replace('<div class="submenu__menu" data-space="analytics" hidden>', '<div class="submenu__menu" data-space="analytics">');
   // подсветка активного подпункта (ссылки уже проставлены генератором меню)

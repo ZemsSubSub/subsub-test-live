@@ -144,7 +144,13 @@
     var ceS = e.target.closest("[data-ce-sort]");
     if (ceS) { ceSort(ceS.getAttribute("data-ce-sort")); return; }
     if (e.target.closest("[data-ce-leave]")) { ceMenu(false); ceConfirm("leave"); return; }
-    if (e.target.closest("[data-ce-deep]")) { ceMenu(false); window.location.href = "analytics-deep-data.html"; return; }
+    var ceDeepBtn = e.target.closest("[data-ce-deep]");
+    if (ceDeepBtn) {
+      ceMenu(false);
+      if (ceStatus() === "activated") window.location.href = "analytics-deep-data.html";
+      else ceActivateAsk();
+      return;
+    }
     if (e.target.closest("[data-ce-duplicate]")) { ceMenu(false); ceDuplicate(); return; }
     if (e.target.closest("[data-ce-rename]")) { ceRenameOpen(); return; }
     if (e.target.closest("[data-ce-rename-close]")) { closeModal(document.getElementById("ceRename")); return; }
@@ -830,13 +836,25 @@
   // что поле Collection в панели (держим их синхронно), на Deep — переключение набора
   // строк (в разметке лежат строки всех активированных коллекций, помечены data-coll).
   function csWraps() { return [].slice.call(document.querySelectorAll("[data-an-collsel]")); }
-  function csList(key) {
-    var all = (typeof aiAllColls === "function" ? aiAllColls() : []);
-    // deep data (оба таба) открывается только по активированным коллекциям (как на проде)
-    if (key !== "deep" && key !== "video") return all;
-    var have = {};
-    tblAllRows(key).forEach(function (r) { have[r.getAttribute("data-coll") || ""] = true; });
-    return all.filter(function (c) { return have[c.name]; });
+  // статус коллекции: у AI-коллекций он в состоянии, у остальных — в слоте extra либо из сборки
+  function collStatus(name) {
+    var c = (typeof aiCollByName === "function" ? aiCollByName(name) : null);
+    if (c) return c.status || "created";
+    var slot = (typeof aiExtraLoad === "function" ? aiExtraLoad()[name] : null);
+    if (slot && slot.status) return slot.status;
+    var host = document.querySelector("[data-ce-statuses]");
+    var map = {};
+    try { map = JSON.parse((host && host.getAttribute("data-ce-statuses")) || "{}") || {}; } catch (e) {}
+    return map[name] || "created";
+  }
+  function csList(key) { return (typeof aiAllColls === "function" ? aiAllColls() : []); }
+  // deep data открывается только по активированным коллекциям — остальные видно, но выбрать нельзя
+  function csActivated(key, name) {
+    if (key !== "deep" && key !== "video") return true;
+    if (collStatus(name) === "activated") return true;
+    var rows = tblAllRows(key);
+    for (var i = 0; i < rows.length; i++) if ((rows[i].getAttribute("data-coll") || "") === name) return true;
+    return false;
   }
   function csVal(wrap) { return wrap.querySelector("[data-an-collsel-val]"); }
   function csCurrent(wrap) {
@@ -846,9 +864,10 @@
   // количество каналов у коллекции: в Deep/Videos — строки таблицы, иначе состав коллекции
   function csCount(key, name) {
     if (key === "deep" || key === "video") {
-      return tblAllRows(key).filter(function (r) {
+      var n = tblAllRows(key).filter(function (r) {
         return (r.getAttribute("data-coll") || "") === name && !r.classList.contains("an-tr--avg");
       }).length;
+      if (n) return n;
     }
     return aiChannelsOf(name).length;
   }
@@ -864,12 +883,22 @@
     var head = (key === "basic" && !s)
       ? '<button class="anf-opt' + (cur ? "" : " is-selected") + '" type="button" role="option" data-an-collsel-all>All collections</button>'
       : "";
-    box.innerHTML = head + (list.map(function (c) {
+    function optHtml(c, off) {
       var qty = '<span class="anf-opt__qty">' + csCount(key, c.name) + "</span>";
       // бейдж с количеством — перед названием
       return '<button class="anf-opt" type="button" role="option"' + (c.name === cur ? ' data-selected' : '') +
-             ' data-an-collsel-opt="' + escHtml(c.name) + '">' + qty + '<span class="anf-opt__name">' + escHtml(c.name) + '</span></button>';
-    }).join("") || (head ? "" : '<div class="anf-empty">No collections</div>'));
+             (off ? ' disabled title="Deep data is not activated for this collection"' : '') +
+             ' data-an-collsel-opt="' + escHtml(c.name) + '">' + qty +
+             '<span class="anf-opt__name">' + escHtml(c.name) + '</span></button>';
+    }
+    var body;
+    if (key === "deep" || key === "video") {
+      var on = list.filter(function (c) { return csActivated(key, c.name); });
+      var off = list.filter(function (c) { return !csActivated(key, c.name); });
+      body = (on.length ? '<div class="anf-group">Activated</div>' + on.map(function (c) { return optHtml(c, false); }).join("") : "") +
+             (off.length ? '<div class="anf-group">Not activated</div>' + off.map(function (c) { return optHtml(c, true); }).join("") : "");
+    } else body = list.map(function (c) { return optHtml(c, false); }).join("");
+    box.innerHTML = head + (body || (head ? "" : '<div class="anf-empty">No collections</div>'));
   }
   // A3: сброс к «All channels» — снимаем и поле Collection в панели
   function csPickAll(wrap) {
@@ -2218,6 +2247,14 @@
     var actBtn = e.target.closest("[data-mc-activate]");
     if (actBtn) { mcActivateAsk(actBtn.closest("[data-mc-row]")); return; }
     if (e.target.closest("[data-mc-activate-confirm]")) {
+      if (ceActivating) {                 // активация со страницы коллекции
+        ceActivating = false;
+        closeModals();
+        ceSetStatus("pending");
+        toast("Deep data activated successfully");
+        setTimeout(function () { ceSetStatus("activated"); }, 2500);
+        return;
+      }
       var row = mcRow;
       closeModals();
       setRowStatus(row, "pending");
@@ -2323,7 +2360,7 @@
   // Мок без бэкенда: состояние в localStorage, «сборка» имитируется таймером (readyAt),
   // поэтому прогресс не теряется при переходах между страницами прототипа.
   var AI_KEY = "subsub_ai_collections";
-  var AI_BUILD_MS = 5000;         // имитация долгого действия
+  var AI_STEP_MS = 15000;         // очередной канал приезжает раз в 15 секунд
   var AI_ICO = {
     progress: '<svg viewBox="0 0 24 24" fill="none"><path d="M14.8356 3.24829H9.16564C5.87564 3.24829 5.62189 6.20579 7.39814 7.81579L16.6031 16.1808C18.3794 17.7908 18.1256 20.7483 14.8356 20.7483H9.16564C5.87564 20.7483 5.62189 17.7908 7.39814 16.1808L16.6031 7.81579C18.3794 6.20579 18.1256 3.24829 14.8356 3.24829Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>',
     check: '<svg viewBox="0 0 24 24" fill="none"><path fill-rule="evenodd" clip-rule="evenodd" d="M20.5334 4.285C21.0807 4.72253 21.1578 5.50641 20.7054 6.03585L10.3685 18.1353C10.1302 18.412 9.83512 18.631 9.50152 18.7798C9.1679 18.9288 8.80418 19.0039 8.43679 18.9998C8.06339 18.9954 7.69473 18.9091 7.36071 18.7475C7.02782 18.5866 6.73682 18.3549 6.50939 18.07L3.27113 14.0428C2.83519 13.5007 2.93616 12.7193 3.49666 12.2977C4.05716 11.876 4.86493 11.9737 5.30087 12.5158L8.46828 16.4549L18.7232 4.45145C19.1756 3.92201 19.9861 3.84749 20.5334 4.285Z" fill="currentColor"/></svg>',
@@ -2399,37 +2436,48 @@
     return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
   }
 
-  // --- «сборка» коллекции: pending → created по readyAt (устойчиво к переходам) ---
+  // --- «сборка» коллекции: каналы приезжают по одному, раз в AI_STEP_MS ---
+  // Подбор в реальности идёт долго, поэтому и в прототипе это не одно мгновенное «готово»:
+  // на каждый шаг приходит один канал, до конца подбора коллекция помечена «Collecting data».
+  function aiSourcingTarget(rec) { return rec.mode === "append" ? rec.target : rec.name; }
+  function aiFoundLeft(rec) {
+    var have = aiChannelsOf(aiSourcingTarget(rec));
+    return AI_FOUND.filter(function (n) { return have.indexOf(n) === -1; });
+  }
   function aiTick() {
-    var list = aiLoad(), changed = false, now = Date.now();
+    var list = aiLoad(), now = Date.now();
     list.forEach(function (c) {
-      if (c.status !== "pending") return;
-      if (c.readyAt && c.readyAt <= now) { c.status = "created"; changed = true; }
-      else if (c.readyAt && !aiTimers[c.id]) {
-        aiTimers[c.id] = setTimeout(function () {
-          delete aiTimers[c.id];
-          var l2 = aiLoad();
-          var done = null;
-          l2.forEach(function (x) { if (String(x.id) === String(c.id)) { x.status = "created"; done = x; } });
-          var msg = "Sourcing finished — “" + c.name + "” is ready";
-          if (done && done.mode === "append") {
-            var res = aiAppendFound(done.target, done);   // дедуп внутри
-            msg = "Added " + res.added + " channel" + (res.added === 1 ? "" : "s") + " to “" + done.target + "”" +
-                  (res.skipped ? " · " + res.skipped + " already there" : "");
-            // открыта эта же коллекция — дорисовываем строки, чтобы не перезагружать страницу
-            if (res.names.length && typeof ceAddRows === "function" &&
-                typeof ceName === "function" && ceName() === done.target) ceAddRows(res.names);
-          } else if (done) {
-            done.channels = AI_FOUND.slice();
-          }
-          aiSave(l2);
-          aiRenderPill(); aiRenderCollections();
-          toast(msg);
-        }, Math.max(300, c.readyAt - now));
-      }
+      if (c.status !== "pending" || aiTimers[c.id]) return;
+      aiTimers[c.id] = setTimeout(function () { aiStep(c.id); }, Math.max(300, (c.readyAt || now) - now));
     });
-    if (changed) aiSave(list);
     aiRenderPill();
+    ceSourcingSync();
+  }
+  function aiStep(id) {
+    delete aiTimers[id];
+    var rec = null;
+    aiLoad().forEach(function (x) { if (String(x.id) === String(id)) rec = x; });
+    if (!rec || rec.status !== "pending") return;
+    var target = aiSourcingTarget(rec), left = aiFoundLeft(rec), name = left[0];
+    if (name) aiAppendFound(target, rec, [name]);        // aiAppendFound сам пишет состояние
+    var rest = name ? left.slice(1) : [];
+    var done = !rest.length;
+    var added = (rec.added || 0) + (name ? 1 : 0);
+    var l2 = aiLoad();
+    l2.forEach(function (x) {
+      if (String(x.id) !== String(id)) return;
+      x.added = added;
+      x.status = done ? "created" : "pending";
+      x.readyAt = done ? 0 : Date.now() + AI_STEP_MS;
+    });
+    aiSave(l2);
+    if (name) ceOnSourced(target, name);
+    aiRenderPill(); aiRenderCollections(); ceSourcingSync();
+    if (done) {
+      toast(rec.mode === "append"
+        ? "Sourcing finished — " + added + " channel" + (added === 1 ? "" : "s") + " added to “" + target + "”"
+        : "Sourcing finished — “" + target + "” is ready");
+    } else aiTick();
   }
 
   // ================= тарифы (subsub.io/pricing) =================
@@ -2617,7 +2665,7 @@
     var list = aiLoad();
     list.push({ id: "ai" + now, mode: "append", target: coll, name: coll, isAi: false,
                 query: query, seed: "", filters: ncAiFilters(), status: "pending",
-                readyAt: now + AI_BUILD_MS,
+                readyAt: now + AI_STEP_MS,
                 created: ("0" + d.getDate()).slice(-2) + "." + ("0" + (d.getMonth() + 1)).slice(-2) + "." + d.getFullYear() });
     aiSave(list);
     closeModal(document.getElementById("ncModal"));
@@ -2836,9 +2884,9 @@
   }
 
   // допись найденных каналов в существующую коллекцию: дубликаты не добавляем
-  function aiAppendFound(target, rec) {
+  function aiAppendFound(target, rec, names) {
     var have = aiChannelsOf(target), added = [], skipped = 0;
-    AI_FOUND.forEach(function (n) {
+    (names || AI_FOUND).forEach(function (n) {
       if (have.indexOf(n) === -1 && added.indexOf(n) === -1) added.push(n);
       else skipped++;
     });
@@ -2887,6 +2935,19 @@
   }
   // существующие коллекции, в которые сейчас идёт подбор: временно показываем «Sourcing…»,
   // после завершения возвращаем исходный статус и обновляем Quantity/Includes
+  // коллекцию могли активировать на её странице — в списке показываем сохранённый статус
+  function mcPaintSaved() {
+    var extra = aiExtraLoad(), rows = document.querySelectorAll("[data-mc-row]");
+    for (var i = 0; i < rows.length; i++) {
+      var row = rows[i];
+      if (row.hasAttribute("data-ai-row")) continue;
+      var slot = extra[row.getAttribute("data-name")];
+      if (!slot || !slot.status) continue;
+      setRowStatus(row, slot.status);
+      var more = row.querySelector("[data-mc-more]");
+      if (more) more.setAttribute("data-status", slot.status);
+    }
+  }
   function aiPaintTargets() {
     var busy = aiSourcingNames(), rows = document.querySelectorAll("[data-mc-row]");
     for (var i = 0; i < rows.length; i++) {
@@ -2962,6 +3023,7 @@
       tbody.insertBefore(row, tbody.firstChild);
     }
     aiPaintTargets();
+    mcPaintSaved();
     if (typeof tblApply === "function" && tblBody("coll")) { tblApply("coll"); tblHug("coll"); }
     mcCountSync();
   }
@@ -3659,7 +3721,7 @@
         query: query || (aiMode() === "refs" && aiRefs.length
           ? "Channels similar to " + aiRefs.map(function (r) { return r.name; }).join(", ")
           : "Channels similar to " + seedVal),
-        seed: seedVal, filters: aiFormFilters(), status: "pending", readyAt: now + AI_BUILD_MS,
+        seed: seedVal, filters: aiFormFilters(), status: "pending", readyAt: now + AI_STEP_MS,
         created: ("0" + d.getDate()).slice(-2) + "." + ("0" + (d.getMonth() + 1)).slice(-2) + "." + d.getFullYear()
       });
       aiSave(list);
@@ -3804,6 +3866,44 @@
 
   // страница открытой коллекции: имя из ?name= (заголовок формы)
   // P1.11: строки для добавленных каналов — цифр по ним нет, ставим «—»
+  // ---- пока идёт подбор: бадж в шапке и строки-заглушки сверху таблицы ----
+  function ceSkelRows() { return [].slice.call(document.querySelectorAll("[data-ce-skel]")); }
+  function ceSkelSet(n) {
+    var proto = document.querySelector("[data-ce-row]"), body = document.querySelector("[data-ce-tbody]");
+    if (!proto || !body) return;
+    var have = ceSkelRows();
+    while (have.length > n) { var old = have.pop(); if (old.parentNode) old.parentNode.removeChild(old); }
+    for (var i = have.length; i < n; i++) {
+      var row = proto.cloneNode(true);
+      row.removeAttribute("data-ce-row");            // не строка коллекции: ни выбора, ни сортировки, ни счёта
+      row.setAttribute("data-ce-skel", "");
+      row.classList.remove("is-selected");
+      row.classList.add("ce-skel");
+      [].slice.call(row.children).forEach(function (td, idx) {
+        var ava = !!td.querySelector(".ce-ava");
+        td.innerHTML = idx === 0 ? '<span class="ce-skel__box"></span>'
+          : ava ? '<span class="ce-skel__ava"></span><span class="ce-skel__bar" style="width:56%"></span>'
+                : '<span class="ce-skel__bar"></span>';
+      });
+      body.insertBefore(row, body.firstChild);        // сортировка по дате: свежее сверху
+    }
+  }
+  function ceSourcingSync() {
+    var badge = document.querySelector("[data-ce-sourcing]");
+    if (!badge) return;                               // это не страница коллекции
+    var nm = ceName(), rec = null;
+    aiLoad().forEach(function (r) { if (r.status === "pending" && aiSourcingTarget(r) === nm) rec = r; });
+    badge.hidden = !rec;
+    ceSkelSet(rec ? Math.min(aiFoundLeft(rec).length, 8) : 0);
+    ceDeepSync();                                     // пока идёт подбор — активировать нельзя
+  }
+  // очередной подобранный канал: заглушка уступает место реальной строке
+  function ceOnSourced(target, name) {
+    if (ceName() !== target) return;
+    var skel = ceSkelRows()[0];
+    if (skel && skel.parentNode) skel.parentNode.removeChild(skel);
+    ceAddRows([name]);
+  }
   function ceAddRows(names) {
     var proto = document.querySelector("[data-ce-row]");
     if (!proto) return;
@@ -4257,11 +4357,53 @@
   // Страница — не форма с сохранением: имя правится в модалке Rename, всё остальное
   // (добавить/убрать канал, шеринг, деактивация, удаление) применяется сразу,
   // после каждого действия — тост об автосохранении.
+  var ceActivating = false;               // подтверждение активации открыто со страницы коллекции
   function ceName() {
     var h = document.querySelector("[data-ce-title]");
     return h ? h.textContent.trim() : "collection";
   }
   function ceSaved() { toast("Changes saved automatically"); }
+  function ceStatus() { return collStatus(ceName()); }
+  function ceSetStatus(status) {
+    var nm = ceName(), list = aiLoad(), isAi = false;
+    list.forEach(function (x) { if (x.mode !== "append" && x.name === nm) { x.status = status; isAi = true; } });
+    if (isAi) aiSave(list);
+    else {
+      var extra = aiExtraLoad();
+      extra[nm] = extra[nm] || { channels: [] };
+      extra[nm].status = status;
+      aiExtraSave(extra);
+    }
+    ceDeepSync();
+  }
+  // deep data смотрят только у активированной коллекции; пока идёт подбор активировать нельзя
+  function ceDeepSync() {
+    var btn = document.querySelector("[data-ce-deep]");
+    if (!btn) return;
+    var lbl = btn.querySelector("[data-ce-deep-lbl]") || btn;
+    var st = ceStatus(), sourcing = !!aiSourcingNames()[ceName()];
+    btn.disabled = false;
+    btn.removeAttribute("title");
+    if (st === "activated") { lbl.textContent = "View deep data"; return; }
+    if (st === "pending") {
+      lbl.textContent = "Collecting deep data";
+      btn.disabled = true;
+      btn.title = "Deep data is being collected — this takes a few minutes";
+      return;
+    }
+    lbl.textContent = "Activate deep data";
+    if (sourcing) {
+      btn.disabled = true;
+      btn.title = "Wait until sourcing finishes";
+    }
+  }
+  function ceActivateAsk() {
+    var txt = document.querySelector("[data-mc-activate-text]");
+    if (txt) txt.textContent = "Deep data will be collected for " + ceRows().length + " channels of «" + ceName() +
+      "». Collecting takes a few minutes and counts against your plan limits.";
+    ceActivating = true;
+    openModal("mcModal-activate");
+  }
   // ---- «⋮»-меню страницы ----
   function ceMenu(open) {
     var pop = document.querySelector("[data-ce-menu-pop]"), trig = document.querySelector("[data-ce-menu-trig]");
@@ -4526,6 +4668,7 @@
         return (a.v > b.v ? 1 : -1) * dir;
       })
       .forEach(function (o) { body.appendChild(o.r); });
+    ceSkelRows().forEach(function (r) { body.insertBefore(r, body.firstChild); });
   }
   function ceSort(col) {
     ceSortState = (ceSortState && ceSortState.col === col)
@@ -4732,6 +4875,8 @@
       ceMarkSort();
     }
     ceLimitSync();
+    ceSourcingSync();
+    ceDeepSync();
     // чужая коллекция (пришли из «Shared with me»): менять нечего — только дубликат и выход
     if (qs.get("shared") === "1") {
       ["[data-ce-rename]", "[data-ce-deactivate]", "[data-ce-delete]"].forEach(function (sel) {
