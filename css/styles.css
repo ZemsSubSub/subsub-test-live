@@ -2341,6 +2341,16 @@ body.is-open:not(.is-collapsed) .main { margin-left: 306px; }
 .anf-opt[data-selected] .anf-opt__qty, .anf-opt:hover .anf-opt__qty { background: var(--color-shade-200); }
 .anf-opt__name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .an-empty { display: flex; align-items: center; justify-content: center; height: 160px; font-size: 14px; font-weight: 300; color: var(--color-shade-700); }
+/* пустое состояние страницы: у новичка ещё нет коллекций */
+.an-blank { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 72px 24px;
+  border: 1px solid var(--color-shade-200); border-radius: 12px; background: var(--color-white); text-align: center; }
+.an-blank[hidden] { display: none; }
+.an-blank__ico { display: inline-flex; align-items: center; justify-content: center; width: 56px; height: 56px;
+  border-radius: 9999px; background: var(--color-shade-100); color: var(--color-black); }
+.an-blank__ico svg { width: 28px; height: 28px; }
+.an-blank__title { margin: 0; font-size: 20px; font-weight: 600; color: var(--color-black); }
+.an-blank__text { margin: 0; max-width: 480px; font-size: 14px; font-weight: 300; line-height: 1.5; color: var(--color-shade-800); }
+.an-blank .an-btn { margin-top: 4px; text-decoration: none; }
 
 /* --- P1.6: селектор среза по типу контента в шапке метрики --- */
 .an-slice-wrap { position: relative; display: inline-flex; }
@@ -2776,6 +2786,8 @@ body.is-open:not(.is-collapsed) .main { margin-left: 306px; }
   font-size: 12px; font-weight: 600; white-space: nowrap;
 }
 .ai-badge[hidden] { display: none; }
+.ai-badge--sm { height: 20px; padding: 0 8px; margin-left: 8px; font-size: 11px; }
+.ai-badge--sm svg { width: 12px; height: 12px; }
 .ai-badge svg { width: 14px; height: 14px; flex-shrink: 0; }
 .ai-block { display: flex; flex-direction: column; gap: 8px; padding: 16px 20px; border: 1px solid var(--color-purple-100); border-radius: 12px; background: #fdfaff; }
 .ai-block[hidden] { display: none; }
@@ -2962,6 +2974,11 @@ body.filters-open .an-filters.is-active { display: flex; }
 /* deep data: активированные коллекции отделены от неактивированных */
 .anf-group { padding: 8px 10px 4px; font-size: 11px; font-weight: 600; letter-spacing: .04em;
   text-transform: uppercase; color: var(--color-shade-700); }
+.anf-opt__st { display: inline-flex; align-items: center; margin-left: auto; flex-shrink: 0; }
+.anf-opt__st svg { width: 16px; height: 16px; }
+.anf-opt__st--on { color: var(--color-green-dark); }
+.anf-opt__st--wait { color: var(--color-orange); }
+.anf-opt__st--off { color: var(--color-shade-600); }
 .anf-opt:disabled { color: var(--color-shade-700); cursor: default; }
 .anf-opt:disabled:hover { background: none; }
 .anf-menu__foot { flex: 0 0 auto; padding: 4px; border-top: 1px solid var(--color-shade-200); }

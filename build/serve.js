@@ -10,6 +10,9 @@ const ROOT = "E:/Dev SubSub/subsub_front_prototype_31.07.26";
 const PORT = parseInt(process.argv[2], 10) || 8778;
 const VARIANT = (process.argv[3] || "").toLowerCase();
 const ALIAS = VARIANT === "tabs" ? { "/analytics-deep-data.html": "/analytics-deep-data-tabs.html" } : {};
+// Вариант new — аккаунт новичка: коллекций нет, страницы в пустых состояниях.
+// Метку ставим на <body> в ответе, поэтому она живёт на всех страницах этого порта.
+const DEMO_NEW = VARIANT === "new";
 const TYPES = {
   ".html": "text/html; charset=utf-8",
   ".css": "text/css; charset=utf-8",
@@ -63,6 +66,15 @@ http
         });
         if (req.method === "HEAD") { res.end(); return; }
         fs.createReadStream(filePath, { start, end }).pipe(res);
+        return;
+      }
+      if (DEMO_NEW && path.extname(filePath) === ".html") {
+        fs.readFile(filePath, "utf8", (e, txt) => {
+          if (e) { res.writeHead(500); res.end("Read error"); return; }
+          const out = txt.replace('<body class="is-open"', '<body data-demo="new" class="is-open"');
+          res.writeHead(200, { "Content-Type": type, "Cache-Control": "no-cache" });
+          res.end(out);
+        });
         return;
       }
       res.writeHead(200, {

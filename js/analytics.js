@@ -402,6 +402,9 @@
     if (e.target.closest("[data-cc-from-sel]")) { ccFromSelection(); return; }
     if (e.target.closest("[data-ac-close]")) { closeModal(document.getElementById("acModal")); return; }
     if (e.target.closest("[data-ac-submit]")) { acSubmit(); return; }
+    if (e.target.closest("[data-aw-close]")) { awPending = null; closeModals(); return; }
+    if (e.target.closest("[data-aw-go]")) { awGo(); return; }
+    if (e.target.closest("[data-aw-dup]")) { awDup(); return; }
     var acIt = e.target.closest("[data-ac-item]");
     if (acIt) {
       var acNm = acIt.getAttribute("data-ac-item");
@@ -848,6 +851,13 @@
     return map[name] || "created";
   }
   function csList(key) { return (typeof aiAllColls === "function" ? aiAllColls() : []); }
+  // статус коллекции виден прямо в списке: активирована ли deep data
+  function csStateHtml(name) {
+    var st = collStatus(name), ico = AI_ICO.check, cls = "off", tip = "Deep data not activated";
+    if (st === "activated") { ico = AI_ICO.thumb; cls = "on"; tip = "Deep data activated"; }
+    else if (st === "pending") { ico = AI_ICO.progress; cls = "wait"; tip = "Collecting deep data"; }
+    return '<span class="anf-opt__st anf-opt__st--' + cls + '" title="' + tip + '">' + ico + "</span>";
+  }
   // deep data открывается только по активированным коллекциям — остальные видно, но выбрать нельзя
   function csActivated(key, name) {
     if (key !== "deep" && key !== "video") return true;
@@ -889,7 +899,7 @@
       return '<button class="anf-opt" type="button" role="option"' + (c.name === cur ? ' data-selected' : '') +
              (off ? ' disabled title="Deep data is not activated for this collection"' : '') +
              ' data-an-collsel-opt="' + escHtml(c.name) + '">' + qty +
-             '<span class="anf-opt__name">' + escHtml(c.name) + '</span></button>';
+             '<span class="anf-opt__name">' + escHtml(c.name) + '</span>' + csStateHtml(c.name) + "</button>";
     }
     var body;
     if (key === "deep" || key === "video") {
@@ -2428,6 +2438,11 @@
     }
   }
   // «Not shared» для строк, которые рисует клиент: иконку копируем из серверной разметки
+  // иконка звёздочек — из уже отрисованной разметки, чтобы не дублировать SVG
+  function aiStarsIco() {
+    var proto = document.querySelector(".nc-ai__note svg, [data-ai-badge] svg");
+    return proto ? proto.outerHTML : "";
+  }
   function noShareHtml() {
     var proto = document.querySelector(".mc-noshare");
     return proto ? proto.outerHTML : '<span class="mc-noshare">Not shared</span>';
@@ -2492,12 +2507,53 @@
   var PLAN_URL = (function () {
     try { return new URLSearchParams(location.search).get("plan"); } catch (e) { return null; }
   })();
+  // ---- демо-версия новичка: порт с вариантом new помечает <body> ----
+  function demoNew() {
+    if (document.body && document.body.getAttribute("data-demo") === "new") return true;
+    try { return new URLSearchParams(location.search).get("demo") === "new"; } catch (e) { return false; }
+  }
+  // Демо-версия новичка: статические строки — это данные «взрослого» аккаунта,
+  // поэтому их убираем, а вместо содержимого страницы показываем пустое состояние.
+  function demoStrip() {
+    function rm(el) { if (el && el.parentNode) el.parentNode.removeChild(el); }
+    [].slice.call(document.querySelectorAll("[data-mc-row]")).forEach(function (r) {
+      if (!r.hasAttribute("data-ai-row")) rm(r);
+    });
+    ["deep", "video"].forEach(function (k) {
+      var b = tblBody(k);
+      if (b) [].slice.call(b.querySelectorAll(".an-tbody > .an-tr")).forEach(rm);
+    });
+    [].slice.call(document.querySelectorAll("[data-rep-row]")).forEach(rm);
+    // счётчики в табах отчётов тоже обнуляем: отчётов нет
+    [].slice.call(document.querySelectorAll("[data-rep-count]")).forEach(function (b) { b.textContent = "0"; });
+  }
+  function demoBlanks() {
+    if (!demoNew()) return;
+    var blank = document.querySelector("[data-an-blank]");
+    if (!blank) return;
+    var key = blank.getAttribute("data-an-blank"), colls = aiAllColls();
+    var empty = key === "coll" ? !colls.length
+      : key === "rep" ? !document.querySelectorAll("[data-rep-row]").length
+      : !colls.some(function (c) { return collStatus(c.name) === "activated"; });
+    blank.hidden = !empty;
+    // прячем всё, кроме шапки и самого пустого состояния
+    [].slice.call(blank.parentNode.children).forEach(function (el) {
+      if (el === blank || el.tagName === "HEADER") return;
+      el.style.display = empty ? "none" : "";
+    });
+  }
+  function demoInit() {
+    if (!demoNew()) return;
+    demoStrip();
+    demoBlanks();
+  }
   function planId() {
     // ?plan=explorer живёт только в своей табе и не перебивает соседние
     if (PLANS[PLAN_URL]) return PLAN_URL;
     var p;
     try { p = localStorage.getItem("subsub_plan"); } catch (e) { p = null; }
-    return PLANS[p] ? p : "pro";           // дефолт для демо — Pro
+    if (PLANS[p]) return p;
+    return demoNew() ? "explorer" : "pro";  // новичок — на бесплатном плане, иначе Pro
   }
   function plan() { return PLANS[planId()]; }
   function planFmt(n) { return n === Infinity ? "unlimited" : String(n); }
@@ -2788,22 +2844,26 @@
         return;
       }
       var coll = ncPageColl();
-      if (coll) ncAppend(coll, names);
-      if (typeof ceAddRows === "function") ceAddRows(names);
       ncBaseSel = {};
       closeModal(document.getElementById("ncModal"));
-      toast("Channels added successfully");
+      awAsk(names, coll ? [coll] : [], function () {
+        if (coll) ncAppend(coll, names);
+        ceAddRows(names);
+        toast("Channels added successfully");
+      });
       return;
     }
     var targets = Object.keys(ncSel).filter(function (n) { return ncSel[n]; });
-    targets.forEach(function (t) { ncAppend(t, names); });
     // повторное открытие — с чистого листа
     ncBaseSel = {};
     closeModal(document.getElementById("ncModal"));
-    toast(targets.length
-      ? "Channels added successfully"
-      : links.length + (links.length === 1 ? " channel" : " channels") + " sent to base");
-    if (typeof aiRenderCollections === "function") aiRenderCollections();
+    awAsk(names, targets, function () {
+      targets.forEach(function (t) { ncAppend(t, names); });
+      toast(targets.length
+        ? "Channels added successfully"
+        : names.length + (names.length === 1 ? " channel" : " channels") + " sent to base");
+      if (typeof aiRenderCollections === "function") aiRenderCollections();
+    });
   }
 
   // ================= A8: «Add N channels to collection» из футера выбора =================
@@ -2871,6 +2931,9 @@
     var picked = acChecked();
     var targets = Object.keys(acSel).filter(function (n) { return acSel[n]; });
     if (!picked.length || !targets.length) return;
+    awAsk(picked, targets, function () { acApply(picked, targets); });
+  }
+  function acApply(picked, targets) {
     targets.forEach(function (t) { ncAppend(t, picked); });
     closeModal(document.getElementById("acModal"));
     // выбор снимаем — как на проде после успешного добавления
@@ -3003,9 +3066,11 @@
       row.setAttribute("data-ai-row", "");
       row.setAttribute("data-name", c.name);
       row.innerHTML =
-        // AI-бейдж в списке коллекций не показываем — он остался только в представлении коллекции
+        // AI-коллекции видно в списке: состав собран подбором, а не руками
         '<div class="an-td an-td--grow" style="width:240px">' +
-          '<span class="mc-name">' + escHtml(c.name) + '</span></div>' +
+          '<span class="mc-name">' + escHtml(c.name) + '</span>' +
+          (c.isAi ? '<span class="ai-badge ai-badge--sm" title="Channels found by AI sourcing">' +
+            aiStarsIco() + "AI</span>" : "") + '</div>' +
         '<div class="an-td" style="width:320px"><div class="mc-statuscell">' + aiStatusHtml(c.status, c.id) + '</div></div>' +
         '<div class="an-td" style="width:120px">' + (c.status === "pending" ? "—" : String((c.channels || []).length)) + '</div>' +
 
@@ -3024,6 +3089,7 @@
     }
     aiPaintTargets();
     mcPaintSaved();
+    demoBlanks();
     if (typeof tblApply === "function" && tblBody("coll")) { tblApply("coll"); tblHug("coll"); }
     mcCountSync();
   }
@@ -3442,6 +3508,7 @@
     return ("0" + d.getDate()).slice(-2) + "." + ("0" + (d.getMonth() + 1)).slice(-2) + "." + d.getFullYear();
   }
   function aiBaseColls() {
+    if (demoNew()) return [];              // аккаунт новичка: готовых коллекций нет
     var b = window.SUBSUB_BASE_COLLECTIONS;
     return Object.prototype.toString.call(b) === "[object Array]" ? b : [];
   }
@@ -3866,6 +3933,54 @@
 
   // страница открытой коллекции: имя из ?name= (заголовок формы)
   // P1.11: строки для добавленных каналов — цифр по ним нет, ставим «—»
+  // копия коллекции: тот же состав плюс каналы, которые в неё собирались добавить
+  function collDuplicate(src, extraNames) {
+    var base = src + " (copy)", name = base, i = 2;
+    while (aiAllColls().some(function (c) { return c.name === name; })) { name = base + " " + i; i++; }
+    var chans = aiChannelsOf(src);
+    if (!chans.length && ceName() === src) chans = ceRowNames();
+    (extraNames || []).forEach(function (n) { if (chans.indexOf(n) === -1) chans.push(n); });
+    var list = aiLoad();
+    list.push({ id: "c" + list.length + "d", name: name, isAi: false, mode: "new", status: "created",
+                channels: chans, created: aiToday(), query: "",
+                filters: { subs: 0, videos: 0, views: 0, avg: 0, lastDays: 0 } });
+    aiSave(list);
+    var extra = aiExtraLoad();
+    extra[name] = { channels: chans.slice() };
+    aiExtraSave(extra);
+    return name;
+  }
+  // ---- добавление в активированную коллекцию: данные пойдут со дня добавления ----
+  var awPending = null;
+  function awAsk(names, targets, apply) {
+    var hot = targets.filter(function (t) { return collStatus(t) === "activated"; });
+    if (!hot.length || !document.getElementById("awModal")) { apply(); return; }
+    awPending = { names: names, targets: targets, hot: hot, apply: apply };
+    closeModals();
+    var txt = document.querySelector("[data-aw-text]");
+    if (txt) txt.textContent = "Deep data for " + names.length + (names.length === 1 ? " channel" : " channels") +
+      " will start from the day you add them, so history in «" + hot.join("», «") + "» stays incomplete. " +
+      "For full history duplicate the collection and activate deep data for the copy.";
+    openModal("awModal");
+  }
+  function awGo() {
+    var p = awPending;
+    awPending = null;
+    closeModals();
+    if (p) p.apply();
+  }
+  function awDup() {
+    var p = awPending;
+    awPending = null;
+    closeModals();
+    if (!p) return;
+    var made = p.hot.map(function (t) { return collDuplicate(t, p.names); });
+    var rest = p.targets.filter(function (t) { return p.hot.indexOf(t) === -1; });
+    if (rest.length) rest.forEach(function (t) { ncAppend(t, p.names); });
+    aiRenderCollections();
+    toast("«" + made.join("», «") + "» created with " + p.names.length +
+          (p.names.length === 1 ? " new channel" : " new channels") + " — activate deep data when ready");
+  }
   // ---- пока идёт подбор: бадж в шапке и строки-заглушки сверху таблицы ----
   function ceSkelRows() { return [].slice.call(document.querySelectorAll("[data-ce-skel]")); }
   function ceSkelSet(n) {
@@ -4420,22 +4535,7 @@
     if (inp) inp.focus();
   }
   // копия коллекции с теми же каналами — как «Duplicate collection» в списке
-  function ceDuplicate() {
-    var src = ceName();
-    var base = src + " (copy)", name = base, i = 2;
-    while (aiAllColls().some(function (c) { return c.name === name; })) { name = base + " " + i; i++; }
-    var chans = aiChannelsOf(src);
-    if (!chans.length) chans = ceRowNames();
-    var list = aiLoad();
-    list.push({ id: "c" + list.length + "d", name: name, isAi: false, mode: "new", status: "created",
-                channels: chans, created: aiToday(), query: "",
-                filters: { subs: 0, videos: 0, views: 0, avg: 0, lastDays: 0 } });
-    aiSave(list);
-    var extra = aiExtraLoad();
-    extra[name] = { channels: chans.slice() };
-    aiExtraSave(extra);
-    toast("Collection duplicated as «" + name + "»");
-  }
+  function ceDuplicate() { toast("Collection duplicated as «" + collDuplicate(ceName()) + "»"); }
   // имена каналов из таблицы — на случай семпловой коллекции, которой нет в состоянии
   function ceRowNames() {
     return [].slice.call(document.querySelectorAll("[data-ce-row] .ce-chan__name")).map(function (n) {
@@ -4885,4 +4985,5 @@
   flInit();                          // P1.13: панель открыта по умолчанию
   aiRenderCollectionView();
   ceInit();
+  demoInit();                        // версия новичка: пустые состояния вместо демо-данных
 })();

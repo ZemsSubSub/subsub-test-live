@@ -723,6 +723,37 @@ const ceAddModalHtml = ncModal({ title: "Add channels" });
 // Вёрстка по референсу «Setup Collection Sourcing»: заголовок с подзаголовком, имя коллекции,
 // составное поле описания (textarea + вложенная строка reference-link и «Auto Description»)
 // и свёрнутая секция «Advanced Research Settings» с числовыми фильтрами.
+// Добавление каналов в активированную коллекцию: deep data по новым каналам начнётся
+// со дня добавления, поэтому предлагаем дубликат и активацию копии.
+const awModalHtml = `
+    <div class="an-modal" id="awModal"><div class="an-modal__overlay" data-aw-close></div>
+      <div class="an-modal__dialog an-modal__dialog--sm">
+        <div class="an-modal__head">
+          <h2 class="an-modal__title">Add channels to an activated collection?</h2>
+          <button class="an-modal__x" type="button" data-aw-close aria-label="Close">${IC.closeBold}</button>
+        </div>
+        <div class="an-modal__body">
+          <p class="an-modal__text" data-aw-text></p>
+        </div>
+        <div class="an-modal__foot">
+          <button class="an-btn an-btn--plain an-btn--small" type="button" data-aw-close>Cancel</button>
+          <button class="an-btn an-btn--secondary an-btn--small" type="button" data-aw-dup>${IC.copy}Duplicate and add</button>
+          <button class="an-btn an-btn--primary an-btn--small" type="button" data-aw-go>Add anyway</button>
+        </div>
+      </div>
+    </div>`;
+
+// Пустое состояние страницы: у новичка ещё нет коллекций, а без них нет ни deep data,
+// ни видео, ни отчётов. Блок лежит в разметке скрытым, показывает его js.
+function blankHtml(key, ico, title, text, cta) {
+  return '<div class="an-blank" data-an-blank="' + key + '" hidden>' +
+    '<span class="an-blank__ico" aria-hidden="true">' + ico + '</span>' +
+    '<h2 class="an-blank__title">' + title + '</h2>' +
+    '<p class="an-blank__text">' + text + '</p>' + cta + '</div>';
+}
+const BLANK_CTA_NEW = '<button class="an-btn an-btn--ai" type="button" data-ai-open>' + IC.plus + 'Create Collection</button>';
+const BLANK_CTA_LINK = '<a class="an-btn an-btn--ai" href="analytics-collections.html">' + IC.plus + 'Create Collection</a>';
+
 const aiModalHtml = `
     <div class="an-modal" id="aiModal" data-ai-mode="single"><div class="an-modal__overlay" data-ai-close></div>
       <div class="an-modal__dialog an-modal__dialog--lg">
@@ -947,6 +978,8 @@ const mainInner = `
     ${ncModalHtml}
 
     ${acModalHtml}
+
+    ${awModalHtml}
 
     ${FILTERS_BASIC}
 
@@ -1394,6 +1427,10 @@ const deepInner = `
         ${PERIOD_BAR}
       </header>
 
+      ${blankHtml("deep", IC.graph, "No activated collections",
+        "Deep data is collected per collection: growth, engagement and performance for every channel in it. Create a collection and activate deep data for it.",
+        BLANK_CTA_LINK)}
+
       <div data-an-tab-panel="channels">
 
       <section class="an-toolbar">
@@ -1458,6 +1495,8 @@ const deepInner = `
     </section>
 
     ${acModalHtml}
+
+    ${awModalHtml}
 
     ${FILTERS_DEEP}
     ${FILTERS_DEEP_VIDEOS}
@@ -1576,6 +1615,10 @@ const collInner = `
           <button class="an-btn an-btn--ai" type="button" data-ai-open>${IC.plus}Create Collection</button>
         </div>
       </header>
+
+      ${blankHtml("coll", IC.collections, "No collections yet",
+        "A collection is a group of channels you track together. Describe what you need and we'll find the channels, or paste links you already have.",
+        BLANK_CTA_NEW)}
 
       <!-- одна строка: поиск, переключатель типа, фильтры и пагинация справа -->
       <section class="an-toolbar mc-toolbar">
@@ -1730,6 +1773,8 @@ const collInner = `
         </div>
       </div>
     </div>
+
+    ${awModalHtml}
 
     ${aiModalHtml}
 
@@ -1940,6 +1985,8 @@ const editInner = `
 
     ${activateModalHtml}
 
+    ${awModalHtml}
+
     ${ceAddModalHtml}
 
     ${mcCreateModalHtml}
@@ -2041,11 +2088,17 @@ const videosInner = `
         ${PERIOD_BAR}
       </header>
 
+      ${blankHtml("video", IC.ytVideo, "No activated collections",
+        "Videos data comes from activated collections — videos, shorts and streams of the channels you track.",
+        BLANK_CTA_LINK)}
+
       <div class="an-stack">${videosPanel}
       </div>
     </section>
 
     ${acModalHtml}
+
+    ${awModalHtml}
     ${FILTERS_DEEP_VIDEOS}
 
     <div class="an-toast" data-an-toast hidden></div>`;
@@ -2293,6 +2346,10 @@ const reportsInner = `
           <button class="an-btn an-btn--primary" type="button" data-rep-open>${IC.plus}Create report</button>
         </div>
       </header>
+
+      ${blankHtml("rep", IC.folder, "No reports yet",
+        "A report is built from a collection: pick the collection, the report type and the period. Create a collection first.",
+        BLANK_CTA_LINK)}
 
       <!-- отчёты дублируются в Media Library — подсказка закрывается и больше не возвращается -->
       <div class="rep-note" data-rep-note>
