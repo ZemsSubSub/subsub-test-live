@@ -1349,9 +1349,16 @@
     HUG_KEYS.forEach(function (key) { if (tblBody(key)) tblHugFix(key); });
   }
   var tblFitT = null;
+  // вкладку могли открыть в фоне: там нет раскладки, и высота скролл-бокса считается по
+  // неверным метрикам — таблица выходит короче или длиннее экрана, а прибитая снизу плашка
+  // выбора отрывается от таблицы. Возвращаемся к вкладке — пересчитываем ширины и высоту.
+  function tblRefit() { mcToolbarFit(); tblHugAll(); tblFit(); }
+  document.addEventListener("visibilitychange", function () { if (!document.hidden) tblRefit(); });
+  window.addEventListener("pageshow", tblRefit);
+  window.addEventListener("focus", tblRefit);
   window.addEventListener("resize", function () {
     clearTimeout(tblFitT);
-    tblFitT = setTimeout(function () { mcToolbarFit(); tblHugAll(); tblFit(); }, 100);
+    tblFitT = setTimeout(tblRefit, 100);
   });
 
   // ================= P1.9: табы Channels / Videos (?tab=) =================
