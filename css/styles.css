@@ -2351,6 +2351,18 @@ body.is-open:not(.is-collapsed) .main { margin-left: 306px; }
 .an-blank__title { margin: 0; font-size: 20px; font-weight: 600; color: var(--color-black); }
 .an-blank__text { margin: 0; max-width: 480px; font-size: 14px; font-weight: 300; line-height: 1.5; color: var(--color-shade-800); }
 .an-blank .an-btn { margin-top: 4px; text-decoration: none; }
+.an-blank .an-btn[hidden] { display: none; }
+/* прогресс сбора Deep data: не нули в таблице, а честное состояние процесса */
+.an-blank__bar { width: 240px; height: 6px; border-radius: 9999px; background: var(--color-shade-200); overflow: hidden; }
+.an-blank__bar[hidden] { display: none; }
+.an-blank__bar > span { display: block; height: 100%; width: 0; border-radius: 9999px;
+  background: var(--color-purple-900); transition: width .4s ease; }
+.dd-state { margin-top: 4px; }
+/* заблокированный контрол виден и объясняет причину */
+.an-btn[disabled], .mc-status__link[disabled], .ce-trash[disabled] { opacity: .45; cursor: not-allowed; }
+.ce-menu__item[disabled], .mc-menu__item[disabled] { opacity: .45; cursor: not-allowed; }
+.nc-item[disabled] { opacity: .45; cursor: not-allowed; }
+.nc-item[disabled]:hover { background: none; }
 
 /* --- P1.6: селектор среза по типу контента в шапке метрики --- */
 .an-slice-wrap { position: relative; display: inline-flex; }
@@ -2974,11 +2986,7 @@ body.filters-open .an-filters.is-active { display: flex; }
 /* deep data: активированные коллекции отделены от неактивированных */
 .anf-group { padding: 8px 10px 4px; font-size: 11px; font-weight: 600; letter-spacing: .04em;
   text-transform: uppercase; color: var(--color-shade-700); }
-.anf-opt__st { display: inline-flex; align-items: center; margin-left: auto; flex-shrink: 0; }
-.anf-opt__st svg { width: 16px; height: 16px; }
-.anf-opt__st--on { color: var(--color-green-dark); }
-.anf-opt__st--wait { color: var(--color-orange); }
-.anf-opt__st--off { color: var(--color-shade-600); }
+.anf-group:first-child { padding-top: 4px; }
 .anf-opt:disabled { color: var(--color-shade-700); cursor: default; }
 .anf-opt:disabled:hover { background: none; }
 .anf-menu__foot { flex: 0 0 auto; padding: 4px; border-top: 1px solid var(--color-shade-200); }
@@ -3146,7 +3154,13 @@ body.filters-open .an-filters.is-active { display: flex; }
 /* имя канала — ссылка на страницу канала */
 /* владелец коллекции рядом с названием */
 /* название с лимитом и кнопки — одной строкой, владелец строкой ниже */
-.ce-titlerow { display: flex; align-items: center; gap: 24px; flex-wrap: wrap; min-width: 0; }
+.ce-titlerow { display: flex; align-items: center; gap: 12px; flex-wrap: nowrap; min-width: 0; }
+.ce-titlerow .an-title { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ce-titlerow .mc-status, .ce-titlerow .ai-badge { flex-shrink: 0; }
+/* кнопки действий остаются на строке заголовка: их не сминаем и не переносим */
+.ce-page .an-head { flex-wrap: nowrap; }
+.ce-page .an-head__left { min-width: 0; }
+.ce-page .an-head__btns { flex-shrink: 0; }
 .ce-page .an-head { align-items: center; margin-bottom: 4px; }
 /* если строка не влезает — кнопки уходят вниз, но остаются справа */
 .ce-page .an-head__btns { margin-left: auto; }
@@ -3155,12 +3169,12 @@ body.filters-open .an-filters.is-active { display: flex; }
 .ce-owner__ava { width: 24px; height: 24px; font-size: 11px; }
 .ce-owner__name { font-size: 14px; font-weight: 500; color: var(--color-black); }
 /* лимит размера коллекции — в одной строке с названием: счётчик, полоса, апгрейд */
-.ce-limit { display: inline-flex; align-items: center; gap: 12px; padding: 6px 6px 6px 12px;
+.ce-limit { display: inline-flex; align-items: center; flex-shrink: 0; gap: 10px; padding: 4px 4px 4px 10px;
   border-radius: 10px; background: var(--color-shade-90); }
-.ce-limit__v { font-size: 14px; font-weight: 300; color: var(--color-shade-700); white-space: nowrap; }
+.ce-limit__v { font-size: 13px; font-weight: 300; color: var(--color-shade-700); white-space: nowrap; }
 .ce-limit__v b { font-weight: 500; color: var(--color-green-dark); }
 .ce-limit.is-full .ce-limit__v b { color: var(--color-red); }
-.ce-limit__bar { width: 140px; height: 6px; border-radius: 9999px; background: var(--color-shade-200); overflow: hidden; }
+.ce-limit__bar { width: 84px; height: 6px; border-radius: 9999px; background: var(--color-shade-200); overflow: hidden; }
 .ce-limit__fill { display: block; height: 100%; width: 0; border-radius: 9999px; background: var(--color-green-dark);
   transition: width .25s ease; }
 .ce-limit.is-full .ce-limit__fill { background: var(--color-red); }

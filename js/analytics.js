@@ -147,10 +147,13 @@
     var ceDeepBtn = e.target.closest("[data-ce-deep]");
     if (ceDeepBtn) {
       ceMenu(false);
-      if (ceStatus() === "activated") window.location.href = "analytics-deep-data.html";
-      else ceActivateAsk();
+      if (ceDeepBtn.disabled) return;
+      if (collState(ceName()) === "activated") {
+        window.location.href = "analytics-deep-data.html?coll=" + encodeURIComponent(ceName());
+      } else ceActivateAsk();
       return;
     }
+    if (e.target.closest("[data-ce-cancel]")) { collCancel(ceName()); return; }
     if (e.target.closest("[data-ce-duplicate]")) { ceMenu(false); ceDuplicate(); return; }
     if (e.target.closest("[data-ce-rename]")) { ceRenameOpen(); return; }
     if (e.target.closest("[data-ce-rename-close]")) { closeModal(document.getElementById("ceRename")); return; }
@@ -400,8 +403,19 @@
     // --- A8: футер «Add N channels to collection» ---
     if (e.target.closest("[data-an-footer-btn]")) { acOpen(); return; }
     if (e.target.closest("[data-cc-from-sel]")) { ccFromSelection(); return; }
+    var ddAct = e.target.closest("[data-dd-state-act]");
+    if (ddAct && !ddAct.disabled) {
+      var ddW = document.querySelector('[data-an-collsel="deep"]');
+      var ddNm = ddW ? csCurrent(ddW) : "";
+      if (!ddNm) return;
+      if (collState(ddNm) === "deep") collCancel(ddNm);
+      else if (collActivateDeep(ddNm)) toast("Collecting deep data — “" + ddNm + "”");
+      return;
+    }
     if (e.target.closest("[data-ac-close]")) { closeModal(document.getElementById("acModal")); return; }
     if (e.target.closest("[data-ac-submit]")) { acSubmit(); return; }
+    var ddCancel = e.target.closest("[data-dd-cancel-coll]");
+    if (ddCancel) { collCancel(ddCancel.getAttribute("data-dd-cancel-coll")); return; }
     if (e.target.closest("[data-aw-close]")) { awPending = null; closeModals(); return; }
     if (e.target.closest("[data-aw-go]")) { awGo(); return; }
     if (e.target.closest("[data-aw-dup]")) { awDup(); return; }
@@ -841,7 +855,157 @@
   // что поле Collection в панели (держим их синхронно), на Deep — переключение набора
   // строк (в разметке лежат строки всех активированных коллекций, помечены data-coll).
   function csWraps() { return [].slice.call(document.querySelectorAll("[data-an-collsel]")); }
-  // статус коллекции: у AI-коллекций он в состоянии, у остальных — в слоте extra либо из сборки
+  // ================= состояния коллекции (instructions/07-collection-states.md) =================
+  // Подбор каналов и сбор Deep data никогда не идут одновременно по одной коллекции:
+  // пока активно одно, вход во второе заблокирован с объяснением, а не спрятан.
+  var CS_LBL = {
+    created: "Created", sourcing: "Collecting channels",
+    deep: "Collecting deep data", activated: "Activated"
+  };
+  var CS_TIP = {
+    deepWaitSourcing: "Wait until channel sourcing finishes",
+    sourceWaitDeep: "Wait until deep data collection finishes",
+    editWaitDeep: "Channels can't be changed while deep data is being collected",
+    needChannel: "Add at least one channel first",
+    noDeep: "Deep data isn't collected yet",
+    sample: "Shared collection — read only"
+  };
+  var DEEP_MS = demoFast() ? 3000 : 30000;   // сбор Deep data тоже долгий: показываем прогресс
+  var deepTimers = {};
+  // состояние Deep data живёт там же, где состав коллекции: в AI-записи или в слоте extra
+  function collDeepState(name) {
+    var c = aiCollByName(name);
+    if (c && c.deep) return c.deep;
+    var slot = aiExtraLoad()[name];
+    if (slot && slot.deep) return slot.deep;
+    var seed = collStatus(name);          // из сборки: activated | pending | created
+    return seed === "activated" ? "activated" : seed === "pending" ? "collecting" : "";
+  }
+  function collDeepAt(name) {
+    var c = aiCollByName(name);
+    if (c && c.deepAt) return c.deepAt;
+    var slot = aiExtraLoad()[name];
+    return (slot && slot.deepAt) || 0;
+  }
+  function collSetDeep(name, val, at) {
+    var list = aiLoad(), isAi = false;
+    list.forEach(function (x) {
+      if (x.mode === "append" || x.name !== name) return;
+      x.deep = val; x.deepAt = at || 0; isAi = true;
+    });
+    if (isAi) aiSave(list);
+    var extra = aiExtraLoad();
+    extra[name] = extra[name] || { channels: [] };
+    extra[name].deep = val;
+    extra[name].deepAt = at || 0;
+    aiExtraSave(extra);
+  }
+  function collState(name) {
+    if (aiSourcingNames()[name]) return "sourcing";
+    var d = collDeepState(name);
+    if (d === "collecting") return "deep";
+    if (d === "activated") return "activated";
+    return "created";
+  }
+  // каналов в коллекции: на её странице считаем строки, иначе состав из состояния
+  function collChans(name) {
+    if (document.querySelector("[data-ce-row]") && ceName() === name) return ceRows().length;
+    return aiChannelsOf(name).length;
+  }
+  function collCanEdit(name) { return collState(name) !== "deep"; }
+  function collCanSource(name) {
+    var s = collState(name);
+    return s !== "sourcing" && s !== "deep";
+  }
+  function collSourceBlockTip(name) {
+    var s = collState(name);
+    return s === "sourcing" ? "Sourcing is already running for this collection"
+         : s === "deep" ? CS_TIP.sourceWaitDeep : "";
+  }
+  function collProgress(name) {          // 0..1 по времени сбора Deep data
+    var at = collDeepAt(name);
+    if (!at) return 0.1;
+    var left = at - Date.now();
+    return Math.max(0.05, Math.min(0.95, 1 - left / DEEP_MS));
+  }
+  // ---- запуск и отмена процессов ----
+  function collActivateDeep(name) {
+    if (collState(name) !== "created" || collChans(name) < 1) return false;
+    collSetDeep(name, "collecting", Date.now() + DEEP_MS);
+    deepTick();
+    collSurfaces();
+    return true;
+  }
+  function collCancelDeep(name) {
+    if (deepTimers[name]) { clearTimeout(deepTimers[name]); delete deepTimers[name]; }
+    collSetDeep(name, "", 0);
+    collSurfaces();
+  }
+  function collCancelSourcing(name) {
+    var list = aiLoad().filter(function (r) {
+      return !(r.status === "pending" && aiSourcingTarget(r) === name);
+    });
+    aiSave(list);
+    collSurfaces();
+  }
+  function collCancel(name) {           // Cancel по текущему процессу коллекции
+    var s = collState(name);
+    if (s === "sourcing") { collCancelSourcing(name); toast("Sourcing cancelled — “" + name + "”"); }
+    else if (s === "deep") { collCancelDeep(name); toast("Deep data collection cancelled — “" + name + "”"); }
+  }
+  // сбор Deep data идёт по таймеру и переживает переходы между страницами
+  function deepTick() {
+    aiAllColls().forEach(function (c) {
+      var nm = c.name;
+      if (collDeepState(nm) !== "collecting" || deepTimers[nm]) return;
+      var at = collDeepAt(nm) || (Date.now() + DEEP_MS);
+      deepTimers[nm] = setTimeout(function () {
+        delete deepTimers[nm];
+        collSetDeep(nm, "activated", 0);
+        toast("Deep data is ready — “" + nm + "”");
+        collSurfaces();
+      }, Math.max(400, at - Date.now()));
+    });
+  }
+  // одно обновление всех поверхностей, где видно состояние
+  function collSurfaces() {
+    aiRenderPill();
+    if (typeof aiRenderCollections === "function") aiRenderCollections();
+    ceStateSync();
+    ddStateSync();
+    csWraps().forEach(function (w) { if (w.classList.contains("is-open")) csFill(w, ""); });
+  }
+  // переключение состояния руками — для демо на интервью
+  window.subsubState = function (name, state) {
+    if (!name) return subsubStates();
+    collCancelSourcing(name);
+    if (deepTimers[name]) { clearTimeout(deepTimers[name]); delete deepTimers[name]; }
+    if (state === "sourcing") {
+      collSetDeep(name, "", 0);
+      var list = aiLoad();
+      list.push({ id: "s" + Date.now(), name: name, target: name, mode: "append", isAi: true,
+                  status: "pending", query: "demo sourcing", filters: {}, channels: [],
+                  created: aiToday(), readyAt: Date.now() + AI_STEP_MS });
+      aiSave(list);
+      aiTick();
+    } else if (state === "deep") {
+      collSetDeep(name, "collecting", Date.now() + DEEP_MS);
+      deepTick();
+    } else if (state === "activated") {
+      collSetDeep(name, "activated", 0);
+    } else {
+      collSetDeep(name, "", 0);
+    }
+    collSurfaces();
+    return subsubStates();
+  };
+  window.subsubStates = function () {
+    var out = {};
+    aiAllColls().forEach(function (c) { out[c.name] = collState(c.name); });
+    return out;
+  };
+
+  // статус коллекции из сборки/состояния — основа для collDeepState
   function collStatus(name) {
     var c = (typeof aiCollByName === "function" ? aiCollByName(name) : null);
     if (c) return c.status || "created";
@@ -853,13 +1017,14 @@
     return map[name] || "created";
   }
   function csList(key) { return (typeof aiAllColls === "function" ? aiAllColls() : []); }
-  // статус коллекции виден прямо в списке: активирована ли deep data
-  function csStateHtml(name) {
-    var st = collStatus(name), ico = AI_ICO.check, cls = "off", tip = "Deep data not activated";
-    if (st === "activated") { ico = AI_ICO.thumb; cls = "on"; tip = "Deep data activated"; }
-    else if (st === "pending") { ico = AI_ICO.progress; cls = "wait"; tip = "Collecting deep data"; }
-    return '<span class="anf-opt__st anf-opt__st--' + cls + '" title="' + tip + '">' + ico + "</span>";
-  }
+  // коллекции в списке идут группами: сначала активированные, потом остальные
+  var CS_GROUPS = [
+    { id: "activated", label: "Activated" },
+    { id: "deep", label: "Collecting deep data" },
+    { id: "sourcing", label: "Collecting channels" },
+    { id: "created", label: "Not activated" }
+  ];
+  function csGroupOf(key, name) { return collState(name); }
   // deep data открывается только по активированным коллекциям — остальные видно, но выбрать нельзя
   function csActivated(key, name) {
     if (key !== "deep" && key !== "video") return true;
@@ -883,6 +1048,56 @@
     }
     return aiChannelsOf(name).length;
   }
+  // Deep data: если коллекция не активирована или ещё собирается — состояние вместо таблицы
+  function ddStateSync() {
+    var box = document.querySelector("[data-dd-state]");
+    if (!box) return;
+    var w = document.querySelector('[data-an-collsel="deep"]');
+    var nm = w ? csCurrent(w) : "";
+    var st = nm ? collState(nm) : "activated";
+    var show = !!nm && st !== "activated";
+    box.hidden = !show;
+    var wrapT = document.querySelector('[data-an-tablewrap="deep"]');
+    if (wrapT) wrapT.style.display = show ? "none" : "";
+    var tools = document.querySelector('[data-an-tab-panel="channels"] .an-toolbar');
+    if (tools) tools.style.display = show ? "none" : "";
+    var srow = document.querySelector('[data-an-tab-panel="channels"] .an-searchrow');
+    if (srow) srow.style.display = show ? "none" : "";
+    var exp = document.querySelector("[data-an-export]");
+    if (exp) {
+      exp.disabled = st !== "activated";
+      if (st === "activated") exp.removeAttribute("title"); else exp.title = CS_TIP.noDeep;
+    }
+    if (!show) return;
+    var title = box.querySelector("[data-dd-state-title]");
+    var text = box.querySelector("[data-dd-state-text]");
+    var bar = box.querySelector("[data-dd-state-bar]");
+    var fill = box.querySelector("[data-dd-state-fill]");
+    var act = box.querySelector("[data-dd-state-act]");
+    if (st === "deep") {
+      title.textContent = CS_LBL.deep;
+      text.textContent = "We're collecting deep metrics for " + collChans(nm) + " channels of “" + nm +
+        "”. You can leave the page — collection continues.";
+      bar.hidden = false;
+      fill.style.width = Math.round(collProgress(nm) * 100) + "%";
+      act.hidden = false;
+      act.textContent = "Cancel collection";
+      act.disabled = false;
+      act.removeAttribute("title");
+      act.className = "an-btn an-btn--secondary";
+      return;
+    }
+    title.textContent = "Deep data isn't activated";
+    text.textContent = "Activate deep data for “" + nm + "” — we'll collect growth, engagement and " +
+      "performance for every channel in it.";
+    bar.hidden = true;
+    act.hidden = false;
+    act.className = "an-btn an-btn--primary";
+    act.textContent = "Activate deep data";
+    var tip = st === "sourcing" ? CS_TIP.deepWaitSourcing : collChans(nm) < 1 ? CS_TIP.needChannel : "";
+    act.disabled = !!tip;
+    if (tip) act.title = tip; else act.removeAttribute("title");
+  }
   function csFill(wrap, q) {
     var box = wrap.querySelector("[data-an-collsel-opts]");
     if (!box) return;
@@ -901,20 +1116,21 @@
       return '<button class="anf-opt" type="button" role="option"' + (c.name === cur ? ' data-selected' : '') +
              (off ? ' disabled title="Deep data is not activated for this collection"' : '') +
              ' data-an-collsel-opt="' + escHtml(c.name) + '">' + qty +
-             '<span class="anf-opt__name">' + escHtml(c.name) + '</span>' + csStateHtml(c.name) + "</button>";
+             '<span class="anf-opt__name">' + escHtml(c.name) + '</span></button>';
     }
-    var body;
-    if (key === "deep" || key === "video") {
-      var on = list.filter(function (c) { return csActivated(key, c.name); });
-      var off = list.filter(function (c) { return !csActivated(key, c.name); });
-      body = (on.length ? '<div class="anf-group">Activated</div>' + on.map(function (c) { return optHtml(c, false); }).join("") : "") +
-             (off.length ? '<div class="anf-group">Not activated</div>' + off.map(function (c) { return optHtml(c, true); }).join("") : "");
-    } else body = list.map(function (c) { return optHtml(c, false); }).join("");
+    // выбрать можно любую коллекцию: неактивированная ведёт в состояние с кнопкой активации
+    var body = CS_GROUPS.map(function (g) {
+      var part = list.filter(function (c) { return csGroupOf(key, c.name) === g.id; });
+      if (!part.length) return "";
+      return '<div class="anf-group">' + g.label + "</div>" +
+        part.map(function (c) { return optHtml(c, false); }).join("");
+    }).join("");
     box.innerHTML = head + (body || (head ? "" : '<div class="anf-empty">No collections</div>'));
   }
   // A3: сброс к «All channels» — снимаем и поле Collection в панели
   function csPickAll(wrap) {
     csSetLabel(wrap, "");
+    setTimeout(ddStateSync, 0);
     csOpen(wrap, false);
     var act = flActive();
     var f = act && act.querySelector('[data-anf-field="collection"] [data-anf-val]');
@@ -985,6 +1201,7 @@
     if (key === "deep") csApplyDeep(name);
     else if (key === "video") csApplyVideo(name);
     else csApplyBasic(name);
+    ddStateSync();                        // выбрали неактивированную — показываем её состояние
   }
   // Basic: коллекция — это фильтр, поэтому пишем значение в панель и применяем её целиком
   function csApplyBasic(name) {
@@ -2028,40 +2245,27 @@
     return url;
   }
   // пилюля статуса по состоянию (та же разметка, что в билде)
-  function statusHtml(status) {
-    var THUMB = document.querySelector("[data-mc-ico-thumb]");
-    var pill = document.querySelector('.mc-status--green');
-    if (status === "activated") {
-      var ico = pill ? pill.querySelector("svg").outerHTML : "";
-      return '<span class="mc-status mc-status--green">' + ico + '<span class="mc-status__t">Activated</span>' +
-             '<span class="mc-status__sep"></span><a class="mc-status__link" href="analytics-deep-data.html">View deep data</a></span>';
+  // пилюля состояния: одна разметка для строк из сборки и для AI-коллекций
+  function collPillHtml(name, opts) {
+    var st = collState(name), ro = !!(opts && opts.readonly);
+    if (st === "activated") {
+      return '<span class="mc-status mc-status--green">' + AI_ICO.thumb +
+        '<span class="mc-status__t">' + CS_LBL.activated + "</span>" +
+        '<span class="mc-status__sep"></span><a class="mc-status__link" href="analytics-deep-data.html?coll=' +
+        encodeURIComponent(name) + '">View deep data</a></span>';
     }
-    if (status === "pending") {
-      var pIco = document.querySelector(".mc-status--orange svg");
-      return '<span class="mc-status mc-status--orange">' + (pIco ? pIco.outerHTML : "") + '<span class="mc-status__t">Collecting data</span></span>';
+    if (st === "sourcing" || st === "deep") {
+      var lbl = st === "sourcing" ? CS_LBL.sourcing : CS_LBL.deep;
+      return '<span class="mc-status mc-status--orange">' + AI_ICO.progress +
+        '<span class="mc-status__t">' + lbl + "</span>" +
+        (ro ? "" : '<span class="mc-status__sep"></span><button class="mc-status__link" type="button" data-mc-cancel="' +
+          escHtml(name) + '">Cancel</button>') + "</span>";
     }
-    var gIco = document.querySelector(".mc-status--gray svg");
-    return '<span class="mc-status mc-status--gray">' + (gIco ? gIco.outerHTML : "") + '<span class="mc-status__t">Deactivated</span>' +
-           '<span class="mc-status__sep"></span><button class="mc-status__link" type="button" data-mc-activate>Activate deep data</button></span>';
-  }
-  // подтверждение активации Deep data — и из статуса строки, и из «⋮»-меню
-  function mcActivateAsk(row) {
-    mcRow = row;
-    var nm = row ? (row.getAttribute("data-name") || "") : "";
-    var qtyCell = row ? row.children[2] : null;
-    var qty = qtyCell ? qtyCell.textContent.trim() : "";
-    var txt = document.querySelector("[data-mc-activate-text]");
-    if (txt) txt.textContent = "Deep data will be collected for " + (qty && qty !== "—" ? qty + " channels of " : "") +
-      "«" + nm + "». Collecting takes a few minutes and counts against your plan limits.";
-    openModal("mcModal-activate");
-  }
-  function setRowStatus(row, status) {
-    if (!row) return;
-    var cell = row.children[1];
-    var holder = cell ? cell.querySelector(".mc-statuscell") : null;
-    if (holder) holder.innerHTML = statusHtml(status);
-    var more = row.querySelector("[data-mc-more]");
-    if (more) more.setAttribute("data-status", status);
+    var few = collChans(name) < 1;
+    return '<span class="mc-status mc-status--gray">' + AI_ICO.check +
+      '<span class="mc-status__t">' + CS_LBL.created + "</span>" +
+      (ro ? "" : '<span class="mc-status__sep"></span><button class="mc-status__link" type="button" data-mc-activate' +
+        (few ? ' disabled title="' + CS_TIP.needChannel + '"' : "") + ">Activate deep data</button>") + "</span>";
   }
   // общее количество коллекций — бейдж у All в переключателе типа
   // «своя» коллекция — та, где владелец «You»
@@ -2118,11 +2322,19 @@
       if (!menu) return;
       mcRow = moreBtn.closest("[data-mc-row]");
       var st = moreBtn.getAttribute("data-status");
-      // View deep data + Deactivate — только у активной коллекции
+      var mcNm = mcRow ? (mcRow.getAttribute("data-name") || "") : "";
+      // View deep data — только у собранной коллекции
       menu.querySelector('[data-mc-act="view"]').hidden = st !== "activated";
-      // активация тратит лимиты плана — только своя и ещё не активированная коллекция
-      menu.querySelector('[data-mc-act="activate"]').hidden = st === "activated" || st === "pending";
-      menu.querySelector('[data-mc-act="deactivate"]').hidden = st !== "activated";
+      // активация видна всегда, кроме уже активированной: если нельзя — объясняем тултипом
+      var actItem = menu.querySelector('[data-mc-act="activate"]');
+      actItem.hidden = st === "activated" || st === "deep";
+      var actTip = st === "sourcing" ? CS_TIP.deepWaitSourcing
+                 : collChans(mcNm) < 1 ? CS_TIP.needChannel : "";
+      if (actTip) { actItem.setAttribute("disabled", ""); actItem.title = actTip; }
+      else { actItem.removeAttribute("disabled"); actItem.removeAttribute("title"); }
+      // Deactivate = отмена сбора или возврат активированной коллекции в Created
+      var deact = menu.querySelector('[data-mc-act="deactivate"]');
+      deact.hidden = !(st === "activated" || st === "deep");
       // C1: чужую (sample) коллекцию нельзя менять — остаются просмотр и Duplicate
       var mine = !(mcRow && mcRow.hasAttribute("data-sample"));
       menu.querySelector('[data-mc-act="rename"]').hidden = !mine;
@@ -2263,41 +2475,26 @@
       return;
     }
     if (e.target.closest("[data-mc-deactivate-confirm]")) {
-      setRowStatus(mcRow, "inactive");
-      closeModals(); toast("Collection deactivated successfully");
+      var deName = mcRow ? (mcRow.getAttribute("data-name") || "") : "";
+      closeModals();
+      var wasDeep = collState(deName) === "deep";
+      collCancelDeep(deName);
+      toast(wasDeep ? "Deep data collection cancelled — “" + deName + "”"
+                    : "Deep data deactivated — “" + deName + "”");
       return;
     }
     // C4: Activate deep data — сначала подтверждение (это расход лимитов плана)
     var actBtn = e.target.closest("[data-mc-activate]");
     if (actBtn) { mcActivateAsk(actBtn.closest("[data-mc-row]")); return; }
     if (e.target.closest("[data-mc-activate-confirm]")) {
-      if (ceActivating) {                 // активация со страницы коллекции
-        ceActivating = false;
-        closeModals();
-        ceSetStatus("pending");
-        toast("Deep data activated successfully");
-        setTimeout(function () { ceSetStatus("activated"); }, 2500);
-        return;
-      }
-      var row = mcRow;
+      var actName = ceActivating ? ceName() : (mcRow ? mcRow.getAttribute("data-name") : "");
+      ceActivating = false;
       closeModals();
-      setRowStatus(row, "pending");
-      toast("Deep data activated successfully");
-      // AI collection: статус живёт в localStorage, иначе после перезагрузки откатится
-      var isAi = row && row.hasAttribute("data-ai-row");
-      var aiName = isAi ? row.getAttribute("data-name") : null;
-      setTimeout(function () {
-        if (isAi) {
-          var l = aiLoad();
-          l.forEach(function (x) { if (x.name === aiName) x.status = "activated"; });
-          aiSave(l);
-          aiRenderCollections();
-        } else {
-          setRowStatus(row, "activated");
-        }
-      }, 2500);
+      if (collActivateDeep(actName)) toast("Collecting deep data — “" + actName + "”");
       return;
     }
+    var mcCancel = e.target.closest("[data-mc-cancel]");
+    if (mcCancel) { collCancel(mcCancel.getAttribute("data-mc-cancel")); return; }
     // клик по названию коллекции в списке → страница открытой коллекции
     var nameCell = e.target.closest(".mc-name") || e.target.closest("[data-mc-row] .an-td--grow");
     if (nameCell && nameCell.closest("[data-mc-row]")) {
@@ -2384,7 +2581,14 @@
   // Мок без бэкенда: состояние в localStorage, «сборка» имитируется таймером (readyAt),
   // поэтому прогресс не теряется при переходах между страницами прототипа.
   var AI_KEY = "subsub_ai_collections";
-  var AI_STEP_MS = 15000;         // очередной канал приезжает раз в 15 секунд
+  // Демо-скорость: с localStorage.subsub_fast = "1" процессы идут в 10 раз быстрее —
+  // это нужно, чтобы показывать состояния на интервью, не ожидая минуты.
+  function demoFast() { try { return localStorage.getItem("subsub_fast") === "1"; } catch (e) { return false; } }
+  var AI_STEP_MS = demoFast() ? 1500 : 15000;   // очередной канал приезжает раз в 15 секунд
+  window.subsubFast = function (on) {
+    try { if (on === false) localStorage.removeItem("subsub_fast"); else localStorage.setItem("subsub_fast", "1"); } catch (e) {}
+    location.reload();
+  };
   var AI_ICO = {
     stars: '<svg viewBox="0 0 16 16" fill="none"><path d="M6.65952 6.11513L7.24284 4.07484C7.46142 3.31113 8.54378 3.31113 8.76236 4.07484L9.34502 6.11513C9.38191 6.2442 9.45108 6.36173 9.54599 6.45665C9.64091 6.55157 9.75845 6.62074 9.88751 6.65763L11.9278 7.24029C12.6915 7.45887 12.6915 8.54123 11.9278 8.75981L9.88751 9.34246C9.75845 9.37935 9.64091 9.44852 9.54599 9.54344C9.45108 9.63836 9.38191 9.7559 9.34502 9.88496L8.76236 11.9253C8.54378 12.689 7.46142 12.689 7.24284 11.9253L6.66018 9.88496C6.62329 9.7559 6.55412 9.63836 6.4592 9.54344C6.36429 9.44852 6.24675 9.37935 6.11768 9.34246L4.07739 8.75981C3.31368 8.54123 3.31368 7.45887 4.07739 7.24029L6.11768 6.65763C6.24675 6.62074 6.36429 6.55157 6.4592 6.45665C6.55412 6.36173 6.62329 6.2442 6.66018 6.11513M12.0213 10.9673C12.2116 10.4123 13.0115 10.4117 13.2011 10.9673L13.2182 11.0246L13.4131 11.8067L14.1952 12.0023C14.8273 12.1603 14.8273 13.057 14.1952 13.215L13.4131 13.4105L13.2182 14.1927C13.0602 14.8241 12.1628 14.8241 12.0048 14.1927L11.8093 13.4105L11.0272 13.215C10.3951 13.057 10.3951 12.1596 11.0272 12.0023L11.8093 11.8067L12.0048 11.0246L12.0213 10.9673ZM2.8041 1.74947C3.0003 1.17603 3.84762 1.19513 4.00102 1.80675L4.1959 2.5889L4.97804 2.78443C5.61008 2.94244 5.61008 3.83914 4.97804 3.99715L4.1959 4.19269L4.00102 4.97483C3.84301 5.60621 2.94565 5.60621 2.78764 4.97483L2.59211 4.19269L1.80996 3.99715C1.17793 3.83914 1.17793 2.94178 1.80996 2.78443L2.59211 2.5889L2.78764 1.80675L2.8041 1.74947Z" fill="currentColor"/></svg>',
     progress: '<svg viewBox="0 0 24 24" fill="none"><path d="M14.8356 3.24829H9.16564C5.87564 3.24829 5.62189 6.20579 7.39814 7.81579L16.6031 16.1808C18.3794 17.7908 18.1256 20.7483 14.8356 20.7483H9.16564C5.87564 20.7483 5.62189 17.7908 7.39814 16.1808L16.6031 7.81579C18.3794 6.20579 18.1256 3.24829 14.8356 3.24829Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>',
@@ -2431,23 +2635,31 @@
   }
 
   // --- топбар: пилюля «Sourcing channels…» + поповер со списком ---
+  // пилюля в шапке — только процессы: подбор каналов и сбор Deep data
   function aiRenderPill() {
     var dd = document.getElementById("ddProcessing");
     if (!dd) return;
-    var pending = aiLoad().filter(function (c) { return c.status === "pending"; });
-    if (!pending.length) { dd.hidden = true; return; }
+    var jobs = [];
+    aiLoad().forEach(function (c) {
+      if (c.status === "pending") jobs.push({ name: aiSourcingTarget(c), kind: CS_LBL.sourcing });
+    });
+    aiAllColls().forEach(function (c) {
+      if (collDeepState(c.name) === "collecting") jobs.push({ name: c.name, kind: CS_LBL.deep });
+    });
+    if (!jobs.length) { dd.hidden = true; return; }
     dd.hidden = false;
     var cnt = dd.querySelector("[data-dd-count]");
-    if (cnt) { cnt.textContent = String(pending.length); cnt.hidden = pending.length === 1; }
+    if (cnt) { cnt.textContent = String(jobs.length); cnt.hidden = jobs.length === 1; }
     var list = dd.querySelector("[data-dd-list]");
     if (list) {
-      list.innerHTML = pending.map(function (c, i) {
-        return '<li><div class="dd__item"><span class="dd__name">' + escHtml(c.name) + '</span>' +
+      list.innerHTML = jobs.map(function (j, i) {
+        return '<li><div class="dd__item"><span class="dd__name">' + escHtml(j.name) +
+               ' · <span class="dd__kind">' + j.kind + "</span></span>" +
                '<span class="dd__acts">' +
-                 '<button class="dd__cancel" type="button" data-dd-cancel="' + escHtml(c.id) + '">Cancel</button>' +
-                 '<a class="dd__view" href="analytics-deep-data.html?ai=' + encodeURIComponent(c.id) + '">View</a>' +
-               '</span></div>' +
-               (i < pending.length - 1 ? '<hr class="dd__sep" />' : '') + '</li>';
+                 '<button class="dd__cancel" type="button" data-dd-cancel-coll="' + escHtml(j.name) + '">Cancel</button>' +
+                 '<a class="dd__view" href="analytics-deep-data.html?coll=' + encodeURIComponent(j.name) + '">View</a>' +
+               "</span></div>" +
+               (i < jobs.length - 1 ? '<hr class="dd__sep" />' : "") + "</li>";
       }).join("");
     }
   }
@@ -2476,7 +2688,7 @@
       aiTimers[c.id] = setTimeout(function () { aiStep(c.id); }, Math.max(300, (c.readyAt || now) - now));
     });
     aiRenderPill();
-    ceSourcingSync();
+    ceStateSync();
   }
   function aiStep(id) {
     delete aiTimers[id];
@@ -2497,7 +2709,7 @@
     });
     aiSave(l2);
     if (name) ceOnSourced(target, name);
-    aiRenderPill(); aiRenderCollections(); ceSourcingSync();
+    aiRenderPill(); aiRenderCollections(); ceStateSync(); ddStateSync();
     if (done) {
       toast(rec.mode === "append"
         ? "Sourcing finished — " + added + " channel" + (added === 1 ? "" : "s") + " added to “" + target + "”"
@@ -2613,7 +2825,9 @@
     var list = all.filter(function (c) { return !q || c.name.toLowerCase().indexOf(q.toLowerCase()) !== -1; });
     box.innerHTML = list.map(function (c) {
       var on = !!ncSel[c.name];
-      return '<button class="nc-item' + (on ? " is-on" : "") + '" type="button" data-nc-item="' + escHtml(c.name) + '">' +
+      var off = !collCanEdit(c.name);
+      return '<button class="nc-item' + (on ? " is-on" : "") + '" type="button" data-nc-item="' + escHtml(c.name) + '"' +
+        (off ? ' disabled title="' + CS_TIP.editWaitDeep + '"' : "") + ">" +
         ncCheck(on) +
         '<span class="nc-item__name">' + escHtml(c.name) + "</span>" +
         '<span class="nc-item__qty">Channels in collection:&nbsp;' + (aiChannelsOf(c.name).length + (on ? ncLinks().length : 0)) + "</span>" +
@@ -2896,7 +3110,9 @@
     var list = all.filter(function (c) { return !q || c.name.toLowerCase().indexOf(q.toLowerCase()) !== -1; });
     box.innerHTML = list.map(function (c) {
       var on = !!acSel[c.name];
-      return '<button class="nc-item' + (on ? " is-on" : "") + '" type="button" data-ac-item="' + escHtml(c.name) + '">' +
+      var off = !collCanEdit(c.name);
+      return '<button class="nc-item' + (on ? " is-on" : "") + '" type="button" data-ac-item="' + escHtml(c.name) + '"' +
+        (off ? ' disabled title="' + CS_TIP.editWaitDeep + '"' : "") + ">" +
         ncCheck(on) +
         '<span class="nc-item__name">' + escHtml(c.name) + "</span>" +
         '<span class="nc-item__qty">Channels in collection:&nbsp;' + (aiChannelsOf(c.name).length + (on ? picked : 0)) + "</span>" +
@@ -2984,18 +3200,6 @@
   }
 
   // --- My collections: строки AI-коллекций (сверху списка) ---
-  function aiStatusHtml(status, id) {
-    if (status === "pending") {
-      // свой статус подбора — не путаем с «Collecting data» у активации Deep Data
-      return '<span class="mc-status mc-status--orange">' + AI_ICO.progress + '<span class="mc-status__t">Sourcing…</span></span>';
-    }
-    if (status === "activated") {
-      return '<span class="mc-status mc-status--green">' + AI_ICO.thumb + '<span class="mc-status__t">Activated</span>' +
-             '<span class="mc-status__sep"></span><a class="mc-status__link" href="analytics-deep-data.html?ai=' + encodeURIComponent(id) + '">View deep data</a></span>';
-    }
-    return '<span class="mc-status mc-status--gray">' + AI_ICO.check + '<span class="mc-status__t">Created</span>' +
-           '<span class="mc-status__sep"></span><button class="mc-status__link" type="button" data-mc-activate>Activate deep data</button></span>';
-  }
   // чипы Includes: до 2 каналов + «+N»
   function aiChipsHtml(c) {
     if (c.status === "pending") return '<span class="an-muted">—</span>';
@@ -3008,17 +3212,16 @@
   }
   // существующие коллекции, в которые сейчас идёт подбор: временно показываем «Sourcing…»,
   // после завершения возвращаем исходный статус и обновляем Quantity/Includes
-  // коллекцию могли активировать на её странице — в списке показываем сохранённый статус
-  function mcPaintSaved() {
-    var extra = aiExtraLoad(), rows = document.querySelectorAll("[data-mc-row]");
+  // состояние в списке всегда считаем из модели: и для строк сборки, и для AI-коллекций
+  function mcPaintStates() {
+    var rows = document.querySelectorAll("[data-mc-row]");
     for (var i = 0; i < rows.length; i++) {
-      var row = rows[i];
-      if (row.hasAttribute("data-ai-row")) continue;
-      var slot = extra[row.getAttribute("data-name")];
-      if (!slot || !slot.status) continue;
-      setRowStatus(row, slot.status);
+      var row = rows[i], nm = row.getAttribute("data-name") || "";
+      var holder = row.children[1] ? row.children[1].querySelector(".mc-statuscell") : null;
+      if (!holder || !nm) continue;
+      holder.innerHTML = collPillHtml(nm, { readonly: row.hasAttribute("data-sample") });
       var more = row.querySelector("[data-mc-more]");
-      if (more) more.setAttribute("data-status", slot.status);
+      if (more) more.setAttribute("data-status", collState(nm));
     }
   }
   function aiPaintTargets() {
@@ -3031,7 +3234,7 @@
       if (!holder) continue;
       if (busy[nm]) {
         if (row._origStatus == null) row._origStatus = holder.innerHTML;
-        holder.innerHTML = aiStatusHtml("pending");
+        holder.innerHTML = collPillHtml(nm);
       } else if (row._origStatus != null) {
         holder.innerHTML = row._origStatus;
         row._origStatus = null;
@@ -3081,8 +3284,8 @@
           '<span class="mc-name">' + escHtml(c.name) + '</span>' +
           (c.isAi ? '<span class="ai-badge ai-badge--sm" title="Channels found by AI sourcing">' +
             aiStarsIco() + "AI</span>" : "") + '</div>' +
-        '<div class="an-td" style="width:320px"><div class="mc-statuscell">' + aiStatusHtml(c.status, c.id) + '</div></div>' +
-        '<div class="an-td" style="width:120px">' + (c.status === "pending" ? "—" : String((c.channels || []).length)) + '</div>' +
+        '<div class="an-td" style="width:320px"><div class="mc-statuscell">' + collPillHtml(c.name) + '</div></div>' +
+        '<div class="an-td" style="width:120px">' + String(aiChannelsOf(c.name).length) + '</div>' +
 
         '<div class="an-td" style="width:140px">' + escHtml(c.created) + '</div>' +
         '<div class="an-td" style="width:160px"><span class="mc-owner"><span class="mc-ava" style="background:var(--color-avatar-1)">Y</span><span class="mc-owner__name">You</span></span></div>' +
@@ -3097,8 +3300,7 @@
         '</div>';
       tbody.insertBefore(row, tbody.firstChild);
     }
-    aiPaintTargets();
-    mcPaintSaved();
+    mcPaintStates();
     demoBlanks();
     if (typeof tblApply === "function" && tblBody("coll")) { tblApply("coll"); tblHug("coll"); }
     mcCountSync();
@@ -3770,6 +3972,12 @@
     var v = parseInt(el.value, 10);
     return isNaN(v) || v < 0 ? 0 : v;
   }
+  // вход в подбор по коллекции: одно правило для всех точек запуска
+  function collSourceGuard(name) {
+    var tip = collSourceBlockTip(name);
+    if (tip) { toast(tip); return false; }
+    return true;
+  }
   function aiSubmit() {
     var query = aiTxt("[data-ai-query]");
     var seedVal = aiTxt("[data-ai-seed]");
@@ -3963,7 +4171,10 @@
   // ---- добавление в активированную коллекцию: данные пойдут со дня добавления ----
   var awPending = null;
   function awAsk(names, targets, apply) {
-    var hot = targets.filter(function (t) { return collStatus(t) === "activated"; });
+    // состав не меняем, пока по коллекции идёт сбор Deep data
+    var locked = targets.filter(function (t) { return !collCanEdit(t); });
+    if (locked.length) { toast(CS_TIP.editWaitDeep); return; }
+    var hot = targets.filter(function (t) { return collState(t) === "activated"; });
     if (!hot.length || !document.getElementById("awModal")) { apply(); return; }
     awPending = { names: names, targets: targets, hot: hot, apply: apply };
     closeModals();
@@ -3984,12 +4195,14 @@
     awPending = null;
     closeModals();
     if (!p) return;
+    // исходная коллекция не меняется: копия со старым составом плюс новые каналы
     var made = p.hot.map(function (t) { return collDuplicate(t, p.names); });
     var rest = p.targets.filter(function (t) { return p.hot.indexOf(t) === -1; });
     if (rest.length) rest.forEach(function (t) { ncAppend(t, p.names); });
-    aiRenderCollections();
-    toast("«" + made.join("», «") + "» created with " + p.names.length +
-          (p.names.length === 1 ? " new channel" : " new channels") + " — activate deep data when ready");
+    made.forEach(function (nm) { collActivateDeep(nm); });   // копия сразу собирает Deep data
+    collSurfaces();
+    toast("“" + made.join("”, “") + "” created with " + p.names.length +
+          (p.names.length === 1 ? " new channel" : " new channels") + " — collecting deep data");
   }
   // ---- пока идёт подбор: бадж в шапке и строки-заглушки сверху таблицы ----
   function ceSkelRows() { return [].slice.call(document.querySelectorAll("[data-ce-skel]")); }
@@ -4013,14 +4226,31 @@
       body.insertBefore(row, body.firstChild);        // сортировка по дате: свежее сверху
     }
   }
-  function ceSourcingSync() {
-    var badge = document.querySelector("[data-ce-sourcing]");
+  // страница коллекции: плашка состояния, скелетоны подбора и доступность кнопок
+  function ceStateSync() {
+    var badge = document.querySelector("[data-ce-state]");
     if (!badge) return;                               // это не страница коллекции
-    var nm = ceName(), rec = null;
+    var nm = ceName(), st = collState(nm), rec = null;
     aiLoad().forEach(function (r) { if (r.status === "pending" && aiSourcingTarget(r) === nm) rec = r; });
-    badge.hidden = !rec;
+    badge.hidden = !(st === "sourcing" || st === "deep");
+    var t = badge.querySelector("[data-ce-state-t]");
+    if (t) t.textContent = st === "sourcing" ? CS_LBL.sourcing : CS_LBL.deep;
     ceSkelSet(rec ? Math.min(aiFoundLeft(rec).length, 8) : 0);
-    ceDeepSync();                                     // пока идёт подбор — активировать нельзя
+    // под собирающимся датасетом состав не меняем
+    var edit = collCanEdit(nm);
+    var add = document.querySelector("[data-nc-open]");
+    if (add) {
+      add.disabled = !edit;
+      if (edit) add.removeAttribute("title"); else add.title = CS_TIP.editWaitDeep;
+    }
+    [].slice.call(document.querySelectorAll("[data-ce-remove]")).forEach(function (b) {
+      b.disabled = !edit;
+      if (edit) b.removeAttribute("title"); else b.title = CS_TIP.editWaitDeep;
+    });
+    var dea = document.querySelector("[data-ce-deactivate]");
+    if (dea) dea.hidden = !(st === "activated" || st === "deep");
+    ceDeepSync();
+    ceAiSync();
   }
   // очередной подобранный канал: заглушка уступает место реальной строке
   function ceOnSourced(target, name) {
@@ -4488,13 +4718,18 @@
     return h ? h.textContent.trim() : "collection";
   }
   function ceSaved() { toast("Changes saved automatically"); }
-  function ceStatus() { return collStatus(ceName()); }
+  function ceStatus() { return collState(ceName()); }
   // AI-коллекция: состав собран подбором, а не руками
   function ceAiSync() {
     var b = document.querySelector("[data-ce-aibadge]");
     if (!b) return;
     var c = aiCollByName(ceName());
     b.hidden = !(c && c.isAi);
+  }
+  function ceDeactivate() {
+    var nm = ceName(), st = collState(nm);
+    collCancelDeep(nm);
+    toast(st === "deep" ? "Deep data collection cancelled — “" + nm + "”" : "Deep data deactivated — “" + nm + "”");
   }
   function ceSetStatus(status) {
     var nm = ceName(), list = aiLoad(), isAi = false;
@@ -4508,26 +4743,24 @@
     }
     ceDeepSync();
   }
-  // deep data смотрят только у активированной коллекции; пока идёт подбор активировать нельзя
+  // кнопка Deep data: смотреть, активировать или объяснить, почему сейчас нельзя
   function ceDeepSync() {
     var btn = document.querySelector("[data-ce-deep]");
     if (!btn) return;
     var lbl = btn.querySelector("[data-ce-deep-lbl]") || btn;
-    var st = ceStatus(), sourcing = !!aiSourcingNames()[ceName()];
+    var nm = ceName(), st = collState(nm);
     btn.disabled = false;
     btn.removeAttribute("title");
     if (st === "activated") { lbl.textContent = "View deep data"; return; }
-    if (st === "pending") {
-      lbl.textContent = "Collecting deep data";
+    if (st === "deep") {
+      lbl.textContent = CS_LBL.deep;
       btn.disabled = true;
-      btn.title = "Deep data is being collected — this takes a few minutes";
+      btn.title = "Deep data is being collected — open Deep data to see progress";
       return;
     }
     lbl.textContent = "Activate deep data";
-    if (sourcing) {
-      btn.disabled = true;
-      btn.title = "Wait until sourcing finishes";
-    }
+    if (st === "sourcing") { btn.disabled = true; btn.title = CS_TIP.deepWaitSourcing; return; }
+    if (collChans(nm) < 1) { btn.disabled = true; btn.title = CS_TIP.needChannel; }
   }
   function ceActivateAsk() {
     var txt = document.querySelector("[data-mc-activate-text]");
@@ -4872,6 +5105,7 @@
     openModal("ceConfirm");
   }
   function ceDoConfirm() {
+    if (ceAsk === "deactivate") { closeModals(); ceDeactivate(); return; }
     var nm = ceName();
     // отзыв доступа
     if (ceAsk === "revoke") {
@@ -4961,9 +5195,7 @@
       ceMarkSort();
     }
     ceLimitSync();
-    ceSourcingSync();
-    ceDeepSync();
-    ceAiSync();
+    ceStateSync();
     ceLoadMore();                       // добавленные в коллекцию каналы — сразу, без скролла
     // чужая коллекция (пришли из «Shared with me»): менять нечего — только дубликат и выход
     if (qs.get("shared") === "1") {
@@ -5003,5 +5235,8 @@
   flInit();                          // P1.13: панель открыта по умолчанию
   aiRenderCollectionView();
   ceInit();
+  deepTick();                        // сбор Deep data продолжается между страницами
+  ddStateSync();
+  mcPaintStates();
   demoInit();                        // версия новичка: пустые состояния вместо демо-данных
 })();

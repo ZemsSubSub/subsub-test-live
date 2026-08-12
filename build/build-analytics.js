@@ -1378,7 +1378,7 @@ const videosPanel = `
           <button class="an-search__clear" type="button" data-vid-search-clear aria-label="Clear search" hidden>${IC.close}</button>
         </div>
         <button class="an-btn an-btn--secondary" type="button" data-an-filters-toggle><span class="an-btn__ico">${IC.filter}<span class="an-btn__dot" data-an-filters-dot hidden></span></span>Filters</button>
-        <button class="an-btn an-btn--primary" type="button">${IC.export}Export</button>
+        <button class="an-btn an-btn--primary" type="button" data-an-export>${IC.export}Export</button>
       </section>
 
       <section class="an-pagi" data-an-table="video">
@@ -1453,7 +1453,7 @@ const deepInner = `
             'aria-checked="' + (sl === "all" ? "true" : "false") + '" data-an-ctype-set="' + sl + '">' + ico + lbl + '</button>';
         }).join("")}</div>
         ${deepColsPopover}
-        <button class="an-btn an-btn--primary" type="button">${IC.export}Export</button>
+        <button class="an-btn an-btn--primary" type="button" data-an-export>${IC.export}Export</button>
       </section>
 
       <section class="an-pagi" data-an-table="deep">
@@ -1490,6 +1490,15 @@ const deepInner = `
 
       <!-- бейджи применённых фильтров: рисуются из состояния панели -->
       <div class="an-fchips" data-an-fchips="deep" hidden></div>
+      <!-- коллекция не активирована или ещё собирается: вместо таблицы состояние с действием -->
+      <section class="an-blank dd-state" data-dd-state hidden>
+        <span class="an-blank__ico" aria-hidden="true">${IC.graph}</span>
+        <h2 class="an-blank__title" data-dd-state-title></h2>
+        <p class="an-blank__text" data-dd-state-text></p>
+        <div class="an-blank__bar" data-dd-state-bar hidden><span data-dd-state-fill></span></div>
+        <button class="an-btn an-btn--primary" type="button" data-dd-state-act hidden></button>
+      </section>
+
       <section class="an-tablewrap an-tablewrap--surface an-tablewrap--stick" data-an-tablewrap="deep">
         <div class="an-table" data-an-table-body="deep">
           <div class="an-thead">${deepHead}</div>
@@ -1877,8 +1886,8 @@ const editInner = `
             <h1 class="an-title" data-ce-title>Test Collection</h1>
             <!-- состав собран подбором — это видно и в списке, и здесь -->
             <span class="ai-badge ai-badge--sm" data-ce-aibadge hidden title="Channels found by AI sourcing">${IC.aiStarsSolid}AI</span>
-            <!-- подбор идёт: каналы приезжают по одному, бадж как в списке коллекций -->
-            <span class="mc-status mc-status--orange ce-sourcing" data-ce-sourcing hidden>${IC.progress}<span class="mc-status__t">Collecting data</span></span>
+            <!-- состояние коллекции: подбор каналов или сбор Deep data, с отменой -->
+            <span class="mc-status mc-status--orange ce-sourcing" data-ce-state hidden>${IC.progress}<span class="mc-status__t" data-ce-state-t></span><span class="mc-status__sep"></span><button class="mc-status__link" type="button" data-ce-cancel>Cancel</button></span>
             <!-- размер коллекции ограничен планом: счётчик, полоса и апгрейд — отдельным серфейсом -->
             <span class="ce-limit" data-ce-limit>
               <span class="ce-limit__v"><b data-ce-limit-used>0</b> of ${CE_LIMIT} channels</span>
