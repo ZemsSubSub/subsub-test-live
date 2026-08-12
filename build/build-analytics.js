@@ -788,17 +788,6 @@ const aiModalHtml = `
                 placeholder="https://www.youtube.com/@AZOV_Brigade&#10;https://www.youtube.com/@SuspilneNews"></textarea>
               <p class="nc-count">One-time addition of channels:&nbsp;<span class="nc-count__n"><span data-cc-links-count>0</span>/${NC_MAX_LINKS}</span></p>
             </div>
-            <div class="ai-field">
-              <label class="ai-lbl" for="ccFind">Or find a channel in our base</label>
-              <div class="ai-seedwrap">
-                <label class="ai-seed">
-                  <span class="ai-seed__ico" aria-hidden="true">${IC.search}</span>
-                  <input class="ai-seed__inp" id="ccFind" type="text" placeholder="Start typing a channel name" data-cc-find
-                    role="combobox" aria-expanded="false" aria-autocomplete="list" />
-                </label>
-                <div class="ai-refs__sug" data-cc-sug hidden role="listbox"></div>
-              </div>
-            </div>
           </div>
 
 

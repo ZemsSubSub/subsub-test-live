@@ -3511,7 +3511,7 @@
         ava + escHtml(n) + xIco + "</button>";
     }).join("");
   }
-  function ccPick(name) {
+  function ccPick(name) {                 // канал добавили вручную
     if (!name || ccPicked.indexOf(name) !== -1) return;
     ccPicked.push(name);
     ccPickedRender();
@@ -3521,31 +3521,6 @@
     ccPicked = ccPicked.filter(function (n) { return n !== name; });
     ccPickedRender();
     aiSync();
-  }
-  // поиск по базе с подсказками — как поле референсов в similar search
-  function ccSuggest() {
-    var inp = ccEl("[data-cc-find]"), box = ccEl("[data-cc-sug]");
-    if (!inp || !box) return;
-    var q = String(inp.value || "").trim().toLowerCase();
-    if (!q) { box.hidden = true; box.innerHTML = ""; return; }
-    var pool = (typeof aiChannelPool === "function" ? aiChannelPool() : []);
-    var hits = pool.filter(function (c) {
-      return c.name.toLowerCase().indexOf(q) !== -1 && ccPicked.indexOf(c.name) === -1;
-    }).slice(0, 6);
-    box.innerHTML = hits.length
-      ? hits.map(function (c) {
-          return '<button class="ai-refs__sugitem" type="button" role="option" data-cc-sug-pick="' + escHtml(c.name) + '">' +
-            '<span class="mc-ava" style="background:var(' + (c.color || "--color-avatar-3") + ')">' +
-              escHtml(c.initial || c.name.charAt(0)) + "</span>" +
-            '<span class="ai-refs__sugname">' + escHtml(c.name) + "</span>" +
-            '<span class="ai-refs__sugqty">' + escHtml(c.subs || "") + " subs</span></button>";
-        }).join("")
-      : '<div class="ai-refs__sugempty">No channels found</div>';
-    box.hidden = false;
-  }
-  function ccSugClose() {
-    var box = ccEl("[data-cc-sug]");
-    if (box) { box.hidden = true; box.innerHTML = ""; }
   }
   // «Create collection from N channels» из плашки выбора
   function ccFromSelection() {
@@ -3581,19 +3556,17 @@
     var avail = left === Infinity ? Infinity : Math.max(0, left - picked);
     var msg = "";
     if (!planCollsLeft()) {
-      msg = "You've used all <b>" + planFmt(p.colls) + "</b> collections on the <b>" + p.label +
-            "</b> plan. Upgrade to create more, or add channels to a collection you already have.";
+      msg = "All <b>" + planFmt(p.colls) + "</b> collections used on <b>" + p.label +
+            "</b> — upgrade, or add channels to an existing one.";
     } else if (left === Infinity) {
       msg = "";
     } else if (ccTab === "ai") {
-      msg = "We'll find up to <b>" + avail + "</b> channel" + (avail === 1 ? "" : "s") +
-            (dest ? " — " + aiChannelsOf(dest).length + " of " + planFmt(p.chans) + " seats used in “" + dest + "”" :
-                    " — the <b>" + p.label + "</b> plan fits " + planFmt(p.chans) + " per collection") + ".";
+      msg = "<b>" + p.label + "</b> plan: we'll find up to <b>" + avail + "</b> of " +
+            planFmt(p.chans) + " channels" + (dest ? " for “" + dest + "”" : "") + ".";
     } else {
       msg = picked > left
-        ? "Only <b>" + left + "</b> of " + picked + " channels will be added — the <b>" + p.label +
-          "</b> plan fits " + planFmt(p.chans) + " per collection."
-        : "<b>" + avail + "</b> of " + planFmt(p.chans) + " seats left in this collection on the <b>" + p.label + "</b> plan.";
+        ? "<b>" + p.label + "</b> plan: only <b>" + left + "</b> of " + picked + " channels will be added."
+        : "<b>" + p.label + "</b> plan: <b>" + avail + "</b> of " + planFmt(p.chans) + " seats left.";
     }
     box.hidden = !msg;
     txt.innerHTML = msg;
@@ -3614,8 +3587,6 @@
     aiRenderDest();
     ccPicked = [];
     ccPickedRender();
-    ccSugClose();
-    var ccF = ccEl("[data-cc-find]"); if (ccF) ccF.value = "";
     // сброс входа «Ссылки»
     var ccTa = ccEl("[data-cc-links]"); if (ccTa) ccTa.value = "";
     var ccC = ccEl("[data-cc-links-count]"); if (ccC) ccC.textContent = "0";
@@ -3629,7 +3600,6 @@
   document.addEventListener("input", function (e) {
     if (e.target.closest("[data-anf-text],[data-anf-from],[data-anf-to]")) { flTouch(); return; }
     if (e.target.closest("[data-cc-links]")) { aiSync(); return; }
-    if (e.target.closest("[data-cc-find]")) { ccSuggest(); return; }
     if (e.target.closest("[data-ce-search]")) { ceSearchApply(); return; }
     if (e.target.closest("[data-ce-share-search]")) { ceShareSuggest(e.target.value); return; }
     if (e.target.closest("[data-rp-search]")) { repTargetFill(e.target.value); return; }
@@ -3715,16 +3685,8 @@
       toast(rec ? "Sourcing of “" + rec.name + "” canceled" : "Sourcing canceled");
       return;
     }
-    var ccSug = e.target.closest("[data-cc-sug-pick]");
-    if (ccSug) {
-      ccPick(ccSug.getAttribute("data-cc-sug-pick"));
-      var ccFi = ccEl("[data-cc-find]"); if (ccFi) ccFi.value = "";
-      ccSugClose();
-      return;
-    }
     var ccUn = e.target.closest("[data-cc-unpick]");
     if (ccUn) { ccUnpick(ccUn.getAttribute("data-cc-unpick")); return; }
-    if (!e.target.closest("[data-cc-find]") && !e.target.closest("[data-cc-sug]")) ccSugClose();
     var ccT = e.target.closest("[data-cc-tab]");
     if (ccT) { ccSetTab(ccT.getAttribute("data-cc-tab")); return; }
     if (e.target.closest("[data-cc-upgrade]")) { toast("Upgrade request sent — our team will contact you"); return; }
