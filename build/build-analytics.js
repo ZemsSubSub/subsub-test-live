@@ -356,6 +356,9 @@ function collSel(key, val, ph) {
     '<div class="anf-menu an-collsel__menu" data-an-collsel-menu hidden role="listbox">' +
       '<div class="anf-search">' + IC.search + '<input type="text" placeholder="Search" data-an-collsel-search /></div>' +
       '<div class="anf-opts" data-an-collsel-opts></div>' +
+      // создать коллекцию можно прямо из селектора: искали и не нашли — заводим новую
+      '<div class="anf-menu__foot"><button class="anf-opt anf-opt--new" type="button" data-an-collsel-new>' +
+        IC.plus + 'Create collection</button></div>' +
     '</div>' +
   '</span>';
 }
@@ -696,15 +699,6 @@ const acModalHtml = `
           <button class="an-modal__x" type="button" data-ac-close aria-label="Close">${IC.closeBold}</button>
         </header>
         <div class="an-modal__body nc-body">
-          <button class="an-btn an-btn--tertiary an-btn--small nc-newbtn" type="button" data-ac-new-open>${IC.plus}Create new collection</button>
-          <div class="nc-newform" data-ac-new-form hidden>
-            <label class="an-label" for="acNewName">Collection name</label>
-            <input class="an-input" id="acNewName" type="text" placeholder="Collection name" data-ac-new-name />
-            <div class="nc-newform__foot">
-              <button class="an-btn an-btn--link an-btn--small" type="button" data-ac-new-cancel>Cancel</button>
-              <button class="an-btn an-btn--secondary an-btn--small" type="button" data-ac-new-submit>Create</button>
-            </div>
-          </div>
           <section class="nc-list">
             <h3 class="nc-list__title">Add to collection</h3>
             <div class="an-search nc-search" data-ac-search-wrap hidden>
@@ -738,6 +732,12 @@ const aiModalHtml = `
           <p class="ai-sub">${AI_MODAL_SUB}</p>
         </header>
         <div class="an-modal__body ai-form">
+          <!-- сколько каналов влезет на текущем тарифе + инлайн-апселл -->
+          <div class="cc-limit" data-cc-limit hidden>
+            <span class="cc-limit__t" data-cc-limit-text></span>
+            <button class="cc-limit__up" type="button" data-cc-upgrade>${IC.rocket}Upgrade plan</button>
+          </div>
+
           <!-- Назначение: куда попадут найденные каналы.
                Случай 1 (коллекций ещё нет) — только поле имени новой коллекции.
                Случай 2 (коллекции есть) — дропдаун выбора + чёрная кнопка «+». -->
@@ -770,6 +770,12 @@ const aiModalHtml = `
                предзаполнен выбранными в таблице. Любое изменение набора перезапускает подбор описания. -->
           <!-- три входа в одну коллекцию: ссылки, каталог базы и описание для ИИ.
                Переключение таба ничего не сбрасывает — всё уходит в одну коллекцию. -->
+          <!-- каналы, добавленные вручную: из выбора в таблице и из поиска по базе -->
+          <div class="ai-field cc-picked" data-cc-picked hidden>
+            <span class="ai-lbl">Channels<span class="nc-ai__cnt" data-cc-picked-count>0</span></span>
+            <div class="cc-picked__list" data-cc-picked-list></div>
+          </div>
+
           <nav class="nc-seg cc-seg" data-cc-tabs>
             <button class="nc-seg__btn is-active" type="button" data-cc-tab="ai">Describe with AI</button>
             <button class="nc-seg__btn" type="button" data-cc-tab="links">Paste links</button>
@@ -781,6 +787,17 @@ const aiModalHtml = `
               <textarea class="an-input nc-textarea" id="ccLinks" rows="4" data-cc-links
                 placeholder="https://www.youtube.com/@AZOV_Brigade&#10;https://www.youtube.com/@SuspilneNews"></textarea>
               <p class="nc-count">One-time addition of channels:&nbsp;<span class="nc-count__n"><span data-cc-links-count>0</span>/${NC_MAX_LINKS}</span></p>
+            </div>
+            <div class="ai-field">
+              <label class="ai-lbl" for="ccFind">Or find a channel in our base</label>
+              <div class="ai-seedwrap">
+                <label class="ai-seed">
+                  <span class="ai-seed__ico" aria-hidden="true">${IC.search}</span>
+                  <input class="ai-seed__inp" id="ccFind" type="text" placeholder="Start typing a channel name" data-cc-find
+                    role="combobox" aria-expanded="false" aria-autocomplete="list" />
+                </label>
+                <div class="ai-refs__sug" data-cc-sug hidden role="listbox"></div>
+              </div>
             </div>
           </div>
 
@@ -865,11 +882,6 @@ const aiModalHtml = `
           </details>
           </div>
 
-          <!-- сколько каналов влезет на текущем тарифе + инлайн-апселл -->
-          <div class="cc-limit" data-cc-limit hidden>
-            <span class="cc-limit__t" data-cc-limit-text></span>
-            <button class="cc-limit__up" type="button" data-cc-upgrade>${IC.rocket}Upgrade plan</button>
-          </div>
         </div>
         <div class="an-modal__foot">
           <button class="an-btn an-btn--plain an-btn--huge" type="button" data-ai-close>Cancel</button>
@@ -930,7 +942,9 @@ const mainInner = `
 
     <div class="an-footer" data-an-footer hidden>
       <div class="an-footer__inner">
-        <button class="an-btn an-btn--primary an-btn--small" type="button" data-an-footer-btn>Add 1 channel to collection</button>
+        <!-- добавить в существующую и создать новую — разные действия -->
+        <button class="an-btn an-btn--secondary an-btn--small" type="button" data-an-footer-btn>Add 1 channel to collection</button>
+        <button class="an-btn an-btn--primary an-btn--small" type="button" data-cc-from-sel>${IC.plus}<span data-cc-from-sel-lbl>Create collection from 1 channel</span></button>
         <!-- второй вход в тот же флоу автоподбора: выбранные каналы становятся референсами -->
         <button class="an-btn an-btn--secondary an-btn--small" type="button" data-ai-similar>${IC.aiStarsSolid}Find similar channels</button>
         <button class="an-footer__close" type="button" data-an-footer-close aria-label="Clear channels selection">${IC.closeBold}</button>
@@ -1462,7 +1476,8 @@ const deepInner = `
     <!-- B2: массовые действия по выбранным каналам коллекции -->
     <div class="an-footer" data-an-footer hidden>
       <div class="an-footer__inner">
-        <button class="an-btn an-btn--primary an-btn--small" type="button" data-ac-open><span data-dp-add-lbl>Add 1 channel to collection</span></button>
+        <button class="an-btn an-btn--secondary an-btn--small" type="button" data-ac-open><span data-dp-add-lbl>Add 1 channel to collection</span></button>
+        <button class="an-btn an-btn--primary an-btn--small" type="button" data-cc-from-sel>${IC.plus}<span data-cc-from-sel-lbl>Create collection from 1 channel</span></button>
         <button class="an-btn an-btn--secondary an-btn--small" type="button" data-dp-pin><span data-dp-pin-lbl>Pin on top</span></button>
         <button class="an-btn an-btn--danger an-btn--small" type="button" data-dp-remove>${IC.trash}<span data-dp-remove-lbl>Remove 1 channel</span></button>
         <button class="an-footer__close" type="button" data-an-footer-close aria-label="Clear channels selection">${IC.closeBold}</button>

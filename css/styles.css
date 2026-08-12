@@ -2526,6 +2526,16 @@ body.is-open:not(.is-collapsed) .main { margin-left: 306px; }
 /* --- Create collection: три входа в одну коллекцию --- */
 .cc-seg { margin: 0; max-width: none; }
 .cc-pane { display: flex; flex-direction: column; gap: 24px; }
+/* каналы, добавленные вручную: чипы с удалением */
+.cc-picked__list { display: flex; flex-wrap: wrap; gap: 8px; }
+.cc-picked .nc-ai__cnt { margin-left: 6px; }
+.cc-chip { display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 6px 0 4px; border: 0;
+  border-radius: 9999px; background: var(--color-shade-100); font-family: inherit; font-size: 13px;
+  color: var(--color-black); cursor: pointer; }
+.cc-chip .mc-ava { width: 20px; height: 20px; font-size: 10px; }
+.cc-chip svg { width: 14px; height: 14px; color: var(--color-shade-700); }
+.cc-chip:hover { background: var(--color-shade-200); }
+.cc-chip:hover svg { color: var(--color-black); }
 .cc-pane[hidden] { display: none; }
 .cc-pane .nc-base { max-height: 260px; }
 /* подсказка про лимит тарифа + апселл */
@@ -2936,6 +2946,9 @@ body.filters-open .an-filters.is-active { display: flex; }
 .anf-opt:hover { background: var(--color-shade-100); }
 .anf-opt.is-selected { background: var(--color-shade-100); font-weight: 600; }
 .anf-empty { padding: 10px; font-size: 13px; color: var(--color-shade-700); }
+.anf-menu__foot { flex: 0 0 auto; padding: 4px; border-top: 1px solid var(--color-shade-200); }
+.anf-opt--new { gap: 6px; font-weight: 500; }
+.anf-opt--new svg { width: 16px; height: 16px; color: var(--color-black); flex-shrink: 0; }
 
 /* Growth period (P1.2): значение + календарь + чипы 7/30/90 */
 .anf-period { display: flex; flex-direction: column; gap: 8px; }

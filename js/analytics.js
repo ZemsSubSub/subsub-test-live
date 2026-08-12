@@ -11,6 +11,8 @@
     if (!footer) return;
     if (n > 0) {
       footer.hidden = false;
+      var fromSel = footer.querySelector("[data-cc-from-sel-lbl]");
+      if (fromSel) fromSel.textContent = "Create collection from " + n + (n === 1 ? " channel" : " channels");
       var btn = footer.querySelector("[data-an-footer-btn]");
       if (btn) btn.textContent = "Add " + n + " channel" + (n === 1 ? "" : "s") + " to collection";
     } else {
@@ -356,7 +358,12 @@
       csClear(e.target.closest("[data-an-collsel]"));
       return;
     }
-    if (e.target.closest("[data-an-collsel-all]")) {           // A3: All channels
+    if (e.target.closest("[data-an-collsel-new]")) {           // создание коллекции из селектора
+      csOpen(null, false);
+      aiOpen();
+      return;
+    }
+    if (e.target.closest("[data-an-collsel-all]")) {           // A3: All collections
       csPickAll(e.target.closest("[data-an-collsel]"));
       return;
     }
@@ -386,10 +393,8 @@
     }
     // --- A8: футер «Add N channels to collection» ---
     if (e.target.closest("[data-an-footer-btn]")) { acOpen(); return; }
+    if (e.target.closest("[data-cc-from-sel]")) { ccFromSelection(); return; }
     if (e.target.closest("[data-ac-close]")) { closeModal(document.getElementById("acModal")); return; }
-    if (e.target.closest("[data-ac-new-open]")) { acNewForm(true); return; }
-    if (e.target.closest("[data-ac-new-cancel]")) { acNewForm(false); return; }
-    if (e.target.closest("[data-ac-new-submit]")) { acCreate(); return; }
     if (e.target.closest("[data-ac-submit]")) { acSubmit(); return; }
     var acIt = e.target.closest("[data-ac-item]");
     if (acIt) {
@@ -608,6 +613,8 @@
     footer.hidden = !picked.length;
     var lbl = footer.querySelector("[data-dp-remove-lbl]");
     if (lbl) lbl.textContent = "Remove " + picked.length + (picked.length === 1 ? " channel" : " channels");
+    var fromSel2 = footer.querySelector("[data-cc-from-sel-lbl]");
+    if (fromSel2) fromSel2.textContent = "Create collection from " + n + (n === 1 ? " channel" : " channels");
     var addLbl = footer.querySelector("[data-dp-add-lbl]");
     if (addLbl) addLbl.textContent = "Add " + picked.length + (picked.length === 1 ? " channel" : " channels") + " to collection";
     var pinLbl = footer.querySelector("[data-dp-pin-lbl]");
@@ -855,7 +862,7 @@
     });
     // A3: на Basic data первым пунктом «All channels» — сброс фильтра по коллекции
     var head = (key === "basic" && !s)
-      ? '<button class="anf-opt' + (cur ? "" : " is-selected") + '" type="button" role="option" data-an-collsel-all>All channels</button>'
+      ? '<button class="anf-opt' + (cur ? "" : " is-selected") + '" type="button" role="option" data-an-collsel-all>All collections</button>'
       : "";
     box.innerHTML = head + (list.map(function (c) {
       var qty = '<span class="anf-opt__qty">' + csCount(key, c.name) + "</span>";
@@ -3472,17 +3479,84 @@
 
   // ---- три входа модалки Create collection: ссылки, база, промпт ----
   var ccTab = "ai";                       // первый вход — описание для ИИ
+  var ccPicked = [];                      // каналы вручную: выбор в таблице + поиск по базе                       // первый вход — описание для ИИ
   function ccEl(sel) { var m = document.getElementById("aiModal"); return m ? m.querySelector(sel) : null; }
   function ccLinks() {
     var ta = ccEl("[data-cc-links]");
     if (!ta) return [];
     return String(ta.value || "").split(/[\n,;]+/).map(function (s) { return s.trim(); }).filter(Boolean);
   }
-  // каналы из вставленных ссылок, без повторов
+  // каналы для новой коллекции: добавленные вручную + вставленные ссылки, без повторов
   function ccManual() {
-    var out = [];
+    var out = ccPicked.slice();
     ccLinks().map(ncNameFromLink).forEach(function (n) { if (out.indexOf(n) === -1) out.push(n); });
     return out;
+  }
+  function ccChanMeta(name) {
+    var pool = (typeof aiChannelPool === "function" ? aiChannelPool() : []);
+    for (var i = 0; i < pool.length; i++) if (pool[i].name === name) return pool[i];
+    return null;
+  }
+  function ccPickedRender() {
+    var box = ccEl("[data-cc-picked]"), list = ccEl("[data-cc-picked-list]"), cnt = ccEl("[data-cc-picked-count]");
+    if (!box || !list) return;
+    box.hidden = !ccPicked.length;
+    if (cnt) cnt.textContent = String(ccPicked.length);
+    var xIco = (typeof AI_ICO === "object" && AI_ICO.x) || "";
+    list.innerHTML = ccPicked.map(function (n) {
+      var meta = ccChanMeta(n);
+      var ava = '<span class="mc-ava" style="background:var(' + ((meta && meta.color) || "--color-avatar-3") + ')">' +
+        escHtml((meta && meta.initial) || n.charAt(0)) + "</span>";
+      return '<button class="cc-chip" type="button" data-cc-unpick="' + escHtml(n) + '" title="Remove">' +
+        ava + escHtml(n) + xIco + "</button>";
+    }).join("");
+  }
+  function ccPick(name) {
+    if (!name || ccPicked.indexOf(name) !== -1) return;
+    ccPicked.push(name);
+    ccPickedRender();
+    aiSync();
+  }
+  function ccUnpick(name) {
+    ccPicked = ccPicked.filter(function (n) { return n !== name; });
+    ccPickedRender();
+    aiSync();
+  }
+  // поиск по базе с подсказками — как поле референсов в similar search
+  function ccSuggest() {
+    var inp = ccEl("[data-cc-find]"), box = ccEl("[data-cc-sug]");
+    if (!inp || !box) return;
+    var q = String(inp.value || "").trim().toLowerCase();
+    if (!q) { box.hidden = true; box.innerHTML = ""; return; }
+    var pool = (typeof aiChannelPool === "function" ? aiChannelPool() : []);
+    var hits = pool.filter(function (c) {
+      return c.name.toLowerCase().indexOf(q) !== -1 && ccPicked.indexOf(c.name) === -1;
+    }).slice(0, 6);
+    box.innerHTML = hits.length
+      ? hits.map(function (c) {
+          return '<button class="ai-refs__sugitem" type="button" role="option" data-cc-sug-pick="' + escHtml(c.name) + '">' +
+            '<span class="mc-ava" style="background:var(' + (c.color || "--color-avatar-3") + ')">' +
+              escHtml(c.initial || c.name.charAt(0)) + "</span>" +
+            '<span class="ai-refs__sugname">' + escHtml(c.name) + "</span>" +
+            '<span class="ai-refs__sugqty">' + escHtml(c.subs || "") + " subs</span></button>";
+        }).join("")
+      : '<div class="ai-refs__sugempty">No channels found</div>';
+    box.hidden = false;
+  }
+  function ccSugClose() {
+    var box = ccEl("[data-cc-sug]");
+    if (box) { box.hidden = true; box.innerHTML = ""; }
+  }
+  // «Create collection from N channels» из плашки выбора
+  function ccFromSelection() {
+    var names = (typeof acChecked === "function" ? acChecked() : []).filter(Boolean);
+    if (!names.length) return;
+    aiOpen();
+    ccPicked = names.slice();
+    ccPickedRender();
+    var nm = ccEl("[data-ai-name]");
+    if (nm && !nm.value) nm.value = names[0] + (names.length > 1 ? " +" + (names.length - 1) : "");
+    aiSync();
   }
   function ccSetTab(tab) {
     ccTab = tab;
@@ -3537,6 +3611,10 @@
     var ta0 = aiTa(); if (ta0) ta0.value = "";
     aiRenderRefs();
     aiRenderDest();
+    ccPicked = [];
+    ccPickedRender();
+    ccSugClose();
+    var ccF = ccEl("[data-cc-find]"); if (ccF) ccF.value = "";
     // сброс входа «Ссылки»
     var ccTa = ccEl("[data-cc-links]"); if (ccTa) ccTa.value = "";
     var ccC = ccEl("[data-cc-links-count]"); if (ccC) ccC.textContent = "0";
@@ -3550,6 +3628,7 @@
   document.addEventListener("input", function (e) {
     if (e.target.closest("[data-anf-text],[data-anf-from],[data-anf-to]")) { flTouch(); return; }
     if (e.target.closest("[data-cc-links]")) { aiSync(); return; }
+    if (e.target.closest("[data-cc-find]")) { ccSuggest(); return; }
     if (e.target.closest("[data-ce-search]")) { ceSearchApply(); return; }
     if (e.target.closest("[data-ce-share-search]")) { ceShareSuggest(e.target.value); return; }
     if (e.target.closest("[data-rp-search]")) { repTargetFill(e.target.value); return; }
@@ -3635,6 +3714,16 @@
       toast(rec ? "Sourcing of “" + rec.name + "” canceled" : "Sourcing canceled");
       return;
     }
+    var ccSug = e.target.closest("[data-cc-sug-pick]");
+    if (ccSug) {
+      ccPick(ccSug.getAttribute("data-cc-sug-pick"));
+      var ccFi = ccEl("[data-cc-find]"); if (ccFi) ccFi.value = "";
+      ccSugClose();
+      return;
+    }
+    var ccUn = e.target.closest("[data-cc-unpick]");
+    if (ccUn) { ccUnpick(ccUn.getAttribute("data-cc-unpick")); return; }
+    if (!e.target.closest("[data-cc-find]") && !e.target.closest("[data-cc-sug]")) ccSugClose();
     var ccT = e.target.closest("[data-cc-tab]");
     if (ccT) { ccSetTab(ccT.getAttribute("data-cc-tab")); return; }
     if (e.target.closest("[data-cc-upgrade]")) { toast("Upgrade request sent — our team will contact you"); return; }
