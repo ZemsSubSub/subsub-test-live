@@ -376,8 +376,8 @@ function filtersPanel(key, inner) {
 
 // наборы полей: на каждой странице свой (P1.13)
 const FILTERS_BASIC = filtersPanel("basic",
-  // коллекция выбирается пилюлей у счётчика, в панели её нет
-  fSearch("title", "Search in title", "Search by channel title") +
+  // коллекция выбирается пилюлей у счётчика, в панели её нет;
+  // поиск по названию тоже не дублируем — он есть в строке поиска страницы
   fSelect("topic", "YouTube topic", "Select topic", TOPIC_LIST) +
   fSelect("country", "YouTube country", "Select country", COUNTRY_LIST) +
   fSelect("language", "Detected Language", "Select language", LANG_LIST)
@@ -887,24 +887,8 @@ const mainInner = `
 
       <section class="an-searchrow">
         <div class="an-search">
-          <div class="an-mode" data-an-mode>
-            <button class="an-mode__trig" type="button" data-an-mode-toggle>${IC.aiSearch}<span class="an-mode__label">AI semantic search</span><span class="an-mode__chev">${IC.chevDown}</span></button>
-            <div class="an-mode__menu" data-an-mode-menu hidden>
-              <div class="an-mode__title">Search mode</div>
-              <div class="an-mode__opts">
-                <button class="an-mode__opt is-selected" type="button" data-an-mode-opt="semantic">
-                  <div class="an-mode__optrow">${IC.aiStars}<span>AI semantic search</span><span class="an-mode__badge">${IC.defaultBadge}</span></div>
-                  <div class="an-mode__desc">Search by meaning and topic. Example: "travel" find travel channels even without the word in titles.</div>
-                </button>
-                <button class="an-mode__opt" type="button" data-an-mode-opt="traditional">
-                  <div class="an-mode__optrow">${IC.search}<span>Traditional search</span></div>
-                  <div class="an-mode__desc">Exact match by channel name, link or UC id.</div>
-                </button>
-              </div>
-            </div>
-          </div>
-          <span class="an-search__divider"></span>
-          <input class="an-search__input" type="text" placeholder="Describe what you are looking for (e.g. travel, cooking, tech)" data-an-search />
+          ${IC.search}
+          <input class="an-search__input" type="text" placeholder="Search by YouTube channel name, link or UC" data-an-search />
           <button class="an-search__clear" type="button" data-an-search-clear hidden>${IC.close}</button>
         </div>
         <div class="an-searchbtns">
