@@ -1782,7 +1782,7 @@ function ceLinkCell(name, i) {
 // каналы коллекции берём из того же каталога, что и Basic data: первая порция приходит
 // со сборкой (её должно быть больше высоты бокса, чтобы был виден скролл), остальное
 // клиент догружает батчами при прокрутке
-const CE_ROWS = ROWS.slice(0, 14).map(function (r, i) {
+const CE_ROWS = ROWS.slice(0, 18).map(function (r, i) {
   return [r[0], r[1], AVA[i % AVA.length], r[7], r[6], r[2], r[5]];
 });
 const ceHead = '<div class="an-tr an-tr--head">' + CE_COLS.map(function (c) {

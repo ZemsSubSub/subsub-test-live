@@ -4684,62 +4684,31 @@
       (tops.length > 1 ? '<span class="an-topic__more" data-an-topics-more="' + escHtml(tops.join("|")) + '">+' +
         (tops.length - 1) + '</span>' : "") + '</span>';
   }
-  function ceRowHtml(c, i) {
-    var color = c.color || "--color-avatar-1";
-    return '<div class="an-tr" data-ce-row>' +
-      '<div class="an-td an-td--check" style="width:40px"><button class="an-check" type="button" data-an-check aria-label="Select"></button></div>' +
-      '<div class="an-td"><span class="ce-chan"><span class="mc-ava ce-ava" style="background:var(' + color + ')">' +
-        escHtml(c.initial || (c.name || "?").charAt(0)) + '</span><a class="ce-chan__name" href="analytics-channel.html?name=' +
-        encodeURIComponent(c.name) + '">' + escHtml(c.name) + '</a></span></div>' +
-      '<div class="an-td ce-added" style="width:110px">' + escHtml(c.added || "—") + '</div>' +
-      '<div class="an-td ce-num" style="width:100px">' + escHtml(c.subs || "—") + '</div>' +
-      '<div class="an-td ce-num" style="width:100px">' + escHtml(c.views || "—") + '</div>' +
-      '<div class="an-td ce-linkcell" style="width:190px">' +
-        '<a class="ce-view" href="' + ceUrl(c.name) + '" target="_blank" rel="noopener" title="' + ceUrl(c.name) + '">' +
-          escHtml(ceUrl(c.name).replace(/^https?:\/\/(www\.)?/, "")) + '</a>' +
-        '<button class="ce-copy" type="button" data-ce-copy="' + ceUrl(c.name) + '" aria-label="Copy link" title="Copy link"></button>' +
-      '</div>' +
-      '<div class="an-td an-td--topics" style="width:130px">' + ceTopicsHtml(c.topics) + '</div>' +
-      '<div class="an-td" style="width:56px"><button class="ce-trash" type="button" aria-label="Remove channel" data-ce-remove></button></div>' +
-    '</div>';
+  // Состав коллекции фиксирован: скролл ничего не добавляет, а лишь дорисовывает каналы,
+  // которые уже есть в коллекции (пришли подбором или вручную), если страницу открыли позже.
+  function ceMoreDone() {
+    var more = document.querySelector("[data-ce-more]");
+    if (!more) return;
+    more.hidden = false;
+    var t = more.querySelector("[data-ce-more-txt]");
+    if (t) t.textContent = "All channels loaded";
+    more.classList.add("is-done");
   }
   function ceLoadMore() {
     if (ceLoading || ceDone) return;
-    var body = document.querySelector("[data-ce-tbody]"), more = document.querySelector("[data-ce-more]");
+    var body = document.querySelector("[data-ce-tbody]");
     if (!body) return;
     var have = ceRowNames();
-    var pool = (typeof aiChannelPool === "function" ? aiChannelPool() : []).filter(function (c) {
-      return have.indexOf(c.name) === -1;
-    }).slice(0, ceLimitLeft());       // в коллекции не может быть больше CE_LIMIT каналов
-    if (!pool.length) {
-      ceDone = true;
-      if (more) { more.hidden = false; var t0 = more.querySelector("[data-ce-more-txt]"); if (t0) t0.textContent = "All channels loaded"; more.classList.add("is-done"); }
-      return;
-    }
+    var left = aiChannelsOf(ceName()).filter(function (n) { return have.indexOf(n) === -1; }).slice(0, ceLimitLeft());
+    if (!left.length) { ceDone = true; ceMoreDone(); return; }
     ceLoading = true;
+    var more = document.querySelector("[data-ce-more]");
     if (more) more.hidden = false;
-    // имитация запроса: иконки берём из уже отрисованной строки, чтобы не дублировать SVG
     setTimeout(function () {
-      var chkIco = (document.querySelector("[data-ce-row] [data-an-check]") || {}).innerHTML || "";
-      var trashIco = (document.querySelector("[data-ce-row] [data-ce-remove]") || {}).innerHTML || "";
-      var copyIco = (document.querySelector("[data-ce-row] [data-ce-copy]") || {}).innerHTML || "";
-      var html = pool.slice(0, CE_BATCH).map(ceRowHtml).join("");
-      var tmp = document.createElement("div");
-      tmp.innerHTML = html;
-      [].slice.call(tmp.children).forEach(function (row) {
-        var c = row.querySelector("[data-an-check]"); if (c) c.innerHTML = chkIco;
-        var t = row.querySelector("[data-ce-remove]"); if (t) t.innerHTML = trashIco;
-        var cp = row.querySelector("[data-ce-copy]"); if (cp) cp.innerHTML = copyIco;
-        body.appendChild(row);
-      });
-      ceSortApply();                      // догруженные строки встают в текущий порядок
-      ceLimitSync();
+      ceAddRows(left.slice(0, CE_BATCH));
       ceLoading = false;
-      if (more) more.hidden = true;
-      if (pool.length <= CE_BATCH) {
-        ceDone = true;
-        if (more) { more.hidden = false; var t2 = more.querySelector("[data-ce-more-txt]"); if (t2) t2.textContent = "All channels loaded"; more.classList.add("is-done"); }
-      }
+      if (left.length <= CE_BATCH) { ceDone = true; ceMoreDone(); }
+      else if (more) more.hidden = true;
     }, 400);
   }
   function ceScrollInit() {
@@ -4877,6 +4846,7 @@
     ceLimitSync();
     ceSourcingSync();
     ceDeepSync();
+    ceLoadMore();                       // добавленные в коллекцию каналы — сразу, без скролла
     // чужая коллекция (пришли из «Shared with me»): менять нечего — только дубликат и выход
     if (qs.get("shared") === "1") {
       ["[data-ce-rename]", "[data-ce-deactivate]", "[data-ce-delete]"].forEach(function (sel) {
