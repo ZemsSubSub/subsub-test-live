@@ -3576,7 +3576,9 @@
     if (!box || !txt) return;
     var p = plan(), next = PLAN_NEXT[planId()];
     var dest = aiDest || null;
+    var picked = ccManual().length;                 // уже набранные каналы тоже занимают места
     var left = planChansLeft(dest);
+    var avail = left === Infinity ? Infinity : Math.max(0, left - picked);
     var msg = "";
     if (!planCollsLeft()) {
       msg = "You've used all <b>" + planFmt(p.colls) + "</b> collections on the <b>" + p.label +
@@ -3584,15 +3586,14 @@
     } else if (left === Infinity) {
       msg = "";
     } else if (ccTab === "ai") {
-      msg = "We'll find up to <b>" + left + "</b> channel" + (left === 1 ? "" : "s") +
+      msg = "We'll find up to <b>" + avail + "</b> channel" + (avail === 1 ? "" : "s") +
             (dest ? " — " + aiChannelsOf(dest).length + " of " + planFmt(p.chans) + " seats used in “" + dest + "”" :
                     " — the <b>" + p.label + "</b> plan fits " + planFmt(p.chans) + " per collection") + ".";
     } else {
-      var picked = ccManual().length;
       msg = picked > left
         ? "Only <b>" + left + "</b> of " + picked + " channels will be added — the <b>" + p.label +
           "</b> plan fits " + planFmt(p.chans) + " per collection."
-        : "<b>" + left + "</b> of " + planFmt(p.chans) + " seats left in this collection on the <b>" + p.label + "</b> plan.";
+        : "<b>" + avail + "</b> of " + planFmt(p.chans) + " seats left in this collection on the <b>" + p.label + "</b> plan.";
     }
     box.hidden = !msg;
     txt.innerHTML = msg;
