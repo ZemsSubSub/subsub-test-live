@@ -2482,6 +2482,37 @@
     aiRenderPill();
   }
 
+  // ================= тарифы (subsub.io/pricing) =================
+  // Переключение для проверки состояний: localStorage.subsub_plan = 'explorer'|'pro'|'business'|'enterprise'
+  var PLANS = {
+    explorer:   { label: "Explorer",   colls: 3,        chans: 10,       deep: false, periods: ["30"] },
+    pro:        { label: "Pro",        colls: 5,        chans: 25,       deep: true,  periods: ["7", "30", "90"] },
+    business:   { label: "Business",   colls: 15,       chans: 100,      deep: true,  periods: null },
+    enterprise: { label: "Enterprise", colls: Infinity, chans: Infinity, deep: true,  periods: null }
+  };
+  var PLAN_NEXT = { explorer: "Pro", pro: "Business", business: "Enterprise", enterprise: null };
+  function planId() {
+    var p;
+    try { p = localStorage.getItem("subsub_plan"); } catch (e) { p = null; }
+    return PLANS[p] ? p : "pro";           // дефолт для демо — Pro
+  }
+  function plan() { return PLANS[planId()]; }
+  function planFmt(n) { return n === Infinity ? "unlimited" : String(n); }
+  // сколько коллекций уже есть у пользователя (свои, без семплов)
+  function planCollCount() {
+    var base = (typeof aiBaseColls === "function" ? aiBaseColls() : []).filter(function (c) { return !c.sample; });
+    var own = aiLoad().filter(function (c) { return c.mode !== "append"; });
+    return base.length + own.length;
+  }
+  function planCollsLeft() { return Math.max(0, plan().colls - planCollCount()); }
+  // сколько каналов ещё влезет в коллекцию (для новой — вся вместимость)
+  function planChansLeft(collName) {
+    var cap = plan().chans;
+    if (cap === Infinity) return Infinity;
+    var used = collName ? aiChannelsOf(collName).length : 0;
+    return Math.max(0, cap - used);
+  }
+
   // ================= P1.4: модалка «New channels» (Add to base) =================
   // Коллекции не выбраны → каналы уходят только в базу (на проде это addChannelsToBase).
   // Выбраны → те же ссылки дописываются в каждую выбранную коллекцию.
@@ -3347,10 +3378,13 @@
     var name = aiTxt("[data-ai-name]");
     var query = aiTxt("[data-ai-query]");
     var seed = aiTxt("[data-ai-seed]");
-    var destOk = aiAllColls().length ? !!aiDest : !!name;   // случай 2 — выбор, случай 1 — имя
+    var destOk = planCollsLeft() > 0 ? !!name : !!aiDest;   // тариф позволяет — имя, иначе выбор существующей
     // single: описание ИЛИ ссылка; refs: описание ИЛИ хотя бы один референс
     var hasSource = aiMode() === "refs" ? !!aiRefs.length : !!seed;
-    if (submit) submit.disabled = !(destOk && (query || hasSource));
+    if (submit) submit.disabled = !(destOk && (query || hasSource || ccManual().length));
+    var cnt2 = ccEl("[data-cc-links-count]");
+    if (cnt2) cnt2.textContent = String(ccLinks().length);
+    ccLimitSync();
     // refs: «Add» активна только для ссылки (имя выбирается из подсказок)
     if (auto) auto.disabled = !aiSeedIsUrl(aiTxt("[data-ai-refseed]"));
     // single: «Auto-fill» активна при похожей на URL ссылке
@@ -3447,10 +3481,12 @@
   function aiRenderDest() {
     var pick = aiEl("[data-ai-dest-pick]"), neu = aiEl("[data-ai-dest-new]");
     if (!pick || !neu) return;
-    var list = aiAllColls(), has = list.length > 0;
-    pick.hidden = !has;
-    neu.hidden = has;
-    if (!has) return;
+    var list = aiAllColls();
+    // новую коллекцию создаём, пока тариф позволяет; иначе — только выбор существующей
+    var canNew = planCollsLeft() > 0;
+    neu.hidden = !canNew;
+    pick.hidden = canNew || !list.length;
+    if (pick.hidden) return;
     var box = aiEl("[data-ai-select-list]");
     if (box) {
       var busy = aiSourcingNames();
@@ -3487,6 +3523,81 @@
     };
   }
 
+  // ---- три входа модалки Create collection: ссылки, база, промпт ----
+  var ccTab = "links", ccBaseSel = {};
+  function ccEl(sel) { var m = document.getElementById("aiModal"); return m ? m.querySelector(sel) : null; }
+  function ccLinks() {
+    var ta = ccEl("[data-cc-links]");
+    if (!ta) return [];
+    return String(ta.value || "").split(/[\n,;]+/).map(function (s) { return s.trim(); }).filter(Boolean);
+  }
+  function ccBaseNames() { return Object.keys(ccBaseSel).filter(function (n) { return ccBaseSel[n]; }); }
+  // все каналы, выбранные руками: ссылки + отметки в базе, без повторов
+  function ccManual() {
+    var out = ccLinks().map(ncNameFromLink);
+    ccBaseNames().forEach(function (n) { if (out.indexOf(n) === -1) out.push(n); });
+    return out;
+  }
+  function ccSetTab(tab) {
+    ccTab = tab;
+    [].slice.call(document.querySelectorAll("[data-cc-tab]")).forEach(function (b) {
+      b.classList.toggle("is-active", b.getAttribute("data-cc-tab") === tab);
+    });
+    [].slice.call(document.querySelectorAll("[data-cc-pane]")).forEach(function (p) {
+      p.hidden = p.getAttribute("data-cc-pane") !== tab;
+    });
+    if (tab === "base") ccBaseRender();
+    if (tab === "ai") aiPhIdle();
+    ccLimitSync();
+  }
+  function ccBaseRender() {
+    var box = ccEl("[data-cc-base]");
+    if (!box) return;
+    var q = ((ccEl("[data-cc-base-search]") || {}).value || "").trim().toLowerCase();
+    var pool = (typeof aiChannelPool === "function" ? aiChannelPool() : []);
+    var list = pool.filter(function (c) { return !q || c.name.toLowerCase().indexOf(q) !== -1; }).slice(0, 40);
+    box.innerHTML = list.map(function (c) {
+      var on = !!ccBaseSel[c.name];
+      return '<button class="nc-baseitem' + (on ? " is-on" : "") + '" type="button" data-cc-base-item="' + escHtml(c.name) + '">' +
+        ncCheck(on) +
+        '<span class="mc-ava nc-baseava" style="background:var(' + (c.color || "--color-avatar-3") + ')">' +
+          escHtml(c.initial || c.name.charAt(0)) + "</span>" +
+        '<span class="nc-item__name">' + escHtml(c.name) + "</span>" +
+        '<span class="nc-subs mc-status mc-status--gray mc-status--sm">' + escHtml(c.subs || "") + " subs</span>" +
+      "</button>";
+    }).join("") || '<div class="nc-empty">No channels found</div>';
+    var cnt = ccEl("[data-cc-base-count]");
+    if (cnt) cnt.textContent = String(ccBaseNames().length);
+  }
+  // подсказка про лимит тарифа + инлайн-апселл
+  function ccLimitSync() {
+    var box = ccEl("[data-cc-limit]"), txt = ccEl("[data-cc-limit-text]");
+    var up = ccEl("[data-cc-upgrade]");
+    if (!box || !txt) return;
+    var p = plan(), next = PLAN_NEXT[planId()];
+    var dest = aiDest || null;
+    var left = planChansLeft(dest);
+    var msg = "";
+    if (!planCollsLeft() && !dest) {
+      msg = "You've used all <b>" + planFmt(p.colls) + "</b> collections on the <b>" + p.label +
+            "</b> plan — pick an existing one above or upgrade to create more.";
+    } else if (left === Infinity) {
+      msg = "";
+    } else if (ccTab === "ai") {
+      msg = "We'll find up to <b>" + left + "</b> channel" + (left === 1 ? "" : "s") +
+            (dest ? " — " + aiChannelsOf(dest).length + " of " + planFmt(p.chans) + " seats used in “" + dest + "”" :
+                    " — the <b>" + p.label + "</b> plan fits " + planFmt(p.chans) + " per collection") + ".";
+    } else {
+      var picked = ccManual().length;
+      msg = picked > left
+        ? "Only <b>" + left + "</b> of " + picked + " channels will be added — the <b>" + p.label +
+          "</b> plan fits " + planFmt(p.chans) + " per collection."
+        : "<b>" + left + "</b> of " + planFmt(p.chans) + " seats left in this collection on the <b>" + p.label + "</b> plan.";
+    }
+    box.hidden = !msg;
+    txt.innerHTML = msg;
+    if (up) up.hidden = !next;
+  }
   function aiOpen() {
     var m = document.getElementById("aiModal");
     if (!m) return;
@@ -3500,6 +3611,13 @@
     var ta0 = aiTa(); if (ta0) ta0.value = "";
     aiRenderRefs();
     aiRenderDest();
+    // сброс входов «Ссылки» и «Из базы»
+    ccBaseSel = {};
+    var ccTa = ccEl("[data-cc-links]"); if (ccTa) ccTa.value = "";
+    var ccQ = ccEl("[data-cc-base-search]"); if (ccQ) ccQ.value = "";
+    var ccC = ccEl("[data-cc-links-count]"); if (ccC) ccC.textContent = "0";
+    ccBaseRender();
+    ccSetTab(aiMode() === "refs" ? "ai" : "links");
     aiSync();
     aiPhIdle();                                  // состояние 1 — ротация примеров
     var n = m.querySelector("[data-ai-name]"); if (n) n.focus();
@@ -3508,6 +3626,8 @@
   // раньше это лежало внутри обработчика AI-модалки и не срабатывало вне неё.
   document.addEventListener("input", function (e) {
     if (e.target.closest("[data-anf-text],[data-anf-from],[data-anf-to]")) { flTouch(); return; }
+    if (e.target.closest("[data-cc-links]")) { aiSync(); return; }
+    if (e.target.closest("[data-cc-base-search]")) { ccBaseRender(); return; }
     if (e.target.closest("[data-ce-search]")) { ceSearchApply(); return; }
     if (e.target.closest("[data-ce-share-search]")) { ceShareSuggest(e.target.value); return; }
     if (e.target.closest("[data-rp-search]")) { repTargetFill(e.target.value); return; }
@@ -3542,60 +3662,44 @@
   function aiSubmit() {
     var query = aiTxt("[data-ai-query]");
     var seedVal = aiTxt("[data-ai-seed]");
-    // назначение: выбранная коллекция (если они есть) либо имя новой (первая коллекция)
-    var hasCollsNow = aiAllColls().length > 0;
-    var destName = hasCollsNow ? aiDest : aiTxt("[data-ai-name]");
-    // назначение обязательно + описание ИЛИ reference-ссылка (пустую форму не запускаем)
-    var srcOk = aiMode() === "refs" ? !!aiRefs.length : !!seedVal;
-    if (!destName || !(query || srcOk)) {
-      toast(!destName
-        ? (hasCollsNow ? "Select a destination collection" : "Name the collection first")
-        : (aiMode() === "refs" ? "Add at least one reference channel" : "Describe the channels or paste a channel link"));
-      return;
+    var manual = ccManual();
+    var wantsSourcing = !!query || (aiMode() === "refs" ? !!aiRefs.length : !!seedVal);
+    // получатель: имя новой коллекции либо выбранная существующая (когда тариф исчерпан)
+    var canNew = planCollsLeft() > 0;
+    var target = canNew ? aiTxt("[data-ai-name]") : aiDest;
+    if (!target) { toast(canNew ? "Name the collection first" : "Select a collection"); return; }
+    if (!manual.length && !wantsSourcing) { toast("Paste links, pick channels or describe what you're looking for"); return; }
+    var isNew = canNew && !aiCollByName(target);
+    if (isNew) aiCreatePlain(target);
+    // лимит тарифа: добавляем столько, сколько влезает
+    var left = planChansLeft(isNew ? null : target);
+    var added = left === Infinity ? manual : manual.slice(0, left);
+    var skipped = manual.length - added.length;
+    if (added.length) ncAppend(target, added);
+    var now = Date.now(), d = new Date(now);
+    if (wantsSourcing) {
+      var list = aiLoad();
+      list.push({
+        id: "ai" + now, mode: "append", target: target, name: target, isAi: true,
+        query: query || (aiMode() === "refs" && aiRefs.length
+          ? "Channels similar to " + aiRefs.map(function (r) { return r.name; }).join(", ")
+          : "Channels similar to " + seedVal),
+        seed: seedVal, filters: aiFormFilters(), status: "pending", readyAt: now + AI_BUILD_MS,
+        created: ("0" + d.getDate()).slice(-2) + "." + ("0" + (d.getMonth() + 1)).slice(-2) + "." + d.getFullYear()
+      });
+      aiSave(list);
     }
-    var now = Date.now();
-    var d = new Date(now);
-    var rec = {
-      id: "ai" + now,
-      name: destName,
-      // если описание не заполняли — фиксируем ссылку как исходный Query
-      // если описание пустое — фиксируем источник (ссылку или референсы) как Query
-      query: query || (aiMode() === "refs" && aiRefs.length
-        ? "Channels similar to " + aiRefs.map(function (r) { return r.name; }).join(", ")
-        : "Channels similar to " + seedVal),
-      seed: seedVal,
-      filters: aiFormFilters(),
-      status: "pending",
-      readyAt: now + AI_BUILD_MS,
-      created: ("0" + d.getDate()).slice(-2) + "." + ("0" + (d.getMonth() + 1)).slice(-2) + "." + d.getFullYear()
-    };
-    var list = aiLoad();
-    var hasColls = aiAllColls().length > 0;
-    if (!hasColls) {
-      list.push(rec);                                  // случай 1: создаём первую коллекцию
-    } else if (aiDest === aiJustCreated) {
-      // только что создана через вложенную модалку → ведёт себя как новая AI-коллекция
-      var conv = null;
-      for (var ci = 0; ci < list.length; ci++) if (list[ci].name === aiDest) conv = list[ci];
-      if (conv) {
-        conv.isAi = true; conv.mode = "new"; conv.status = "pending"; conv.readyAt = rec.readyAt;
-        conv.query = rec.query; conv.seed = rec.seed; conv.filters = rec.filters; conv.channels = [];
-      } else { rec.name = aiDest; list.push(rec); }
-    } else {
-      // существующая коллекция: новую не создаём, дописываем каналы в неё
-      list.push({ id: rec.id, mode: "append", target: aiDest, name: aiDest, isAi: false,
-                  query: rec.query, seed: rec.seed, filters: rec.filters,
-                  status: "pending", readyAt: rec.readyAt, created: rec.created });
-    }
-    aiSave(list);
     closeModal(document.getElementById("aiModal"));
-    toast(hasColls && aiDest !== aiJustCreated
-      ? "Sourcing started — channels will be added to “" + aiDest + "”"
-      : "Sourcing started — we're finding channels");
-    aiTick();               // поднимет пилюлю и заведёт таймер
+    var parts = [];
+    if (added.length) parts.push(added.length + (added.length === 1 ? " channel added" : " channels added"));
+    if (wantsSourcing) parts.push("sourcing started");
+    toast("“" + target + "” " + (parts.join(" · ") || "created") +
+          (skipped ? " · " + skipped + " didn't fit your plan" : ""));
+    if (wantsSourcing) aiTick();               // пилюля подбора в шапке
     aiRenderCollections();
+    // всегда открываем страницу коллекции в новой табе — там продолжают наполнение
+    window.open("analytics-collection-edit.html?name=" + encodeURIComponent(target), "_blank");
   }
-
   document.addEventListener("click", function (e) {
     // отмена подбора из попапа «Sourcing in progress»
     var cancelBtn = e.target.closest("[data-dd-cancel]");
@@ -3606,6 +3710,22 @@
       toast(rec ? "Sourcing of “" + rec.name + "” canceled" : "Sourcing canceled");
       return;
     }
+    var ccT = e.target.closest("[data-cc-tab]");
+    if (ccT) { ccSetTab(ccT.getAttribute("data-cc-tab")); return; }
+    var ccB = e.target.closest("[data-cc-base-item]");
+    if (ccB) {
+      var bn = ccB.getAttribute("data-cc-base-item");
+      if (ccBaseSel[bn]) delete ccBaseSel[bn]; else ccBaseSel[bn] = true;
+      var bOn = !!ccBaseSel[bn];
+      ccB.classList.toggle("is-on", bOn);
+      var bCk = ccB.querySelector(".an-check");
+      if (bCk) bCk.classList.toggle("is-checked", bOn);
+      var bCnt = ccEl("[data-cc-base-count]");
+      if (bCnt) bCnt.textContent = String(ccBaseNames().length);
+      aiSync();
+      return;
+    }
+    if (e.target.closest("[data-cc-upgrade]")) { toast("Upgrade request sent — our team will contact you"); return; }
     if (e.target.closest("[data-ai-open]")) { aiOpen(); return; }
     // второй вход: «Find similar channels» из панели массовых действий Basic data —
     // та же модалка, но референсы предзаполнены выбранными в таблице каналами

@@ -12,9 +12,9 @@ function esc(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").rep
 // Слова Research / Processing data здесь не используем; тексты Deep Data — это ДРУГОЙ флоу, их не трогаем.
 const AI_LABEL = "AI collection";        // кнопка на Basic data / My collections
 const AI_BADGE = "AI collection";        // бейдж в представлении коллекции (результат)
-const AI_MODAL_TITLE = "Set up collection sourcing";
-const AI_MODAL_SUB = "Describe the channels you want — we'll find and collect them for you.";
-const AI_SUBMIT_LABEL = "Start sourcing";
+const AI_MODAL_TITLE = "Create collection";
+const AI_MODAL_SUB = "Paste channel links, pick from our base or describe what you need — we'll find it for you.";
+const AI_SUBMIT_LABEL = "Create collection";
 
 // ---- иконки (inline SVG, стиль дизайн-системы) ----
 const IC = {
@@ -768,6 +768,34 @@ const aiModalHtml = `
           <!-- Референс-каналы: единый контейнер примеров. Сценарий 1 (кнопка AI collection) —
                пустой, канал добавляется ссылкой; сценарий 2 (Find similar channels) —
                предзаполнен выбранными в таблице. Любое изменение набора перезапускает подбор описания. -->
+          <!-- три входа в одну коллекцию: ссылки, каталог базы и описание для ИИ.
+               Переключение таба ничего не сбрасывает — всё уходит в одну коллекцию. -->
+          <nav class="nc-seg cc-seg" data-cc-tabs>
+            <button class="nc-seg__btn is-active" type="button" data-cc-tab="links">Paste links</button>
+            <button class="nc-seg__btn" type="button" data-cc-tab="base">Find in base</button>
+            <button class="nc-seg__btn" type="button" data-cc-tab="ai">Describe with AI</button>
+          </nav>
+
+          <div class="cc-pane" data-cc-pane="links">
+            <div class="ai-field">
+              <label class="ai-lbl" for="ccLinks">YouTube channels links</label>
+              <textarea class="an-input nc-textarea" id="ccLinks" rows="4" data-cc-links
+                placeholder="https://www.youtube.com/@AZOV_Brigade&#10;https://www.youtube.com/@SuspilneNews"></textarea>
+              <p class="nc-count">One-time addition of channels:&nbsp;<span class="nc-count__n"><span data-cc-links-count>0</span>/${NC_MAX_LINKS}</span></p>
+            </div>
+          </div>
+
+          <div class="cc-pane" data-cc-pane="base" hidden>
+            <div class="ai-field">
+              <div class="an-search nc-search nc-search--base">
+                ${IC.search}<input class="an-search__input" type="text" placeholder="Search by channel title" data-cc-base-search />
+              </div>
+              <div class="nc-base" data-cc-base></div>
+              <p class="nc-count">Selected:&nbsp;<span class="nc-count__n" data-cc-base-count>0</span></p>
+            </div>
+          </div>
+
+          <div class="cc-pane" data-cc-pane="ai" hidden>
           <div class="ai-field" data-ai-refs-field>
             <label class="ai-lbl">Reference channels</label>
             <div class="ai-refs" data-ai-refs>
@@ -845,6 +873,13 @@ const aiModalHtml = `
               </div>
             </div>
           </details>
+          </div>
+
+          <!-- сколько каналов влезет на текущем тарифе + инлайн-апселл -->
+          <div class="cc-limit" data-cc-limit hidden>
+            <span class="cc-limit__t" data-cc-limit-text></span>
+            <button class="cc-limit__up" type="button" data-cc-upgrade>${IC.rocket}Upgrade plan</button>
+          </div>
         </div>
         <div class="an-modal__foot">
           <button class="an-btn an-btn--plain an-btn--huge" type="button" data-ai-close>Cancel</button>
@@ -884,8 +919,7 @@ const mainInner = `
         </div>
         <div class="an-searchbtns">
           <button class="an-btn an-btn--secondary" type="button" data-an-filters-toggle><span class="an-btn__ico">${IC.filter}<span class="an-btn__dot" data-an-filters-dot hidden></span></span>Filters</button>
-          <button class="an-btn an-btn--secondary" type="button" data-nc-open>Add to base</button>
-          <button class="an-btn an-btn--ai" type="button" data-ai-open>${IC.aiStarsSolid}${AI_LABEL}</button>
+          <button class="an-btn an-btn--ai" type="button" data-ai-open>${IC.plus}Create Collection</button>
         </div>
       </section>
 
@@ -1542,8 +1576,7 @@ const collInner = `
         <h1 class="an-title">My collections</h1>
         <div class="an-head__btns">
           <!-- праймари-кнопка справа, как на Basic data -->
-          <button class="an-btn an-btn--secondary" type="button" data-mc-create-open>${IC.plus}Create Collection</button>
-          <button class="an-btn an-btn--ai" type="button" data-ai-open>${IC.aiStarsSolid}${AI_LABEL}</button>
+          <button class="an-btn an-btn--ai" type="button" data-ai-open>${IC.plus}Create Collection</button>
         </div>
       </header>
 
