@@ -13,7 +13,7 @@ function esc(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").rep
 const AI_LABEL = "AI collection";        // кнопка на Basic data / My collections
 const AI_BADGE = "AI collection";        // бейдж в представлении коллекции (результат)
 const AI_MODAL_TITLE = "Create collection";
-const AI_MODAL_SUB = "Paste channel links, pick from our base or describe what you need — we'll find it for you.";
+const AI_MODAL_SUB = "Describe what you need and we'll find it, or paste channel links you already have.";
 const AI_SUBMIT_LABEL = "Create collection";
 
 // ---- иконки (inline SVG, стиль дизайн-системы) ----
@@ -771,12 +771,11 @@ const aiModalHtml = `
           <!-- три входа в одну коллекцию: ссылки, каталог базы и описание для ИИ.
                Переключение таба ничего не сбрасывает — всё уходит в одну коллекцию. -->
           <nav class="nc-seg cc-seg" data-cc-tabs>
-            <button class="nc-seg__btn is-active" type="button" data-cc-tab="links">Paste links</button>
-            <button class="nc-seg__btn" type="button" data-cc-tab="base">Find in base</button>
-            <button class="nc-seg__btn" type="button" data-cc-tab="ai">Describe with AI</button>
+            <button class="nc-seg__btn is-active" type="button" data-cc-tab="ai">Describe with AI</button>
+            <button class="nc-seg__btn" type="button" data-cc-tab="links">Paste links</button>
           </nav>
 
-          <div class="cc-pane" data-cc-pane="links">
+          <div class="cc-pane" data-cc-pane="links" hidden>
             <div class="ai-field">
               <label class="ai-lbl" for="ccLinks">YouTube channels links</label>
               <textarea class="an-input nc-textarea" id="ccLinks" rows="4" data-cc-links
@@ -785,17 +784,8 @@ const aiModalHtml = `
             </div>
           </div>
 
-          <div class="cc-pane" data-cc-pane="base" hidden>
-            <div class="ai-field">
-              <div class="an-search nc-search nc-search--base">
-                ${IC.search}<input class="an-search__input" type="text" placeholder="Search by channel title" data-cc-base-search />
-              </div>
-              <div class="nc-base" data-cc-base></div>
-              <p class="nc-count">Selected:&nbsp;<span class="nc-count__n" data-cc-base-count>0</span></p>
-            </div>
-          </div>
 
-          <div class="cc-pane" data-cc-pane="ai" hidden>
+          <div class="cc-pane" data-cc-pane="ai">
           <div class="ai-field" data-ai-refs-field>
             <label class="ai-lbl">Reference channels</label>
             <div class="ai-refs" data-ai-refs>

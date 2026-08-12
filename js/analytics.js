@@ -3378,7 +3378,7 @@
     var name = aiTxt("[data-ai-name]");
     var query = aiTxt("[data-ai-query]");
     var seed = aiTxt("[data-ai-seed]");
-    var destOk = planCollsLeft() > 0 ? !!name : !!aiDest;   // тариф позволяет — имя, иначе выбор существующей
+    var destOk = !!name && planCollsLeft() > 0;   // тариф исчерпан — создать нельзя
     // single: описание ИЛИ ссылка; refs: описание ИЛИ хотя бы один референс
     var hasSource = aiMode() === "refs" ? !!aiRefs.length : !!seed;
     if (submit) submit.disabled = !(destOk && (query || hasSource || ccManual().length));
@@ -3481,12 +3481,11 @@
   function aiRenderDest() {
     var pick = aiEl("[data-ai-dest-pick]"), neu = aiEl("[data-ai-dest-new]");
     if (!pick || !neu) return;
-    var list = aiAllColls();
-    // новую коллекцию создаём, пока тариф позволяет; иначе — только выбор существующей
-    var canNew = planCollsLeft() > 0;
-    neu.hidden = !canNew;
-    pick.hidden = canNew || !list.length;
-    if (pick.hidden) return;
+    // Create collection — это всегда новая коллекция: только поле имени.
+    // Добавление в существующую живёт отдельно (её страница и «Add N channels to collection»).
+    neu.hidden = false;
+    pick.hidden = true;
+    return;
     var box = aiEl("[data-ai-select-list]");
     if (box) {
       var busy = aiSourcingNames();
@@ -3524,18 +3523,17 @@
   }
 
   // ---- три входа модалки Create collection: ссылки, база, промпт ----
-  var ccTab = "links", ccBaseSel = {};
+  var ccTab = "ai";                       // первый вход — описание для ИИ
   function ccEl(sel) { var m = document.getElementById("aiModal"); return m ? m.querySelector(sel) : null; }
   function ccLinks() {
     var ta = ccEl("[data-cc-links]");
     if (!ta) return [];
     return String(ta.value || "").split(/[\n,;]+/).map(function (s) { return s.trim(); }).filter(Boolean);
   }
-  function ccBaseNames() { return Object.keys(ccBaseSel).filter(function (n) { return ccBaseSel[n]; }); }
-  // все каналы, выбранные руками: ссылки + отметки в базе, без повторов
+  // каналы из вставленных ссылок, без повторов
   function ccManual() {
-    var out = ccLinks().map(ncNameFromLink);
-    ccBaseNames().forEach(function (n) { if (out.indexOf(n) === -1) out.push(n); });
+    var out = [];
+    ccLinks().map(ncNameFromLink).forEach(function (n) { if (out.indexOf(n) === -1) out.push(n); });
     return out;
   }
   function ccSetTab(tab) {
@@ -3546,28 +3544,8 @@
     [].slice.call(document.querySelectorAll("[data-cc-pane]")).forEach(function (p) {
       p.hidden = p.getAttribute("data-cc-pane") !== tab;
     });
-    if (tab === "base") ccBaseRender();
     if (tab === "ai") aiPhIdle();
     ccLimitSync();
-  }
-  function ccBaseRender() {
-    var box = ccEl("[data-cc-base]");
-    if (!box) return;
-    var q = ((ccEl("[data-cc-base-search]") || {}).value || "").trim().toLowerCase();
-    var pool = (typeof aiChannelPool === "function" ? aiChannelPool() : []);
-    var list = pool.filter(function (c) { return !q || c.name.toLowerCase().indexOf(q) !== -1; }).slice(0, 40);
-    box.innerHTML = list.map(function (c) {
-      var on = !!ccBaseSel[c.name];
-      return '<button class="nc-baseitem' + (on ? " is-on" : "") + '" type="button" data-cc-base-item="' + escHtml(c.name) + '">' +
-        ncCheck(on) +
-        '<span class="mc-ava nc-baseava" style="background:var(' + (c.color || "--color-avatar-3") + ')">' +
-          escHtml(c.initial || c.name.charAt(0)) + "</span>" +
-        '<span class="nc-item__name">' + escHtml(c.name) + "</span>" +
-        '<span class="nc-subs mc-status mc-status--gray mc-status--sm">' + escHtml(c.subs || "") + " subs</span>" +
-      "</button>";
-    }).join("") || '<div class="nc-empty">No channels found</div>';
-    var cnt = ccEl("[data-cc-base-count]");
-    if (cnt) cnt.textContent = String(ccBaseNames().length);
   }
   // подсказка про лимит тарифа + инлайн-апселл
   function ccLimitSync() {
@@ -3578,9 +3556,9 @@
     var dest = aiDest || null;
     var left = planChansLeft(dest);
     var msg = "";
-    if (!planCollsLeft() && !dest) {
+    if (!planCollsLeft()) {
       msg = "You've used all <b>" + planFmt(p.colls) + "</b> collections on the <b>" + p.label +
-            "</b> plan — pick an existing one above or upgrade to create more.";
+            "</b> plan. Upgrade to create more, or add channels to a collection you already have.";
     } else if (left === Infinity) {
       msg = "";
     } else if (ccTab === "ai") {
@@ -3611,13 +3589,10 @@
     var ta0 = aiTa(); if (ta0) ta0.value = "";
     aiRenderRefs();
     aiRenderDest();
-    // сброс входов «Ссылки» и «Из базы»
-    ccBaseSel = {};
+    // сброс входа «Ссылки»
     var ccTa = ccEl("[data-cc-links]"); if (ccTa) ccTa.value = "";
-    var ccQ = ccEl("[data-cc-base-search]"); if (ccQ) ccQ.value = "";
     var ccC = ccEl("[data-cc-links-count]"); if (ccC) ccC.textContent = "0";
-    ccBaseRender();
-    ccSetTab(aiMode() === "refs" ? "ai" : "links");
+    ccSetTab("ai");                       // всегда открываемся на «Describe with AI»
     aiSync();
     aiPhIdle();                                  // состояние 1 — ротация примеров
     var n = m.querySelector("[data-ai-name]"); if (n) n.focus();
@@ -3627,7 +3602,6 @@
   document.addEventListener("input", function (e) {
     if (e.target.closest("[data-anf-text],[data-anf-from],[data-anf-to]")) { flTouch(); return; }
     if (e.target.closest("[data-cc-links]")) { aiSync(); return; }
-    if (e.target.closest("[data-cc-base-search]")) { ccBaseRender(); return; }
     if (e.target.closest("[data-ce-search]")) { ceSearchApply(); return; }
     if (e.target.closest("[data-ce-share-search]")) { ceShareSuggest(e.target.value); return; }
     if (e.target.closest("[data-rp-search]")) { repTargetFill(e.target.value); return; }
@@ -3665,11 +3639,14 @@
     var manual = ccManual();
     var wantsSourcing = !!query || (aiMode() === "refs" ? !!aiRefs.length : !!seedVal);
     // получатель: имя новой коллекции либо выбранная существующая (когда тариф исчерпан)
-    var canNew = planCollsLeft() > 0;
-    var target = canNew ? aiTxt("[data-ai-name]") : aiDest;
-    if (!target) { toast(canNew ? "Name the collection first" : "Select a collection"); return; }
+    if (!planCollsLeft()) {
+      toast("Collection limit reached on the " + plan().label + " plan — upgrade to create more");
+      return;
+    }
+    var target = aiTxt("[data-ai-name]");
+    if (!target) { toast("Name the collection first"); return; }
     if (!manual.length && !wantsSourcing) { toast("Paste links, pick channels or describe what you're looking for"); return; }
-    var isNew = canNew && !aiCollByName(target);
+    var isNew = !aiCollByName(target);
     if (isNew) aiCreatePlain(target);
     // лимит тарифа: добавляем столько, сколько влезает
     var left = planChansLeft(isNew ? null : target);
@@ -3712,19 +3689,6 @@
     }
     var ccT = e.target.closest("[data-cc-tab]");
     if (ccT) { ccSetTab(ccT.getAttribute("data-cc-tab")); return; }
-    var ccB = e.target.closest("[data-cc-base-item]");
-    if (ccB) {
-      var bn = ccB.getAttribute("data-cc-base-item");
-      if (ccBaseSel[bn]) delete ccBaseSel[bn]; else ccBaseSel[bn] = true;
-      var bOn = !!ccBaseSel[bn];
-      ccB.classList.toggle("is-on", bOn);
-      var bCk = ccB.querySelector(".an-check");
-      if (bCk) bCk.classList.toggle("is-checked", bOn);
-      var bCnt = ccEl("[data-cc-base-count]");
-      if (bCnt) bCnt.textContent = String(ccBaseNames().length);
-      aiSync();
-      return;
-    }
     if (e.target.closest("[data-cc-upgrade]")) { toast("Upgrade request sent — our team will contact you"); return; }
     if (e.target.closest("[data-ai-open]")) { aiOpen(); return; }
     // второй вход: «Find similar channels» из панели массовых действий Basic data —

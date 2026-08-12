@@ -509,7 +509,7 @@
         <!-- шапка вне скроллящегося тела: не уезжает при прокрутке, отделена разделителем -->
         <header class="ai-head">
           <h2 class="ai-title">Create collection</h2>
-          <p class="ai-sub">Paste channel links, pick from our base or describe what you need — we'll find it for you.</p>
+          <p class="ai-sub">Describe what you need and we'll find it, or paste channel links you already have.</p>
         </header>
         <div class="an-modal__body ai-form">
           <!-- Назначение: куда попадут найденные каналы.
@@ -545,12 +545,11 @@
           <!-- три входа в одну коллекцию: ссылки, каталог базы и описание для ИИ.
                Переключение таба ничего не сбрасывает — всё уходит в одну коллекцию. -->
           <nav class="nc-seg cc-seg" data-cc-tabs>
-            <button class="nc-seg__btn is-active" type="button" data-cc-tab="links">Paste links</button>
-            <button class="nc-seg__btn" type="button" data-cc-tab="base">Find in base</button>
-            <button class="nc-seg__btn" type="button" data-cc-tab="ai">Describe with AI</button>
+            <button class="nc-seg__btn is-active" type="button" data-cc-tab="ai">Describe with AI</button>
+            <button class="nc-seg__btn" type="button" data-cc-tab="links">Paste links</button>
           </nav>
 
-          <div class="cc-pane" data-cc-pane="links">
+          <div class="cc-pane" data-cc-pane="links" hidden>
             <div class="ai-field">
               <label class="ai-lbl" for="ccLinks">YouTube channels links</label>
               <textarea class="an-input nc-textarea" id="ccLinks" rows="4" data-cc-links
@@ -559,17 +558,8 @@
             </div>
           </div>
 
-          <div class="cc-pane" data-cc-pane="base" hidden>
-            <div class="ai-field">
-              <div class="an-search nc-search nc-search--base">
-                <svg viewBox="0 0 24 24" fill="none"><path d="M10.6154 18.2307C14.8212 18.2307 18.2307 14.8212 18.2307 10.6154C18.2307 6.40951 14.8212 3 10.6154 3C6.40951 3 3 6.40951 3 10.6154C3 14.8212 6.40951 18.2307 10.6154 18.2307Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M21.0004 20.9985L16.1543 16.1523" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg><input class="an-search__input" type="text" placeholder="Search by channel title" data-cc-base-search />
-              </div>
-              <div class="nc-base" data-cc-base></div>
-              <p class="nc-count">Selected:&nbsp;<span class="nc-count__n" data-cc-base-count>0</span></p>
-            </div>
-          </div>
 
-          <div class="cc-pane" data-cc-pane="ai" hidden>
+          <div class="cc-pane" data-cc-pane="ai">
           <div class="ai-field" data-ai-refs-field>
             <label class="ai-lbl">Reference channels</label>
             <div class="ai-refs" data-ai-refs>
