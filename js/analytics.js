@@ -34,6 +34,43 @@
   }
 
   document.addEventListener("click", function (e) {
+    // ModePopover: открыть/закрыть
+    var trig = e.target.closest("[data-an-mode-toggle]");
+    var modeRoot = document.querySelector("[data-an-mode]");
+    if (trig && modeRoot) {
+      var menu = modeRoot.querySelector("[data-an-mode-menu]");
+      var open = menu.hidden;
+      menu.hidden = !open;
+      modeRoot.classList.toggle("is-open", open);
+      e.stopPropagation();
+      return;
+    }
+    // выбор режима поиска
+    var opt = e.target.closest("[data-an-mode-opt]");
+    if (opt && modeRoot) {
+      var opts = modeRoot.querySelectorAll("[data-an-mode-opt]");
+      for (var i = 0; i < opts.length; i++) opts[i].classList.remove("is-selected");
+      opt.classList.add("is-selected");
+      var mode = opt.getAttribute("data-an-mode-opt");
+      var label = modeRoot.querySelector(".an-mode__label");
+      var input = document.querySelector("[data-an-search]");
+      if (mode === "semantic") {
+        if (label) label.textContent = "AI semantic search";
+        if (input) input.placeholder = "Describe what you are looking for (e.g. travel, cooking, tech)";
+      } else {
+        if (label) label.textContent = "Traditional search";
+        if (input) input.placeholder = "Search by YouTube channel name, link or UC";
+      }
+      var m = modeRoot.querySelector("[data-an-mode-menu]"); if (m) m.hidden = true;
+      modeRoot.classList.remove("is-open");
+      return;
+    }
+    // клик вне меню — закрыть
+    if (modeRoot && !e.target.closest("[data-an-mode]")) {
+      var mm = modeRoot.querySelector("[data-an-mode-menu]"); if (mm) mm.hidden = true;
+      modeRoot.classList.remove("is-open");
+    }
+
     // чекбоксы строк
     var cb = e.target.closest("[data-an-check]");
     if (cb) { cb.classList.toggle("is-checked"); markSelected(); updateFooter(); return; }
@@ -476,6 +513,32 @@
     }
   });
 
+  // ================= A6: авто-переключение режима поиска =================
+  // Ссылка/UC-id — это точный поиск, свободный текст — семантический. Ручной выбор
+  // пользователя уважаем: после явного клика в меню авто-переключение отключаем.
+  var modeManual = false, modeAutoRunning = false;
+  document.addEventListener("click", function (e) {
+    if (!modeAutoRunning && e.target.closest("[data-an-mode-opt]")) modeManual = true;
+  }, true);
+  function modeSet(mode) {
+    var root = document.querySelector("[data-an-mode]");
+    if (!root) return;
+    var cur = root.querySelector("[data-an-mode-opt].is-selected");
+    if (cur && cur.getAttribute("data-an-mode-opt") === mode) return;
+    var opt = root.querySelector('[data-an-mode-opt="' + mode + '"]');
+    if (!opt) return;
+    modeAutoRunning = true;          // свой же клик не считаем ручным выбором
+    opt.click();
+    modeAutoRunning = false;
+  }
+  function modeAuto(val) {
+    if (modeManual) return;
+    var v = String(val || "").trim();
+    if (!v) return;
+    var exact = /^(https?:\/\/|www\.|youtube\.com|youtu\.be|@|UC[\w-]{10,})/i.test(v) || /youtube\.com|youtu\.be/i.test(v);
+    modeSet(exact ? "traditional" : "semantic");
+  }
+
   // P1.9: поиск по видео — мгновенно
   var vidSq = document.querySelector("[data-vid-search]");
   if (vidSq) vidSq.addEventListener("input", function () {
@@ -508,6 +571,7 @@
   if (input) input.addEventListener("input", function () {
     var cl = document.querySelector("[data-an-search-clear]");
     if (cl) cl.hidden = input.value.length === 0;
+    modeAuto(input.value);          // A6
   });
 
 
@@ -2427,12 +2491,7 @@
     enterprise: { label: "Enterprise", colls: Infinity, chans: Infinity, deep: true,  periods: null }
   };
   var PLAN_NEXT = { explorer: "Pro", pro: "Business", business: "Enterprise", enterprise: null };
-  var PLAN_URL = (function () {
-    try { return new URLSearchParams(location.search).get("plan"); } catch (e) { return null; }
-  })();
   function planId() {
-    // ?plan=explorer живёт только в своей табе и не перебивает соседние
-    if (PLANS[PLAN_URL]) return PLAN_URL;
     var p;
     try { p = localStorage.getItem("subsub_plan"); } catch (e) { p = null; }
     return PLANS[p] ? p : "pro";           // дефолт для демо — Pro
