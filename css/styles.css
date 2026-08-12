@@ -1731,8 +1731,6 @@ body.is-open:not(.is-collapsed) .main { margin-left: 306px; }
 .an-searchrow { display: flex; align-items: center; justify-content: flex-end; gap: 16px; }
 .an-search { flex: 1 1 auto; display: flex; align-items: center; gap: 16px; height: 48px; padding: 0 16px; border: 1px solid var(--color-shade-300); border-radius: 8px; background: #fff; box-sizing: border-box; }
 .an-search:focus-within { border-color: var(--color-black); }
-/* иконка поиска: без размера svg растягивается на весь контейнер */
-.an-search > svg { width: 24px; height: 24px; color: var(--color-black); flex-shrink: 0; }
 .an-search__input { flex: 1; min-width: 0; border: 0; outline: 0; font-family: inherit; font-size: 16px; font-weight: 300; color: var(--color-black); background: transparent; }
 .an-search__input::placeholder { color: var(--color-shade-700); }
 .an-search__divider { width: 1px; height: 16px; background: var(--color-shade-300); flex-shrink: 0; }
