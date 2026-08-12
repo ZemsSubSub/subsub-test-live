@@ -1875,6 +1875,8 @@ const editInner = `
         <div class="an-head__left ce-head__left">
           <div class="ce-titlerow">
             <h1 class="an-title" data-ce-title>Test Collection</h1>
+            <!-- состав собран подбором — это видно и в списке, и здесь -->
+            <span class="ai-badge ai-badge--sm" data-ce-aibadge hidden title="Channels found by AI sourcing">${IC.aiStarsSolid}AI</span>
             <!-- подбор идёт: каналы приезжают по одному, бадж как в списке коллекций -->
             <span class="mc-status mc-status--orange ce-sourcing" data-ce-sourcing hidden>${IC.progress}<span class="mc-status__t">Collecting data</span></span>
             <!-- размер коллекции ограничен планом: счётчик, полоса и апгрейд — отдельным серфейсом -->
