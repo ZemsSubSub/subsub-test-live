@@ -486,6 +486,7 @@
       var inp = document.querySelector("[data-an-search]");
       if (inp) inp.value = "";
       var cl = document.querySelector("[data-an-search-clear]"); if (cl) cl.hidden = true;
+      flApply();
       return;
     }
   });
@@ -522,6 +523,7 @@
   if (input) input.addEventListener("input", function () {
     var cl = document.querySelector("[data-an-search-clear]");
     if (cl) cl.hidden = input.value.length === 0;
+    flApply();                            // поиск применяется сразу, как в видео
   });
 
 
@@ -1467,7 +1469,7 @@
   // текущие значения панели
   function flValues() {
     var act = flActive(), out = {};
-    if (!act) return out;
+    if (!act) return flSearchMerge(out);
     [].slice.call(act.querySelectorAll("[data-anf-field]")).forEach(function (f) {
       var id = f.getAttribute("data-anf-field");
       var val = f.querySelector("[data-anf-val]");
@@ -1480,6 +1482,16 @@
       if (to && to.value) out[id + "To"] = parseFloat(to.value);
       if (seg) out[id] = seg.getAttribute("data-anf-seg");
     });
+    return flSearchMerge(out);
+  }
+  // поиск живёт отдельной строкой над таблицей, но фильтрует тот же title
+  function flSearch() {
+    var sq = document.querySelector("[data-an-search]");
+    return sq ? String(sq.value || "").trim() : "";
+  }
+  function flSearchMerge(out) {
+    var q = flSearch();
+    if (q) out.title = q;
     return out;
   }
   // непустой фильтр → красная точка на кнопке Filters (как на проде)
@@ -1506,6 +1518,7 @@
     var key0 = act0 ? FL_TABLE[act0.getAttribute("data-an-filters")] : null;
     Object.keys(v).forEach(function (k) {
       if (k === "highlight" || k === "period") return;              // не фильтры
+      if (k === "title" && document.querySelector("[data-an-search]")) return;   // поиск виден в своей строке
       if (k === "ctype" && v[k] === "All") return;                   // дефолт сегмента
       // на Deep и Videos коллекция выбирается пилюлей у счётчика — бейдж дублировал бы её
       if (k === "collection" && key0 === "deep") return;
@@ -1551,6 +1564,7 @@
     var act = flActive(), key = act ? FL_TABLE[act.getAttribute("data-an-filters")] : null;
     for (var k in v) {
       if (k === "highlight") continue;                       // визуальный элемент
+      if (k === "title" && document.querySelector("[data-an-search]")) continue;  // поиск не в панели
       if (k === "ctype" && v[k] === "All") continue;          // дефолт сегмента
       if (k === "period") continue;                           // период всегда заполнен
       if (k === "collection" && key === "deep") continue;      // на Deep коллекция выбрана всегда

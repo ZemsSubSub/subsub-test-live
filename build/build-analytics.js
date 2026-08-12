@@ -387,7 +387,6 @@ const FILTERS_BASIC = filtersPanel("basic",
 );
 // Deep data, таб Channels — плоский список без групп; Growth period без чипов (только календарь)
 const FILTERS_DEEP = filtersPanel("deep",
-  fSearch("title", "Search in title", "Search by channel title") +
   // коллекция выбирается пилюлей у счётчика, в панели дублировать не нужно
   // Growth period вынесен в заголовок страницы
 
@@ -1433,6 +1432,18 @@ const deepInner = `
 
       <div data-an-tab-panel="channels">
 
+      <!-- поиск по каналам вынесен из панели фильтров, как на Basic data -->
+      <section class="an-searchrow">
+        <div class="an-search">
+          ${IC.search}
+          <input class="an-search__input" type="text" placeholder="Search by channel name" data-an-search />
+          <button class="an-search__clear" type="button" data-an-search-clear hidden>${IC.close}</button>
+        </div>
+        <div class="an-searchbtns">
+          <button class="an-btn an-btn--secondary" type="button" data-an-filters-toggle><span class="an-btn__ico">${IC.filter}<span class="an-btn__dot" data-an-filters-dot hidden></span></span>Filters</button>
+        </div>
+      </section>
+
       <section class="an-toolbar">
         <!-- B1: один переключатель типа контента на все метрики -->
         <div class="an-ctype" data-an-ctype role="radiogroup" aria-label="Content type">${SLICES.map(function (sl) {
@@ -1441,7 +1452,6 @@ const deepInner = `
           return '<button class="an-ctype__btn' + (sl === "all" ? " is-on" : "") + '" type="button" role="radio" ' +
             'aria-checked="' + (sl === "all" ? "true" : "false") + '" data-an-ctype-set="' + sl + '">' + ico + lbl + '</button>';
         }).join("")}</div>
-        <button class="an-btn an-btn--secondary" type="button" data-an-filters-toggle><span class="an-btn__ico">${IC.filter}<span class="an-btn__dot" data-an-filters-dot hidden></span></span>Filters</button>
         ${deepColsPopover}
         <button class="an-btn an-btn--primary" type="button">${IC.export}Export</button>
       </section>
