@@ -2574,8 +2574,9 @@ body.is-open:not(.is-collapsed) .main { margin-left: 306px; }
 /* два шага модалки: высота тела одинаковая, иначе переход читается как перезагрузка */
 .ai-form { min-height: 430px; }
 /* оба шага одной высоты: иначе переход между ними читается как перезагрузка */
-.ai-form--steps { flex: 0 0 540px; height: 540px; min-height: 540px; max-height: 540px;
-  box-sizing: border-box; overflow-y: auto; }
+/* 540px — желаемая высота, но телу разрешено сжиматься: иначе на низком окне футер
+   выдавливается за пределы диалога и обрезается. */
+.ai-form--steps { flex: 0 1 540px; height: 540px; min-height: 0; box-sizing: border-box; overflow-y: auto; }
 .cc-step { display: flex; flex-direction: column; gap: 16px; }
 .cc-step[hidden] { display: none; }
 .cc-step2__head { display: flex; align-items: center; gap: 8px; }
@@ -2621,9 +2622,10 @@ body.is-open:not(.is-collapsed) .main { margin-left: 306px; }
 .ff-preview { margin: 0; padding-top: 4px; font-size: 14px; font-weight: 500; color: var(--color-black); }
 /* футер: чипы активных фильтров между действиями */
 .cc-foot { flex-wrap: wrap; }
-.cc-foot__chips { flex: 1; min-width: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+/* чипы — своей строкой над кнопками: в один ряд с тремя кнопками они сминались в столбик */
+.cc-foot__chips { order: -1; flex: 1 0 100%; display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
 .cc-foot__chips:empty { display: none; }
-.ff-chip { display: inline-flex; align-items: center; gap: 4px; height: 28px; padding: 0 4px 0 10px;
+.ff-chip { display: inline-flex; align-items: center; gap: 4px; height: 28px; padding: 0 4px 0 10px; white-space: nowrap;
   border-radius: 9999px; background: var(--color-shade-100); font-size: 13px; color: var(--color-black); }
 .ff-chip__x { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px;
   padding: 0; border: 0; border-radius: 9999px; background: none; color: var(--color-shade-700); cursor: pointer; }
