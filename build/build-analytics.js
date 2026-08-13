@@ -1943,6 +1943,15 @@ const editInner = `
 
         <!-- фильтр по уже добавленным каналам (добавление — через Add channels) -->
         <div class="mc-search ce-search">${IC.search}<input type="text" placeholder="Search by channel title, link" data-ce-search /></div>
+      <!-- коллекция без каналов: состояние вместо пустой таблицы -->
+      <section class="an-blank ce-blank" data-ce-blank hidden>
+        <span class="an-blank__ico" aria-hidden="true">${IC.collections}</span>
+        <h2 class="an-blank__title">No channels yet</h2>
+        <p class="an-blank__text">Add channels by link or from our base — or describe what you need and we'll
+          find them. Deep data can be activated once the collection has at least one channel.</p>
+        <button class="an-btn an-btn--primary" type="button" data-nc-open>${IC.plus}Add channels</button>
+      </section>
+
         <section class="an-tablewrap an-tablewrap--surface an-tablewrap--stick" data-an-tablewrap="ce" data-ce-scroll>
           <div class="an-table an-table--fill ce-table">
             <div class="an-thead">${ceHead}</div>

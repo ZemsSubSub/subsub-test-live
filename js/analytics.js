@@ -3812,7 +3812,8 @@
     var destOk = !!name && planCollsLeft() > 0;   // тариф исчерпан — создать нельзя
     // single: описание ИЛИ ссылка; refs: описание ИЛИ хотя бы один референс
     var hasSource = aiMode() === "refs" ? !!aiRefs.length : !!seed;
-    if (submit) submit.disabled = !(destOk && (query || hasSource || ccManual().length));
+    // имени достаточно: пустую коллекцию наполняют потом, на её странице
+    if (submit) submit.disabled = !destOk;
     var cnt2 = ccEl("[data-cc-links-count]");
     if (cnt2) cnt2.textContent = String(ccLinks().length);
     ccLimitSync();
@@ -4141,7 +4142,7 @@
     }
     var target = aiTxt("[data-ai-name]");
     if (!target) { toast("Name the collection first"); return; }
-    if (!manual.length && !wantsSourcing) { toast("Paste links, pick channels or describe what you're looking for"); return; }
+
     var isNew = !aiCollByName(target);
     if (isNew) aiCreatePlain(target);
     // лимит тарифа: добавляем столько, сколько влезает
@@ -4166,7 +4167,7 @@
     var parts = [];
     if (added.length) parts.push(added.length + (added.length === 1 ? " channel added" : " channels added"));
     if (wantsSourcing) parts.push("sourcing started");
-    toast("“" + target + "” " + (parts.join(" · ") || "created") +
+    toast("“" + target + "” " + (parts.join(" · ") || "created — add channels to start") +
           (skipped ? " · " + skipped + " didn't fit your plan" : ""));
     if (wantsSourcing) aiTick();               // пилюля подбора в шапке
     aiRenderCollections();
@@ -4379,7 +4380,32 @@
     }
   }
   // страница коллекции: плашка состояния, скелетоны подбора и доступность кнопок
+  // Коллекция без каналов: строки из сборки убираем и показываем состояние.
+  // Касается только коллекций, которые живут в состоянии (созданных в прототипе),
+  // у демо-коллекций из сборки состав нарисован в разметке.
+  function ceKnown(name) {
+    return !!(aiCollByName(name) || aiExtraLoad()[name]);
+  }
+  function ceEmptySync() {
+    var blank = document.querySelector("[data-ce-blank]");
+    if (!blank) return;
+    var nm = ceName();
+    var empty = ceKnown(nm) && aiChannelsOf(nm).length === 0;
+    if (empty) {
+      ceRows().forEach(function (r) { if (r.parentNode) r.parentNode.removeChild(r); });
+      ceLimitSync();                             // счётчик считался до удаления строк
+    }
+    blank.hidden = !empty;
+    var tbl = document.querySelector("[data-ce-scroll]");
+    if (tbl) tbl.style.display = empty ? "none" : "";
+    var srch = document.querySelector("[data-ce-search]");
+    var srow = srch ? srch.closest(".ce-search") : null;
+    if (srow) srow.style.display = empty ? "none" : "";
+    var lim = document.querySelector("[data-ce-limit]");
+    if (lim) lim.hidden = empty;                 // «0 of 30» пустой коллекции ничего не говорит
+  }
   function ceStateSync() {
+    ceEmptySync();
     var badge = document.querySelector("[data-ce-state]");
     if (!badge) return;                               // это не страница коллекции
     var nm = ceName(), st = collState(nm), rec = null;

@@ -3182,6 +3182,7 @@ body.filters-open .an-filters.is-active { display: flex; }
 /* лимит размера коллекции — в одной строке с названием: счётчик, полоса, апгрейд */
 .ce-limit { display: inline-flex; align-items: center; flex-shrink: 0; gap: 10px; padding: 4px 4px 4px 10px;
   border-radius: 10px; background: var(--color-shade-90); }
+.ce-limit[hidden] { display: none; }   /* inline-flex перебивал атрибут hidden */
 .ce-limit__v { font-size: 13px; font-weight: 300; color: var(--color-shade-700); white-space: nowrap; }
 .ce-limit__v b { font-weight: 500; color: var(--color-green-dark); }
 .ce-limit.is-full .ce-limit__v b { color: var(--color-red); }
