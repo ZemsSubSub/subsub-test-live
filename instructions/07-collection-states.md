@@ -128,22 +128,31 @@ Deep data собрана, коллекция рабочая, фоновых пр
 - **Удалили каналы после активации** — коллекция остаётся Activated, данные по удалённым каналам
   исчезают из Deep data.
 
-## Открытые вопросы
+## Решённые вопросы (13.08.2026)
 
-1. Ручное добавление и удаление каналов: в `Collecting deep data` заблокировано,
-   в `Collecting channels` разрешено — правила несимметричные. Подтвердить или поправить.
-2. `Duplicate` во время процесса — с фиксацией текущего среза или блокируем?
-3. `Cancel` сбора Deep data — собранное отбрасывается полностью или частично сохраняется?
-4. Повторная активация после ошибки — новая попытка с нуля или продолжение?
-5. Лейблы вместо продового `Collecting data` — утвердить формулировки.
-   Предложение: `Collecting channels` и `Collecting deep data`.
-   Альтернативы: `Finding channels` / `Collecting deep data`;
-   `Sourcing channels` / `Collecting deep data`.
+1. **Лейблы:** подбор — `Sourcing channels`, сбор Deep data — прежний продовый `Collecting data`.
+   `Created` и `Activated` без изменений.
+2. **Правка состава:** оставляем несимметрично — во время подбора состав менять можно,
+   во время сбора Deep data нельзя (сбор идёт по фиксированному набору каналов).
+3. **Duplicate во время процесса:** заблокирован до окончания, пункт виден с тултипом
+   «Wait until the running process finishes».
+4. **Cancel сбора Deep data:** собранное отбрасывается полностью, коллекция возвращается
+   в Created, повторная активация собирает заново.
 
-## Как это сделано в прототипе
+## Тексты (на утверждение)
 
-- Модель: `collState(name)` → `created | sourcing | deep | activated`. Подбор — это pending-запись в `subsub_ai_collections`, состояние Deep data — поле `deep` (`collecting | activated`) в записи коллекции или в слоте `subsub_coll_extra`; для коллекций из сборки начальное значение берётся из `data-ce-statuses` на `<body>`.
-- Процессы идут по таймерам и переживают переходы между страницами: канал подбора раз в `AI_STEP_MS`, сбор Deep data — `DEEP_MS`. Обе величины в демо-режиме ускоряются в 10 раз.
-- Одна функция `collSurfaces()` обновляет все поверхности: пилюлю в шапке, список коллекций, страницу коллекции, блок состояния на Deep data и открытый селектор.
-- Блокировки: `collCanEdit()` (состав нельзя менять во время сбора Deep data), `collCanSource()` (нельзя запускать подбор во время подбора или сбора), активация требует минимум один канал. Заблокированные контролы остаются видимыми, причина — в `title`.
-- Переключение состояний для демо: `subsubState("Имя коллекции", "created|sourcing|deep|activated")`, список — `subsubStates()`, ускорение процессов — `subsubFast(true)` / `subsubFast(false)`.
+| Место | Текст |
+| --- | --- |
+| Активация во время подбора | Wait until channel sourcing finishes |
+| Подбор во время сбора Deep data | Wait until deep data collection finishes |
+| Правка состава во время сбора | Channels can’t be changed while deep data is being collected |
+| Активация пустой коллекции | Add at least one channel first |
+| Export без собранных данных | Deep data isn’t collected yet |
+| Duplicate во время процесса | Wait until the running process finishes |
+| Кнопка Deep data во время сбора | Deep data is being collected — open Deep data to see progress |
+| Отмена подбора (тост) | Sourcing cancelled — “Имя” |
+| Отмена сбора (тост) | Deep data collection cancelled — “Имя” |
+| Сбор завершён (тост) | Deep data is ready — “Имя” |
+
+Ошибки подбора и сбора в прототипе не смоделированы — состояний ошибки нет,
+тексты для них ждут решения вместе с реализацией.

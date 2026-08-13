@@ -154,7 +154,8 @@
       return;
     }
     if (e.target.closest("[data-ce-cancel]")) { collCancel(ceName()); return; }
-    if (e.target.closest("[data-ce-duplicate]")) { ceMenu(false); ceDuplicate(); return; }
+    var ceDupBtn = e.target.closest("[data-ce-duplicate]");
+    if (ceDupBtn) { if (ceDupBtn.disabled) return; ceMenu(false); ceDuplicate(); return; }
     if (e.target.closest("[data-ce-rename]")) { ceRenameOpen(); return; }
     if (e.target.closest("[data-ce-rename-close]")) { closeModal(document.getElementById("ceRename")); return; }
     if (e.target.closest("[data-ce-rename-save]")) { ceRenameSave(); return; }
@@ -859,13 +860,14 @@
   // Подбор каналов и сбор Deep data никогда не идут одновременно по одной коллекции:
   // пока активно одно, вход во второе заблокирован с объяснением, а не спрятан.
   var CS_LBL = {
-    created: "Created", sourcing: "Collecting channels",
-    deep: "Collecting deep data", activated: "Activated"
+    created: "Created", sourcing: "Sourcing channels",
+    deep: "Collecting data", activated: "Activated"
   };
   var CS_TIP = {
     deepWaitSourcing: "Wait until channel sourcing finishes",
     sourceWaitDeep: "Wait until deep data collection finishes",
     editWaitDeep: "Channels can't be changed while deep data is being collected",
+    busy: "Wait until the running process finishes",
     needChannel: "Add at least one channel first",
     noDeep: "Deep data isn't collected yet",
     sample: "Shared collection — read only"
@@ -875,9 +877,9 @@
   // состояние Deep data живёт там же, где состав коллекции: в AI-записи или в слоте extra
   function collDeepState(name) {
     var c = aiCollByName(name);
-    if (c && c.deep) return c.deep;
+    if (c && c.deep) return c.deep === "none" ? "" : c.deep;
     var slot = aiExtraLoad()[name];
-    if (slot && slot.deep) return slot.deep;
+    if (slot && slot.deep) return slot.deep === "none" ? "" : slot.deep;
     var seed = collStatus(name);          // из сборки: activated | pending | created
     return seed === "activated" ? "activated" : seed === "pending" ? "collecting" : "";
   }
@@ -936,9 +938,11 @@
     collSurfaces();
     return true;
   }
+  // Отмена сбора отбрасывает собранное целиком: коллекция возвращается в Created,
+  // повторная активация собирает заново.
   function collCancelDeep(name) {
     if (deepTimers[name]) { clearTimeout(deepTimers[name]); delete deepTimers[name]; }
-    collSetDeep(name, "", 0);
+    collSetDeep(name, "none", 0);
     collSurfaces();
   }
   function collCancelSourcing(name) {
@@ -981,7 +985,7 @@
     collCancelSourcing(name);
     if (deepTimers[name]) { clearTimeout(deepTimers[name]); delete deepTimers[name]; }
     if (state === "sourcing") {
-      collSetDeep(name, "", 0);
+      collSetDeep(name, "none", 0);
       var list = aiLoad();
       list.push({ id: "s" + Date.now(), name: name, target: name, mode: "append", isAi: true,
                   status: "pending", query: "demo sourcing", filters: {}, channels: [],
@@ -994,7 +998,7 @@
     } else if (state === "activated") {
       collSetDeep(name, "activated", 0);
     } else {
-      collSetDeep(name, "", 0);
+      collSetDeep(name, "none", 0);
     }
     collSurfaces();
     return subsubStates();
@@ -1019,9 +1023,9 @@
   function csList(key) { return (typeof aiAllColls === "function" ? aiAllColls() : []); }
   // коллекции в списке идут группами: сначала активированные, потом остальные
   var CS_GROUPS = [
-    { id: "activated", label: "Activated" },
-    { id: "deep", label: "Collecting deep data" },
-    { id: "sourcing", label: "Collecting channels" },
+    { id: "activated", label: CS_LBL.activated },
+    { id: "deep", label: CS_LBL.deep },
+    { id: "sourcing", label: CS_LBL.sourcing },
     { id: "created", label: "Not activated" }
   ];
   function csGroupOf(key, name) { return collState(name); }
@@ -2245,6 +2249,15 @@
     return url;
   }
   // пилюля статуса по состоянию (та же разметка, что в билде)
+  // подтверждение активации: списываются лимиты плана, поэтому спрашиваем
+  function mcActivateAsk(row) {
+    mcRow = row;
+    var nm = row ? (row.getAttribute("data-name") || "") : "";
+    var txt = document.querySelector("[data-mc-activate-text]");
+    if (txt) txt.textContent = "Deep data will be collected for " + collChans(nm) + " channels of «" + nm +
+      "». Collecting takes a few minutes and counts against your plan limits.";
+    openModal("mcModal-activate");
+  }
   // пилюля состояния: одна разметка для строк из сборки и для AI-коллекций
   function collPillHtml(name, opts) {
     var st = collState(name), ro = !!(opts && opts.readonly);
@@ -2335,6 +2348,13 @@
       // Deactivate = отмена сбора или возврат активированной коллекции в Created
       var deact = menu.querySelector('[data-mc-act="deactivate"]');
       deact.hidden = !(st === "activated" || st === "deep");
+      // дубликат снимаем только по завершении процесса: иначе состав копии непредсказуем
+      var dupItem = menu.querySelector('[data-mc-act="duplicate"]');
+      if (dupItem) {
+        var busy = st === "sourcing" || st === "deep";
+        if (busy) { dupItem.setAttribute("disabled", ""); dupItem.title = CS_TIP.busy; }
+        else { dupItem.removeAttribute("disabled"); dupItem.removeAttribute("title"); }
+      }
       // C1: чужую (sample) коллекцию нельзя менять — остаются просмотр и Duplicate
       var mine = !(mcRow && mcRow.hasAttribute("data-sample"));
       menu.querySelector('[data-mc-act="rename"]').hidden = !mine;
@@ -4249,6 +4269,12 @@
     });
     var dea = document.querySelector("[data-ce-deactivate]");
     if (dea) dea.hidden = !(st === "activated" || st === "deep");
+    var dup = document.querySelector("[data-ce-duplicate]");
+    if (dup) {
+      var busyProc = st === "sourcing" || st === "deep";
+      dup.disabled = busyProc;
+      if (busyProc) dup.title = CS_TIP.busy; else dup.removeAttribute("title");
+    }
     ceDeepSync();
     ceAiSync();
   }
