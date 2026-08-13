@@ -544,6 +544,20 @@
   var acNi = document.querySelector("[data-ac-new-name]");
   if (acNi) acNi.addEventListener("keyup", function (e) { if (e.key === "Enter") acCreate(); });
 
+  // 10k → 10,000: разряды расставляем по выходу из поля, чтобы не мешать вводу
+  document.addEventListener("change", function (e) {
+    if (!e.target.closest("[data-ff]")) return;
+    ffRead();
+    ffWrite();
+    ffSync();
+  });
+  document.addEventListener("blur", function (e) {
+    if (!e.target || !e.target.closest || !e.target.closest("[data-ff]")) return;
+    ffRead();
+    ffWrite();
+    ffSync();
+  }, true);
+
   var input = document.querySelector("[data-an-search]");
   if (input) input.addEventListener("input", function () {
     var cl = document.querySelector("[data-an-search-clear]");
@@ -2716,12 +2730,17 @@
   }
   function aiNum(n) { return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ","); }
   // чипы применённых фильтров в формате прод-YT Sourcing (нулевые/пустые пропускаем)
+  // Чипы последнего запуска подбора. Диапазон показываем целиком, а «≥» — когда задан только низ.
   function aiChips(f) {
     var out = [];
-    if (f.subs > 0) out.push("subs ≥ " + aiNum(f.subs));
-    if (f.videos > 0) out.push("videos ≥ " + aiNum(f.videos));
-    if (f.views > 0) out.push("views ≥ " + aiNum(f.views));
-    if (f.avg > 0) out.push("avg ≥ " + aiNum(f.avg));
+    [["subs", "subsFrom", "subsTo"], ["videos", "videosFrom", "videosTo"],
+     ["views", "viewsFrom", "viewsTo"], ["avg", "avgFrom", "avgTo"]].forEach(function (r) {
+      var from = f[r[1]] != null ? f[r[1]] : (f[r[0]] > 0 ? f[r[0]] : null);
+      var to = f[r[2]] != null ? f[r[2]] : null;
+      if (from == null && to == null) return;
+      out.push(r[0] + " " + (from != null && to != null ? aiNum(from) + "–" + aiNum(to)
+        : from != null ? "≥ " + aiNum(from) : "≤ " + aiNum(to)));
+    });
     if (f.lastDays > 0) out.push("last ≤ " + f.lastDays + "d");
     return out;
   }
@@ -3601,6 +3620,28 @@
     }
   };
   var ccModeName = "create";
+  // Второй шаг живёт только у таба «Describe with AI»: у вставки ссылок фильтровать нечего.
+  function ccStep(n) {
+    var m = document.getElementById("aiModal");
+    if (!m) return;
+    [].slice.call(m.querySelectorAll("[data-cc-step]")).forEach(function (s) {
+      s.hidden = s.getAttribute("data-cc-step") !== String(n);
+    });
+    [].slice.call(m.querySelectorAll("[data-cc-foot]")).forEach(function (b) {
+      b.hidden = b.getAttribute("data-cc-foot") !== String(n);
+    });
+    if (n === 2) {
+      var q = aiTxt("[data-ai-query]");
+      var ro = ffEl("[data-cc-prompt-txt]");
+      if (ro) ro.textContent = q || "No description — sourcing will use filters only";
+      ffSync();
+    } else ffChipsRender();
+    ccFiltersBtnSync();
+  }
+  function ccStepNow() {
+    var s2 = document.querySelector('[data-cc-step="2"]');
+    return s2 && !s2.hidden ? 2 : 1;
+  }
   function ccMode(mode) {
     var m = document.getElementById("aiModal");
     if (!m) return;
@@ -3616,9 +3657,14 @@
     var tabs = m.querySelector("[data-cc-tabs]");
     if (tabs) tabs.hidden = mode !== "create";
     if (mode === "similar") ccSetTab("ai");
+    ccSubmitLbl();
     if (mode === "pick") {
       [].slice.call(m.querySelectorAll("[data-cc-pane]")).forEach(function (pane) { pane.hidden = true; });
     }
+    ccStep(1);
+    ccFiltersBtnSync();
+    var body = m.querySelector(".ai-form");
+    if (body) body.classList.toggle("ai-form--steps", mode !== "pick");
     ccLimitSync();
   }
   // черновик по одной ссылке (режим single) — варьируем по домену/хендлу
@@ -3851,7 +3897,7 @@
     // single: описание ИЛИ ссылка; refs: описание ИЛИ хотя бы один референс
     var hasSource = aiMode() === "refs" ? !!aiRefs.length : !!seed;
     // имени достаточно: пустую коллекцию наполняют потом, на её странице
-    if (submit) submit.disabled = !destOk;
+    if (submit) submit.disabled = !destOk || (typeof ffErrors === "function" && ffErrors().length > 0);
     var cnt2 = ccEl("[data-cc-links-count]");
     if (cnt2) cnt2.textContent = String(ccLinks().length);
     ccLimitSync();
@@ -3983,14 +4029,205 @@
     if (trig) trig.setAttribute("aria-expanded", willOpen ? "true" : "false");
   }
 
+  // ===================== фильтры подбора: отдельный шаг модалки =====================
+  // Пустое поле = фильтр не применён (плейсхолдер Any), ноль — легальное значение.
+  // Раньше 0 значил «выключено», и «мне всё равно» было не отличить от «ровно ноль».
+  var FF_KEYS = ["subsFrom", "subsTo", "viewsFrom", "viewsTo", "videosFrom", "videosTo", "avgFrom", "avgTo", "lastDays"];
+  var FF_DEFAULT = { subsFrom: 10000 };   // единственный дефолт, остальное пусто
+  var FF_PAIRS = [
+    { id: "subs", from: "subsFrom", to: "subsTo", label: "subs" },
+    { id: "views", from: "viewsFrom", to: "viewsTo", label: "views" },
+    { id: "videos", from: "videosFrom", to: "videosTo", label: "videos" },
+    { id: "avg", from: "avgFrom", to: "avgTo", label: "avg views" }
+  ];
+  var ffState = {};
+  // «10k», «1.5m», «10 000» → число; пусто → null
+  function ffParse(str) {
+    var s = String(str == null ? "" : str).trim().toLowerCase().replace(/[\s,]/g, "");
+    if (!s) return null;
+    var m = s.match(/^(\d+(?:\.\d+)?)([kmb])?$/);
+    if (!m) return null;
+    var n = parseFloat(m[1]);
+    if (m[2] === "k") n *= 1e3;
+    else if (m[2] === "m") n *= 1e6;
+    else if (m[2] === "b") n *= 1e9;
+    return Math.round(n);
+  }
+  function ffFmt(n) { return n == null ? "" : Number(n).toLocaleString("en-US"); }
+  // короткая запись для чипов: 10k, 1.5m
+  function ffShort(n) {
+    if (n == null) return "";
+    if (n >= 1e9) return (n / 1e9).toFixed(n % 1e9 ? 1 : 0) + "b";
+    if (n >= 1e6) return (n / 1e6).toFixed(n % 1e6 ? 1 : 0) + "m";
+    if (n >= 1e3) return (n / 1e3).toFixed(n % 1e3 ? 1 : 0) + "k";
+    return String(n);
+  }
+  function ffEl(sel) { var m = document.getElementById("aiModal"); return m ? m.querySelector(sel) : null; }
+  function ffReset() {
+    ffState = {};
+    Object.keys(FF_DEFAULT).forEach(function (k) { ffState[k] = FF_DEFAULT[k]; });
+    ffWrite();
+  }
+  // поля ← состояние
+  function ffWrite() {
+    FF_KEYS.forEach(function (k) {
+      var el = ffEl('[data-ff="' + k + '"]');
+      if (el) el.value = ffFmt(ffState[k]);
+    });
+    var sel = ffEl("[data-ff-last]");
+    if (sel) {
+      var d = ffState.lastDays;
+      sel.value = d == null ? "" : (d === 7 || d === 30 || d === 90) ? String(d) : "custom";
+      var cu = ffEl("[data-ff-custom]");
+      if (cu) cu.hidden = sel.value !== "custom";
+    }
+    ffPresetsSync();
+  }
+  // состояние ← поля
+  function ffRead() {
+    FF_KEYS.forEach(function (k) {
+      if (k === "lastDays") return;
+      var el = ffEl('[data-ff="' + k + '"]');
+      if (el) ffState[k] = ffParse(el.value);
+    });
+    var sel = ffEl("[data-ff-last]");
+    if (sel) {
+      if (sel.value === "custom") ffState.lastDays = ffParse((ffEl('[data-ff="lastDays"]') || {}).value);
+      else ffState.lastDays = sel.value ? parseInt(sel.value, 10) : null;
+    }
+  }
+  function ffPresetsSync() {
+    [].slice.call(document.querySelectorAll("[data-ff-preset]")).forEach(function (b) {
+      var v = b.getAttribute("data-ff-preset").split(":");
+      var from = v[0] ? parseInt(v[0], 10) : null, to = v[1] ? parseInt(v[1], 10) : null;
+      b.classList.toggle("is-on", ffState.subsFrom === from && (ffState.subsTo || null) === to);
+    });
+  }
+  function ffActive() { return FF_KEYS.some(function (k) { return ffState[k] != null; }); }
+  // отличается ли набор от дефолтного (только subs from = 10 000)
+  function ffTouched() {
+    return FF_KEYS.some(function (k) {
+      var def = FF_DEFAULT[k] == null ? null : FF_DEFAULT[k];
+      return (ffState[k] == null ? null : ffState[k]) !== def;
+    });
+  }
+  // чипы: описывают запуск подбора, а не состав коллекции
+  function ffChips() {
+    var out = [];
+    if (!ffTouched()) return out;          // дефолтный набор чипами не показываем
+    FF_PAIRS.forEach(function (p) {
+      var a = ffState[p.from], b = ffState[p.to];
+      if (a == null && b == null) return;
+      var val = a != null && b != null ? ffShort(a) + "–" + ffShort(b)
+              : a != null ? ffShort(a) + "+"
+              : "up to " + ffShort(b);
+      out.push({ id: p.id, text: p.label + " " + val });
+    });
+    if (ffState.lastDays != null) out.push({ id: "last", text: "last " + ffState.lastDays + "d" });
+    return out;
+  }
+  function ffChipsRender() {
+    var box = ffEl("[data-cc-chips]");
+    if (!box) return;
+    box.innerHTML = ffChips().map(function (c) {
+      return '<span class="ff-chip">' + escHtml(c.text) +
+        '<button class="ff-chip__x" type="button" data-ff-chip-x="' + c.id + '" aria-label="Clear filter">' +
+        closeIconHtml() + "</button></span>";
+    }).join("");
+    var lbl = ffEl("[data-cc-filters-lbl]");
+    if (lbl) lbl.textContent = ffTouched() ? "Edit filters" : "Set filters";
+  }
+  function ffChipClear(id) {
+    if (id === "last") ffState.lastDays = null;
+    else FF_PAIRS.forEach(function (p) { if (p.id === id) { ffState[p.from] = null; ffState[p.to] = null; } });
+    ffWrite();
+    ffSync();
+  }
+  // «314m» из каталога → число, чтобы посчитать предпросмотр по мокам
+  function ffMetric(v) {
+    var s = String(v == null ? "" : v).trim().toLowerCase().replace(/[\s,+]/g, "");
+    var m = s.match(/^(\d+(?:\.\d+)?)(bn|b|m|k)?$/);
+    if (!m) return null;
+    var n = parseFloat(m[1]);
+    if (m[2] === "k") n *= 1e3;
+    else if (m[2] === "m") n *= 1e6;
+    else if (m[2] === "b" || m[2] === "bn") n *= 1e9;
+    return n;
+  }
+  function ffFits(ch) {
+    function ok(from, to, val) {
+      if (from == null && to == null) return true;
+      if (val == null) return true;         // метрики нет в моках — по ней не судим
+      if (from != null && val < from) return false;
+      if (to != null && val > to) return false;
+      return true;
+    }
+    if (!ok(ffState.subsFrom, ffState.subsTo, ffMetric(ch.subs))) return false;
+    if (!ok(ffState.viewsFrom, ffState.viewsTo, ffMetric(ch.views))) return false;
+    if (!ok(ffState.videosFrom, ffState.videosTo, ffMetric(ch.videos))) return false;
+    if (!ok(ffState.avgFrom, ffState.avgTo, ffMetric(ch.avg))) return false;
+    return true;
+  }
+  // ошибки диапазонов: from больше to
+  function ffErrors() {
+    var bad = [];
+    FF_PAIRS.forEach(function (p) {
+      var a = ffState[p.from], b = ffState[p.to];
+      if (a != null && b != null && a > b) bad.push(p);
+    });
+    return bad;
+  }
+  // мягкое предупреждение: промпт про небольшие каналы против высокого порога
+  var FF_SMALL = /\b(small|micro|nano|tiny)\b|небольш|маленьк|микро/i;
+  function ffWarnText() {
+    var q = aiTxt("[data-ai-query]");
+    if (q && FF_SMALL.test(q) && ffState.subsFrom != null && ffState.subsFrom >= 1e6) {
+      return "Your description asks for small channels, but the subscriber floor is " +
+        ffShort(ffState.subsFrom) + " — sourcing may come back empty.";
+    }
+    return "";
+  }
+  function ffSync() {
+    var errs = ffErrors();
+    FF_PAIRS.forEach(function (p) {
+      var bad = errs.indexOf(p) !== -1;
+      [p.from, p.to].forEach(function (k) {
+        var el = ffEl('[data-ff="' + k + '"]');
+        if (el) el.classList.toggle("is-bad", bad);
+      });
+    });
+    var err = ffEl("[data-ff-err]");
+    if (err) {
+      err.hidden = !errs.length;
+      if (errs.length) err.textContent = "«From» is bigger than «to» in " +
+        errs.map(function (p) { return p.label; }).join(", ") + " — fix the range to start sourcing.";
+    }
+    var warn = ffEl("[data-ff-warn]"), wt = ffWarnText();
+    if (warn) { warn.hidden = !wt; warn.textContent = wt; }
+    var prev = ffEl("[data-ff-preview]");
+    if (prev) {
+      if (errs.length) prev.textContent = "";
+      else {
+        var pool = (typeof aiChannelPool === "function" ? aiChannelPool() : []);
+        var n = pool.filter(ffFits).length;
+        prev.textContent = n
+          ? "≈ " + n + (n === 1 ? " channel matches these filters" : " channels match these filters")
+          : "No channels match these filters — try loosening them.";
+      }
+    }
+    ffChipsRender();
+    aiSync();
+  }
+  // запись в коллекцию: старые ключи оставляем, чтобы чипы «последнего подбора» не переписывать
   function aiFormFilters() {
-    return {
-      subs: aiVal("[data-ai-subs]", 10000),
-      videos: aiVal("[data-ai-videos]", 0),
-      views: aiVal("[data-ai-views]", 0),
-      avg: aiVal("[data-ai-avg]", 0),
-      lastDays: aiVal("[data-ai-last]", 0)
-    };
+    ffRead();
+    var f = {};
+    FF_KEYS.forEach(function (k) { if (ffState[k] != null) f[k] = ffState[k]; });
+    f.subs = ffState.subsFrom;
+    f.views = ffState.viewsFrom;
+    f.videos = ffState.videosFrom;
+    f.avg = ffState.avgFrom;
+    return f;
   }
 
   // ---- три входа модалки Create collection: ссылки, база, промпт ----
@@ -4050,8 +4287,26 @@
     if (nm && !nm.value) nm.value = names[0] + (names.length > 1 ? " +" + (names.length - 1) : "");
     aiSync();
   }
+  // На табе с промптом основное действие — запустить подбор, а не «создать коллекцию».
+  function ccSubmitLbl() {
+    var sbm = ffEl("[data-ai-submit]");
+    if (!sbm) return;
+    var c = AI_COPY[ccModeName] || AI_COPY.create;
+    sbm.textContent = (ccModeName === "create" && ccTab === "ai") ? "Start sourcing" : c.submit;
+  }
+  // кнопка «Set filters» есть только там, где есть промпт
+  function ccFiltersBtnSync() {
+    var btn = ffEl("[data-cc-filters-open]");
+    if (!btn) return;
+    var step1 = ccStepNow() === 1;
+    var show = ccModeName !== "pick" && ccTab === "ai" && step1;
+    btn.hidden = !show;
+    var chips = ffEl("[data-cc-chips]");
+    if (chips) chips.style.display = show ? "" : "none";   // на втором шаге поля рядом, дублировать нечего
+  }
   function ccSetTab(tab) {
     ccTab = tab;
+    setTimeout(function () { ccFiltersBtnSync(); ccSubmitLbl(); }, 0);
     [].slice.call(document.querySelectorAll("[data-cc-tab]")).forEach(function (b) {
       b.classList.toggle("is-active", b.getAttribute("data-cc-tab") === tab);
     });
@@ -4089,8 +4344,11 @@
     } else if (left === Infinity) {
       msg = "";
     } else if (ccTab === "ai") {
-      msg = "<b>" + p.label + "</b> plan: we'll find up to <b>" + avail + "</b> of " +
-            planFmt(p.chans) + " channels" + (dest ? " for “" + dest + "”" : "") + ".";
+      // «up to 25 channels» для пустой коллекции; «up to 5 of 25 left», когда места заняты
+      msg = picked || dest
+        ? "<b>" + p.label + "</b> plan: up to <b>" + avail + "</b> of " + planFmt(p.chans) + " left" +
+          (dest ? " in “" + dest + "”" : "") + "."
+        : "<b>" + p.label + "</b> plan: up to <b>" + planFmt(p.chans) + "</b> channels in a collection.";
     } else {
       msg = picked > left
         ? "<b>" + p.label + "</b> plan: only <b>" + left + "</b> of " + picked + " channels will be added."
@@ -4144,6 +4402,7 @@
     var ccTa = ccEl("[data-cc-links]"); if (ccTa) ccTa.value = "";
     var ccC = ccEl("[data-cc-links-count]"); if (ccC) ccC.textContent = "0";
     var nm0 = m.querySelector("[data-ai-name]"); if (nm0) nm0.value = "";
+    ffReset();                            // фильтры к дефолту: только subs from = 10 000
     ccSetTab("ai");                       // всегда открываемся на «Describe with AI»
     ccMode("create");
     aiSetMode("single");                  // без референсов: под промптом снова поле ссылки
@@ -4156,6 +4415,14 @@
   document.addEventListener("input", function (e) {
     if (e.target.closest("[data-anf-text],[data-anf-from],[data-anf-to]")) { flTouch(); return; }
     if (e.target.closest("[data-cc-links]")) { aiSync(); return; }
+    if (e.target.closest("[data-ff]")) { ffRead(); ffSync(); return; }
+    if (e.target.closest("[data-ff-last]")) {
+      var cu = document.querySelector("[data-ff-custom]");
+      if (cu) cu.hidden = e.target.value !== "custom";
+      ffRead();
+      ffSync();
+      return;
+    }
     if (e.target.closest("[data-ce-search]")) { ceSearchApply(); return; }
     if (e.target.closest("[data-ce-share-search]")) { ceShareSuggest(e.target.value); return; }
     if (e.target.closest("[data-rp-search]")) { repTargetFill(e.target.value); return; }
@@ -4257,6 +4524,21 @@
     var ccT = e.target.closest("[data-cc-tab]");
     if (ccT) { ccSetTab(ccT.getAttribute("data-cc-tab")); return; }
     if (e.target.closest("[data-cc-upgrade]")) { toast("Upgrade request sent — our team will contact you"); return; }
+    if (e.target.closest("[data-cc-filters-open]")) { ffRead(); ccStep(2); return; }
+    if (e.target.closest("[data-cc-filters-back]")) { ffRead(); ccStep(1); ffChipsRender(); return; }
+    var ffPre = e.target.closest("[data-ff-preset]");
+    if (ffPre) {
+      var pv = ffPre.getAttribute("data-ff-preset").split(":");
+      ffRead();
+      var same = ffPre.classList.contains("is-on");
+      ffState.subsFrom = same ? null : (pv[0] ? parseInt(pv[0], 10) : null);
+      ffState.subsTo = same ? null : (pv[1] ? parseInt(pv[1], 10) : null);
+      ffWrite();
+      ffSync();
+      return;
+    }
+    var ffX = e.target.closest("[data-ff-chip-x]");
+    if (ffX) { ffRead(); ffChipClear(ffX.getAttribute("data-ff-chip-x")); return; }
     if (e.target.closest("[data-ai-open]")) { aiOpen(); return; }
     if (e.target.closest("[data-ai-resource]")) { aiResource(); return; }
     // второй вход: «Find similar channels» из панели массовых действий Basic data —

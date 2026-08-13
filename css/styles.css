@@ -2571,6 +2571,65 @@ body.is-open:not(.is-collapsed) .main { margin-left: 306px; }
 .cc-chip:hover { background: var(--color-shade-200); }
 .cc-chip:hover svg { color: var(--color-black); }
 .cc-pane[hidden] { display: none; }
+/* два шага модалки: высота тела одинаковая, иначе переход читается как перезагрузка */
+.ai-form { min-height: 430px; }
+/* оба шага одной высоты: иначе переход между ними читается как перезагрузка */
+.ai-form--steps { flex: 0 0 540px; height: 540px; min-height: 540px; max-height: 540px;
+  box-sizing: border-box; overflow-y: auto; }
+.cc-step { display: flex; flex-direction: column; gap: 16px; }
+.cc-step[hidden] { display: none; }
+.cc-step2__head { display: flex; align-items: center; gap: 8px; }
+.cc-step2__back { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px;
+  padding: 0; border: 0; border-radius: 8px; background: none; color: var(--color-black); cursor: pointer; }
+.cc-step2__back:hover { background: var(--color-shade-100); }
+.cc-step2__back svg { width: 20px; height: 20px; }
+.cc-step2__title { margin: 0; font-size: 18px; font-weight: 600; color: var(--color-black); }
+/* промпт первого шага: только чтение, редактируется через Back */
+.cc-ro { display: flex; gap: 10px; padding: 10px 12px; border-radius: 8px; background: var(--color-shade-90); }
+.cc-ro__k { flex-shrink: 0; font-size: 12px; font-weight: 500; line-height: 20px; letter-spacing: .02em;
+  text-transform: uppercase; color: var(--color-shade-700); }
+.cc-ro__v { font-size: 14px; font-weight: 300; line-height: 20px; color: var(--color-black); }
+/* группы фильтров: лейбл слева, поля справа */
+.ff-group { display: flex; flex-direction: column; gap: 10px; }
+.ff-group__t { margin: 0; font-size: 12px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase;
+  color: var(--color-shade-700); }
+.ff-row { display: flex; align-items: flex-start; gap: 16px; }
+.ff-lbl { flex: 0 0 150px; display: flex; flex-direction: column; padding-top: 10px; font-size: 14px;
+  font-weight: 500; color: var(--color-black); }
+.ff-lbl__sub { font-size: 12px; font-weight: 300; color: var(--color-shade-700); }
+.ff-fields { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 8px; }
+.ff-fields--row { flex-direction: row; align-items: center; gap: 12px; }
+.ff-pair { display: flex; align-items: center; gap: 8px; }
+.ff-inp { width: 120px; height: 40px; text-align: left; }
+.ff-inp.is-bad { border-color: var(--color-red); }
+.ff-dash { color: var(--color-shade-700); }
+.ff-sel { width: 180px; height: 40px; }
+.ff-custom { display: inline-flex; align-items: center; gap: 8px; }
+.ff-custom[hidden] { display: none; }
+.ff-custom__u { font-size: 14px; font-weight: 300; color: var(--color-shade-700); }
+/* пресеты размера аудитории: клик заполняет пару полей */
+.ff-presets { display: flex; flex-wrap: wrap; gap: 6px; }
+.ff-preset { height: 28px; padding: 0 10px; border: 1px solid var(--color-shade-200); border-radius: 9999px;
+  background: #fff; font-family: inherit; font-size: 13px; color: var(--color-black); cursor: pointer; }
+.ff-preset:hover { background: var(--color-shade-90); }
+.ff-preset.is-on { border-color: var(--color-purple-900); background: var(--color-purple-100);
+  color: var(--color-purple-900); }
+.ff-msg { margin: 0; font-size: 13px; font-weight: 300; }
+.ff-msg[hidden] { display: none; }
+.ff-msg--warn { color: var(--color-orange); }
+.ff-msg--err { color: var(--color-red); }
+.ff-preview { margin: 0; padding-top: 4px; font-size: 14px; font-weight: 500; color: var(--color-black); }
+/* футер: чипы активных фильтров между действиями */
+.cc-foot { flex-wrap: wrap; }
+.cc-foot__chips { flex: 1; min-width: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.cc-foot__chips:empty { display: none; }
+.ff-chip { display: inline-flex; align-items: center; gap: 4px; height: 28px; padding: 0 4px 0 10px;
+  border-radius: 9999px; background: var(--color-shade-100); font-size: 13px; color: var(--color-black); }
+.ff-chip__x { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px;
+  padding: 0; border: 0; border-radius: 9999px; background: none; color: var(--color-shade-700); cursor: pointer; }
+.ff-chip__x:hover { background: var(--color-shade-200); color: var(--color-black); }
+.ff-chip__x svg { width: 12px; height: 12px; }
+[data-cc-foot][hidden] { display: none; }
 .cc-pane .nc-base { max-height: 260px; }
 /* подсказка про лимит тарифа + апселл */
 .cc-limit { display: flex; align-items: center; justify-content: space-between; gap: 12px;
