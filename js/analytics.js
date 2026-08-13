@@ -1139,7 +1139,7 @@
     return subsubStates();
   };
   window.subsubPlan = function (id) {
-    if (!id) { try { return localStorage.getItem("subsub_plan") || "pro"; } catch (e) { return "pro"; } }
+    if (!id) return planId();          // действующий план, включая демо-версию новичка
     if (!PLANS[id]) return "unknown plan: use explorer | pro | business | enterprise";
     try { localStorage.setItem("subsub_plan", id); } catch (e) {}
     location.reload();

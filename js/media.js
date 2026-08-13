@@ -1887,4 +1887,25 @@
   })();
 
   window.addEventListener("resize", closeActions);
+
+  // Демо-версия новичка (порт с вариантом new помечает <body data-demo="new">):
+  // у такого аккаунта ещё нет ни файлов, ни папок — показываем пустое состояние списка.
+  (function demoNewFiles() {
+    if (!document.body || document.body.getAttribute("data-demo") !== "new") return;
+    var rows = [].slice.call(document.querySelectorAll(".ml-row"));
+    rows.forEach(function (r) { if (r.parentNode) r.parentNode.removeChild(r); });
+    var host = document.querySelector(".ml-table tbody") || document.querySelector(".ml-table");
+    if (!host || document.querySelector("[data-ml-empty]")) return;
+    var box = document.createElement("div");
+    box.className = "ml-chan-empty";
+    box.setAttribute("data-ml-empty", "");
+    box.innerHTML = '<p class="ml-chan-empty__msg">No files yet</p>' +
+      '<p class="ml-chan-empty__msg">Upload a video or run a report — results are stored here.</p>';
+    var wrap = host.closest(".ml-tablewrap") || host.parentNode;
+    if (wrap && wrap.parentNode) wrap.parentNode.insertBefore(box, wrap.nextSibling);
+    // счётчики и статистика в шапке тоже обнуляем
+    [].slice.call(document.querySelectorAll("[data-ml-count], [data-ml-total]")).forEach(function (el) {
+      el.textContent = "0";
+    });
+  })();
 })();
