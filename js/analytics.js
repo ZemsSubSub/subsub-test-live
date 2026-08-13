@@ -3467,6 +3467,43 @@
     var m = document.getElementById("aiModal");
     if (m) m.setAttribute("data-ai-mode", mode);
   }
+  // Одна модалка, два входа: «Create Collection» и «Find similar channels» из выбора в таблице.
+  // У поиска похожих своя шапка и своя кнопка — как было до объединения модалок.
+  var AI_COPY = {
+    create: {
+      title: "Create collection",
+      sub: "Describe what you need and we'll find it, or paste channel links you already have.",
+      submit: "Create collection"
+    },
+    similar: {
+      title: "Set up collection sourcing",
+      sub: "Describe the channels you want — we'll find and collect them for you.",
+      submit: "Start sourcing"
+    },
+    pick: {
+      title: "Create collection",
+      sub: "The channels you selected will go into the new collection.",
+      submit: "Create collection"
+    }
+  };
+  function ccMode(mode) {
+    var m = document.getElementById("aiModal");
+    if (!m) return;
+    var c = AI_COPY[mode] || AI_COPY.create;
+    var ttl = m.querySelector(".ai-title"), sub = m.querySelector(".ai-sub");
+    var sbm = m.querySelector("[data-ai-submit]");
+    if (ttl) ttl.textContent = c.title;
+    if (sub) sub.textContent = c.sub;
+    if (sbm) sbm.textContent = c.submit;
+    // у поиска похожих нет вставки ссылок: каналы-референсы уже выбраны в таблице,
+    // а у коллекции из выбора нет ни промпта, ни ссылок — только имя и список каналов
+    var tabs = m.querySelector("[data-cc-tabs]");
+    if (tabs) tabs.hidden = mode !== "create";
+    if (mode === "similar") ccSetTab("ai");
+    if (mode === "pick") {
+      [].slice.call(m.querySelectorAll("[data-cc-pane]")).forEach(function (pane) { pane.hidden = true; });
+    }
+  }
   // черновик по одной ссылке (режим single) — варьируем по домену/хендлу
   function aiDraftFromSeed(seed) {
     var handle = (seed.match(/@([\w.\-]+)/) || [])[1] || "";
@@ -3888,6 +3925,7 @@
     var names = (typeof acChecked === "function" ? acChecked() : []).filter(Boolean);
     if (!names.length) return;
     aiOpen();
+    ccMode("pick");                       // только имя и выбранные каналы
     ccPicked = names.slice();
     ccPickedRender();
     var nm = ccEl("[data-ai-name]");
@@ -3951,7 +3989,10 @@
     // сброс входа «Ссылки»
     var ccTa = ccEl("[data-cc-links]"); if (ccTa) ccTa.value = "";
     var ccC = ccEl("[data-cc-links-count]"); if (ccC) ccC.textContent = "0";
+    var nm0 = m.querySelector("[data-ai-name]"); if (nm0) nm0.value = "";
     ccSetTab("ai");                       // всегда открываемся на «Describe with AI»
+    ccMode("create");
+    aiSetMode("single");                  // без референсов: под промптом снова поле ссылки
     aiSync();
     aiPhIdle();                                  // состояние 1 — ротация примеров
     var n = m.querySelector("[data-ai-name]"); if (n) n.focus();
@@ -4077,6 +4118,7 @@
       }
       if (!picked.length) return;
       aiOpen();
+      ccMode("similar");                      // своя шапка и кнопка «Start sourcing»
       aiSetMode("refs");                      // вход с выбранными каналами — секция референсов
       picked.forEach(function (p) { aiRefAdd(p.name, p.initial, p.color || null); });
       aiRenderRefs();
