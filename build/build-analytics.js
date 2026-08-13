@@ -981,6 +981,7 @@ const aiModalHtml = `
           <button class="an-btn an-btn--plain an-btn--huge" type="button" data-ai-close data-cc-foot="1">Cancel</button>
           <button class="an-btn an-btn--plain an-btn--huge" type="button" data-cc-filters-back data-cc-foot="2" hidden>${IC.arrowL}Back</button>
           <span class="cc-foot__chips" data-cc-chips></span>
+          <span class="cc-foot__why" data-cc-why hidden></span>
           <button class="an-btn an-btn--secondary an-btn--huge" type="button" data-cc-filters-open data-cc-foot="1">
             ${IC.filter}<span data-cc-filters-lbl>Set filters</span></button>
           <button class="an-btn an-btn--ai an-btn--huge" type="button" data-ai-submit disabled>${AI_SUBMIT_LABEL}</button>

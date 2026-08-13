@@ -3897,7 +3897,22 @@
     // single: описание ИЛИ ссылка; refs: описание ИЛИ хотя бы один референс
     var hasSource = aiMode() === "refs" ? !!aiRefs.length : !!seed;
     // имени достаточно: пустую коллекцию наполняют потом, на её странице
-    if (submit) submit.disabled = !destOk || (typeof ffErrors === "function" && ffErrors().length > 0);
+    var why = "";
+    if (!name) why = "Name the collection to continue";
+    else if (planCollsLeft() <= 0) why = "All " + planFmt(plan().colls) + " collections used on " + plan().label +
+      " — upgrade or add channels to an existing collection";
+    else if (typeof ffErrors === "function" && ffErrors().length) why = "Fix the filter range to start sourcing";
+    if (submit) {
+      submit.disabled = !!why;
+      if (why) submit.title = why; else submit.removeAttribute("title");
+    }
+    var whyEl = ccEl("[data-cc-why]");
+    if (whyEl) {
+      // про имя не пишем: поле и так на виду, подсказка была бы шумом
+      var show = why && name;
+      whyEl.hidden = !show;
+      whyEl.textContent = show ? why : "";
+    }
     var cnt2 = ccEl("[data-cc-links-count]");
     if (cnt2) cnt2.textContent = String(ccLinks().length);
     ccLimitSync();
@@ -4210,9 +4225,7 @@
       else {
         var pool = (typeof aiChannelPool === "function" ? aiChannelPool() : []);
         var n = pool.filter(ffFits).length;
-        prev.textContent = n
-          ? "≈ " + n + (n === 1 ? " channel matches these filters" : " channels match these filters")
-          : "No channels match these filters — try loosening them.";
+        prev.textContent = "≈ " + n + (n === 1 ? " channel matches these filters" : " channels match these filters");
       }
     }
     ffChipsRender();

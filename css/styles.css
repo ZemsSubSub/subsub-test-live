@@ -2634,6 +2634,10 @@ body.is-open:not(.is-collapsed) .main { margin-left: 306px; }
 .cc-foot { flex-wrap: wrap; }
 /* чипы — своей строкой над кнопками: в один ряд с тремя кнопками они сминались в столбик */
 .cc-foot__chips { order: -1; flex: 1 0 100%; display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+/* почему запуск недоступен: у самой кнопки, иначе причина остаётся в баннере под скроллом */
+.cc-foot__why { flex: 1; min-width: 0; font-size: 13px; font-weight: 300; line-height: 18px;
+  color: var(--color-shade-800); text-align: right; }
+.cc-foot__why[hidden] { display: none; }
 .cc-foot__chips:empty { display: none; }
 .ff-chip { display: inline-flex; align-items: center; gap: 4px; height: 28px; padding: 0 4px 0 10px; white-space: nowrap;
   border-radius: 9999px; background: var(--color-shade-100); font-size: 13px; color: var(--color-black); }
