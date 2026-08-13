@@ -73,6 +73,7 @@ const IC = {
   // шеврон селекта коллекции, viewBox 24 (тонкий rounded)
   chevSelect: '<svg viewBox="0 0 24 24" fill="none"><path fill-rule="evenodd" clip-rule="evenodd" d="M4.43057 8.51191C4.70014 8.19741 5.17361 8.16099 5.48811 8.43056L12 14.0122L18.5119 8.43056C18.8264 8.16099 19.2999 8.19741 19.5695 8.51191C19.839 8.8264 19.8026 9.29988 19.4881 9.56944L12.4881 15.5694C12.2072 15.8102 11.7928 15.8102 11.5119 15.5694L4.51192 9.56944C4.19743 9.29988 4.161 8.8264 4.43057 8.51191Z" fill="currentColor"/></svg>',
   // BoldOutlineIconShortArrowLeft / Right / Down — жирные короткие стрелки, viewBox 24
+  alert: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4.5 2.8 20h18.4L12 4.5Z"/><path d="M12 10v4.2M12 17.2h.01"/></svg>',
   arrowBack: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>',
   arrowL: '<svg viewBox="0 0 24 24" fill="none"><path fill-rule="evenodd" clip-rule="evenodd" d="M14.8 3L6 12L14.8 21L17 18.75L10.4 12L17 5.25L14.8 3Z" fill="currentColor"/></svg>',
   arrowR: '<svg viewBox="0 0 24 24" fill="none"><path fill-rule="evenodd" clip-rule="evenodd" d="M9.2 3L18 12L9.2 21L7 18.75L13.6 12L7 5.25L9.2 3Z" fill="currentColor"/></svg>',
@@ -982,7 +983,7 @@ const aiModalHtml = `
           <button class="an-btn an-btn--plain an-btn--huge" type="button" data-ai-close data-cc-foot="1">Cancel</button>
           <button class="an-btn an-btn--plain an-btn--huge" type="button" data-cc-filters-back data-cc-foot="2" hidden>${IC.arrowBack}Back</button>
           <span class="cc-foot__chips" data-cc-chips></span>
-          <span class="cc-foot__why" data-cc-why hidden></span>
+          <span class="cc-foot__why" data-cc-why hidden>${IC.alert}<span data-cc-why-txt></span></span>
           <button class="an-btn an-btn--secondary an-btn--huge" type="button" data-cc-filters-open data-cc-foot="1">
             ${IC.filter}<span data-cc-filters-lbl>Set filters</span></button>
           <button class="an-btn an-btn--ai an-btn--huge" type="button" data-ai-submit disabled>${AI_SUBMIT_LABEL}</button>
@@ -1301,8 +1302,8 @@ function deepBodyRow(r, i, avg, coll, off){
           '<a class="and-chan__link" href="#" tabindex="-1"><span class="an-chan__ava" style="background:var(' + color + ')">' + esc(r.i) + '</span>' +
           '<span class="an-chan__name">' + esc(r.name) + '</span></a>' +
           '<span class="an-chan__fade"></span>' +
-          // метка закрепления: клик по ней снимает закрепление
-          '<button class="and-pin" type="button" data-dp-unpin aria-label="Unpin channel" title="Unpin" hidden>' + IC.pin + '</button>' +
+          // Закрепление: у закреплённой строки кнопка видна всегда, у обычной — по наведению.
+          '<button class="and-pin" type="button" data-dp-pin-row aria-label="Pin on top" title="Pin on top">' + IC.pin + '</button>' +
         '</div></div>');
     } else if (c.stub) {
       cells.push('<div class="an-td an-td--stub' + hid + '" style="width:20px" data-col="stub"></div>');

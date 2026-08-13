@@ -301,10 +301,10 @@
     // --- B2: массовое удаление каналов из коллекции ---
     if (e.target.closest("[data-ac-open]")) { acOpen(); return; }
     if (e.target.closest("[data-dp-pin]")) { dpPinToggle(); return; }
-    var unpinBtn = e.target.closest("[data-dp-unpin]");
-    if (unpinBtn) {
+    var pinBtn = e.target.closest("[data-dp-pin-row]");
+    if (pinBtn) {
       e.stopPropagation();
-      dpUnpinRow(unpinBtn.closest(".an-tr"));
+      dpPinRow(pinBtn.closest(".an-tr"));
       return;
     }
     if (e.target.closest("[data-dp-remove]")) { dpAsk(); return; }
@@ -750,8 +750,12 @@
       var on = !!n && names.indexOf(n.textContent.trim()) !== -1 &&
         (row.getAttribute("data-coll") || "") === coll;
       row.classList.toggle("is-pinned", on);
-      var mark = row.querySelector("[data-dp-unpin]");
-      if (mark) mark.hidden = !on;
+      var mark = row.querySelector("[data-dp-pin-row]");
+      if (mark) {
+        mark.title = on ? "Unpin" : "Pin on top";
+        mark.setAttribute("aria-label", on ? "Unpin channel" : "Pin channel on top");
+        mark.setAttribute("aria-pressed", on ? "true" : "false");
+      }
     });
     var avg = all.filter(function (r) {
       return r.classList.contains("an-tr--avg") && (r.getAttribute("data-coll") || "") === coll;
@@ -763,19 +767,21 @@
     });
     tblApply("deep");
   }
-  // снятие закрепления по иконке в строке — без выбора чекбоксом
-  function dpUnpinRow(row) {
+  // Кнопка в строке переключает закрепление одного канала, без выбора чекбоксом.
+  function dpPinRow(row) {
     if (!row) return;
     var n = row.querySelector(".an-chan__name");
     var nm = n ? n.textContent.trim() : "";
     var coll = dpColl();
     if (!nm || !coll) return;
-    var store = dpPinLoad(), list = (store[coll] || []).filter(function (x) { return x !== nm; });
+    var store = dpPinLoad(), list = (store[coll] || []).slice();
+    var at = list.indexOf(nm), on = at !== -1;
+    if (on) list.splice(at, 1); else list.push(nm);
     store[coll] = list;
     dpPinSave(store);
     dpApplyPins();
     dpFooter();
-    toast("“" + nm + "” unpinned");
+    toast("“" + nm + "” " + (on ? "unpinned" : "pinned on top"));
   }
   function dpPinToggle() {
     var picked = dpChecked();
@@ -3904,8 +3910,9 @@
       why = "Name the collection to continue";
     } else if (planCollsLeft() <= 0) {
       why = "All " + planFmt(plan().colls) + " collections used on " + plan().label +
-        " — upgrade or add channels to an existing collection";
-      whyShort = "Collection limit reached on " + plan().label;
+        " — upgrade or add to an existing one";
+      whyShort = "Collection limit reached on " + plan().label +
+        " (" + planCollCount() + "/" + planFmt(plan().colls) + ")";
     } else if (typeof ffErrors === "function" && ffErrors().length) {
       why = "Fix the filter range to start sourcing";
       whyShort = "Fix the filter range";
@@ -3919,7 +3926,8 @@
       // про имя не пишем: поле и так на виду, подсказка была бы шумом
       var show = !!whyShort;
       whyEl.hidden = !show;
-      whyEl.textContent = show ? whyShort : "";
+      var whyTxt = whyEl.querySelector("[data-cc-why-txt]");
+      if (whyTxt) whyTxt.textContent = show ? whyShort : "";
     }
     var cnt2 = ccEl("[data-cc-links-count]");
     if (cnt2) cnt2.textContent = String(ccLinks().length);
@@ -4360,11 +4368,10 @@
     var picked = ccManual().length;                 // уже набранные каналы тоже занимают места
     var left = planChansLeft(dest);
     var avail = left === Infinity ? Infinity : Math.max(0, left - picked);
+    // Баннер сверху говорит только про вместимость коллекции. Про лимит числа коллекций
+    // сообщает строка у кнопки запуска — иначе два разных ограничения сливаются в одно.
     var msg = "";
-    if (!planCollsLeft()) {
-      msg = "All <b>" + planFmt(p.colls) + "</b> collections used on <b>" + p.label +
-            "</b> — upgrade, or add channels to an existing one.";
-    } else if (left === Infinity) {
+    if (left === Infinity) {
       msg = "";
     } else if (ccTab === "ai") {
       // «up to 25 channels» для пустой коллекции; «up to 5 of 25 left», когда места заняты
