@@ -2563,6 +2563,9 @@ body.is-open:not(.is-collapsed) .main { margin-left: 306px; }
 .an-tip__act svg { width: 14px; height: 14px; }
 /* заблокированный контрол: выглядит выключенным, но ховер ловит — иначе тултип не показать */
 .is-off { opacity: .45; cursor: not-allowed; }
+/* недоступное действие не выглядит ссылкой: подчёркивание снимаем */
+.mc-status__link.is-off { text-decoration: none; }
+.mc-status__link.is-off:hover { text-decoration: none; }
 .an-toast { position: fixed; left: 50%; bottom: 32px; transform: translateX(-50%); z-index: 1600; padding: 12px 20px; background: var(--color-black); color: #fff; border-radius: 8px; font-size: 14px; box-shadow: 0 12px 32px rgba(0,0,0,.24); }
 .an-toast[hidden] { display: none; }
 
@@ -2663,8 +2666,8 @@ body.is-open:not(.is-collapsed) .main { margin-left: 306px; }
 .cc-foot__chips { order: -1; flex: 1 0 100%; display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
 /* почему запуск недоступен: у самой кнопки, иначе причина остаётся в баннере под скроллом */
 /* причина блокировки — предупреждение, а не подпись: цвет и иконка */
-.cc-foot__why { order: -1; flex: 1 0 100%; display: flex; align-items: center; gap: 6px;
-  font-size: 13px; font-weight: 400; line-height: 18px; color: var(--color-red); }
+.cc-foot__why { order: -1; flex: 1 0 100%; display: flex; align-items: center; justify-content: flex-end;
+  gap: 6px; font-size: 13px; font-weight: 400; line-height: 18px; color: var(--color-red); }
 .cc-foot__why svg { width: 16px; height: 16px; flex-shrink: 0; }
 .cc-foot__why[hidden] { display: none; }
 .cc-foot__chips:empty { display: none; }

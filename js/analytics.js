@@ -2456,11 +2456,16 @@
         (ro ? "" : '<span class="mc-status__sep"></span><button class="mc-status__link" type="button" data-mc-cancel="' +
           escHtml(name) + '">Cancel</button>') + "</span>";
     }
-    var few = collChans(name) < 1;
+    // почему активация недоступна: нет каналов или тариф без Deep data
+    var planWall = !plan().deep && !collIsSample(name);
+    var tip = planWall ? "Deep data is available on Pro and above"
+            : collChans(name) < 1 ? CS_TIP.needChannel : "";
+    var act = ro ? "" : '<span class="mc-status__sep"></span><button class="mc-status__link' +
+      (tip ? " is-off" : "") + '" type="button" data-mc-activate' +
+      (tip ? ' aria-disabled="true" data-tip="' + escHtml(tip) + '"' + (planWall ? " data-tip-up" : "") : "") +
+      ">Activate deep data</button>";
     return '<span class="mc-status mc-status--gray">' + AI_ICO.check +
-      '<span class="mc-status__t">' + CS_LBL.created + "</span>" +
-      (ro ? "" : '<span class="mc-status__sep"></span><button class="mc-status__link" type="button" data-mc-activate' +
-        (few ? ' disabled title="' + CS_TIP.needChannel + '"' : "") + ">Activate deep data</button>") + "</span>";
+      '<span class="mc-status__t">' + CS_LBL.created + "</span>" + act + "</span>";
   }
   // общее количество коллекций — бейдж у All в переключателе типа
   // «своя» коллекция — та, где владелец «You»
@@ -2525,8 +2530,8 @@
       actItem.hidden = st === "activated" || st === "deep";
       var actTip = st === "sourcing" ? CS_TIP.deepWaitSourcing
                  : collChans(mcNm) < 1 ? CS_TIP.needChannel : "";
-      if (actTip) { actItem.setAttribute("disabled", ""); actItem.title = actTip; }
-      else { actItem.removeAttribute("disabled"); actItem.removeAttribute("title"); }
+      if (actTip) { offSet(actItem, true); tipSet(actItem, actTip); }
+      else { offSet(actItem, false); tipSet(actItem, ""); }
       // Deactivate = отмена сбора или возврат активированной коллекции в Created
       var deact = menu.querySelector('[data-mc-act="deactivate"]');
       deact.hidden = !(st === "activated" || st === "deep");
@@ -2534,8 +2539,8 @@
       var dupItem = menu.querySelector('[data-mc-act="duplicate"]');
       if (dupItem) {
         var busy = st === "sourcing" || st === "deep";
-        if (busy) { dupItem.setAttribute("disabled", ""); dupItem.title = CS_TIP.busy; }
-        else { dupItem.removeAttribute("disabled"); dupItem.removeAttribute("title"); }
+        offSet(dupItem, busy);
+        tipSet(dupItem, busy ? CS_TIP.busy : "");
       }
       // C1: чужую (sample) коллекцию нельзя менять — остаются просмотр и Duplicate
       var mine = !(mcRow && mcRow.hasAttribute("data-sample"));
@@ -2687,7 +2692,11 @@
     }
     // C4: Activate deep data — сначала подтверждение (это расход лимитов плана)
     var actBtn = e.target.closest("[data-mc-activate]");
-    if (actBtn) { mcActivateAsk(actBtn.closest("[data-mc-row]")); return; }
+    if (actBtn) {
+      if (isOff(actBtn)) return;                     // причина — в тултипе
+      mcActivateAsk(actBtn.closest("[data-mc-row]"));
+      return;
+    }
     if (e.target.closest("[data-mc-activate-confirm]")) {
       var actName = ceActivating ? ceName() : (mcRow ? mcRow.getAttribute("data-name") : "");
       ceActivating = false;
