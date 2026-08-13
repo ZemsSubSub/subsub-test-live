@@ -73,6 +73,7 @@ const IC = {
   // шеврон селекта коллекции, viewBox 24 (тонкий rounded)
   chevSelect: '<svg viewBox="0 0 24 24" fill="none"><path fill-rule="evenodd" clip-rule="evenodd" d="M4.43057 8.51191C4.70014 8.19741 5.17361 8.16099 5.48811 8.43056L12 14.0122L18.5119 8.43056C18.8264 8.16099 19.2999 8.19741 19.5695 8.51191C19.839 8.8264 19.8026 9.29988 19.4881 9.56944L12.4881 15.5694C12.2072 15.8102 11.7928 15.8102 11.5119 15.5694L4.51192 9.56944C4.19743 9.29988 4.161 8.8264 4.43057 8.51191Z" fill="currentColor"/></svg>',
   // BoldOutlineIconShortArrowLeft / Right / Down — жирные короткие стрелки, viewBox 24
+  arrowBack: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>',
   arrowL: '<svg viewBox="0 0 24 24" fill="none"><path fill-rule="evenodd" clip-rule="evenodd" d="M14.8 3L6 12L14.8 21L17 18.75L10.4 12L17 5.25L14.8 3Z" fill="currentColor"/></svg>',
   arrowR: '<svg viewBox="0 0 24 24" fill="none"><path fill-rule="evenodd" clip-rule="evenodd" d="M9.2 3L18 12L9.2 21L7 18.75L13.6 12L7 5.25L9.2 3Z" fill="currentColor"/></svg>',
   arrowDown: '<svg viewBox="0 0 24 24" fill="none"><path fill-rule="evenodd" clip-rule="evenodd" d="M21.5 8.7L12.5 17.5L3.5 8.7L5.75 6.5L12.5 13.1L19.25 6.5L21.5 8.7Z" fill="currentColor"/></svg>',
@@ -897,7 +898,7 @@ const aiModalHtml = `
              «в промпте небольшие каналы, в фильтре от 10m» не поймать. -->
         <div class="cc-step cc-step2" data-cc-step="2" hidden>
           <div class="cc-step2__head">
-            <button class="cc-step2__back" type="button" data-cc-filters-back aria-label="Back to description">${IC.arrowL}</button>
+            <button class="an-back cc-step2__back" type="button" data-cc-filters-back>${IC.arrowBack}Back</button>
             <h3 class="cc-step2__title">Narrow down results</h3>
           </div>
           <div class="cc-ro" data-cc-prompt-ro>
@@ -979,7 +980,7 @@ const aiModalHtml = `
         </div>
         <div class="an-modal__foot cc-foot">
           <button class="an-btn an-btn--plain an-btn--huge" type="button" data-ai-close data-cc-foot="1">Cancel</button>
-          <button class="an-btn an-btn--plain an-btn--huge" type="button" data-cc-filters-back data-cc-foot="2" hidden>${IC.arrowL}Back</button>
+          <button class="an-btn an-btn--plain an-btn--huge" type="button" data-cc-filters-back data-cc-foot="2" hidden>${IC.arrowBack}Back</button>
           <span class="cc-foot__chips" data-cc-chips></span>
           <span class="cc-foot__why" data-cc-why hidden></span>
           <button class="an-btn an-btn--secondary an-btn--huge" type="button" data-cc-filters-open data-cc-foot="1">
@@ -1947,7 +1948,7 @@ const COLL_STATUSES = COLL_ROWS.reduce(function (a, r) { a[r.name] = r.status; r
 
 const editInner = `
     <section class="an-page ce-page">
-      <a class="ce-back" href="analytics-collections.html">${IC.arrowL}Back</a>
+      <a class="an-back ce-back" href="analytics-collections.html">${IC.arrowBack}Back to collections</a>
       <!-- H1 — имя коллекции: страница не форма, а набор мгновенных действий -->
       <header class="an-head an-head--between">
         <div class="an-head__left ce-head__left">

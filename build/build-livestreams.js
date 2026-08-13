@@ -13,6 +13,7 @@ const IC = {
   filter: '<svg viewBox="0 0 24 24" fill="none"><path d="M3 7H21" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M6 12H18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M10 17H14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>',
   sort: '<svg class="ls-sort" viewBox="0 0 16 16" fill="none"><path d="M5 6.5L8 3.5L11 6.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 9.5L8 12.5L11 9.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>',
   chevDown: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>',
+  arrowBack: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>',
   chevLeft: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>',
   chevRight: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>',
   youtube: '<svg viewBox="0 0 23 16" fill="none"><path d="M22.3523 2.50551C22.2212 2.02123 21.9655 1.57974 21.6106 1.22498C21.2557 0.870223 20.814 0.614585 20.3295 0.483521C18.5557 0 11.417 0 11.417 0C11.417 0 4.27787 0.0146359 2.50412 0.498157C2.01962 0.629228 1.57791 0.88488 1.223 1.23965C0.868092 1.59443 0.612358 2.03594 0.481267 2.52023C-0.0552507 5.67035 -0.263376 10.4704 0.495999 13.4945C0.627104 13.9788 0.882844 14.4203 1.23775 14.775C1.59266 15.1298 2.03436 15.3854 2.51886 15.5165C4.29261 16 11.4315 16 11.4315 16C11.4315 16 18.5704 16 20.344 15.5165C20.8285 15.3854 21.2703 15.1298 21.6252 14.775C21.9801 14.4203 22.2359 13.9788 22.367 13.4945C22.9329 10.3399 23.1072 5.54282 22.3523 2.50551Z" fill="currentColor"/><path d="M9.14478 11.4284L15.0669 7.99984L9.14478 4.57129V11.4284Z" fill="#fff"/></svg>',
@@ -201,7 +202,7 @@ const mainInner = `
 // ---- страница создания стрима (New stream) --------------------------------
 const createInner = `
     <section class="lsc-page">
-      <a class="lsc-back" href="live-streams.html">${IC.chevLeft}<span>Back</span></a>
+      <a class="an-back lsc-back" href="live-streams.html">${IC.arrowBack}<span>Back to streams</span></a>
       <header class="lsc-header">
         <h1 class="ls-title">New stream</h1>
         <button class="lsc-tutorial" type="button">${IC.rocket}<span>Launch tutorial</span></button>

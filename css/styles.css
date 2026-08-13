@@ -1641,9 +1641,7 @@ body.is-open:not(.is-collapsed) .main { margin-left: 306px; }
 
 /* ------- Live → New stream (создание, live-stream-create.html) ------- */
 .lsc-page { display: flex; flex-direction: column; gap: 24px; max-width: 820px; }
-.lsc-back { display: inline-flex; align-items: center; gap: 6px; align-self: flex-start; font-size: 14px; color: var(--color-black); text-decoration: none; }
-.lsc-back svg { width: 16px; height: 16px; }
-.lsc-back:hover { opacity: 0.7; }
+.lsc-back { align-self: flex-start; }
 .lsc-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
 /* Launch tutorial — прод mode=tertiary, size=normal (граница чёрная, hover чёрный фон/белый текст) */
 .lsc-tutorial { display: inline-flex; align-items: center; gap: 8px; height: 48px; padding: 0 24px; border: 1px solid var(--color-black); border-radius: 8px; background: transparent; font-family: var(--font-mulish); font-size: 16px; font-weight: 300; color: var(--color-black); cursor: pointer; transition: background-color 0.15s ease, color 0.15s ease; }
@@ -2582,9 +2580,7 @@ body.is-open:not(.is-collapsed) .main { margin-left: 306px; }
 /* Шаг 2: шапка, промпт только для чтения, сетка «лейбл | поля» и прибитый низ. */
 .cc-step2 { gap: 20px; }
 .cc-step2__head { display: flex; align-items: center; gap: 6px; margin: -4px 0 -4px -8px; }
-.cc-step2__back { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px;
-  padding: 0; border: 0; border-radius: 8px; background: none; color: var(--color-black); cursor: pointer; }
-.cc-step2__back:hover { background: var(--color-shade-100); }
+.cc-step2__back { font-size: 14px; }
 .cc-step2__back svg { width: 18px; height: 18px; }
 .cc-step2__title { margin: 0; font-size: 16px; font-weight: 600; color: var(--color-black); }
 /* промпт первого шага: подпись над текстом — длинное описание больше не жмётся в колонку */
@@ -2641,8 +2637,8 @@ body.is-open:not(.is-collapsed) .main { margin-left: 306px; }
 /* чипы — своей строкой над кнопками: в один ряд с тремя кнопками они сминались в столбик */
 .cc-foot__chips { order: -1; flex: 1 0 100%; display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
 /* почему запуск недоступен: у самой кнопки, иначе причина остаётся в баннере под скроллом */
-.cc-foot__why { flex: 1; min-width: 0; font-size: 13px; font-weight: 300; line-height: 18px;
-  color: var(--color-shade-800); text-align: right; }
+.cc-foot__why { order: -1; flex: 1 0 100%; font-size: 13px; font-weight: 300; line-height: 18px;
+  color: var(--color-shade-800); }
 .cc-foot__why[hidden] { display: none; }
 .cc-foot__chips:empty { display: none; }
 .ff-chip { display: inline-flex; align-items: center; gap: 4px; height: 28px; padding: 0 4px 0 10px; white-space: nowrap;
@@ -2909,9 +2905,14 @@ body.is-open:not(.is-collapsed) .main { margin-left: 306px; }
    Перенос app.subsub.io/analytics/collections/channels/<id>: ‹Back + заголовок, форма
    (Name collection / Shared with / поиск), таблица каналов, фиксированный футер действий. */
 .ce-page { padding-bottom: 0; }   /* прибитого футера страницы больше нет */
-.ce-back { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 400; color: var(--color-black); text-decoration: none; }
-.ce-back:hover { color: var(--color-shade-700); }
-.ce-back svg { width: 16px; height: 16px; }
+/* Все действия «назад» одинаковые: тонкая стрелка со стержнем плюс текст,
+   ховер меняет цвет всей ссылки, а не подсвечивает одну иконку. */
+.an-back { display: inline-flex; align-items: center; gap: 8px; padding: 0; border: 0; background: none;
+  font-family: inherit; font-size: 15px; font-weight: 600; line-height: 20px; color: var(--color-black);
+  text-decoration: none; cursor: pointer; transition: color .15s ease; }
+.an-back:hover, .an-back:focus-visible { color: var(--color-purple-900); }
+.an-back svg { width: 20px; height: 20px; flex-shrink: 0; }
+.ce-back { align-self: flex-start; }
 .ce-badge { align-self: center; }
 /* страница коллекции использует всю ширину контента */
 .ce-form { display: flex; flex-direction: column; gap: 16px; }
@@ -3250,7 +3251,7 @@ body.filters-open .an-filters.is-active { display: flex; }
 /* владелец коллекции рядом с названием */
 /* название с лимитом и кнопки — одной строкой, владелец строкой ниже */
 .ce-titlerow { display: flex; align-items: center; gap: 12px; flex-wrap: nowrap; min-width: 0; }
-.ce-titlerow .an-title { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ce-titlerow .an-title { min-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .ce-titlerow .mc-status, .ce-titlerow .ai-badge { flex-shrink: 0; }
 /* кнопки действий остаются на строке заголовка: их не сминаем и не переносим */
 .ce-page .an-head { flex-wrap: nowrap; }
@@ -3264,13 +3265,13 @@ body.filters-open .an-filters.is-active { display: flex; }
 .ce-owner__ava { width: 24px; height: 24px; font-size: 11px; }
 .ce-owner__name { font-size: 14px; font-weight: 500; color: var(--color-black); }
 /* лимит размера коллекции — в одной строке с названием: счётчик, полоса, апгрейд */
-.ce-limit { display: inline-flex; align-items: center; flex-shrink: 0; gap: 10px; padding: 4px 4px 4px 10px;
+.ce-limit { display: inline-flex; align-items: center; min-width: 0; gap: 10px; padding: 4px 4px 4px 10px;
   border-radius: 10px; background: var(--color-shade-90); }
 .ce-limit[hidden] { display: none; }   /* inline-flex перебивал атрибут hidden */
 .ce-limit__v { font-size: 13px; font-weight: 300; color: var(--color-shade-700); white-space: nowrap; }
 .ce-limit__v b { font-weight: 500; color: var(--color-green-dark); }
 .ce-limit.is-full .ce-limit__v b { color: var(--color-red); }
-.ce-limit__bar { width: 84px; height: 6px; border-radius: 9999px; background: var(--color-shade-200); overflow: hidden; }
+.ce-limit__bar { width: 84px; min-width: 24px; height: 6px; border-radius: 9999px; background: var(--color-shade-200); overflow: hidden; }
 .ce-limit__fill { display: block; height: 100%; width: 0; border-radius: 9999px; background: var(--color-green-dark);
   transition: width .25s ease; }
 .ce-limit.is-full .ce-limit__fill { background: var(--color-red); }

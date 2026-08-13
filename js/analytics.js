@@ -3897,11 +3897,19 @@
     // single: описание ИЛИ ссылка; refs: описание ИЛИ хотя бы один референс
     var hasSource = aiMode() === "refs" ? !!aiRefs.length : !!seed;
     // имени достаточно: пустую коллекцию наполняют потом, на её странице
-    var why = "";
-    if (!name) why = "Name the collection to continue";
-    else if (planCollsLeft() <= 0) why = "All " + planFmt(plan().colls) + " collections used on " + plan().label +
-      " — upgrade or add channels to an existing collection";
-    else if (typeof ffErrors === "function" && ffErrors().length) why = "Fix the filter range to start sourcing";
+    // Полный текст — в тултипе кнопки, в футере короткая строка: длинная фраза
+    // сминалась в столбик по слову.
+    var why = "", whyShort = "";
+    if (!name) {
+      why = "Name the collection to continue";
+    } else if (planCollsLeft() <= 0) {
+      why = "All " + planFmt(plan().colls) + " collections used on " + plan().label +
+        " — upgrade or add channels to an existing collection";
+      whyShort = "Collection limit reached on " + plan().label;
+    } else if (typeof ffErrors === "function" && ffErrors().length) {
+      why = "Fix the filter range to start sourcing";
+      whyShort = "Fix the filter range";
+    }
     if (submit) {
       submit.disabled = !!why;
       if (why) submit.title = why; else submit.removeAttribute("title");
@@ -3909,9 +3917,9 @@
     var whyEl = ccEl("[data-cc-why]");
     if (whyEl) {
       // про имя не пишем: поле и так на виду, подсказка была бы шумом
-      var show = why && name;
+      var show = !!whyShort;
       whyEl.hidden = !show;
-      whyEl.textContent = show ? why : "";
+      whyEl.textContent = show ? whyShort : "";
     }
     var cnt2 = ccEl("[data-cc-links-count]");
     if (cnt2) cnt2.textContent = String(ccLinks().length);
