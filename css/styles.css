@@ -1847,9 +1847,14 @@ body.is-open:not(.is-collapsed) .main { margin-left: 306px; }
 .an-tbody .an-tr.is-selected .an-chan { background: var(--color-shade-90); }
 .an-tbody .an-tr.is-selected .an-chan__fade { background: linear-gradient(to left, var(--color-shade-90), var(--color-shade-90), transparent); }
 /* закреплённые строки Deep data: лёгкая подложка, чтобы отличать их от обычных */
-.an-tbody .an-tr.is-pinned .an-td { background: var(--color-yellow-20, #fff6db); }
-.an-tbody .an-tr.is-pinned .an-chan { background: var(--color-yellow-20, #fff6db); }
-.an-tbody .an-tr.is-pinned .an-chan__fade { background: linear-gradient(to left, var(--color-yellow-20, #fff6db), var(--color-yellow-20, #fff6db), transparent); }
+/* закрепление видно по иконке в колонке названия, а не по цвету строки */
+.and-pin { flex-shrink: 0; margin-left: auto; position: relative; z-index: 2;   /* иначе градиент-затухание имени накрывает иконку */
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 24px; height: 24px; padding: 0; border: 0; border-radius: 6px; background: none;
+  color: var(--color-shade-700); cursor: pointer; }
+.and-pin[hidden] { display: none; }
+.and-pin svg { width: 16px; height: 16px; }
+.and-pin:hover { background: var(--color-shade-100); color: var(--color-black); }
 /* A4: Growth period в заголовке страницы: поле-диапазон + сегмент периодов */
 .an-periodbar { position: relative; display: flex; align-items: center; gap: 12px; user-select: none; }
 .an-periodbar[hidden] { display: none; }

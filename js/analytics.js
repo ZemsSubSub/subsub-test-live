@@ -301,6 +301,12 @@
     // --- B2: массовое удаление каналов из коллекции ---
     if (e.target.closest("[data-ac-open]")) { acOpen(); return; }
     if (e.target.closest("[data-dp-pin]")) { dpPinToggle(); return; }
+    var unpinBtn = e.target.closest("[data-dp-unpin]");
+    if (unpinBtn) {
+      e.stopPropagation();
+      dpUnpinRow(unpinBtn.closest(".an-tr"));
+      return;
+    }
     if (e.target.closest("[data-dp-remove]")) { dpAsk(); return; }
     if (e.target.closest("[data-dp-close]")) { closeModal(document.getElementById("dpConfirm")); return; }
     if (e.target.closest("[data-dp-confirm]")) { dpRemove(); return; }
@@ -644,11 +650,14 @@
       (picked.length === 1 ? " channel" : " channels");
     var addLbl = footer.querySelector("[data-dp-add-lbl]");
     if (addLbl) addLbl.textContent = "Add " + picked.length + (picked.length === 1 ? " channel" : " channels") + " to collection";
+    // Pin работает как одно действие на выбор: если выбраны и закреплённые, и обычные —
+    // непонятно, что делать, поэтому кнопку убираем.
+    var pinBtn = footer.querySelector("[data-dp-pin]");
     var pinLbl = footer.querySelector("[data-dp-pin-lbl]");
-    if (pinLbl) {
-      var allPinned = picked.length && picked.every(function (x) { return x.row.classList.contains("is-pinned"); });
-      pinLbl.textContent = allPinned ? "Unpin" : "Pin on top";
-    }
+    var pinnedN = picked.filter(function (x) { return x.row.classList.contains("is-pinned"); }).length;
+    var mixed = pinnedN > 0 && pinnedN < picked.length;
+    if (pinBtn) pinBtn.hidden = mixed;
+    if (pinLbl) pinLbl.textContent = pinnedN === picked.length ? "Unpin" : "Pin on top";
   }
   function dpAsk() {
     var picked = dpChecked();
@@ -720,8 +729,11 @@
     }
     all.forEach(function (row) {
       var n = row.querySelector(".an-chan__name");
-      row.classList.toggle("is-pinned", !!n && names.indexOf(n.textContent.trim()) !== -1 &&
-        (row.getAttribute("data-coll") || "") === coll);
+      var on = !!n && names.indexOf(n.textContent.trim()) !== -1 &&
+        (row.getAttribute("data-coll") || "") === coll;
+      row.classList.toggle("is-pinned", on);
+      var mark = row.querySelector("[data-dp-unpin]");
+      if (mark) mark.hidden = !on;
     });
     var avg = all.filter(function (r) {
       return r.classList.contains("an-tr--avg") && (r.getAttribute("data-coll") || "") === coll;
@@ -732,6 +744,20 @@
       if (row) body.insertBefore(row, anchor);
     });
     tblApply("deep");
+  }
+  // снятие закрепления по иконке в строке — без выбора чекбоксом
+  function dpUnpinRow(row) {
+    if (!row) return;
+    var n = row.querySelector(".an-chan__name");
+    var nm = n ? n.textContent.trim() : "";
+    var coll = dpColl();
+    if (!nm || !coll) return;
+    var store = dpPinLoad(), list = (store[coll] || []).filter(function (x) { return x !== nm; });
+    store[coll] = list;
+    dpPinSave(store);
+    dpApplyPins();
+    dpFooter();
+    toast("“" + nm + "” unpinned");
   }
   function dpPinToggle() {
     var picked = dpChecked();

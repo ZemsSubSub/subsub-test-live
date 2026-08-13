@@ -99,6 +99,7 @@ const IC = {
   // 3 точки (действия строки) — OutlineIconMore
   dots: '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="19" r="1.8"/></svg>',
   // статусы: песочные часы (Collecting data) + галочка (Created)
+  pin: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4h6M10 4l-.8 6.2c-1.6.8-2.7 2.2-3 3.8h11.6c-.3-1.6-1.4-3-3-3.8L14 4M12 14v6"/></svg>',
   progress: '<svg viewBox="0 0 24 24" fill="none"><path d="M14.8356 3.24829H9.16564C5.87564 3.24829 5.62189 6.20579 7.39814 7.81579L16.6031 16.1808C18.3794 17.7908 18.1256 20.7483 14.8356 20.7483H9.16564C5.87564 20.7483 5.62189 17.7908 7.39814 16.1808L16.6031 7.81579C18.3794 6.20579 18.1256 3.24829 14.8356 3.24829Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>',
   // DS BoldOutlineIconCheck
   check: '<svg viewBox="0 0 24 24" fill="none"><path fill-rule="evenodd" clip-rule="evenodd" d="M20.5334 4.285C21.0807 4.72253 21.1578 5.50641 20.7054 6.03585L10.3685 18.1353L10.3653 18.1389C10.1302 18.412 9.83512 18.631 9.50152 18.7798C9.1679 18.9288 8.80418 19.0039 8.43679 18.9998C8.06339 18.9954 7.69473 18.9091 7.36071 18.7475C7.02782 18.5866 6.73682 18.3549 6.50939 18.07C6.50862 18.069 6.50786 18.0681 6.50709 18.0671L3.27113 14.0428C2.83519 13.5007 2.93616 12.7193 3.49666 12.2977C4.05716 11.876 4.86493 11.9737 5.30087 12.5158L8.46828 16.4549L18.7232 4.45145C19.1756 3.92201 19.9861 3.84749 20.5334 4.285Z" fill="currentColor" /></svg>',
@@ -1220,6 +1221,8 @@ function deepBodyRow(r, i, avg, coll, off){
           '<a class="and-chan__link" href="#" tabindex="-1"><span class="an-chan__ava" style="background:var(' + color + ')">' + esc(r.i) + '</span>' +
           '<span class="an-chan__name">' + esc(r.name) + '</span></a>' +
           '<span class="an-chan__fade"></span>' +
+          // метка закрепления: клик по ней снимает закрепление
+          '<button class="and-pin" type="button" data-dp-unpin aria-label="Unpin channel" title="Unpin" hidden>' + IC.pin + '</button>' +
         '</div></div>');
     } else if (c.stub) {
       cells.push('<div class="an-td an-td--stub' + hid + '" style="width:20px" data-col="stub"></div>');
