@@ -2559,6 +2559,7 @@ body.is-open:not(.is-collapsed) .main { margin-left: 306px; }
 .an-tip__act { display: inline-flex; align-items: center; gap: 6px; align-self: flex-start; padding: 0;
   border: 0; background: none; font-family: inherit; font-size: 13px; font-weight: 500; color: #fff;
   text-decoration: underline; text-underline-offset: 2px; cursor: pointer; }
+.an-tip__act[hidden] { display: none; }   /* inline-flex перебивал атрибут hidden */
 .an-tip__act:hover { color: var(--color-purple-200); }
 .an-tip__act svg { width: 14px; height: 14px; }
 /* заблокированный контрол: выглядит выключенным, но ховер ловит — иначе тултип не показать */
