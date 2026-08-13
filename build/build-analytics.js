@@ -770,7 +770,7 @@ const aiBlockHtml = `
           <span class="ai-chips" data-ai-block-chips></span>
         </div>
         <div class="ai-block__foot">
-          <button class="an-btn an-btn--secondary an-btn--small" type="button" data-ai-resource>${IC.aiStarsSolid}Source more channels</button>
+          <button class="an-btn an-btn--primary an-btn--small" type="button" data-ai-resource>${IC.aiStarsSolid}Source more channels</button>
         </div>
       </section>`;
 
@@ -1064,7 +1064,8 @@ const mainInner = `
 
     ${FILTERS_BASIC}
 
-    <div class="an-toast" data-an-toast hidden></div>`;
+    <div class="an-toast" data-an-toast hidden></div>
+    <div class="an-tip" data-an-tip hidden role="tooltip"><span class="an-tip__arrow" data-an-tip-arrow></span><span data-an-tip-txt></span><button class="an-tip__act" type="button" data-an-tip-up hidden>${IC.rocket}Upgrade plan</button></div>`;
 
 // ================= DEEP DATA =================
 // ---- колонки Deep data: 24 штуки в порядке прод-DEEP_DATA_TABLE_COLUMNS ----
@@ -1617,7 +1618,8 @@ const deepInner = `
       </div>
     </div>
 
-    <div class="an-toast" data-an-toast hidden></div>`;
+    <div class="an-toast" data-an-toast hidden></div>
+    <div class="an-tip" data-an-tip hidden role="tooltip"><span class="an-tip__arrow" data-an-tip-arrow></span><span data-an-tip-txt></span><button class="an-tip__act" type="button" data-an-tip-up hidden>${IC.rocket}Upgrade plan</button></div>`;
 
 // ================= MY COLLECTIONS =================
 const COLL_COLS = [
@@ -1870,7 +1872,8 @@ const collInner = `
 
     ${FILTERS_COLL}
 
-    <div class="an-toast" data-an-toast hidden></div>`;
+    <div class="an-toast" data-an-toast hidden></div>
+    <div class="an-tip" data-an-tip hidden role="tooltip"><span class="an-tip__arrow" data-an-tip-arrow></span><span data-an-tip-txt></span><button class="an-tip__act" type="button" data-an-tip-up hidden>${IC.rocket}Upgrade plan</button></div>`;
 
 // ================= COLLECTION (открытая коллекция = «Editing collection») =================
 // Перенос app.subsub.io/analytics/collections/channels/<id>: форма (Name/Shared with/поиск),
@@ -2097,7 +2100,8 @@ const editInner = `
 
     ${aiModalHtml}
 
-    <div class="an-toast" data-an-toast hidden></div>`;
+    <div class="an-toast" data-an-toast hidden></div>
+    <div class="an-tip" data-an-tip hidden role="tooltip"><span class="an-tip__arrow" data-an-tip-arrow></span><span data-an-tip-txt></span><button class="an-tip__act" type="button" data-an-tip-up hidden>${IC.rocket}Upgrade plan</button></div>`;
 
 function buildPage(src, title, inner, current){
   let h = src;
@@ -2207,7 +2211,8 @@ const videosInner = `
     ${aiModalHtml}
     ${FILTERS_DEEP_VIDEOS}
 
-    <div class="an-toast" data-an-toast hidden></div>`;
+    <div class="an-toast" data-an-toast hidden></div>
+    <div class="an-tip" data-an-tip hidden role="tooltip"><span class="an-tip__arrow" data-an-tip-arrow></span><span data-an-tip-txt></span><button class="an-tip__act" type="button" data-an-tip-up hidden>${IC.rocket}Upgrade plan</button></div>`;
 
 
 // ================= Analytics → Reports =================
@@ -2528,7 +2533,8 @@ const reportsInner = `
       </div>
     </div>
 
-    <div class="an-toast" data-an-toast hidden></div>`;
+    <div class="an-toast" data-an-toast hidden></div>
+    <div class="an-tip" data-an-tip hidden role="tooltip"><span class="an-tip__arrow" data-an-tip-arrow></span><span data-an-tip-txt></span><button class="an-tip__act" type="button" data-an-tip-up hidden>${IC.rocket}Upgrade plan</button></div>`;
 
 fs.writeFileSync(DIR + "analytics-basic-data.html", buildPage(html, "Basic data", mainInner, "basic"));
 fs.writeFileSync(DIR + "analytics-deep-data.html", buildPage(html, "Deep data", deepV2Inner, "deep"));

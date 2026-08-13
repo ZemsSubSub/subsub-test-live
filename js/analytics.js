@@ -147,7 +147,7 @@
     var ceDeepBtn = e.target.closest("[data-ce-deep]");
     if (ceDeepBtn) {
       ceMenu(false);
-      if (ceDeepBtn.disabled) return;
+      if (ceDeepBtn.disabled || isOff(ceDeepBtn)) return;
       if (collState(ceName()) === "activated") {
         window.location.href = "analytics-deep-data.html?coll=" + encodeURIComponent(ceName());
       } else ceActivateAsk();
@@ -907,6 +907,79 @@
   // что поле Collection в панели (держим их синхронно), на Deep — переключение набора
   // строк (в разметке лежат строки всех активированных коллекций, помечены data-coll).
   function csWraps() { return [].slice.call(document.querySelectorAll("[data-an-collsel]")); }
+  // ================= тултипы =================
+  // Нативный title не стилизуется и не умеет держать действие, поэтому свой:
+  // data-tip — текст, data-tip-up — показать «Upgrade plan» с ракетой.
+  var tipHideT = null;
+  function tipEl() { return document.querySelector("[data-an-tip]"); }
+  function tipShow(host) {
+    var tip = tipEl();
+    if (!tip || !host) return;
+    var text = host.getAttribute("data-tip");
+    if (!text) return;
+    clearTimeout(tipHideT);
+    var txt = tip.querySelector("[data-an-tip-txt]");
+    if (txt) txt.textContent = text;
+    var up = tip.querySelector("[data-an-tip-up]");
+    if (up) up.hidden = !host.hasAttribute("data-tip-up");
+    tip.hidden = false;
+    var r = host.getBoundingClientRect();
+    var w = tip.offsetWidth, h = tip.offsetHeight;
+    var left = Math.min(Math.max(8, r.left + r.width / 2 - w / 2), window.innerWidth - w - 8);
+    var below = r.bottom + 10 + h < window.innerHeight;
+    tip.style.left = Math.round(left) + "px";
+    tip.style.top = Math.round(below ? r.bottom + 10 : r.top - h - 10) + "px";
+    var arrow = tip.querySelector("[data-an-tip-arrow]");
+    if (arrow) {
+      arrow.style.left = Math.round(Math.min(Math.max(10, r.left + r.width / 2 - left - 4), w - 18)) + "px";
+      arrow.style.top = below ? "-4px" : "";
+      arrow.style.bottom = below ? "" : "-4px";
+    }
+    tip.classList.add("is-on");
+  }
+  function tipHide(now) {
+    var tip = tipEl();
+    if (!tip) return;
+    clearTimeout(tipHideT);
+    // задержка, чтобы можно было довести курсор до «Upgrade plan» внутри тултипа
+    tipHideT = setTimeout(function () {
+      tip.classList.remove("is-on");
+      tip.hidden = true;
+    }, now ? 0 : 140);
+  }
+  document.addEventListener("mouseover", function (e) {
+    var host = e.target.closest && e.target.closest("[data-tip]");
+    if (host) { tipShow(host); return; }
+    if (e.target.closest && e.target.closest("[data-an-tip]")) { clearTimeout(tipHideT); return; }
+    tipHide();
+  });
+  document.addEventListener("focusin", function (e) {
+    var host = e.target.closest && e.target.closest("[data-tip]");
+    if (host) tipShow(host);
+  });
+  document.addEventListener("focusout", function () { tipHide(); });
+  window.addEventListener("scroll", function () { tipHide(true); }, true);
+  // подсказку ставим одним хелпером: пусто — снять
+  function tipSet(el, text, upgrade) {
+    if (!el) return;
+    if (text) {
+      el.setAttribute("data-tip", text);
+      if (upgrade) el.setAttribute("data-tip-up", ""); else el.removeAttribute("data-tip-up");
+    } else {
+      el.removeAttribute("data-tip");
+      el.removeAttribute("data-tip-up");
+    }
+    el.removeAttribute("title");
+  }
+  // выключенный, но живой для ховера контрол
+  function offSet(el, off) {
+    if (!el) return;
+    el.classList.toggle("is-off", !!off);
+    if (off) el.setAttribute("aria-disabled", "true"); else el.removeAttribute("aria-disabled");
+    el.disabled = false;
+  }
+  function isOff(el) { return !!el && el.classList.contains("is-off"); }
+
   // ================= состояния коллекции (instructions/07-collection-states.md) =================
   // Подбор каналов и сбор Deep data никогда не идут одновременно по одной коллекции:
   // пока активно одно, вход во второе заблокирован с объяснением, а не спрятан.
@@ -4553,7 +4626,11 @@
     if (ccUn) { ccUnpick(ccUn.getAttribute("data-cc-unpick")); return; }
     var ccT = e.target.closest("[data-cc-tab]");
     if (ccT) { ccSetTab(ccT.getAttribute("data-cc-tab")); return; }
-    if (e.target.closest("[data-cc-upgrade]")) { toast("Upgrade request sent — our team will contact you"); return; }
+    if (e.target.closest("[data-cc-upgrade]") || e.target.closest("[data-an-tip-up]")) {
+      tipHide(true);
+      toast("Upgrade request sent — our team will contact you");
+      return;
+    }
     if (e.target.closest("[data-cc-filters-open]")) { ffRead(); ccStep(2); return; }
     if (e.target.closest("[data-cc-filters-back]")) { ffRead(); ccStep(1); ffChipsRender(); return; }
     var ffPre = e.target.closest("[data-ff-preset]");
@@ -4817,13 +4894,12 @@
     var edit = collCanEdit(nm);
     var canAdd = collCanAdd(nm);
     [].slice.call(document.querySelectorAll("[data-nc-open]")).forEach(function (add) {
-      add.disabled = !canAdd;
-      var tip = collAddBlockTip(nm);
-      if (tip) add.title = tip; else add.removeAttribute("title");
+      offSet(add, !canAdd);
+      tipSet(add, canAdd ? "" : collAddBlockTip(nm));
     });
     [].slice.call(document.querySelectorAll("[data-ce-remove]")).forEach(function (b) {
-      b.disabled = !edit;
-      if (edit) b.removeAttribute("title"); else b.title = CS_TIP.editWaitDeep;
+      offSet(b, !edit);
+      tipSet(b, edit ? "" : CS_TIP.editWaitDeep);
     });
     var dea = document.querySelector("[data-ce-deactivate]");
     if (dea) {
@@ -5348,23 +5424,23 @@
     if (!btn) return;
     var lbl = btn.querySelector("[data-ce-deep-lbl]") || btn;
     var nm = ceName(), st = collState(nm);
-    btn.disabled = false;
-    btn.removeAttribute("title");
+    offSet(btn, false);
+    tipSet(btn, "");
     if (st === "activated") { lbl.textContent = "View deep data"; return; }
     if (st === "deep") {
       lbl.textContent = CS_LBL.deep;
-      btn.disabled = true;
-      btn.title = "Deep data is being collected — open Deep data to see progress";
+      offSet(btn, true);
+      tipSet(btn, "Deep data is being collected — open Deep data to see progress");
       return;
     }
     lbl.textContent = "Activate deep data";
     if (!plan().deep && !collIsSample(nm)) {
-      btn.disabled = true;
-      btn.title = CS_TIP.planDeep;
+      offSet(btn, true);
+      tipSet(btn, "Deep data is available on Pro and above", true);
       return;
     }
-    if (st === "sourcing") { btn.disabled = true; btn.title = CS_TIP.deepWaitSourcing; return; }
-    if (collChans(nm) < 1) { btn.disabled = true; btn.title = CS_TIP.needChannel; }
+    if (st === "sourcing") { offSet(btn, true); tipSet(btn, CS_TIP.deepWaitSourcing); return; }
+    if (collChans(nm) < 1) { offSet(btn, true); tipSet(btn, CS_TIP.needChannel); }
   }
   function ceActivateAsk() {
     var txt = document.querySelector("[data-mc-activate-text]");

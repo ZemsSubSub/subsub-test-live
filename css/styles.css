@@ -2545,6 +2545,24 @@ body.is-open:not(.is-collapsed) .main { margin-left: 306px; }
 .nc-ai__f .an-input { width: 100%; box-sizing: border-box; }
 
 /* тост */
+/* Тултип по DS: тёмная подложка, 13px, стрелка к триггеру. Нативный title заменён,
+   потому что в него нельзя положить действие «Upgrade plan». */
+.an-tip { position: fixed; z-index: 200; max-width: 280px; display: flex; flex-direction: column; gap: 6px;
+  padding: 8px 10px; border-radius: 8px; background: var(--color-black); color: #fff;
+  font-size: 13px; font-weight: 300; line-height: 18px; box-shadow: 0 8px 24px rgba(34, 41, 47, .24);
+  opacity: 0; transform: translateY(2px); transition: opacity .12s ease, transform .12s ease;
+  pointer-events: none; }
+.an-tip.is-on { opacity: 1; transform: none; pointer-events: auto; }
+.an-tip[hidden] { display: none; }
+.an-tip__arrow { position: absolute; width: 8px; height: 8px; background: var(--color-black);
+  transform: rotate(45deg); }
+.an-tip__act { display: inline-flex; align-items: center; gap: 6px; align-self: flex-start; padding: 0;
+  border: 0; background: none; font-family: inherit; font-size: 13px; font-weight: 500; color: #fff;
+  text-decoration: underline; text-underline-offset: 2px; cursor: pointer; }
+.an-tip__act:hover { color: var(--color-purple-200); }
+.an-tip__act svg { width: 14px; height: 14px; }
+/* заблокированный контрол: выглядит выключенным, но ховер ловит — иначе тултип не показать */
+.is-off { opacity: .45; cursor: not-allowed; }
 .an-toast { position: fixed; left: 50%; bottom: 32px; transform: translateX(-50%); z-index: 1600; padding: 12px 20px; background: var(--color-black); color: #fff; border-radius: 8px; font-size: 14px; box-shadow: 0 12px 32px rgba(0,0,0,.24); }
 .an-toast[hidden] { display: none; }
 
@@ -3265,6 +3283,11 @@ body.filters-open .an-filters.is-active { display: flex; }
 .ce-titlerow .mc-status, .ce-titlerow .ai-badge { flex-shrink: 0; }
 /* кнопки действий остаются на строке заголовка: их не сминаем и не переносим */
 .ce-page .an-head { flex-wrap: nowrap; }
+/* на узком экране заголовок и кнопки перекрывались: разрешаем перенос */
+@media (max-width: 1240px) {
+  .ce-page .an-head { flex-wrap: wrap; }
+  .ce-page .an-head__btns { margin-left: auto; }
+}
 .ce-page .an-head__left { min-width: 0; }
 .ce-page .an-head__btns { flex-shrink: 0; }
 .ce-page .an-head { align-items: center; margin-bottom: 4px; }
