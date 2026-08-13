@@ -2052,6 +2052,11 @@ body.is-open:not(.is-collapsed) .main { margin-left: 306px; }
 .an-tab.is-active { color: var(--color-black); }
 .an-tab.is-active::after { content: ""; position: absolute; left: 0; right: 0; bottom: -1px; height: 2px; background: var(--color-black); }
 .an-toolbar { display: flex; justify-content: flex-end; align-items: center; gap: 16px; }
+/* Deep data: одна строка — табы типа контента, поиск, Filters и остальные действия */
+.an-toolbar--search { justify-content: flex-start; }
+.an-search--inline { flex: 1 1 auto; min-width: 120px; height: 40px; gap: 8px; padding: 0 12px; }
+.an-search--inline > svg { width: 20px; height: 20px; color: var(--color-shade-700); flex-shrink: 0; }
+.an-search--inline .an-search__input { font-size: 14px; }
 /* My collections: поиск → переключатель → фильтры слева, пагинация у правого края */
 .mc-toolbar { justify-content: flex-start; }
 .mc-toolbar .an-ctype { margin-right: 0; }

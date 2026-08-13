@@ -1432,19 +1432,7 @@ const deepInner = `
 
       <div data-an-tab-panel="channels">
 
-      <!-- поиск по каналам вынесен из панели фильтров, как на Basic data -->
-      <section class="an-searchrow">
-        <div class="an-search">
-          ${IC.search}
-          <input class="an-search__input" type="text" placeholder="Search by channel name" data-an-search />
-          <button class="an-search__clear" type="button" data-an-search-clear hidden>${IC.close}</button>
-        </div>
-        <div class="an-searchbtns">
-          <button class="an-btn an-btn--secondary" type="button" data-an-filters-toggle><span class="an-btn__ico">${IC.filter}<span class="an-btn__dot" data-an-filters-dot hidden></span></span>Filters</button>
-        </div>
-      </section>
-
-      <section class="an-toolbar">
+      <section class="an-toolbar an-toolbar--search">
         <!-- B1: один переключатель типа контента на все метрики -->
         <div class="an-ctype" data-an-ctype role="radiogroup" aria-label="Content type">${SLICES.map(function (sl) {
           const ico = sl === "all" ? IC.ytAll : sl === "videos" ? IC.ytVideo : sl === "shorts" ? IC.ytShorts : IC.ytStream;
@@ -1452,6 +1440,13 @@ const deepInner = `
           return '<button class="an-ctype__btn' + (sl === "all" ? " is-on" : "") + '" type="button" role="radio" ' +
             'aria-checked="' + (sl === "all" ? "true" : "false") + '" data-an-ctype-set="' + sl + '">' + ico + lbl + '</button>';
         }).join("")}</div>
+        <!-- поиск по каналам вынесен из панели фильтров и стоит между табами и действиями -->
+        <div class="an-search an-search--inline">
+          ${IC.search}
+          <input class="an-search__input" type="text" placeholder="Search by channel name" data-an-search />
+          <button class="an-search__clear" type="button" data-an-search-clear hidden>${IC.close}</button>
+        </div>
+        <button class="an-btn an-btn--secondary" type="button" data-an-filters-toggle><span class="an-btn__ico">${IC.filter}<span class="an-btn__dot" data-an-filters-dot hidden></span></span>Filters</button>
         ${deepColsPopover}
         <button class="an-btn an-btn--primary" type="button" data-an-export>${IC.export}Export</button>
       </section>
