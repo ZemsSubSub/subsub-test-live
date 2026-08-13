@@ -412,8 +412,12 @@
     if (e.target.closest("[data-cc-from-sel]")) { ccFromSelection(); return; }
     var ddAct = e.target.closest("[data-dd-state-act]");
     if (ddAct && !ddAct.disabled) {
+      var ddBox = ddAct.closest("[data-dd-state]");
       var ddW = document.querySelector('[data-an-collsel="deep"]');
       var ddNm = ddW ? csCurrent(ddW) : "";
+      var intent = ddBox ? ddBox.getAttribute("data-dd-act") : "";
+      if (intent === "create") { aiOpen(); return; }
+      if (intent === "select") { csOpen(ddW, true); return; }
       if (!ddNm) return;
       if (collState(ddNm) === "deep") collCancel(ddNm);
       else if (collActivateDeep(ddNm)) toast("Collecting deep data — “" + ddNm + "”");
@@ -1085,8 +1089,11 @@
     if (!box) return;
     var w = document.querySelector('[data-an-collsel="deep"]');
     var nm = w ? csCurrent(w) : "";
-    var st = nm ? collState(nm) : "activated";
-    var show = !!nm && st !== "activated";
+    var colls = (typeof aiAllColls === "function" ? aiAllColls() : []);
+    var st = nm ? collState(nm) : "";
+    // показываем состояние, когда данных в таблице нет: коллекция не выбрана,
+    // коллекций вообще нет или выбранная ещё не активирована
+    var show = !nm || st !== "activated";
     box.hidden = !show;
     var wrapT = document.querySelector('[data-an-tablewrap="deep"]');
     if (wrapT) wrapT.style.display = show ? "none" : "";
@@ -1105,7 +1112,36 @@
     var bar = box.querySelector("[data-dd-state-bar]");
     var fill = box.querySelector("[data-dd-state-fill]");
     var act = box.querySelector("[data-dd-state-act]");
+    // коллекций нет вовсе: единственный путь — создать первую
+    if (!colls.length) {
+      title.textContent = "No collections yet";
+      text.textContent = "Deep data is collected per collection: growth, engagement and performance " +
+        "for every channel in it. Create a collection and activate deep data for it.";
+      bar.hidden = true;
+      act.hidden = false;
+      act.className = "an-btn an-btn--ai";
+      act.textContent = "Create collection";
+      act.disabled = false;
+      act.removeAttribute("title");
+      box.setAttribute("data-dd-act", "create");
+      return;
+    }
+    // коллекции есть, но не выбрана ни одна
+    if (!nm) {
+      title.textContent = "Select a collection";
+      text.textContent = "Deep data is shown per collection — pick one above to see its channels " +
+        "and metrics.";
+      bar.hidden = true;
+      act.hidden = false;
+      act.className = "an-btn an-btn--secondary";
+      act.textContent = "Select collection";
+      act.disabled = false;
+      act.removeAttribute("title");
+      box.setAttribute("data-dd-act", "select");
+      return;
+    }
     if (st === "deep") {
+      box.setAttribute("data-dd-act", "cancel");
       title.textContent = CS_LBL.deep;
       text.textContent = "We're collecting deep metrics for " + collChans(nm) + " channels of “" + nm +
         "”. You can leave the page — collection continues.";
@@ -1118,6 +1154,7 @@
       act.className = "an-btn an-btn--secondary";
       return;
     }
+    box.setAttribute("data-dd-act", "activate");
     title.textContent = "Deep data isn't activated";
     text.textContent = "Activate deep data for “" + nm + "” — we'll collect growth, engagement and " +
       "performance for every channel in it.";
@@ -1224,6 +1261,7 @@
     TBL.deep.page = 1;
     tblApply("deep");
     flDot();
+    ddStateSync();                        // без коллекции показываем состояние, а не пустую таблицу
   }
   function csPick(wrap, name) {
     var key = wrap.getAttribute("data-an-collsel");
