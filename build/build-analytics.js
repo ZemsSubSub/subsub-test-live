@@ -2544,4 +2544,17 @@ fs.writeFileSync(DIR + "analytics-videos-data.html", buildPage(html, "Videos dat
 fs.writeFileSync(DIR + "analytics-reports.html", buildPage(html, "Reports", reportsInner, "reports"));
 // альтернатива для сравнения: свич Channels / Videos в заголовке
 fs.writeFileSync(DIR + "analytics-deep-data-tabs.html", buildPage(html, "Deep data", deepTabsInner, "deepTabs"));
+// Фрагменты наружу: страница-каталог analytics-styleguide собирается из них,
+// чтобы элементы на ней были те же, а не копии.
+module.exports = {
+  IC: IC, html: html, buildPage: buildPage,
+  modals: {
+    aiModalHtml: aiModalHtml, acModalHtml: acModalHtml, ncModalHtml: ncModalHtml,
+    ceAddModalHtml: ceAddModalHtml, mcCreateModalHtml: mcCreateModalHtml,
+    awModalHtml: awModalHtml, activateModalHtml: activateModalHtml, repModalHtml: repModalHtml,
+    aiBlockHtml: aiBlockHtml
+  },
+  plans: { CE_LIMIT: CE_LIMIT, NC_MAX_LINKS: NC_MAX_LINKS },
+  seeds: { COLL_ROWS: COLL_ROWS, COLL_STATUSES: COLL_STATUSES }
+};
 console.log("written: basic-data (" + ROWS.length + "), deep-data (" + DEEP_ROWS.length + "), collections (" + COLL_ROWS.length + "), collection-edit (" + CE_ROWS.length + "), videos-data + альтернатива deep-data-tabs");

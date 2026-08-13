@@ -3392,3 +3392,42 @@ body.filters-open .an-filters.is-active { display: flex; }
 .ce-empty { display: flex; align-items: center; justify-content: center; height: 120px;
   font-size: 14px; font-weight: 300; color: var(--color-shade-700); }
 .ce-empty[hidden] { display: none; }
+
+/* ===== служебная страница-каталог analytics-styleguide ===== */
+.sg-page { gap: 32px; }
+.sg-head { display: flex; flex-direction: column; gap: 12px; }
+.sg-lead { margin: 0; max-width: 780px; font-size: 14px; font-weight: 300; line-height: 1.5; color: var(--color-shade-800); }
+.sg-legend { display: flex; flex-wrap: wrap; gap: 8px; }
+.sg-toc { display: flex; flex-wrap: wrap; gap: 8px; padding: 12px; border: 1px solid var(--color-shade-200); border-radius: 10px; }
+.sg-toc__i { padding: 6px 10px; border-radius: 8px; background: var(--color-shade-90); font-size: 13px; color: var(--color-black); text-decoration: none; }
+.sg-toc__i:hover { background: var(--color-shade-100); }
+.sg-group { display: flex; flex-direction: column; gap: 12px; padding-top: 8px; }
+.sg-group__t { margin: 0; font-size: 20px; font-weight: 600; color: var(--color-black); }
+.sg-group__note { margin: 0; font-size: 13px; font-weight: 300; color: var(--color-shade-800); }
+.sg-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 12px; align-items: start; }
+.sg-card { display: flex; flex-direction: column; gap: 8px; padding: 16px; border: 1px solid var(--color-shade-200); border-radius: 12px; background: #fff; }
+.sg-card__head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.sg-card__t { margin: 0; font-size: 15px; font-weight: 600; color: var(--color-black); }
+.sg-card__meta { margin: 0; font-size: 13px; font-weight: 300; color: var(--color-shade-800); }
+.sg-card__meta b { font-weight: 500; color: var(--color-black); }
+.sg-card__note { margin: 0; padding: 8px 10px; border-radius: 8px; background: var(--color-shade-90); font-size: 13px; font-weight: 300; line-height: 1.45; color: var(--color-shade-800); }
+.sg-card__act { padding-top: 4px; }
+.sg-st { flex-shrink: 0; padding: 3px 8px; border-radius: 9999px; font-size: 11px; font-weight: 600; letter-spacing: .02em; white-space: nowrap; }
+.sg-st--live { background: var(--color-green-10); color: var(--color-green-dark); }
+.sg-st--soon { background: var(--color-purple-100); color: var(--color-purple-900); }
+.sg-st--copy { background: #fbead7; color: var(--color-orange); }
+.sg-st--gone { background: var(--color-shade-100); color: var(--color-shade-700); }
+.sg-str { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 4px; }
+.sg-str code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; line-height: 1.45; color: var(--color-black); background: var(--color-shade-90); padding: 2px 6px; border-radius: 4px; display: inline-block; }
+.sg-demo { display: flex; flex-wrap: wrap; gap: 8px; padding: 12px; border: 1px dashed var(--color-shade-300); border-radius: 10px; }
+.sg-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.sg-two { display: flex; flex-wrap: wrap; gap: 16px; }
+.sg-two__k { display: block; padding-bottom: 6px; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; color: var(--color-shade-700); }
+.sg-menu { display: flex; flex-direction: column; gap: 2px; min-width: 200px; padding: 6px; border: 1px solid var(--color-shade-200); border-radius: 10px; box-shadow: 0 8px 24px rgba(34,41,47,.12); }
+.sg-menu__i { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: 6px; font-size: 14px; color: var(--color-black); }
+.sg-menu__i svg { width: 16px; height: 16px; }
+.sg-menu__i--danger { color: var(--color-red); }
+.sg-menu__note { padding: 6px 10px; font-size: 12px; font-weight: 300; color: var(--color-shade-700); }
+.sg-skel { display: flex; flex-direction: column; gap: 8px; width: 100%; }
+.sg-skel__row { display: flex; align-items: center; gap: 10px; height: 40px; padding: 0 8px; border-bottom: 1px solid var(--color-shade-100); }
+.sg-toastbtn { justify-content: flex-start; text-align: left; }
