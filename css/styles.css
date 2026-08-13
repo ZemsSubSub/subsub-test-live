@@ -2428,6 +2428,7 @@ body.is-open:not(.is-collapsed) .main { margin-left: 306px; }
 .nc-seg__btn { flex: 1; display: flex; align-items: center; justify-content: center; border: 0; border-radius: 6px;
   background: transparent; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 400;
   color: var(--color-shade-700); white-space: nowrap; }
+.nc-seg[hidden] { display: none; }   /* display: flex перебивал [hidden] — табы оставались видны */
 .nc-seg__btn { text-decoration: none; }
 .nc-seg__btn.is-active { background: var(--color-white); color: var(--color-black); box-shadow: var(--shadow); }
 /* тот же сегмент на странице отчётов — вне модалки у него свои отступы */
