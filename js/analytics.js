@@ -640,7 +640,8 @@
     var lbl = footer.querySelector("[data-dp-remove-lbl]");
     if (lbl) lbl.textContent = "Remove " + picked.length + (picked.length === 1 ? " channel" : " channels");
     var fromSel2 = footer.querySelector("[data-cc-from-sel-lbl]");
-    if (fromSel2) fromSel2.textContent = "Create collection from " + n + (n === 1 ? " channel" : " channels");
+    if (fromSel2) fromSel2.textContent = "Create collection from " + picked.length +
+      (picked.length === 1 ? " channel" : " channels");
     var addLbl = footer.querySelector("[data-dp-add-lbl]");
     if (addLbl) addLbl.textContent = "Add " + picked.length + (picked.length === 1 ? " channel" : " channels") + " to collection";
     var pinLbl = footer.querySelector("[data-dp-pin-lbl]");
@@ -3113,10 +3114,21 @@
   // ================= A8: «Add N channels to collection» из футера выбора =================
   var acSel = {};
   function acEl(sel) { var m = document.getElementById("acModal"); return m ? m.querySelector(sel) : null; }
+  // имя канала в строке верстается по-разному: Basic — .an-chan__name, Deep и Videos — .and-chan,
+  // страница коллекции — .ce-chan__name. Иначе выбор на Deep data приходил пустым.
+  // порядок важен: на Deep data .and-chan — обёртка с буквой аватара, имя лежит в ссылке внутри
+  var AC_NAME_SEL = [".an-chan__name", ".and-chan__link", ".ce-chan__name", ".and-chan"];
+  function acRowName(row) {
+    for (var i = 0; i < AC_NAME_SEL.length; i++) {
+      var el = row.querySelector(AC_NAME_SEL[i]);
+      if (el) return el.textContent.trim();
+    }
+    return "";
+  }
   function acChecked() {
     return [].slice.call(document.querySelectorAll("[data-an-check].is-checked")).map(function (b) {
-      var row = b.closest(".an-tr"), n = row && row.querySelector(".an-chan__name");
-      return n ? n.textContent.trim() : "";
+      var row = b.closest(".an-tr");
+      return row ? acRowName(row) : "";
     }).filter(Boolean);
   }
   function acRender() {

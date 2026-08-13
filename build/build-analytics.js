@@ -1512,6 +1512,8 @@ const deepInner = `
 
     ${awModalHtml}
 
+    ${aiModalHtml}
+
     ${FILTERS_DEEP}
     ${FILTERS_DEEP_VIDEOS}
 
@@ -2115,6 +2117,8 @@ const videosInner = `
     ${acModalHtml}
 
     ${awModalHtml}
+
+    ${aiModalHtml}
     ${FILTERS_DEEP_VIDEOS}
 
     <div class="an-toast" data-an-toast hidden></div>`;
