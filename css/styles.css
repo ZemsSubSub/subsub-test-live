@@ -2817,6 +2817,7 @@ body.is-open:not(.is-collapsed) .main { margin-left: 306px; }
 .ai-block__line { display: flex; align-items: flex-start; gap: 12px; }
 .ai-block__k { flex-shrink: 0; width: 128px; font-size: 12px; font-weight: 500; color: var(--color-shade-700); text-transform: uppercase; line-height: 22px; } /* 128px — чтобы «SOURCING QUERY» не переносился */
 .ai-block__q { font-size: 14px; font-weight: 300; line-height: 22px; color: var(--color-black); }
+.ai-block__foot { display: flex; justify-content: flex-start; padding-top: 4px; }
 .ai-chips { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
 .ai-chip { display: inline-flex; align-items: center; height: 22px; padding: 0 8px; border-radius: 4px; background: var(--color-shade-100); font-size: 13px; font-weight: 400; color: var(--color-shade-800); white-space: nowrap; }
 
@@ -2865,6 +2866,8 @@ body.is-open:not(.is-collapsed) .main { margin-left: 306px; }
 /* подбор идёт: вместо ещё не приехавших каналов — строки-заглушки */
 .ce-sourcing[hidden] { display: none; }
 .ce-skel { pointer-events: none; }
+/* метрики нового канала: заглушка внутри обычной строки */
+.ce-num[data-ce-num-wait] .ce-skel__bar { height: 10px; }
 .ce-skel__bar, .ce-skel__box, .ce-skel__ava { position: relative; display: inline-block; overflow: hidden;
   background: var(--color-shade-100); }
 .ce-skel__bar { width: 72%; height: 12px; border-radius: 6px; vertical-align: middle; }

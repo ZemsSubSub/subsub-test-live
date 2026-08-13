@@ -754,6 +754,24 @@ function blankHtml(key, ico, title, text, cta) {
 const BLANK_CTA_NEW = '<button class="an-btn an-btn--ai" type="button" data-ai-open>' + IC.plus + 'Create Collection</button>';
 const BLANK_CTA_LINK = '<a class="an-btn an-btn--ai" href="analytics-collections.html">' + IC.plus + 'Create Collection</a>';
 
+// Промпт и фильтры последнего подбора: объясняют, почему в коллекции именно эти каналы.
+// Формулировки про последний запуск, а не про состав коллекции: после ручных правок
+// коллекция уже не соответствует этим условиям.
+const aiBlockHtml = `
+      <section class="ai-block" data-ai-block hidden>
+        <div class="ai-block__line">
+          <span class="ai-block__k">Last sourcing</span>
+          <span class="ai-block__q" data-ai-block-query></span>
+        </div>
+        <div class="ai-block__line">
+          <span class="ai-block__k">Filters used</span>
+          <span class="ai-chips" data-ai-block-chips></span>
+        </div>
+        <div class="ai-block__foot">
+          <button class="an-btn an-btn--secondary an-btn--small" type="button" data-ai-resource>${IC.aiStarsSolid}Source more channels</button>
+        </div>
+      </section>`;
+
 const aiModalHtml = `
     <div class="an-modal" id="aiModal" data-ai-mode="single"><div class="an-modal__overlay" data-ai-close></div>
       <div class="an-modal__dialog an-modal__dialog--lg">
@@ -1474,17 +1492,7 @@ const deepInner = `
         </div>
       </section>
 
-      <!-- Блок AI-коллекции: Query + применённые фильтры (только для AI-коллекций) -->
-      <section class="ai-block" data-ai-block hidden>
-        <div class="ai-block__line">
-          <span class="ai-block__k">Sourcing query</span>
-          <span class="ai-block__q" data-ai-block-query></span>
-        </div>
-        <div class="ai-block__line">
-          <span class="ai-block__k">Applied filters</span>
-          <span class="ai-chips" data-ai-block-chips></span>
-        </div>
-      </section>
+      ${aiBlockHtml}
 
       <!-- бейджи применённых фильтров: рисуются из состояния панели -->
       <div class="an-fchips" data-an-fchips="deep" hidden></div>
@@ -1890,10 +1898,11 @@ const editInner = `
             <span class="mc-status mc-status--orange ce-sourcing" data-ce-state hidden>${IC.progress}<span class="mc-status__t" data-ce-state-t></span><span class="mc-status__sep"></span><button class="mc-status__link" type="button" data-ce-cancel>Cancel</button></span>
             <!-- размер коллекции ограничен планом: счётчик, полоса и апгрейд — отдельным серфейсом -->
             <span class="ce-limit" data-ce-limit>
-              <span class="ce-limit__v"><b data-ce-limit-used>0</b> of ${CE_LIMIT} channels</span>
+              <!-- вместимость коллекции зависит от тарифа: число подставляет js -->
+              <span class="ce-limit__v"><b data-ce-limit-used>0</b> of <span data-ce-limit-cap></span> channels</span>
               <span class="ce-limit__bar"><span class="ce-limit__fill" data-ce-limit-fill></span></span>
               <button class="an-btn an-btn--secondary an-btn--small ce-limit__up" type="button" data-ce-upgrade
-                title="Upgrade the plan to keep more than ${CE_LIMIT} channels in one collection">${IC.rocket}Upgrade</button>
+                title="Upgrade the plan for a bigger collection">${IC.rocket}Upgrade</button>
             </span>
           </div>
         </div>
@@ -1924,7 +1933,7 @@ const editInner = `
               <button class="ce-menu__item" type="button" role="menuitem" data-ce-rename>${IC.edit}Rename collection</button>
               <button class="ce-menu__item" type="button" role="menuitem" data-ce-duplicate>${IC.copy}Duplicate collection</button>
               <hr class="ce-menu__sep" />
-              <button class="ce-menu__item" type="button" role="menuitem" data-ce-deactivate>${IC.off}Deactivate collection</button>
+              <button class="ce-menu__item" type="button" role="menuitem" data-ce-deactivate>${IC.off}<span data-ce-deactivate-lbl>Deactivate collection</span></button>
               <button class="ce-menu__item ce-menu__item--danger" type="button" role="menuitem" data-ce-delete>${IC.trash}Delete collection</button>
               <button class="ce-menu__item ce-menu__item--danger" type="button" role="menuitem" data-ce-leave hidden>${IC.leave}Leave collection</button>
             </div>
@@ -1940,6 +1949,8 @@ const editInner = `
       </span>
 
       <div class="ce-form">
+
+        ${aiBlockHtml}
 
         <!-- фильтр по уже добавленным каналам (добавление — через Add channels) -->
         <div class="mc-search ce-search">${IC.search}<input type="text" placeholder="Search by channel title, link" data-ce-search /></div>

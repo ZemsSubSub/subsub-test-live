@@ -899,7 +899,9 @@
     sourceWaitDeep: "Wait until deep data collection finishes",
     editWaitDeep: "Channels can't be changed while deep data is being collected",
     busy: "Wait until the running process finishes",
+    addWaitSourcing: "Sourcing is running — it fills the collection itself",
     needChannel: "Add at least one channel first",
+    planDeep: "Deep data is available on Pro and above — upgrade to activate",
     noDeep: "Deep data isn't collected yet",
     sample: "Shared collection — read only"
   };
@@ -934,6 +936,8 @@
     aiExtraSave(extra);
   }
   function collState(name) {
+    // сэмплы активированы для всех планов: ценность видна на готовом примере
+    if (collIsSample(name)) return "activated";
     if (aiSourcingNames()[name]) return "sourcing";
     var d = collDeepState(name);
     if (d === "collecting") return "deep";
@@ -946,6 +950,17 @@
     return aiChannelsOf(name).length;
   }
   function collCanEdit(name) { return collState(name) !== "deep"; }
+  // Добавлять каналы нельзя, пока идёт подбор (он сам занимает места до потолка)
+  // и пока собирается Deep data (набор не должен меняться под датасетом).
+  function collCanAdd(name) {
+    var s = collState(name);
+    return s !== "sourcing" && s !== "deep";
+  }
+  function collAddBlockTip(name) {
+    var s = collState(name);
+    return s === "sourcing" ? CS_TIP.addWaitSourcing
+         : s === "deep" ? CS_TIP.editWaitDeep : "";
+  }
   function collCanSource(name) {
     var s = collState(name);
     return s !== "sourcing" && s !== "deep";
@@ -964,6 +979,7 @@
   // ---- запуск и отмена процессов ----
   function collActivateDeep(name) {
     if (collState(name) !== "created" || collChans(name) < 1) return false;
+    if (!plan().deep && !collIsSample(name)) { toast(CS_TIP.planDeep); return false; }
     collSetDeep(name, "collecting", Date.now() + DEEP_MS);
     deepTick();
     collSurfaces();
@@ -1033,6 +1049,12 @@
     }
     collSurfaces();
     return subsubStates();
+  };
+  window.subsubPlan = function (id) {
+    if (!id) { try { return localStorage.getItem("subsub_plan") || "pro"; } catch (e) { return "pro"; } }
+    if (!PLANS[id]) return "unknown plan: use explorer | pro | business | enterprise";
+    try { localStorage.setItem("subsub_plan", id); } catch (e) {}
+    location.reload();
   };
   window.subsubStates = function () {
     var out = {};
@@ -1162,7 +1184,9 @@
     act.hidden = false;
     act.className = "an-btn an-btn--primary";
     act.textContent = "Activate deep data";
-    var tip = st === "sourcing" ? CS_TIP.deepWaitSourcing : collChans(nm) < 1 ? CS_TIP.needChannel : "";
+    var tip = !plan().deep && !collIsSample(nm) ? CS_TIP.planDeep
+            : st === "sourcing" ? CS_TIP.deepWaitSourcing
+            : collChans(nm) < 1 ? CS_TIP.needChannel : "";
     act.disabled = !!tip;
     if (tip) act.title = tip; else act.removeAttribute("title");
   }
@@ -2763,8 +2787,13 @@
   // на каждый шаг приходит один канал, до конца подбора коллекция помечена «Collecting data».
   function aiSourcingTarget(rec) { return rec.mode === "append" ? rec.target : rec.name; }
   function aiFoundLeft(rec) {
-    var have = aiChannelsOf(aiSourcingTarget(rec));
-    return AI_FOUND.filter(function (n) { return have.indexOf(n) === -1; });
+    var target = aiSourcingTarget(rec);
+    var have = aiChannelsOf(target);
+    // удалённый вручную канал — исключение подбора: возвращать его нельзя
+    var out = (typeof aiRemovedLoad === "function" ? aiRemovedLoad()[target] : null) || [];
+    return AI_FOUND.filter(function (n) {
+      return have.indexOf(n) === -1 && out.indexOf(n) === -1;
+    });
   }
   function aiTick() {
     var list = aiLoad(), now = Date.now();
@@ -2865,6 +2894,12 @@
   function plan() { return PLANS[planId()]; }
   function planFmt(n) { return n === Infinity ? "unlimited" : String(n); }
   // сколько коллекций уже есть у пользователя (свои, без семплов)
+  // sample-коллекции выданы всем и в лимит плана не считаются
+  function collIsSample(name) {
+    var base = (typeof aiBaseColls === "function" ? aiBaseColls() : []);
+    for (var i = 0; i < base.length; i++) if (base[i].name === name) return !!base[i].sample;
+    return false;
+  }
   function planCollCount() {
     var base = (typeof aiBaseColls === "function" ? aiBaseColls() : []).filter(function (c) { return !c.sample; });
     var own = aiLoad().filter(function (c) { return c.mode !== "append"; });
@@ -2910,9 +2945,9 @@
     var list = all.filter(function (c) { return !q || c.name.toLowerCase().indexOf(q.toLowerCase()) !== -1; });
     box.innerHTML = list.map(function (c) {
       var on = !!ncSel[c.name];
-      var off = !collCanEdit(c.name);
+      var off = !collCanAdd(c.name);
       return '<button class="nc-item' + (on ? " is-on" : "") + '" type="button" data-nc-item="' + escHtml(c.name) + '"' +
-        (off ? ' disabled title="' + CS_TIP.editWaitDeep + '"' : "") + ">" +
+        (off ? ' disabled title="' + collAddBlockTip(c.name) + '"' : "") + ">" +
         ncCheck(on) +
         '<span class="nc-item__name">' + escHtml(c.name) + "</span>" +
         '<span class="nc-item__qty">Channels in collection:&nbsp;' + (aiChannelsOf(c.name).length + (on ? ncLinks().length : 0)) + "</span>" +
@@ -3206,9 +3241,9 @@
     var list = all.filter(function (c) { return !q || c.name.toLowerCase().indexOf(q.toLowerCase()) !== -1; });
     box.innerHTML = list.map(function (c) {
       var on = !!acSel[c.name];
-      var off = !collCanEdit(c.name);
+      var off = !collCanAdd(c.name);
       return '<button class="nc-item' + (on ? " is-on" : "") + '" type="button" data-ac-item="' + escHtml(c.name) + '"' +
-        (off ? ' disabled title="' + CS_TIP.editWaitDeep + '"' : "") + ">" +
+        (off ? ' disabled title="' + collAddBlockTip(c.name) + '"' : "") + ">" +
         ncCheck(on) +
         '<span class="nc-item__name">' + escHtml(c.name) + "</span>" +
         '<span class="nc-item__qty">Channels in collection:&nbsp;' + (aiChannelsOf(c.name).length + (on ? picked : 0)) + "</span>" +
@@ -3409,13 +3444,16 @@
     if (!block && !badge) return;
     var qs = new URLSearchParams(window.location.search);
     var id = qs.get("ai"), nameParam = qs.get("name");
+    // на странице коллекции имя берём из заголовка: ссылка может быть без параметров
+    if (!nameParam && document.querySelector("[data-ce-title]")) nameParam = ceName();
     var c = id ? aiById(id) : null;
     var isAiColl = !!c && c.isAi !== false;
-    if (!c && nameParam) {                       // обычная коллекция, куда дописали каналы подбором
+    if (!c && nameParam) {                       // коллекция, в которую подбирали каналы
       var extra = aiExtraLoad()[nameParam];
-      if (extra && extra.sourcing) {
-        c = { name: nameParam, query: extra.sourcing.query, filters: extra.sourcing.filters };
-        var own = aiCollByName(nameParam);
+      var own = aiCollByName(nameParam);
+      var src = (extra && extra.sourcing) || (own && own.query ? { query: own.query, filters: own.filters } : null);
+      if (src && src.query) {
+        c = { name: nameParam, query: src.query, filters: src.filters || {} };
         isAiColl = !!(own && own.isAi);
       }
     }
@@ -3429,7 +3467,7 @@
       if (q) q.textContent = c.query;
       var chips = block.querySelector("[data-ai-block-chips]");
       if (chips) {
-        var arr = aiChips(c.filters);
+        var arr = aiChips(c.filters || {});
         chips.innerHTML = arr.length
           ? arr.map(function (t) { return '<span class="ai-chip">' + escHtml(t) + '</span>'; }).join("")
           : '<span class="ai-chip">no filters</span>';
@@ -4062,6 +4100,31 @@
     txt.innerHTML = msg;
     if (up) up.hidden = !next;
   }
+  // Досорсинг: повторяем последний подбор по этой коллекции с предзаполненными полями —
+  // чаще всего нужно то же самое с небольшой правкой.
+  function aiResource() {
+    var nm = ceName();
+    var tip = collSourceBlockTip(nm);
+    if (tip) { toast(tip); return; }
+    var extra = aiExtraLoad()[nm], own = aiCollByName(nm);
+    var src = (extra && extra.sourcing) || (own ? { query: own.query, filters: own.filters } : null);
+    aiOpen();
+    var nmInp = aiEl("[data-ai-name]");
+    if (nmInp) nmInp.value = nm;
+    var ta = aiTa();
+    if (ta && src && src.query) ta.value = src.query;
+    if (src && src.filters) aiFillFilters(src.filters);
+    aiSync();
+  }
+  // фильтры последнего запуска обратно в поля Advanced filters
+  function aiFillFilters(f) {
+    var map = { subs: "[data-ai-subs]", videos: "[data-ai-videos]", views: "[data-ai-views]",
+                avg: "[data-ai-avg]", lastDays: "[data-ai-last]" };
+    Object.keys(map).forEach(function (k) {
+      var el = aiEl(map[k]);
+      if (el && f[k] != null) el.value = String(f[k]);
+    });
+  }
   function aiOpen() {
     var m = document.getElementById("aiModal");
     if (!m) return;
@@ -4162,6 +4225,11 @@
         created: ("0" + d.getDate()).slice(-2) + "." + ("0" + (d.getMonth() + 1)).slice(-2) + "." + d.getFullYear()
       });
       aiSave(list);
+      // промпт и фильтры нужны сразу: по ним страница коллекции объясняет подбор
+      var exSrc = aiExtraLoad();
+      exSrc[target] = exSrc[target] || { channels: [] };
+      exSrc[target].sourcing = { query: list[list.length - 1].query, filters: aiFormFilters() };
+      aiExtraSave(exSrc);
     }
     closeModal(document.getElementById("aiModal"));
     var parts = [];
@@ -4190,6 +4258,7 @@
     if (ccT) { ccSetTab(ccT.getAttribute("data-cc-tab")); return; }
     if (e.target.closest("[data-cc-upgrade]")) { toast("Upgrade request sent — our team will contact you"); return; }
     if (e.target.closest("[data-ai-open]")) { aiOpen(); return; }
+    if (e.target.closest("[data-ai-resource]")) { aiResource(); return; }
     // второй вход: «Find similar channels» из панели массовых действий Basic data —
     // та же модалка, но референсы предзаполнены выбранными в таблице каналами
     if (e.target.closest("[data-ai-similar]")) {
@@ -4324,9 +4393,9 @@
   // ---- добавление в активированную коллекцию: данные пойдут со дня добавления ----
   var awPending = null;
   function awAsk(names, targets, apply) {
-    // состав не меняем, пока по коллекции идёт сбор Deep data
-    var locked = targets.filter(function (t) { return !collCanEdit(t); });
-    if (locked.length) { toast(CS_TIP.editWaitDeep); return; }
+    // пока по коллекции идёт процесс, состав не меняем
+    var locked = targets.filter(function (t) { return !collCanAdd(t); });
+    if (locked.length) { toast(collAddBlockTip(locked[0])); return; }
     var hot = targets.filter(function (t) { return collState(t) === "activated"; });
     if (!hot.length || !document.getElementById("awModal")) { apply(); return; }
     awPending = { names: names, targets: targets, hot: hot, apply: apply };
@@ -4358,6 +4427,7 @@
           (p.names.length === 1 ? " new channel" : " new channels") + " — collecting deep data");
   }
   // ---- пока идёт подбор: бадж в шапке и строки-заглушки сверху таблицы ----
+  var CE_SKEL_MAX = 3;                    // «ещё ищем»: три строки, а не всё заказанное количество
   function ceSkelRows() { return [].slice.call(document.querySelectorAll("[data-ce-skel]")); }
   function ceProto() {
     return document.querySelector("[data-ce-row]") || document.querySelector("[data-ce-proto]");
@@ -4430,20 +4500,26 @@
     badge.hidden = !(st === "sourcing" || st === "deep");
     var t = badge.querySelector("[data-ce-state-t]");
     if (t) t.textContent = st === "sourcing" ? CS_LBL.sourcing : CS_LBL.deep;
-    ceSkelSet(rec ? Math.min(aiFoundLeft(rec).length, 8) : 0);
+    ceSkelSet(rec ? Math.min(aiFoundLeft(rec).length, CE_SKEL_MAX) : 0);
     // под собирающимся датасетом состав не меняем
     var edit = collCanEdit(nm);
-    var add = document.querySelector("[data-nc-open]");
-    if (add) {
-      add.disabled = !edit;
-      if (edit) add.removeAttribute("title"); else add.title = CS_TIP.editWaitDeep;
-    }
+    var canAdd = collCanAdd(nm);
+    [].slice.call(document.querySelectorAll("[data-nc-open]")).forEach(function (add) {
+      add.disabled = !canAdd;
+      var tip = collAddBlockTip(nm);
+      if (tip) add.title = tip; else add.removeAttribute("title");
+    });
     [].slice.call(document.querySelectorAll("[data-ce-remove]")).forEach(function (b) {
       b.disabled = !edit;
       if (edit) b.removeAttribute("title"); else b.title = CS_TIP.editWaitDeep;
     });
     var dea = document.querySelector("[data-ce-deactivate]");
-    if (dea) dea.hidden = !(st === "activated" || st === "deep");
+    if (dea) {
+      dea.hidden = !(st === "activated" || st === "deep");
+      // прервать незаконченный сбор и выключить готовые данные — разные действия
+      var deaLbl = dea.querySelector("[data-ce-deactivate-lbl]");
+      if (deaLbl) deaLbl.textContent = st === "deep" ? "Stop collecting" : "Deactivate collection";
+    }
     var dup = document.querySelector("[data-ce-duplicate]");
     if (dup) {
       var busyProc = st === "sourcing" || st === "deep";
@@ -4459,6 +4535,12 @@
     var skel = ceSkelRows()[0];
     if (skel && skel.parentNode) skel.parentNode.removeChild(skel);
     ceAddRows([name]);
+  }
+  // ячейка метрики: значение из базы либо заглушка «считаем»
+  function ceNumCell(cell, val) {
+    if (val) { cell.textContent = val; cell.removeAttribute("data-ce-num-wait"); return; }
+    cell.setAttribute("data-ce-num-wait", "");
+    cell.innerHTML = '<span class="ce-skel__bar" style="width:70%"></span>';
   }
   function ceAddRows(names) {
     var proto = ceProto();
@@ -4493,9 +4575,10 @@
       if (ad) ad.textContent = (typeof aiToday === "function" ? aiToday() : "");   // добавлен только что
       var tp = row.querySelector(".an-td--topics");
       if (tp) tp.innerHTML = ceTopicsHtml(info && info.topics);
+      // метрики нового канала подтягиваются не сразу: показываем заглушку вместо прочерка
       var nums = row.querySelectorAll(".ce-num");
-      if (nums[0]) nums[0].textContent = (info && info.views) || "—";
-      if (nums[1]) nums[1].textContent = (info && info.subs) || "—";
+      if (nums[0]) ceNumCell(nums[0], info && info.views);
+      if (nums[1]) ceNumCell(nums[1], info && info.subs);
       body.appendChild(row);
     });
     ceSortApply();
@@ -4963,6 +5046,11 @@
       return;
     }
     lbl.textContent = "Activate deep data";
+    if (!plan().deep && !collIsSample(nm)) {
+      btn.disabled = true;
+      btn.title = CS_TIP.planDeep;
+      return;
+    }
     if (st === "sourcing") { btn.disabled = true; btn.title = CS_TIP.deepWaitSourcing; return; }
     if (collChans(nm) < 1) { btn.disabled = true; btn.title = CS_TIP.needChannel; }
   }
@@ -5167,28 +5255,38 @@
   }
   // топики канала — те же баджи, что в Basic data
   // размер коллекции ограничен планом: 30 каналов, дальше — апгрейд
-  var CE_LIMIT = 30;
+  // Вместимость коллекции — тарифная: Explorer 10, Pro 25, Business 100, Enterprise без лимита.
+  // Лимит вставки за один раз (30 ссылок) живёт отдельно, внутри модалки добавления.
+  function ceCap() { return plan().chans; }
   function ceLimitSync() {
     var box = document.querySelector("[data-ce-limit]");
     if (!box) return;
     var used = ceRows().length;
-    var full = used >= CE_LIMIT;
+    var cap = ceCap();
+    // без лимита пустой прогресс-бар и апселл выглядят недоделкой — прячем плашку целиком
+    if (cap === Infinity) { box.hidden = true; return; }
+    var full = used >= cap;
+    var capEl = box.querySelector("[data-ce-limit-cap]");
+    if (capEl) capEl.textContent = String(cap);
     var u = box.querySelector("[data-ce-limit-used]");
     if (u) u.textContent = String(used);
     var fill = box.querySelector("[data-ce-limit-fill]");
-    if (fill) fill.style.width = Math.min(100, Math.round(used / CE_LIMIT * 100)) + "%";
+    if (fill) fill.style.width = Math.min(100, Math.round(used / cap * 100)) + "%";
     box.classList.toggle("is-full", full);
     var up = box.querySelector("[data-ce-upgrade]");
     if (up) up.title = full
       ? "Collection limit reached — upgrade the plan to add more channels"
-      : "Upgrade the plan to keep more than " + CE_LIMIT + " channels in one collection";
+      : "Upgrade the plan for a bigger collection";
     var add = document.querySelector("[data-nc-open]");
     if (add) {
       add.disabled = full;                     // добавлять некуда, пока план не расширили
       add.title = full ? "Collection limit reached — upgrade the plan" : "";
     }
   }
-  function ceLimitLeft() { return Math.max(0, CE_LIMIT - ceRows().length); }
+  function ceLimitLeft() {
+    var cap = ceCap();
+    return cap === Infinity ? Infinity : Math.max(0, cap - ceRows().length);
+  }
   // сортировка таблицы коллекции: она живёт вне общего движка таблиц (тут инфинайт-скролл),
   // поэтому свой маленький сорт по трём колонкам с тем же парсером значений
   var ceSortState = null;
