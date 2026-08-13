@@ -4359,14 +4359,19 @@
   }
   // ---- пока идёт подбор: бадж в шапке и строки-заглушки сверху таблицы ----
   function ceSkelRows() { return [].slice.call(document.querySelectorAll("[data-ce-skel]")); }
+  function ceProto() {
+    return document.querySelector("[data-ce-row]") || document.querySelector("[data-ce-proto]");
+  }
   function ceSkelSet(n) {
-    var proto = document.querySelector("[data-ce-row]"), body = document.querySelector("[data-ce-tbody]");
+    var proto = ceProto(), body = document.querySelector("[data-ce-tbody]");
     if (!proto || !body) return;
     var have = ceSkelRows();
     while (have.length > n) { var old = have.pop(); if (old.parentNode) old.parentNode.removeChild(old); }
     for (var i = have.length; i < n; i++) {
       var row = proto.cloneNode(true);
       row.removeAttribute("data-ce-row");            // не строка коллекции: ни выбора, ни сортировки, ни счёта
+      row.removeAttribute("data-ce-proto");
+      row.style.display = "";                        // шаблон скрыт, его клон — нет
       row.setAttribute("data-ce-skel", "");
       row.classList.remove("is-selected");
       row.classList.add("ce-skel");
@@ -4392,12 +4397,24 @@
     var nm = ceName();
     var empty = ceKnown(nm) && aiChannelsOf(nm).length === 0;
     if (empty) {
-      ceRows().forEach(function (r) { if (r.parentNode) r.parentNode.removeChild(r); });
+      // одну строку оставляем скрытым шаблоном: по ней рисуются скелетоны и приезжающие каналы
+      ceRows().forEach(function (r, i) {
+        if (i === 0 && !document.querySelector("[data-ce-proto]")) {
+          r.removeAttribute("data-ce-row");
+          r.setAttribute("data-ce-proto", "");
+          r.style.display = "none";
+          return;
+        }
+        if (r.parentNode) r.parentNode.removeChild(r);
+      });
       ceLimitSync();                             // счётчик считался до удаления строк
     }
-    blank.hidden = !empty;
+    // AI-коллекция в подборе: вместо «нет каналов» показываем скелетоны, каналы приезжают по одному
+    var sourcing = collState(nm) === "sourcing";
+    var blankOn = empty && !sourcing;
+    blank.hidden = !blankOn;
     var tbl = document.querySelector("[data-ce-scroll]");
-    if (tbl) tbl.style.display = empty ? "none" : "";
+    if (tbl) tbl.style.display = blankOn ? "none" : "";
     var srch = document.querySelector("[data-ce-search]");
     var srow = srch ? srch.closest(".ce-search") : null;
     if (srow) srow.style.display = empty ? "none" : "";
@@ -4444,7 +4461,7 @@
     ceAddRows([name]);
   }
   function ceAddRows(names) {
-    var proto = document.querySelector("[data-ce-row]");
+    var proto = ceProto();
     if (!proto) return;
     var body = proto.parentNode;
     var pool = (typeof aiChannelPool === "function" ? aiChannelPool() : []);
@@ -4455,6 +4472,9 @@
       var col = (info && info.color) || "--color-avatar-3";
       var url = ceUrl(nm);
       var row = proto.cloneNode(true);        // разметка строки живёт в билде — не дублируем её здесь
+      row.removeAttribute("data-ce-proto");
+      row.setAttribute("data-ce-row", "");
+      row.style.display = "";
       row.classList.remove("is-selected");
       var chk = row.querySelector("[data-an-check]");
       if (chk) chk.classList.remove("is-checked");
