@@ -2917,10 +2917,11 @@ body.is-open:not(.is-collapsed) .main { margin-left: 306px; }
 /* Все действия «назад» одинаковые: тонкая стрелка со стержнем плюс текст,
    ховер меняет цвет всей ссылки, а не подсвечивает одну иконку. */
 .an-back { display: inline-flex; align-items: center; gap: 8px; padding: 0; border: 0; background: none;
-  font-family: inherit; font-size: 15px; font-weight: 600; line-height: 20px; color: var(--color-black);
+  font-family: inherit; font-size: 15px; font-weight: 500; line-height: 1; color: var(--color-black);
   text-decoration: none; cursor: pointer; transition: color .15s ease; }
 .an-back:hover, .an-back:focus-visible { color: var(--color-purple-900); }
-.an-back svg { width: 20px; height: 20px; flex-shrink: 0; }
+/* display: block — иначе svg сидит на базовой линии и текст уезжает вверх */
+.an-back svg { display: block; width: 20px; height: 20px; flex-shrink: 0; }
 .ce-back { align-self: flex-start; }
 .ce-badge { align-self: center; }
 /* страница коллекции использует всю ширину контента */
