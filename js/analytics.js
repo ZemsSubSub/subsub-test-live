@@ -3486,9 +3486,11 @@
       submit: "Create collection"
     }
   };
+  var ccModeName = "create";
   function ccMode(mode) {
     var m = document.getElementById("aiModal");
     if (!m) return;
+    ccModeName = AI_COPY[mode] ? mode : "create";
     var c = AI_COPY[mode] || AI_COPY.create;
     var ttl = m.querySelector(".ai-title"), sub = m.querySelector(".ai-sub");
     var sbm = m.querySelector("[data-ai-submit]");
@@ -3503,6 +3505,7 @@
     if (mode === "pick") {
       [].slice.call(m.querySelectorAll("[data-cc-pane]")).forEach(function (pane) { pane.hidden = true; });
     }
+    ccLimitSync();
   }
   // черновик по одной ссылке (режим single) — варьируем по домену/хендлу
   function aiDraftFromSeed(seed) {
@@ -3950,6 +3953,17 @@
     if (!box || !txt) return;
     var p = plan(), next = PLAN_NEXT[planId()];
     var dest = aiDest || null;
+    // вход «коллекция из выбранных каналов»: подбора нет, поэтому и плашки нет —
+    // показываем её только когда выбранное не влезает в коллекцию на этом тарифе
+    if (ccModeName === "pick") {
+      var cap = planChansLeft(null), got = ccPicked.length;
+      if (cap !== Infinity && got > cap) {
+        txt.innerHTML = "<b>" + p.label + "</b> plan: only <b>" + cap + "</b> of " + got + " channels will be added.";
+        box.hidden = false;
+        if (up) up.hidden = !next;
+      } else box.hidden = true;
+      return;
+    }
     var picked = ccManual().length;                 // уже набранные каналы тоже занимают места
     var left = planChansLeft(dest);
     var avail = left === Infinity ? Infinity : Math.max(0, left - picked);
