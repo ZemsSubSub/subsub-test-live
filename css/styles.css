@@ -2366,6 +2366,15 @@ body.is-open:not(.is-collapsed) .main { margin-left: 306px; }
 .an-blank__title { margin: 0; font-size: 20px; font-weight: 600; color: var(--color-black); }
 .an-blank__text { margin: 0; max-width: 480px; font-size: 14px; font-weight: 300; line-height: 1.5; color: var(--color-shade-800); }
 .an-blank .an-btn { margin-top: 4px; text-decoration: none; }
+/* «создайте свою» над списком сэмплов: не пустое состояние, а промо-полоса */
+.an-blank--promo { flex-direction: row; align-items: center; gap: 16px; padding: 16px 20px; text-align: left;
+  border-color: var(--color-purple-100); background: #fdfaff; }
+.an-blank--promo .an-blank__ico { width: 40px; height: 40px; background: var(--color-purple-100);
+  color: var(--color-purple-900); }
+.an-blank--promo .an-blank__ico svg { width: 20px; height: 20px; }
+.an-blank--promo .an-blank__title { font-size: 16px; }
+.an-blank--promo .an-blank__text { flex: 1; max-width: none; }
+.an-blank--promo .an-btn { margin: 0; flex-shrink: 0; }
 .an-blank .an-btn[hidden] { display: none; }
 /* прогресс сбора Deep data: не нули в таблице, а честное состояние процесса */
 /* Сбор идёт неизвестно сколько: крутилка вместо полосы прогресса — полоса обещает
@@ -3417,6 +3426,9 @@ body.filters-open .an-filters.is-active { display: flex; }
 .sg-st--soon { background: var(--color-purple-100); color: var(--color-purple-900); }
 .sg-st--copy { background: #fbead7; color: var(--color-orange); }
 .sg-st--gone { background: var(--color-shade-100); color: var(--color-shade-700); }
+.sg-st--nopage { background: #fdecec; color: var(--color-red); }
+/* карточка, на которую пришли по диплинку ?show= */
+.sg-card--target { border-color: var(--color-purple-900); box-shadow: 0 0 0 3px var(--color-purple-100); }
 .sg-str { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 4px; }
 .sg-str code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; line-height: 1.45; color: var(--color-black); background: var(--color-shade-90); padding: 2px 6px; border-radius: 4px; display: inline-block; }
 .sg-demo { display: flex; flex-wrap: wrap; gap: 8px; padding: 12px; border: 1px dashed var(--color-shade-300); border-radius: 10px; }

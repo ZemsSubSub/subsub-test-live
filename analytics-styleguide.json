@@ -1,0 +1,1642 @@
+{
+  "meta": {
+    "generated": "build/build-styleguide.js",
+    "page": "analytics-styleguide.html",
+    "servers": {
+      "pro": "http://localhost:8778 — про-план с демо-данными",
+      "newcomer": "http://localhost:8780 — новичок: Explorer, только sample-коллекции, ни отчётов, ни файлов"
+    },
+    "demoApi": {
+      "subsubState(name, state)": "created | sourcing | deep | activated — состояние коллекции",
+      "subsubStates()": "состояния всех коллекций",
+      "subsubPlan(plan)": "explorer | pro | business | enterprise",
+      "subsubFast(true)": "процессы в 10 раз быстрее: канал раз в 1.5с, сбор 3с"
+    },
+    "statuses": [
+      {
+        "id": "live",
+        "label": "есть в прототипе"
+      },
+      {
+        "id": "soon",
+        "label": "новое, ещё не сделано"
+      },
+      {
+        "id": "copy",
+        "label": "требует правки копирайта"
+      },
+      {
+        "id": "gone",
+        "label": "выводится из интерфейса"
+      },
+      {
+        "id": "nopage",
+        "label": "страницы нет в прототипе"
+      }
+    ],
+    "deepLink": "analytics-styleguide.html?show=<id> открывает элемент сразу, без ховера и кликов"
+  },
+  "items": [
+    {
+      "id": "create-collection-шаг-1",
+      "group": "modals",
+      "groupTitle": "1. Модалки",
+      "name": "Create collection — шаг 1",
+      "status": "live",
+      "statusLabel": "есть в прототипе",
+      "where": "Basic data, My collections, Deep data, Videos data",
+      "trigger": "кнопка Create Collection",
+      "note": "",
+      "strings": [
+        "Create collection",
+        "Describe what you need and we'll find it, or paste channel links you already have.",
+        "Collection name *",
+        "Describe with AI",
+        "Paste links",
+        "Cancel",
+        "Set filters",
+        "Start sourcing"
+      ],
+      "prototype": "http://localhost:8778/analytics-styleguide.html?show=create-collection-шаг-1",
+      "prod": "https://app.subsub.io/analytics",
+      "repro": "click [data-ai-open] на analytics-styleguide.html"
+    },
+    {
+      "id": "create-collection-шаг-2-narrow-down-results",
+      "group": "modals",
+      "groupTitle": "1. Модалки",
+      "name": "Create collection — шаг 2 «Narrow down results»",
+      "status": "live",
+      "statusLabel": "есть в прототипе",
+      "where": "та же модалка, таб Describe with AI",
+      "trigger": "кнопка Set filters на первом шаге",
+      "note": "Было в задаче как НОВОЕ — сделано: три группы фильтров, промпт read-only, предпросмотр количества.",
+      "strings": [
+        "Narrow down results",
+        "SOURCING DESCRIPTION",
+        "No description yet — sourcing will rely on filters only",
+        "Audience & scale",
+        "Activity",
+        "Performance",
+        "Subscribers",
+        "Total views",
+        "Videos published",
+        "all time",
+        "Last upload",
+        "how recent",
+        "Average views",
+        "last 3 videos",
+        "Min",
+        "Max",
+        "Any time",
+        "Last 7 days",
+        "Last 30 days",
+        "Last 90 days",
+        "Custom",
+        "days",
+        "Micro 1k–100k",
+        "Mid 100k–1m",
+        "Large 1m+",
+        "≈ 55 channels in our base match these filters",
+        "Back",
+        "Edit filters"
+      ],
+      "prototype": "http://localhost:8778/analytics-styleguide.html?show=create-collection-шаг-2-narrow-down-results",
+      "prod": null,
+      "repro": "открыть analytics-styleguide.html?show=create-collection-шаг-2-narrow-down-results либо click [data-sg-open=\"aiModal\"] и затем click [data-cc-filters-open]"
+    },
+    {
+      "id": "create-collection-из-выбранных-каналов",
+      "group": "modals",
+      "groupTitle": "1. Модалки",
+      "name": "Create collection из выбранных каналов",
+      "status": "live",
+      "statusLabel": "есть в прототипе",
+      "where": "Basic data, Deep data",
+      "trigger": "кнопка Create collection from N channels в плашке выбора",
+      "note": "Ни промпта, ни вставки ссылок: только имя и чипы выбранных каналов.",
+      "strings": [
+        "Create collection",
+        "The channels you selected will go into the new collection.",
+        "Channels"
+      ],
+      "prototype": "http://localhost:8778/analytics-styleguide.html?show=create-collection-из-выбранных-каналов",
+      "prod": "https://app.subsub.io/analytics",
+      "repro": "открыть analytics-basic-data.html"
+    },
+    {
+      "id": "set-up-collection-sourcing-режим-refs",
+      "group": "modals",
+      "groupTitle": "1. Модалки",
+      "name": "Set up collection sourcing (режим refs)",
+      "status": "live",
+      "statusLabel": "есть в прототипе",
+      "where": "Basic data",
+      "trigger": "Find similar channels в плашке выбора",
+      "note": "Референсы предзаполняются выбранными каналами, поэтому воспроизводится только с выбором в таблице.",
+      "strings": [
+        "Set up collection sourcing",
+        "Describe the channels you want — we'll find and collect them for you.",
+        "Reference channels",
+        "No reference channels yet — add one to draft the description automatically.",
+        "Add channel",
+        "Paste a channel link or type a name",
+        "Start sourcing"
+      ],
+      "prototype": "http://localhost:8778/analytics-styleguide.html?show=set-up-collection-sourcing-режим-refs",
+      "prod": "https://app.subsub.io/analytics",
+      "repro": "открыть analytics-basic-data.html"
+    },
+    {
+      "id": "name-collection-вложенная",
+      "group": "modals",
+      "groupTitle": "1. Модалки",
+      "name": "Name collection (вложенная)",
+      "status": "live",
+      "statusLabel": "есть в прототипе",
+      "where": "модалка Create collection",
+      "trigger": "пункт Create new collection в селекторе коллекции-получателя",
+      "note": "",
+      "strings": [
+        "Name collection",
+        "Collection name",
+        "Cancel",
+        "Create"
+      ],
+      "prototype": "http://localhost:8778/analytics-styleguide.html?show=name-collection-вложенная",
+      "prod": null,
+      "repro": "открыть analytics-styleguide.html?show=name-collection-вложенная либо click [data-sg-open=\"mcModal-create\"]"
+    },
+    {
+      "id": "add-channels-to-x",
+      "group": "modals",
+      "groupTitle": "1. Модалки",
+      "name": "Add channels to «X»",
+      "status": "live",
+      "statusLabel": "есть в прототипе",
+      "where": "страница коллекции",
+      "trigger": "кнопка Add channels",
+      "note": "Второй таб (поиск по базе с чекбоксами) в задаче помечен НОВОЕ — в прототипе есть.",
+      "strings": [
+        "Add channels",
+        "Paste links",
+        "Find in base",
+        "YouTube channels links",
+        "One-time addition of channels:",
+        "Search by channel title",
+        "Cancel",
+        "Add channels"
+      ],
+      "prototype": "http://localhost:8778/analytics-styleguide.html?show=add-channels-to-x",
+      "prod": "https://app.subsub.io/analytics/collections",
+      "repro": "открыть analytics-styleguide.html?show=add-channels-to-x либо click [data-sg-open=\"ncModal\"]"
+    },
+    {
+      "id": "new-channels-add-to-base",
+      "group": "modals",
+      "groupTitle": "1. Модалки",
+      "name": "New channels (Add to base)",
+      "status": "gone",
+      "statusLabel": "выводится из интерфейса",
+      "where": "ранее — Basic data",
+      "trigger": "кнопка Add to base (убрана из интерфейса)",
+      "note": "Разметка ещё живёт в сборке: та же модалка обслуживает Add channels на странице коллекции.",
+      "strings": [
+        "New channels",
+        "Add to base"
+      ],
+      "prototype": "http://localhost:8778/analytics-styleguide.html?show=new-channels-add-to-base",
+      "prod": "https://app.subsub.io/analytics",
+      "repro": "открыть analytics-styleguide.html?show=new-channels-add-to-base либо click [data-sg-open=\"ncModal\"]"
+    },
+    {
+      "id": "new-report-market-insights",
+      "group": "modals",
+      "groupTitle": "1. Модалки",
+      "name": "New report — Market insights",
+      "status": "live",
+      "statusLabel": "есть в прототипе",
+      "where": "Reports",
+      "trigger": "кнопка Create report на табе Market insights",
+      "note": "",
+      "strings": [
+        "New report",
+        "Report type",
+        "Report name",
+        "Collection",
+        "Period",
+        "Cancel",
+        "Create report"
+      ],
+      "prototype": "http://localhost:8778/analytics-styleguide.html?show=new-report-market-insights",
+      "prod": "https://app.subsub.io/reports/market",
+      "repro": "click [data-rep-open] на analytics-styleguide.html"
+    },
+    {
+      "id": "new-report-my-performance",
+      "group": "modals",
+      "groupTitle": "1. Модалки",
+      "name": "New report — My performance",
+      "status": "copy",
+      "statusLabel": "требует правки копирайта",
+      "where": "Reports, таб My performance",
+      "trigger": "кнопка Create report",
+      "note": "Расхождение: при том же назначении состав и плейсхолдеры другие, чем у Market insights.",
+      "strings": [
+        "New report",
+        "Report name",
+        "Channel",
+        "Period"
+      ],
+      "prototype": "http://localhost:8778/analytics-styleguide.html?show=new-report-my-performance",
+      "prod": "https://app.subsub.io/reports/market",
+      "repro": "открыть analytics-reports.html?tab=performance"
+    },
+    {
+      "id": "share-collection",
+      "group": "modals",
+      "groupTitle": "1. Модалки",
+      "name": "Share collection",
+      "status": "live",
+      "statusLabel": "есть в прототипе",
+      "where": "My collections, страница коллекции",
+      "trigger": "кнопка Share",
+      "note": "",
+      "strings": [
+        "Share collection",
+        "Search people",
+        "Can view",
+        "Can edit",
+        "Remove access",
+        "Not shared"
+      ],
+      "prototype": "http://localhost:8778/analytics-styleguide.html?show=share-collection",
+      "prod": "https://app.subsub.io/analytics/collections",
+      "repro": "открыть analytics-collection-edit.html?name=Gaming%20UA"
+    },
+    {
+      "id": "duplicate-collection",
+      "group": "modals",
+      "groupTitle": "1. Модалки",
+      "name": "Duplicate collection",
+      "status": "soon",
+      "statusLabel": "новое, ещё не сделано",
+      "where": "My collections, страница коллекции",
+      "trigger": "пункт Duplicate collection",
+      "note": "Сейчас дубликат создаётся сразу, без модалки. По задаче нужно поле имени с дефолтом « expanded».",
+      "strings": [
+        "Duplicate collection",
+        "Collection name",
+        "Gaming UA expanded",
+        "Cancel",
+        "Duplicate"
+      ],
+      "prototype": "http://localhost:8778/analytics-styleguide.html?show=duplicate-collection",
+      "prod": null,
+      "repro": ""
+    },
+    {
+      "id": "columns-visibility",
+      "group": "modals",
+      "groupTitle": "1. Модалки",
+      "name": "Columns visibility",
+      "status": "live",
+      "statusLabel": "есть в прототипе",
+      "where": "Deep data",
+      "trigger": "кнопка Columns",
+      "note": "",
+      "strings": [
+        "Columns",
+        "Reset"
+      ],
+      "prototype": "http://localhost:8778/analytics-styleguide.html?show=columns-visibility",
+      "prod": "https://app.subsub.io/analytics/deep",
+      "repro": "открыть analytics-deep-data.html"
+    },
+    {
+      "id": "month-range-picker",
+      "group": "modals",
+      "groupTitle": "1. Модалки",
+      "name": "Month-range picker",
+      "status": "nopage",
+      "statusLabel": "страницы нет в прототипе",
+      "where": "карточка канала — страницы analytics-channel.html в прототипе нет",
+      "trigger": "поле периода в карточке",
+      "note": "Элемент из прода: в прототипе карточки канала не существует, воспроизвести нечем.",
+      "strings": [
+        "Cancel",
+        "Apply"
+      ],
+      "prototype": "http://localhost:8778/analytics-styleguide.html?show=month-range-picker",
+      "prod": "https://app.subsub.io/analytics",
+      "repro": ""
+    },
+    {
+      "id": "календарь-growth-period-published-at",
+      "group": "modals",
+      "groupTitle": "1. Модалки",
+      "name": "Календарь Growth period / Published at",
+      "status": "live",
+      "statusLabel": "есть в прототипе",
+      "where": "Basic data, Deep data, Videos data, панель фильтров",
+      "trigger": "чип Custom или поле Published at",
+      "note": "",
+      "strings": [
+        "Custom",
+        "7 days",
+        "30 days",
+        "90 days",
+        "Cancel",
+        "Apply",
+        "dd.mm.yyyy"
+      ],
+      "prototype": "http://localhost:8778/analytics-styleguide.html?show=календарь-growth-period-published-at",
+      "prod": "https://app.subsub.io/analytics",
+      "repro": "открыть analytics-basic-data.html"
+    },
+    {
+      "id": "дропдаун-search-mode",
+      "group": "modals",
+      "groupTitle": "1. Модалки",
+      "name": "Дропдаун SEARCH MODE",
+      "status": "gone",
+      "statusLabel": "выводится из интерфейса",
+      "where": "ранее — поиск на Basic data",
+      "trigger": "переключатель режима поиска (убран)",
+      "note": "Поиск стал обычным, режимы убраны — оставляю в каталоге как выведенный элемент.",
+      "strings": [
+        "Search mode",
+        "Default",
+        "AI semantic search"
+      ],
+      "prototype": "http://localhost:8778/analytics-styleguide.html?show=дропдаун-search-mode",
+      "prod": "https://app.subsub.io/analytics",
+      "repro": ""
+    },
+    {
+      "id": "селектор-коллекции",
+      "group": "modals",
+      "groupTitle": "1. Модалки",
+      "name": "Селектор коллекции",
+      "status": "live",
+      "statusLabel": "есть в прототипе",
+      "where": "Basic data, Deep data, Videos data",
+      "trigger": "пилюля Select collection",
+      "note": "Группы теперь по состоянию: Activated · Collecting data · Sourcing channels · Not activated. Плюс пункт создания.",
+      "strings": [
+        "Select collection",
+        "Search",
+        "All collections",
+        "Create collection",
+        "Activated",
+        "Collecting data",
+        "Sourcing channels",
+        "Not activated"
+      ],
+      "prototype": "http://localhost:8778/analytics-styleguide.html?show=селектор-коллекции",
+      "prod": "https://app.subsub.io/analytics",
+      "repro": "открыть analytics-deep-data.html"
+    },
+    {
+      "id": "меню-коллекции-своя-и-чужая",
+      "group": "modals",
+      "groupTitle": "1. Модалки",
+      "name": "Меню коллекции «⋮» — своя и чужая",
+      "status": "live",
+      "statusLabel": "есть в прототипе",
+      "where": "My collections, страница коллекции",
+      "trigger": "кнопка с тремя точками",
+      "note": "",
+      "strings": [
+        "View collection",
+        "Activate deep data",
+        "View deep data",
+        "Rename collection",
+        "Duplicate collection",
+        "Deactivate collection",
+        "Stop collecting",
+        "Delete collection",
+        "Leave collection"
+      ],
+      "prototype": "http://localhost:8778/analytics-styleguide.html?show=меню-коллекции-своя-и-чужая",
+      "prod": "https://app.subsub.io/analytics/collections",
+      "repro": "элемент отрисован на странице каталога, открывать нечего"
+    },
+    {
+      "id": "delete-collection",
+      "group": "dialogs",
+      "groupTitle": "2. Диалоги подтверждения",
+      "name": "Delete collection?",
+      "status": "live",
+      "statusLabel": "есть в прототипе",
+      "where": "My collections, страница коллекции",
+      "trigger": "пункт Delete collection",
+      "note": "",
+      "strings": [
+        "Delete collection?",
+        "This action cannot be undone. The collection and its settings will be removed.",
+        "Cancel",
+        "Delete"
+      ],
+      "prototype": "http://localhost:8778/analytics-styleguide.html?show=delete-collection",
+      "prod": "https://app.subsub.io/analytics/collections",
+      "repro": "открыть analytics-styleguide.html?show=delete-collection либо click [data-sg-open=\"mcModal-delete\"]"
+    },
+    {
+      "id": "deactivate-collection",
+      "group": "dialogs",
+      "groupTitle": "2. Диалоги подтверждения",
+      "name": "Deactivate collection?",
+      "status": "live",
+      "statusLabel": "есть в прототипе",
+      "where": "My collections, страница коллекции",
+      "trigger": "пункт Deactivate collection",
+      "note": "",
+      "strings": [
+        "Deactivate collection?",
+        "Deep data of the collection will be deactivated. You can activate it again later.",
+        "Cancel",
+        "Deactivate"
+      ],
+      "prototype": "http://localhost:8778/analytics-styleguide.html?show=deactivate-collection",
+      "prod": "https://app.subsub.io/analytics/collections",
+      "repro": "открыть analytics-styleguide.html?show=deactivate-collection либо click [data-sg-open=\"mcModal-deactivate\"]"
+    },
+    {
+      "id": "activate-deep-data",
+      "group": "dialogs",
+      "groupTitle": "2. Диалоги подтверждения",
+      "name": "Activate deep data?",
+      "status": "live",
+      "statusLabel": "есть в прототипе",
+      "where": "My collections, страница коллекции, Deep data",
+      "trigger": "Activate deep data",
+      "note": "В задаче помечено НОВОЕ — сделано: подтверждение перед платным действием.",
+      "strings": [
+        "Activate deep data?",
+        "Deep data will be collected for 8 channels of «Gaming UA». Collecting takes a few minutes and counts against your plan limits.",
+        "Cancel",
+        "Activate"
+      ],
+      "prototype": "http://localhost:8778/analytics-styleguide.html?show=activate-deep-data",
+      "prod": "https://app.subsub.io/analytics/deep",
+      "repro": "открыть analytics-styleguide.html?show=activate-deep-data либо click [data-sg-open=\"mcModal-activate\"]"
+    },
+    {
+      "id": "удаление-одного-канала-из-коллекции",
+      "group": "dialogs",
+      "groupTitle": "2. Диалоги подтверждения",
+      "name": "Удаление одного канала из коллекции",
+      "status": "live",
+      "statusLabel": "есть в прототипе",
+      "where": "страница коллекции",
+      "trigger": "корзина в строке",
+      "note": "В задаче помечено НОВОЕ — сделано, удаление идёт через подтверждение.",
+      "strings": [
+        "Remove MrBeast from collection?",
+        "The channel will be removed from «Gaming UA». You can add it back at any time.",
+        "Cancel",
+        "Remove"
+      ],
+      "prototype": "http://localhost:8778/analytics-styleguide.html?show=удаление-одного-канала-из-коллекции",
+      "prod": "https://app.subsub.io/analytics/collections",
+      "repro": "открыть analytics-collection-edit.html?name=Gaming%20UA"
+    },
+    {
+      "id": "убрать-из-коллекции-n-массовое",
+      "group": "dialogs",
+      "groupTitle": "2. Диалоги подтверждения",
+      "name": "Убрать из коллекции (N) — массовое",
+      "status": "live",
+      "statusLabel": "есть в прототипе",
+      "where": "страница коллекции",
+      "trigger": "плашка выбора → Remove N channels",
+      "note": "",
+      "strings": [
+        "Remove 3 channels from collection?",
+        "Cancel",
+        "Remove"
+      ],
+      "prototype": "http://localhost:8778/analytics-styleguide.html?show=убрать-из-коллекции-n-массовое",
+      "prod": "https://app.subsub.io/analytics/collections",
+      "repro": "открыть analytics-collection-edit.html?name=Gaming%20UA"
+    },
+    {
+      "id": "активация-во-время-подбора",
+      "group": "dialogs",
+      "groupTitle": "2. Диалоги подтверждения",
+      "name": "Активация во время подбора",
+      "status": "soon",
+      "statusLabel": "новое, ещё не сделано",
+      "where": "страница коллекции, Deep data",
+      "trigger": "Activate deep data, когда идёт подбор каналов",
+      "note": "Сейчас активация в этом состоянии просто заблокирована тултипом. По задаче нужен выбор из двух вариантов.",
+      "strings": [
+        "Activate deep data while sourcing is running?",
+        "Sourcing is still adding channels. You can stop it and collect deep data for what's already there, or queue activation until sourcing finishes.",
+        "Stop sourcing and activate now",
+        "Activate after sourcing",
+        "Cancel"
+      ],
+      "prototype": "http://localhost:8778/analytics-styleguide.html?show=активация-во-время-подбора",
+      "prod": null,
+      "repro": ""
+    },
+    {
+      "id": "добавление-каналов-в-активированную-коллекцию",
+      "group": "dialogs",
+      "groupTitle": "2. Диалоги подтверждения",
+      "name": "Добавление каналов в активированную коллекцию",
+      "status": "copy",
+      "statusLabel": "требует правки копирайта",
+      "where": "Basic data, Deep data, страница коллекции",
+      "trigger": "добавление каналов в коллекцию со собранной Deep data",
+      "note": "Диалог есть, но ветки другие: сейчас «Add anyway» и «Duplicate and add». По задаче нужны Deactivate и Duplicate, без «добавить всё равно».",
+      "strings": [
+        "Add channels to an activated collection?",
+        "Deep data for 2 channels will start from the day you add them, so history in «News UA - Big Media» stays incomplete. For full history duplicate the collection and activate deep data for the copy.",
+        "Cancel",
+        "Duplicate and add",
+        "Add anyway"
+      ],
+      "prototype": "http://localhost:8778/analytics-styleguide.html?show=добавление-каналов-в-активированную-коллекцию",
+      "prod": "https://app.subsub.io/analytics",
+      "repro": "открыть analytics-styleguide.html?show=добавление-каналов-в-активированную-коллекцию либо click [data-sg-open=\"awModal\"]"
+    },
+    {
+      "id": "отмена-подбора",
+      "group": "dialogs",
+      "groupTitle": "2. Диалоги подтверждения",
+      "name": "Отмена подбора",
+      "status": "soon",
+      "statusLabel": "новое, ещё не сделано",
+      "where": "страница коллекции, список, пилюля в шапке",
+      "trigger": "Cancel у процесса подбора",
+      "note": "Сейчас отмена срабатывает сразу, без подтверждения.",
+      "strings": [
+        "Stop sourcing channels?",
+        "Channels found so far stay in the collection.",
+        "Keep sourcing",
+        "Stop sourcing"
+      ],
+      "prototype": "http://localhost:8778/analytics-styleguide.html?show=отмена-подбора",
+      "prod": null,
+      "repro": ""
+    },
+    {
+      "id": "дубликат-sample-коллекции-на-explorer",
+      "group": "dialogs",
+      "groupTitle": "2. Диалоги подтверждения",
+      "name": "Дубликат sample-коллекции на Explorer",
+      "status": "soon",
+      "statusLabel": "новое, ещё не сделано",
+      "where": "My collections, страница коллекции",
+      "trigger": "Duplicate collection у sample-коллекции на плане Explorer",
+      "note": "",
+      "strings": [
+        "Duplicate a sample collection?",
+        "Deep data won't be available in your copy on the Explorer plan — sample collections are an exception.",
+        "Cancel",
+        "Duplicate anyway"
+      ],
+      "prototype": "http://localhost:8778/analytics-styleguide.html?show=дубликат-sample-коллекции-на-explorer",
+      "prod": null,
+      "repro": ""
+    },
+    {
+      "id": "существующие",
+      "group": "toasts",
+      "groupTitle": "3. Тосты",
+      "name": "Существующие",
+      "status": "live",
+      "statusLabel": "есть в прототипе",
+      "where": "весь раздел Analytics",
+      "trigger": "",
+      "note": "",
+      "strings": [
+        "Collection created — it's selected as destination",
+        "Collection created successfully",
+        "Collection renamed",
+        "Collection saved successfully",
+        "Collection deleted successfully",
+        "Collection duplicated as «Gaming UA (copy)»",
+        "Collection with this name already exists",
+        "You left «News UA - Big Media»",
+        "Channels added successfully",
+        "2 channels added to Gaming UA",
+        "3 channels removed from Gaming UA",
+        "AI search started — new channels will be added to “Gaming UA”",
+        "Sourcing cancelled — “Gaming UA”",
+        "Sourcing finished — 6 channels added to “Gaming UA”",
+        "Collecting deep data — “Gaming UA”",
+        "Deep data is ready — “Gaming UA”",
+        "Deep data collection cancelled — “Gaming UA”",
+        "Deep data deactivated — “Gaming UA”",
+        "Prompt rebuilt from the collection — edit it before starting",
+        "Description auto-filled — edit it before starting",
+        "“ТСН” pinned on top",
+        "“ТСН” unpinned",
+        "Collection shared with Anna Kovalenko",
+        "Sharing with Anna Kovalenko revoked",
+        "Link copied",
+        "Failed to copy link",
+        "Title copied",
+        "Report download started",
+        "Changes saved automatically",
+        "Upgrade request sent — our team will contact you"
+      ],
+      "prototype": "http://localhost:8778/analytics-styleguide.html?show=существующие",
+      "prod": null,
+      "repro": "элемент отрисован на странице каталога, открывать нечего"
+    },
+    {
+      "id": "валидационные-и-блокирующие",
+      "group": "toasts",
+      "groupTitle": "3. Тосты",
+      "name": "Валидационные и блокирующие",
+      "status": "live",
+      "statusLabel": "есть в прототипе",
+      "where": "модалки создания и добавления",
+      "trigger": "",
+      "note": "",
+      "strings": [
+        "Name the collection first",
+        "Name can't be empty",
+        "Describe the channels you're looking for",
+        "Only 3 more channels fit — upgrade the plan for a bigger collection",
+        "Collection limit reached — upgrade the plan to add more channels",
+        "Collection limit reached on the Pro plan — upgrade to create more",
+        "Channels can't be changed while deep data is being collected",
+        "Sourcing is running — it fills the collection itself",
+        "Deep data is available on Pro and above — upgrade to activate"
+      ],
+      "prototype": "http://localhost:8778/analytics-styleguide.html?show=валидационные-и-блокирующие",
+      "prod": null,
+      "repro": "элемент отрисован на странице каталога, открывать нечего"
+    },
+    {
+      "id": "из-брифа-но-в-коде-нет",
+      "group": "toasts",
+      "groupTitle": "3. Тосты",
+      "name": "Из брифа, но в коде нет",
+      "status": "copy",
+      "statusLabel": "требует правки копирайта",
+      "where": "—",
+      "trigger": "",
+      "note": "Эти формулировки пришли из описания прода. В прототипе показываются другие тексты — сверху. Нужно решить, какие оставить.",
+      "strings": [
+        "Sourcing started — channels will be added to \"X\"",
+        "Sourcing started — we're finding channels",
+        "Sourcing of \"X\" canceled",
+        "Added N channels to \"X\" · M already there",
+        "Channel removed from collection",
+        "Deep data activated successfully",
+        "Select a destination collection",
+        "Add at least one reference channel",
+        "Describe the channels or paste a channel link"
+      ],
+      "prototype": "http://localhost:8778/analytics-styleguide.html?show=из-брифа-но-в-коде-нет",
+      "prod": null,
+      "repro": ""
+    },
+    {
+      "id": "новые-ошибки-и-упор-в-лимит",
+      "group": "toasts",
+      "groupTitle": "3. Тосты",
+      "name": "Новые: ошибки и упор в лимит",
+      "status": "soon",
+      "statusLabel": "новое, ещё не сделано",
+      "where": "подбор каналов и сбор Deep data",
+      "trigger": "",
+      "note": "Состояний ошибки в прототипе нет — тексты на утверждение, поведение по документу состояний: коллекция всегда откатывается в Created.",
+      "strings": [
+        "Sourcing failed — nothing was added. Try again",
+        "Deep data collection failed. Try again",
+        "Sourcing stopped — collection is full on the Pro plan (25/25)"
+      ],
+      "prototype": "http://localhost:8778/analytics-styleguide.html?show=новые-ошибки-и-упор-в-лимит",
+      "prod": null,
+      "repro": "элемент отрисован на странице каталога, открывать нечего"
+    },
+    {
+      "id": "баннер-плана-в-модалке",
+      "group": "banners",
+      "groupTitle": "4. Баннеры, плашки, индикаторы",
+      "name": "Баннер плана в модалке",
+      "status": "live",
+      "statusLabel": "есть в прототипе",
+      "where": "Create collection",
+      "trigger": "открытие модалки",
+      "note": "Правка из задачи сделана: для пустой коллекции «up to 25 channels», формат N of M только когда места заняты.",
+      "strings": [
+        "Pro plan: up to 25 channels in a collection.",
+        "Pro plan: up to 5 of 25 left in “Gaming UA”.",
+        "Pro plan: only 10 of 14 channels will be added.",
+        "Upgrade plan"
+      ],
+      "prototype": "http://localhost:8778/analytics-styleguide.html?show=баннер-плана-в-модалке",
+      "prod": null,
+      "repro": "элемент отрисован на странице каталога, открывать нечего"
+    },
+    {
+      "id": "инлайн-апселл-при-упоре-в-лимит-коллекций",
+      "group": "banners",
+      "groupTitle": "4. Баннеры, плашки, индикаторы",
+      "name": "Инлайн-апселл при упоре в лимит коллекций",
+      "status": "live",
+      "statusLabel": "есть в прототипе",
+      "where": "Create collection",
+      "trigger": "исчерпан лимит коллекций плана",
+      "note": "",
+      "strings": [
+        "Collection limit reached on Pro (5/5)",
+        "All 5 collections used on Pro — upgrade or add to an existing one"
+      ],
+      "prototype": "http://localhost:8778/analytics-styleguide.html?show=инлайн-апселл-при-упоре-в-лимит-коллекций",
+      "prod": null,
+      "repro": "элемент отрисован на странице каталога, открывать нечего"
+    },
+    {
+      "id": "плашка-коллекция-в-процессе",
+      "group": "banners",
+      "groupTitle": "4. Баннеры, плашки, индикаторы",
+      "name": "Плашка «коллекция в процессе»",
+      "status": "live",
+      "statusLabel": "есть в прототипе",
+      "where": "страница коллекции",
+      "trigger": "идёт подбор каналов или сбор Deep data",
+      "note": "",
+      "strings": [
+        "Sourcing channels",
+        "Collecting data",
+        "Cancel"
+      ],
+      "prototype": "http://localhost:8778/analytics-styleguide.html?show=плашка-коллекция-в-процессе",
+      "prod": "https://app.subsub.io/analytics/collections",
+      "repro": "элемент отрисован на странице каталога, открывать нечего"
+    },
+    {
+      "id": "плашка-активация-запланирована",
+      "group": "banners",
+      "groupTitle": "4. Баннеры, плашки, индикаторы",
+      "name": "Плашка «активация запланирована»",
+      "status": "soon",
+      "statusLabel": "новое, ещё не сделано",
+      "where": "страница коллекции, список",
+      "trigger": "выбран вариант «Активировать после подбора»",
+      "note": "",
+      "strings": [
+        "Activation queued — deep data starts when sourcing finishes"
+      ],
+      "prototype": "http://localhost:8778/analytics-styleguide.html?show=плашка-активация-запланирована",
+      "prod": null,
+      "repro": ""
+    },
+    {
+      "id": "пилюля-процессов-в-шапке",
+      "group": "banners",
+      "groupTitle": "4. Баннеры, плашки, индикаторы",
+      "name": "Пилюля процессов в шапке",
+      "status": "live",
+      "statusLabel": "есть в прототипе",
+      "where": "все страницы Analytics",
+      "trigger": "идёт хотя бы один процесс",
+      "note": "",
+      "strings": [
+        "Sourcing channels",
+        "Collecting data",
+        "Cancel",
+        "View"
+      ],
+      "prototype": "http://localhost:8778/analytics-styleguide.html?show=пилюля-процессов-в-шапке",
+      "prod": null,
+      "repro": "открыть analytics-collections.html"
+    },
+    {
+      "id": "счётчик-мест-n-of-m-channels",
+      "group": "banners",
+      "groupTitle": "4. Баннеры, плашки, индикаторы",
+      "name": "Счётчик мест «N of M channels»",
+      "status": "live",
+      "statusLabel": "есть в прототипе",
+      "where": "страница коллекции",
+      "trigger": "",
+      "note": "Правка из задачи сделана: вместимость тарифная (Pro — 25), у Enterprise плашки нет вовсе.",
+      "strings": [
+        "22 of 25 channels",
+        "Upgrade",
+        "Collection is full on the Pro plan (25/25)"
+      ],
+      "prototype": "http://localhost:8778/analytics-styleguide.html?show=счётчик-мест-n-of-m-channels",
+      "prod": "https://app.subsub.io/analytics/collections",
+      "repro": "элемент отрисован на странице каталога, открывать нечего"
+    },
+    {
+      "id": "блок-последнего-подбора",
+      "group": "banners",
+      "groupTitle": "4. Баннеры, плашки, индикаторы",
+      "name": "Блок последнего подбора",
+      "status": "live",
+      "statusLabel": "есть в прототипе",
+      "where": "страница коллекции, Deep data",
+      "trigger": "у коллекции есть запуск подбора",
+      "note": "Формулировки про запуск, а не про состав: после ручных правок коллекция им уже не соответствует.",
+      "strings": [
+        "Last sourcing",
+        "Filters used",
+        "subs ≥ 10,000",
+        "videos ≥ 50",
+        "Source more channels",
+        "no filters"
+      ],
+      "prototype": "http://localhost:8778/analytics-styleguide.html?show=блок-последнего-подбора",
+      "prod": "https://app.subsub.io/analytics/deep",
+      "repro": ""
+    },
+    {
+      "id": "чипы-активных-фильтров",
+      "group": "banners",
+      "groupTitle": "4. Баннеры, плашки, индикаторы",
+      "name": "Чипы активных фильтров",
+      "status": "live",
+      "statusLabel": "есть в прототипе",
+      "where": "Create collection, шаг 1",
+      "trigger": "заданы фильтры подбора",
+      "note": "",
+      "strings": [
+        "subs 10k–1m",
+        "videos 50+",
+        "views 5m+",
+        "up to 1m",
+        "last 30d",
+        "Set filters",
+        "Edit filters"
+      ],
+      "prototype": "http://localhost:8778/analytics-styleguide.html?show=чипы-активных-фильтров",
+      "prod": null,
+      "repro": "элемент отрисован на странице каталога, открывать нечего"
+    },
+    {
+      "id": "инфо-баннер-на-reports",
+      "group": "banners",
+      "groupTitle": "4. Баннеры, плашки, индикаторы",
+      "name": "Инфо-баннер на Reports",
+      "status": "live",
+      "statusLabel": "есть в прототипе",
+      "where": "Reports",
+      "trigger": "открытие страницы, закрывается крестиком",
+      "note": "",
+      "strings": [
+        "Ready reports are stored in Media Library — Content Export folder."
+      ],
+      "prototype": "http://localhost:8778/analytics-styleguide.html?show=инфо-баннер-на-reports",
+      "prod": "https://app.subsub.io/reports/market",
+      "repro": "открыть analytics-reports.html"
+    },
+    {
+      "id": "no-channels-yet-обычная-коллекция",
+      "group": "empty",
+      "groupTitle": "5. Пустые состояния и загрузка",
+      "name": "No channels yet — обычная коллекция",
+      "status": "live",
+      "statusLabel": "есть в прототипе",
+      "where": "страница коллекции",
+      "trigger": "",
+      "note": "",
+      "strings": [
+        "No channels yet",
+        "Add channels by link or from our base — or describe what you need and we'll find them. Deep data can be activated once the collection has at least one channel.",
+        "Add channels"
+      ],
+      "prototype": "http://localhost:8778/analytics-styleguide.html?show=no-channels-yet-обычная-коллекция",
+      "prod": "https://app.subsub.io/analytics/collections",
+      "repro": "элемент отрисован на странице каталога, открывать нечего"
+    },
+    {
+      "id": "скелетон-лоадер-подбора",
+      "group": "empty",
+      "groupTitle": "5. Пустые состояния и загрузка",
+      "name": "Скелетон-лоадер подбора",
+      "status": "live",
+      "statusLabel": "есть в прототипе",
+      "where": "страница коллекции",
+      "trigger": "",
+      "note": "Не больше трёх строк-заглушек, реальные каналы приезжают выше. По задаче было НОВОЕ — сделано.",
+      "strings": [
+        "Sourcing channels",
+        "Cancel"
+      ],
+      "prototype": "http://localhost:8778/analytics-styleguide.html?show=скелетон-лоадер-подбора",
+      "prod": "https://app.subsub.io/analytics/collections",
+      "repro": "элемент отрисован на странице каталога, открывать нечего"
+    },
+    {
+      "id": "ноль-результатов-подбора",
+      "group": "empty",
+      "groupTitle": "5. Пустые состояния и загрузка",
+      "name": "Ноль результатов подбора",
+      "status": "soon",
+      "statusLabel": "новое, ещё не сделано",
+      "where": "страница коллекции",
+      "trigger": "",
+      "note": "Сейчас после пустого подбора коллекция показывает обычное «No channels yet» — промпт не виден.",
+      "strings": [
+        "No channels matched this description",
+        "Sourcing finished, but nothing matched: “турецкие сериалы с озвучкой”. Loosen the filters or rewrite the description.",
+        "Edit description",
+        "Run sourcing again"
+      ],
+      "prototype": "http://localhost:8778/analytics-styleguide.html?show=ноль-результатов-подбора",
+      "prod": null,
+      "repro": ""
+    },
+    {
+      "id": "скелетон-в-ячейках-метрик-нового-канала",
+      "group": "empty",
+      "groupTitle": "5. Пустые состояния и загрузка",
+      "name": "Скелетон в ячейках метрик нового канала",
+      "status": "live",
+      "statusLabel": "есть в прототипе",
+      "where": "страница коллекции",
+      "trigger": "",
+      "note": "Было НОВОЕ — сделано: у только что добавленного канала вместо прочерков заглушки.",
+      "strings": [],
+      "prototype": "http://localhost:8778/analytics-styleguide.html?show=скелетон-в-ячейках-метрик-нового-канала",
+      "prod": "https://app.subsub.io/analytics/collections",
+      "repro": "элемент отрисован на странице каталога, открывать нечего"
+    },
+    {
+      "id": "no-channels-found-basic-data",
+      "group": "empty",
+      "groupTitle": "5. Пустые состояния и загрузка",
+      "name": "No channels found — Basic data",
+      "status": "live",
+      "statusLabel": "есть в прототипе",
+      "where": "Basic data, Deep data",
+      "trigger": "поиск или фильтры без результатов",
+      "note": "",
+      "strings": [
+        "No channels found",
+        "Select a collection to see deep data"
+      ],
+      "prototype": "http://localhost:8778/analytics-styleguide.html?show=no-channels-found-basic-data",
+      "prod": "https://app.subsub.io/analytics",
+      "repro": ""
+    },
+    {
+      "id": "пустая-коллекция-выбранная-на-basic-data",
+      "group": "empty",
+      "groupTitle": "5. Пустые состояния и загрузка",
+      "name": "Пустая коллекция, выбранная на Basic data",
+      "status": "soon",
+      "statusLabel": "новое, ещё не сделано",
+      "where": "Basic data",
+      "trigger": "",
+      "note": "",
+      "strings": [
+        "This collection has no channels yet",
+        "Open the collection"
+      ],
+      "prototype": "http://localhost:8778/analytics-styleguide.html?show=пустая-коллекция-выбранная-на-basic-data",
+      "prod": null,
+      "repro": ""
+    },
+    {
+      "id": "deep-data-четыре-состояния",
+      "group": "empty",
+      "groupTitle": "5. Пустые состояния и загрузка",
+      "name": "Deep data: четыре состояния",
+      "status": "live",
+      "statusLabel": "есть в прототипе",
+      "where": "Deep data",
+      "trigger": "",
+      "note": "Коллекция не активирована · идёт подбор · идёт сбор метрик · коллекция не выбрана.",
+      "strings": [
+        "Deep data isn't activated",
+        "Activate deep data for “Gaming UA” — we'll collect growth, engagement and performance for every channel in it.",
+        "Activate deep data",
+        "Collecting data",
+        "We're collecting deep metrics for 8 channels of “Gaming UA”. You can leave the page — collection continues.",
+        "Cancel collection",
+        "Select a collection",
+        "Deep data is shown per collection — pick one above to see its channels and metrics.",
+        "Select collection",
+        "No collections yet",
+        "Create collection"
+      ],
+      "prototype": "http://localhost:8778/analytics-styleguide.html?show=deep-data-четыре-состояния",
+      "prod": "https://app.subsub.io/analytics/deep",
+      "repro": "открыть analytics-deep-data.html"
+    },
+    {
+      "id": "my-collections-нет-своих-коллекций",
+      "group": "empty",
+      "groupTitle": "5. Пустые состояния и загрузка",
+      "name": "My collections: нет своих коллекций",
+      "status": "live",
+      "statusLabel": "есть в прототипе",
+      "where": "My collections",
+      "trigger": "",
+      "note": "Сделано: над списком сэмплов промо-блок «создайте свою». Полностью пустого списка не бывает — сэмплы выданы всем.",
+      "strings": [
+        "Create your first collection",
+        "Sample collections show how it works. Build your own to track the channels you care about.",
+        "Create Collection",
+        "You have no own collections yet",
+        "Show all collections",
+        "Nothing found",
+        "Clear search"
+      ],
+      "prototype": "http://localhost:8778/analytics-styleguide.html?show=my-collections-нет-своих-коллекций",
+      "prod": "https://app.subsub.io/analytics/collections",
+      "repro": ""
+    },
+    {
+      "id": "no-results-found-shared-with",
+      "group": "empty",
+      "groupTitle": "5. Пустые состояния и загрузка",
+      "name": "No results found — Shared with",
+      "status": "live",
+      "statusLabel": "есть в прототипе",
+      "where": "My collections, фильтр Shared with",
+      "trigger": "",
+      "note": "",
+      "strings": [
+        "No results found"
+      ],
+      "prototype": "http://localhost:8778/analytics-styleguide.html?show=no-results-found-shared-with",
+      "prod": "https://app.subsub.io/analytics/collections",
+      "repro": ""
+    },
+    {
+      "id": "пустой-список-отчётов",
+      "group": "empty",
+      "groupTitle": "5. Пустые состояния и загрузка",
+      "name": "Пустой список отчётов",
+      "status": "live",
+      "statusLabel": "есть в прототипе",
+      "where": "Reports",
+      "trigger": "",
+      "note": "В прототипе текст без артикля: «No reports yet». Формулировка «You don't have a reports yet» — из прода, там артикль лишний.",
+      "strings": [
+        "No reports yet",
+        "You don't have a reports yet (прод)"
+      ],
+      "prototype": "http://localhost:8778/analytics-styleguide.html?show=пустой-список-отчётов",
+      "prod": "https://app.subsub.io/reports/market",
+      "repro": ""
+    },
+    {
+      "id": "пейвол-deep-data-на-explorer",
+      "group": "empty",
+      "groupTitle": "5. Пустые состояния и загрузка",
+      "name": "Пейвол Deep data на Explorer",
+      "status": "live",
+      "statusLabel": "есть в прототипе",
+      "where": "страница коллекции, Deep data",
+      "trigger": "",
+      "note": "Кнопка видна и заблокирована, тултип объясняет и предлагает апгрейд. По сэмплам Deep data открыта.",
+      "strings": [
+        "Deep data is available on Pro and above",
+        "Upgrade plan"
+      ],
+      "prototype": "http://localhost:8778/analytics-styleguide.html?show=пейвол-deep-data-на-explorer",
+      "prod": "https://app.subsub.io/analytics/deep",
+      "repro": "элемент отрисован на странице каталога, открывать нечего"
+    },
+    {
+      "id": "блокировки-состояний",
+      "group": "tips",
+      "groupTitle": "6. Тултипы",
+      "name": "Блокировки состояний",
+      "status": "live",
+      "statusLabel": "есть в прототипе",
+      "where": "страница коллекции, Basic data, Deep data",
+      "trigger": "",
+      "note": "",
+      "strings": [
+        "Sourcing is running — it fills the collection itself",
+        "Wait until channel sourcing finishes",
+        "Add at least one channel first",
+        "Channels can't be changed while deep data is being collected",
+        "Wait until the running process finishes",
+        "Deep data isn't collected yet"
+      ],
+      "prototype": "http://localhost:8778/analytics-styleguide.html?show=блокировки-состояний",
+      "prod": "https://app.subsub.io/analytics",
+      "repro": "элемент отрисован на странице каталога, открывать нечего"
+    },
+    {
+      "id": "апселл-тултипы",
+      "group": "tips",
+      "groupTitle": "6. Тултипы",
+      "name": "Апселл-тултипы",
+      "status": "live",
+      "statusLabel": "есть в прототипе",
+      "where": "страница коллекции, Deep data, модалка создания",
+      "trigger": "",
+      "note": "",
+      "strings": [
+        "Deep data is available on Pro and above",
+        "Collection is full on the Pro plan (25/25)",
+        "7 days is available on Pro and above",
+        "Upgrade plan"
+      ],
+      "prototype": "http://localhost:8778/analytics-styleguide.html?show=апселл-тултипы",
+      "prod": "https://app.subsub.io/analytics/deep",
+      "repro": "элемент отрисован на странице каталога, открывать нечего"
+    },
+    {
+      "id": "справочные-в-карточке-канала",
+      "group": "tips",
+      "groupTitle": "6. Тултипы",
+      "name": "Справочные «?» в карточке канала",
+      "status": "nopage",
+      "statusLabel": "страницы нет в прототипе",
+      "where": "карточка канала (в прототипе страницы нет)",
+      "trigger": "",
+      "note": "Из брифа по проду: 41 иконка без title и aria-describedby. В прототипе страницы карточки нет, проверять нечего.",
+      "strings": [
+        "What this metric means",
+        "How we calculate it"
+      ],
+      "prototype": "http://localhost:8778/analytics-styleguide.html?show=справочные-в-карточке-канала",
+      "prod": "https://app.subsub.io/analytics",
+      "repro": ""
+    },
+    {
+      "id": "бейджи-скорингов-seo-cb-vir",
+      "group": "tips",
+      "groupTitle": "6. Тултипы",
+      "name": "Бейджи скорингов SEO, CB, VIR",
+      "status": "nopage",
+      "statusLabel": "страницы нет в прототипе",
+      "where": "прод: Videos data и карточка канала",
+      "trigger": "",
+      "note": "В прототипе таких бейджей нет — ни в Videos data, ни на других страницах. Текст на будущее.",
+      "strings": [
+        "SEO score",
+        "Clickbait score",
+        "Virality score"
+      ],
+      "prototype": "http://localhost:8778/analytics-styleguide.html?show=бейджи-скорингов-seo-cb-vir",
+      "prod": "https://app.subsub.io/analytics",
+      "repro": ""
+    },
+    {
+      "id": "highlight-performance-и-performance-range",
+      "group": "tips",
+      "groupTitle": "6. Тултипы",
+      "name": "Highlight performance и Performance range",
+      "status": "soon",
+      "statusLabel": "новое, ещё не сделано",
+      "where": "панель фильтров",
+      "trigger": "",
+      "note": "Без пояснений вообще. Редизайн панели — отдельный трек, но подсказки нужны и сейчас.",
+      "strings": [
+        "Highlight performance",
+        "Performance range"
+      ],
+      "prototype": "http://localhost:8778/analytics-styleguide.html?show=highlight-performance-и-performance-range",
+      "prod": null,
+      "repro": ""
+    },
+    {
+      "id": "иконки-в-колонке-actions-на-reports",
+      "group": "tips",
+      "groupTitle": "6. Тултипы",
+      "name": "Иконки в колонке ACTIONS на Reports",
+      "status": "copy",
+      "statusLabel": "требует правки копирайта",
+      "where": "Reports",
+      "trigger": "",
+      "note": "aria-label и title у части иконок есть (Download, Show in Media Library), но своих тултипов нет и корзина стоит вплотную к скачиванию.",
+      "strings": [
+        "Download",
+        "Show in Media Library",
+        "Download report",
+        "Delete report"
+      ],
+      "prototype": "http://localhost:8778/analytics-styleguide.html?show=иконки-в-колонке-actions-на-reports",
+      "prod": "https://app.subsub.io/reports/market",
+      "repro": ""
+    },
+    {
+      "id": "легенда-хитмапа-publication-time",
+      "group": "tips",
+      "groupTitle": "6. Тултипы",
+      "name": "Легенда хитмапа Publication time",
+      "status": "nopage",
+      "statusLabel": "страницы нет в прототипе",
+      "where": "карточка канала (в прототипе страницы нет)",
+      "trigger": "",
+      "note": "Из брифа по проду.",
+      "strings": [
+        "Fewer uploads",
+        "More uploads"
+      ],
+      "prototype": "http://localhost:8778/analytics-styleguide.html?show=легенда-хитмапа-publication-time",
+      "prod": "https://app.subsub.io/analytics",
+      "repro": ""
+    },
+    {
+      "id": "иконка-монитор-в-строке-канала",
+      "group": "tips",
+      "groupTitle": "6. Тултипы",
+      "name": "Иконка-«монитор» в строке канала",
+      "status": "soon",
+      "statusLabel": "новое, ещё не сделано",
+      "where": "Basic data",
+      "trigger": "",
+      "note": "Ни aria-label, ни тултипа — назначение непонятно.",
+      "strings": [
+        "Open channel page"
+      ],
+      "prototype": "http://localhost:8778/analytics-styleguide.html?show=иконка-монитор-в-строке-канала",
+      "prod": null,
+      "repro": ""
+    },
+    {
+      "id": "аббревиатуры-колонок-и-суффикс-all",
+      "group": "tips",
+      "groupTitle": "6. Тултипы",
+      "name": "Аббревиатуры колонок и суффикс all",
+      "status": "soon",
+      "statusLabel": "новое, ещё не сделано",
+      "where": "Basic data, Deep data",
+      "trigger": "",
+      "note": "Расшифровка живёт только в ховер-тултипе, на тач-устройствах недоступна; «all» нигде не объяснён.",
+      "strings": [
+        "PVCO — paid views carried over",
+        "MEV — median engagement views",
+        "all — across all content types"
+      ],
+      "prototype": "http://localhost:8778/analytics-styleguide.html?show=аббревиатуры-колонок-и-суффикс-all",
+      "prod": null,
+      "repro": ""
+    },
+    {
+      "id": "индикатор-n-у-топиков",
+      "group": "tips",
+      "groupTitle": "6. Тултипы",
+      "name": "Индикатор «+N» у топиков",
+      "status": "live",
+      "statusLabel": "есть в прототипе",
+      "where": "Basic data, Deep data, страница коллекции",
+      "trigger": "",
+      "note": "Работает: клик по «+N» раскрывает полный список топиков, клик по топику ставит фильтр.",
+      "strings": [
+        "+2"
+      ],
+      "prototype": "http://localhost:8778/analytics-styleguide.html?show=индикатор-n-у-топиков",
+      "prod": "https://app.subsub.io/analytics",
+      "repro": ""
+    },
+    {
+      "id": "пилюли-состояний-коллекции",
+      "group": "new",
+      "groupTitle": "7. Новые и обновлённые элементы",
+      "name": "Пилюли состояний коллекции",
+      "status": "live",
+      "statusLabel": "есть в прототипе",
+      "where": "My collections, страница коллекции, селектор",
+      "trigger": "",
+      "note": "Прежний единый статус расщеплён на два процесса. Лейблы утверждены: Sourcing channels и Collecting data.",
+      "strings": [
+        "Created",
+        "Sourcing channels",
+        "Collecting data",
+        "Activated",
+        "Activate deep data",
+        "View deep data",
+        "Cancel"
+      ],
+      "prototype": "http://localhost:8778/analytics-styleguide.html?show=пилюли-состояний-коллекции",
+      "prod": "https://app.subsub.io/analytics/collections",
+      "repro": "элемент отрисован на странице каталога, открывать нечего"
+    },
+    {
+      "id": "stop-collecting-и-deactivate-рядом",
+      "group": "new",
+      "groupTitle": "7. Новые и обновлённые элементы",
+      "name": "Stop collecting и Deactivate рядом",
+      "status": "live",
+      "statusLabel": "есть в прототипе",
+      "where": "меню коллекции",
+      "trigger": "",
+      "note": "Разные действия: первое прерывает незаконченный сбор, второе выключает готовые данные.",
+      "strings": [
+        "Stop collecting",
+        "Deactivate collection"
+      ],
+      "prototype": "http://localhost:8778/analytics-styleguide.html?show=stop-collecting-и-deactivate-рядом",
+      "prod": null,
+      "repro": "элемент отрисован на странице каталога, открывать нечего"
+    },
+    {
+      "id": "групповые-заголовки-колонок-basic-data",
+      "group": "new",
+      "groupTitle": "7. Новые и обновлённые элементы",
+      "name": "Групповые заголовки колонок Basic data",
+      "status": "soon",
+      "statusLabel": "новое, ещё не сделано",
+      "where": "Basic data",
+      "trigger": "",
+      "note": "",
+      "strings": [
+        "Subscribers",
+        "Views",
+        "Videos",
+        "Derived"
+      ],
+      "prototype": "http://localhost:8778/analytics-styleguide.html?show=групповые-заголовки-колонок-basic-data",
+      "prod": null,
+      "repro": ""
+    },
+    {
+      "id": "growth-period-значение-календарь-чипы",
+      "group": "new",
+      "groupTitle": "7. Новые и обновлённые элементы",
+      "name": "Growth period: значение, календарь, чипы",
+      "status": "live",
+      "statusLabel": "есть в прототипе",
+      "where": "Basic data, Deep data, Videos data",
+      "trigger": "",
+      "note": "Активный чип отличается (состояние is-on). Не сделано другое: на Explorer чипы 7 и 90 должны быть заблокированы с апселлом.",
+      "strings": [
+        "Growth period",
+        "Custom",
+        "90 days",
+        "30 days",
+        "7 days"
+      ],
+      "prototype": "http://localhost:8778/analytics-styleguide.html?show=growth-period-значение-календарь-чипы",
+      "prod": "https://app.subsub.io/analytics",
+      "repro": ""
+    },
+    {
+      "id": "гейтинг-чипов-периода-на-explorer",
+      "group": "new",
+      "groupTitle": "7. Новые и обновлённые элементы",
+      "name": "Гейтинг чипов периода на Explorer",
+      "status": "soon",
+      "statusLabel": "новое, ещё не сделано",
+      "where": "Basic data, Deep data, Videos data",
+      "trigger": "",
+      "note": "На Explorer период фиксирован 30 днями: чипы 7 и 90 должны быть видны и заблокированы с апселлом.",
+      "strings": [
+        "7 days is available on Pro and above",
+        "Upgrade plan"
+      ],
+      "prototype": "http://localhost:8778/analytics-styleguide.html?show=гейтинг-чипов-периода-на-explorer",
+      "prod": null,
+      "repro": ""
+    },
+    {
+      "id": "селектор-коллекции-с-состояниями",
+      "group": "new",
+      "groupTitle": "7. Новые и обновлённые элементы",
+      "name": "Селектор коллекции с состояниями",
+      "status": "live",
+      "statusLabel": "есть в прототипе",
+      "where": "Basic data, Deep data",
+      "trigger": "",
+      "note": "Первым пунктом All collections, группы по состоянию — до выбора видно, где Deep data готова.",
+      "strings": [
+        "All collections",
+        "Activated",
+        "Collecting data",
+        "Sourcing channels",
+        "Not activated",
+        "Create collection"
+      ],
+      "prototype": "http://localhost:8778/analytics-styleguide.html?show=селектор-коллекции-с-состояниями",
+      "prod": "https://app.subsub.io/analytics",
+      "repro": ""
+    },
+    {
+      "id": "переключатель-типа-контента-на-deep-data",
+      "group": "new",
+      "groupTitle": "7. Новые и обновлённые элементы",
+      "name": "Переключатель типа контента на Deep data",
+      "status": "live",
+      "statusLabel": "есть в прототипе",
+      "where": "Deep data",
+      "trigger": "",
+      "note": "Один переключатель вместо семи дропдаунов в заголовках колонок.",
+      "strings": [
+        "All content",
+        "Videos",
+        "Shorts",
+        "Streams"
+      ],
+      "prototype": "http://localhost:8778/analytics-styleguide.html?show=переключатель-типа-контента-на-deep-data",
+      "prod": "https://app.subsub.io/analytics/deep",
+      "repro": ""
+    },
+    {
+      "id": "чекбоксы-и-плашка-массовых-действий",
+      "group": "new",
+      "groupTitle": "7. Новые и обновлённые элементы",
+      "name": "Чекбоксы и плашка массовых действий",
+      "status": "live",
+      "statusLabel": "есть в прототипе",
+      "where": "Basic data, Deep data, страница коллекции",
+      "trigger": "",
+      "note": "",
+      "strings": [
+        "Create collection from 2 channels",
+        "Add 2 channels to collection",
+        "Find similar channels",
+        "Pin on top",
+        "Unpin",
+        "Remove 2 channels"
+      ],
+      "prototype": "http://localhost:8778/analytics-styleguide.html?show=чекбоксы-и-плашка-массовых-действий",
+      "prod": "https://app.subsub.io/analytics",
+      "repro": "элемент отрисован на странице каталога, открывать нечего"
+    },
+    {
+      "id": "закрепление-строки-кнопкой",
+      "group": "new",
+      "groupTitle": "7. Новые и обновлённые элементы",
+      "name": "Закрепление строки кнопкой",
+      "status": "live",
+      "statusLabel": "есть в прототипе",
+      "where": "Deep data",
+      "trigger": "",
+      "note": "У обычной строки кнопка появляется по наведению, у закреплённой видна всегда; клик переключает.",
+      "strings": [
+        "Pin on top",
+        "Unpin",
+        "“ТСН” pinned on top",
+        "“ТСН” unpinned"
+      ],
+      "prototype": "http://localhost:8778/analytics-styleguide.html?show=закрепление-строки-кнопкой",
+      "prod": "https://app.subsub.io/analytics/deep",
+      "repro": "элемент отрисован на странице каталога, открывать нечего"
+    },
+    {
+      "id": "кликабельные-баджи-топиков-и-n",
+      "group": "new",
+      "groupTitle": "7. Новые и обновлённые элементы",
+      "name": "Кликабельные баджи топиков и «+N»",
+      "status": "live",
+      "statusLabel": "есть в прототипе",
+      "where": "Basic data, Deep data, страница коллекции",
+      "trigger": "",
+      "note": "Клик по топику ставит фильтр по теме, «+N» раскрывает список остальных.",
+      "strings": [
+        "+2"
+      ],
+      "prototype": "http://localhost:8778/analytics-styleguide.html?show=кликабельные-баджи-топиков-и-n",
+      "prod": "https://app.subsub.io/analytics",
+      "repro": ""
+    },
+    {
+      "id": "счётчик-записей-вместо-pages-74-046",
+      "group": "new",
+      "groupTitle": "7. Новые и обновлённые элементы",
+      "name": "Счётчик записей вместо «Pages: 74,046»",
+      "status": "soon",
+      "statusLabel": "новое, ещё не сделано",
+      "where": "Basic data, Deep data",
+      "trigger": "",
+      "note": "",
+      "strings": [
+        "2.2m channels · showing 1–30",
+        "Pages: 74,046"
+      ],
+      "prototype": "http://localhost:8778/analytics-styleguide.html?show=счётчик-записей-вместо-pages-74-046",
+      "prod": null,
+      "repro": ""
+    },
+    {
+      "id": "sticky-скроллбар-и-заморозка-первой-колонки",
+      "group": "new",
+      "groupTitle": "7. Новые и обновлённые элементы",
+      "name": "Sticky скроллбар и заморозка первой колонки",
+      "status": "live",
+      "statusLabel": "есть в прототипе",
+      "where": "Basic data, Deep data",
+      "trigger": "",
+      "note": "",
+      "strings": [],
+      "prototype": "http://localhost:8778/analytics-styleguide.html?show=sticky-скроллбар-и-заморозка-первой-колонки",
+      "prod": "https://app.subsub.io/analytics",
+      "repro": ""
+    },
+    {
+      "id": "поля-диапазоны-от-до",
+      "group": "new",
+      "groupTitle": "7. Новые и обновлённые элементы",
+      "name": "Поля-диапазоны от–до",
+      "status": "live",
+      "statusLabel": "есть в прототипе",
+      "where": "Create collection, шаг 2",
+      "trigger": "",
+      "note": "Вместо односторонних минимумов с нулём как «выключено»: пустое поле — условие не задано.",
+      "strings": [
+        "Min",
+        "Max"
+      ],
+      "prototype": "http://localhost:8778/analytics-styleguide.html?show=поля-диапазоны-от-до",
+      "prod": null,
+      "repro": "элемент отрисован на странице каталога, открывать нечего"
+    },
+    {
+      "id": "селект-last-upload-с-пресетами",
+      "group": "new",
+      "groupTitle": "7. Новые и обновлённые элементы",
+      "name": "Селект Last upload с пресетами",
+      "status": "live",
+      "statusLabel": "есть в прототипе",
+      "where": "Create collection, шаг 2",
+      "trigger": "",
+      "note": "",
+      "strings": [
+        "Any time",
+        "Last 7 days",
+        "Last 30 days",
+        "Last 90 days",
+        "Custom",
+        "days"
+      ],
+      "prototype": "http://localhost:8778/analytics-styleguide.html?show=селект-last-upload-с-пресетами",
+      "prod": null,
+      "repro": ""
+    },
+    {
+      "id": "set-filters-edit-filters-и-чипы",
+      "group": "new",
+      "groupTitle": "7. Новые и обновлённые элементы",
+      "name": "Set filters / Edit filters и чипы",
+      "status": "live",
+      "statusLabel": "есть в прототипе",
+      "where": "Create collection, шаг 1",
+      "trigger": "",
+      "note": "",
+      "strings": [
+        "Set filters",
+        "Edit filters"
+      ],
+      "prototype": "http://localhost:8778/analytics-styleguide.html?show=set-filters-edit-filters-и-чипы",
+      "prod": null,
+      "repro": ""
+    },
+    {
+      "id": "предпросмотр-количества",
+      "group": "new",
+      "groupTitle": "7. Новые и обновлённые элементы",
+      "name": "Предпросмотр количества",
+      "status": "live",
+      "statusLabel": "есть в прототипе",
+      "where": "Create collection, шаг 2",
+      "trigger": "",
+      "note": "Считается по каталогу каналов; метрик videos и avg в моках нет, они в подсчёте не участвуют.",
+      "strings": [
+        "≈ 40 channels match these filters",
+        "≈ 1 channel in our base matches these filters"
+      ],
+      "prototype": "http://localhost:8778/analytics-styleguide.html?show=предпросмотр-количества",
+      "prod": null,
+      "repro": ""
+    },
+    {
+      "id": "формат-чисел",
+      "group": "new",
+      "groupTitle": "7. Новые и обновлённые элементы",
+      "name": "Формат чисел",
+      "status": "live",
+      "statusLabel": "есть в прототипе",
+      "where": "Create collection, шаг 2",
+      "trigger": "",
+      "note": "Разделители разрядов и приём сокращений: 10k → 10,000, 1.5m → 1,500,000.",
+      "strings": [
+        "10,000",
+        "1,500,000"
+      ],
+      "prototype": "http://localhost:8778/analytics-styleguide.html?show=формат-чисел",
+      "prod": null,
+      "repro": ""
+    },
+    {
+      "id": "прогресс-бар-счётчика-мест",
+      "group": "new",
+      "groupTitle": "7. Новые и обновлённые элементы",
+      "name": "Прогресс-бар счётчика мест",
+      "status": "live",
+      "statusLabel": "есть в прототипе",
+      "where": "страница коллекции",
+      "trigger": "",
+      "note": "Тарифная вместимость вместо фиксированных 30; у Enterprise плашки нет.",
+      "strings": [
+        "22 of 25 channels",
+        "Upgrade"
+      ],
+      "prototype": "http://localhost:8778/analytics-styleguide.html?show=прогресс-бар-счётчика-мест",
+      "prod": "https://app.subsub.io/analytics/collections",
+      "repro": ""
+    }
+  ]
+}

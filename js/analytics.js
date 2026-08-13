@@ -3009,13 +3009,11 @@
   // поэтому их убираем, а вместо содержимого страницы показываем пустое состояние.
   function demoStrip() {
     function rm(el) { if (el && el.parentNode) el.parentNode.removeChild(el); }
+    // свои коллекции убираем, сэмплы оставляем: они выданы всем
     [].slice.call(document.querySelectorAll("[data-mc-row]")).forEach(function (r) {
-      if (!r.hasAttribute("data-ai-row")) rm(r);
+      if (!r.hasAttribute("data-ai-row") && !r.hasAttribute("data-sample")) rm(r);
     });
-    ["deep", "video"].forEach(function (k) {
-      var b = tblBody(k);
-      if (b) [].slice.call(b.querySelectorAll(".an-tbody > .an-tr")).forEach(rm);
-    });
+    // строки Deep data в сборке есть только у сэмплов — их не трогаем
     [].slice.call(document.querySelectorAll("[data-rep-row]")).forEach(rm);
     // счётчики в табах отчётов тоже обнуляем: отчётов нет
     [].slice.call(document.querySelectorAll("[data-rep-count]")).forEach(function (b) { b.textContent = "0"; });
@@ -3025,9 +3023,21 @@
     var blank = document.querySelector("[data-an-blank]");
     if (!blank) return;
     var key = blank.getAttribute("data-an-blank"), colls = aiAllColls();
-    var empty = key === "coll" ? !colls.length
-      : key === "rep" ? !document.querySelectorAll("[data-rep-row]").length
-      : !colls.some(function (c) { return collStatus(c.name) === "activated"; });
+    var own = colls.filter(function (c) { return !collIsSample(c.name); });
+    // На My collections полностью пустого списка не бывает — сэмплы выданы всем.
+    // Поэтому там не пустое состояние, а промо-блок «создайте свою» над списком.
+    if (key === "coll") {
+      var promo = !own.length;
+      blank.hidden = !promo;
+      blank.classList.toggle("an-blank--promo", promo);
+      var t = blank.querySelector(".an-blank__title"), x = blank.querySelector(".an-blank__text");
+      if (promo && t) t.textContent = "Create your first collection";
+      if (promo && x) x.textContent = "Sample collections below show how it works. Build your own to track " +
+        "the channels you care about.";
+      return;                              // список сэмплов остаётся на месте
+    }
+    var empty = key === "rep" ? !document.querySelectorAll("[data-rep-row]").length
+      : !colls.some(function (c) { return collState(c.name) === "activated"; });
     blank.hidden = !empty;
     // прячем всё, кроме шапки и самого пустого состояния
     [].slice.call(blank.parentNode.children).forEach(function (el) {
@@ -4104,9 +4114,10 @@
     return ("0" + d.getDate()).slice(-2) + "." + ("0" + (d.getMonth() + 1)).slice(-2) + "." + d.getFullYear();
   }
   function aiBaseColls() {
-    if (demoNew()) return [];              // аккаунт новичка: готовых коллекций нет
     var b = window.SUBSUB_BASE_COLLECTIONS;
-    return Object.prototype.toString.call(b) === "[object Array]" ? b : [];
+    var list = Object.prototype.toString.call(b) === "[object Array]" ? b : [];
+    // аккаунт новичка: своих коллекций нет, но сэмплы выданы всем
+    return demoNew() ? list.filter(function (c) { return c.sample; }) : list;
   }
   // обычная (не-AI) коллекция, созданная пользователем
   function aiCreatePlain(name) {

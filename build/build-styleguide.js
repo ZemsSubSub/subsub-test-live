@@ -12,7 +12,8 @@ const ST = {
   live: { cls: "sg-st--live", t: "есть в прототипе" },
   soon: { cls: "sg-st--soon", t: "новое, ещё не сделано" },
   copy: { cls: "sg-st--copy", t: "требует правки копирайта" },
-  gone: { cls: "sg-st--gone", t: "выводится из интерфейса" }
+  gone: { cls: "sg-st--gone", t: "выводится из интерфейса" },
+  nopage: { cls: "sg-st--nopage", t: "страницы нет в прототипе" }
 };
 function esc(s) {
   return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
@@ -33,8 +34,26 @@ function action(a) {
   if (a.href) return '<a class="an-btn an-btn--secondary an-btn--small" href="' + a.href + '">' + (a.label || "Открыть страницу") + "</a>";
   return "";
 }
+// Стабильный id из названия: по нему работают диплинки ?show=<id> и записи в JSON.
+function slug(s) {
+  return String(s).toLowerCase()
+    .replace(/[«»“”"'’()]/g, "")
+    .replace(/[^a-z0-9а-яё]+/gi, "-")
+    .replace(/^-+|-+$/g, "").slice(0, 60);
+}
+// Шаги воспроизведения: агенту нужен точный способ открыть состояние, без ховера.
+function repro(c) {
+  const a = c.action;
+  if (!a) return c.demo ? "элемент отрисован на странице каталога, открывать нечего" : "";
+  if (a.attrs) return 'click [' + a.attrs.replace(/\s+/g, "") + '] на analytics-styleguide.html';
+  if (a.open) return 'открыть analytics-styleguide.html?show=' + slug(c.name) +
+    ' либо click [data-sg-open="' + a.open + '"]' + (a.then ? ' и затем click ' + a.then : "");
+  if (a.href) return 'открыть ' + a.href;
+  return "";
+}
 function card(c) {
   const st = ST[c.status] || ST.live;
+  c.id = c.id || slug(c.name);
   return '<article class="sg-card" id="' + (c.id || "") + '">' +
     '<header class="sg-card__head">' +
       '<h3 class="sg-card__t">' + esc(c.name) + "</h3>" +
@@ -135,11 +154,11 @@ const G1 = {
       trigger: "кнопка Columns",
       strings: ["Columns", "Reset"],
       action: { href: "analytics-deep-data.html", label: "Открыть Deep data" } },
-    { name: "Month-range picker", status: "live",
-      where: "карточка канала",
+    { name: "Month-range picker", status: "nopage",
+      where: "карточка канала — страницы analytics-channel.html в прототипе нет",
       trigger: "поле периода в карточке",
-      strings: ["Cancel", "Apply"],
-      action: { href: "analytics-channel.html?name=MrBeast", label: "Открыть карточку" } },
+      note: "Элемент из прода: в прототипе карточки канала не существует, воспроизвести нечем.",
+      strings: ["Cancel", "Apply"] },
     { name: "Календарь Growth period / Published at", status: "live",
       where: "Basic data, Deep data, Videos data, панель фильтров",
       trigger: "чип Custom или поле Published at",
@@ -229,32 +248,62 @@ const G2 = {
   ]
 };
 
+// Тексты выписаны из вызовов toast() в js/analytics.js — это то, что показывает прототип.
+// Формулировки из брифа, которых в коде нет, собраны отдельно ниже.
 const TOASTS_LIVE = [
   "Collection created — it's selected as destination",
-  "Sourcing started — channels will be added to “Gaming UA”",
-  "Sourcing started — we're finding channels",
+  "Collection created successfully",
+  "Collection renamed",
+  "Collection saved successfully",
+  "Collection deleted successfully",
+  "Collection duplicated as «Gaming UA (copy)»",
+  "Collection with this name already exists",
+  "You left «News UA - Big Media»",
+  "Channels added successfully",
+  "2 channels added to Gaming UA",
+  "3 channels removed from Gaming UA",
+  "AI search started — new channels will be added to “Gaming UA”",
   "Sourcing cancelled — “Gaming UA”",
   "Sourcing finished — 6 channels added to “Gaming UA”",
-  "Added 4 channels to “Gaming UA” · 2 already there",
-  "Channel removed from collection",
-  "Collection deleted successfully",
   "Collecting deep data — “Gaming UA”",
   "Deep data is ready — “Gaming UA”",
   "Deep data collection cancelled — “Gaming UA”",
   "Deep data deactivated — “Gaming UA”",
-  "Changes saved automatically",
-  "Collection duplicated as «Gaming UA (copy)»",
+  "Prompt rebuilt from the collection — edit it before starting",
+  "Description auto-filled — edit it before starting",
   "“ТСН” pinned on top",
   "“ТСН” unpinned",
+  "Collection shared with Anna Kovalenko",
+  "Sharing with Anna Kovalenko revoked",
+  "Link copied",
+  "Failed to copy link",
+  "Title copied",
+  "Report download started",
+  "Changes saved automatically",
   "Upgrade request sent — our team will contact you"
+];
+// Из брифа, но в коде таких строк нет: либо продовые формулировки, либо ещё не заведены.
+const TOASTS_BRIEF = [
+  "Sourcing started — channels will be added to \"X\"",
+  "Sourcing started — we're finding channels",
+  "Sourcing of \"X\" canceled",
+  "Added N channels to \"X\" · M already there",
+  "Channel removed from collection",
+  "Deep data activated successfully",
+  "Select a destination collection",
+  "Add at least one reference channel",
+  "Describe the channels or paste a channel link"
 ];
 const TOASTS_VALID = [
   "Name the collection first",
-  "Paste links, pick channels or describe what you're looking for",
+  "Name can't be empty",
+  "Describe the channels you're looking for",
   "Only 3 more channels fit — upgrade the plan for a bigger collection",
   "Collection limit reached — upgrade the plan to add more channels",
+  "Collection limit reached on the Pro plan — upgrade to create more",
   "Channels can't be changed while deep data is being collected",
-  "Sourcing is running — it fills the collection itself"
+  "Sourcing is running — it fills the collection itself",
+  "Deep data is available on Pro and above — upgrade to activate"
 ];
 const TOASTS_NEW = [
   "Sourcing failed — nothing was added. Try again",
@@ -273,6 +322,9 @@ const G3 = {
       demo: TOASTS_VALID.map(function (s) {
         return '<button class="an-btn an-btn--plain an-btn--small sg-toastbtn" type="button" data-sg-toast="' + esc(s) + '">' + esc(s) + "</button>";
       }).join(""), strings: TOASTS_VALID },
+    { name: "Из брифа, но в коде нет", status: "copy", where: "—",
+      note: "Эти формулировки пришли из описания прода. В прототипе показываются другие тексты — сверху. Нужно решить, какие оставить.",
+      strings: TOASTS_BRIEF },
     { name: "Новые: ошибки и упор в лимит", status: "soon", where: "подбор каналов и сбор Deep data",
       note: "Состояний ошибки в прототипе нет — тексты на утверждение, поведение по документу состояний: коллекция всегда откатывается в Created.",
       demo: TOASTS_NEW.map(function (s) {
@@ -376,16 +428,16 @@ const G5 = {
         "Deep data is shown per collection — pick one above to see its channels and metrics.", "Select collection",
         "No collections yet", "Create collection"],
       action: { href: "analytics-deep-data.html", label: "Открыть Deep data" } },
-    { name: "My collections: нет своих коллекций", status: "soon", where: "My collections",
-      note: "Полностью пустого списка не бывает — сэмплы выданы всем. Нужен блок «создайте свою» над списком сэмплов.",
+    { name: "My collections: нет своих коллекций", status: "live", where: "My collections",
+      note: "Сделано: над списком сэмплов промо-блок «создайте свою». Полностью пустого списка не бывает — сэмплы выданы всем.",
       strings: ["Create your first collection",
         "Sample collections show how it works. Build your own to track the channels you care about.",
         "Create Collection", "You have no own collections yet", "Show all collections", "Nothing found", "Clear search"] },
     { name: "No results found — Shared with", status: "live", where: "My collections, фильтр Shared with",
       strings: ["No results found"] },
-    { name: "You don't have a reports yet", status: "copy", where: "Reports",
-      note: "Лишний артикль: должно быть «You don't have any reports yet».",
-      strings: ["You don't have a reports yet", "You don't have any reports yet"] },
+    { name: "Пустой список отчётов", status: "live", where: "Reports",
+      note: "В прототипе текст без артикля: «No reports yet». Формулировка «You don't have a reports yet» — из прода, там артикль лишний.",
+      strings: ["No reports yet", "You don't have a reports yet (прод)"] },
     { name: "Пейвол Deep data на Explorer", status: "live", where: "страница коллекции, Deep data",
       note: "Кнопка видна и заблокирована, тултип объясняет и предлагает апгрейд. По сэмплам Deep data открыта.",
       demo: '<button class="an-btn an-btn--secondary is-off" type="button" data-tip="Deep data is available on Pro and above" data-tip-up>' +
@@ -414,27 +466,26 @@ const G6 = {
     { name: "Апселл-тултипы", status: "live", where: "страница коллекции, Deep data, модалка создания",
       demo: [
         ["Deep data is available on Pro and above", "Activate deep data"],
-        ["Collection is full on the Pro plan (25/25)", "Add channels"],
-        ["7 days is available on Pro and above", "7 days"]
+        ["Collection is full on the Pro plan (25/25)", "Add channels"]
       ].map(function (r) {
         return '<button class="an-btn an-btn--secondary an-btn--small is-off" type="button" data-tip="' + esc(r[0]) + '" data-tip-up>' + esc(r[1]) + "</button>";
       }).join(""),
       strings: ["Deep data is available on Pro and above", "Collection is full on the Pro plan (25/25)",
         "7 days is available on Pro and above", "Upgrade plan"] },
-    { name: "Справочные «?» в карточке канала", status: "soon", where: "analytics-channel",
-      note: "41 иконка на странице, ни у одной нет ни title, ни aria-describedby — подсказки не показываются.",
+    { name: "Справочные «?» в карточке канала", status: "nopage", where: "карточка канала (в прототипе страницы нет)",
+      note: "Из брифа по проду: 41 иконка без title и aria-describedby. В прототипе страницы карточки нет, проверять нечего.",
       strings: ["What this metric means", "How we calculate it"] },
-    { name: "Бейджи скорингов SEO, CB, VIR", status: "soon", where: "Videos data, карточка канала",
-      note: "Ни тултипов, ни легенды: расшифровку CB и VIR из интерфейса узнать нельзя.",
+    { name: "Бейджи скорингов SEO, CB, VIR", status: "nopage", where: "прод: Videos data и карточка канала",
+      note: "В прототипе таких бейджей нет — ни в Videos data, ни на других страницах. Текст на будущее.",
       strings: ["SEO score", "Clickbait score", "Virality score"] },
     { name: "Highlight performance и Performance range", status: "soon", where: "панель фильтров",
       note: "Без пояснений вообще. Редизайн панели — отдельный трек, но подсказки нужны и сейчас.",
       strings: ["Highlight performance", "Performance range"] },
-    { name: "Иконки в колонке ACTIONS на Reports", status: "soon", where: "Reports",
-      note: "Скачать, папка, корзина — без подписей и тултипов; корзина стоит вплотную к скачиванию.",
-      strings: ["Download report", "Open in Media Library", "Delete report"] },
-    { name: "Легенда хитмапа Publication time", status: "soon", where: "карточка канала",
-      note: "Интенсивность цвета ничем не подписана.",
+    { name: "Иконки в колонке ACTIONS на Reports", status: "copy", where: "Reports",
+      note: "aria-label и title у части иконок есть (Download, Show in Media Library), но своих тултипов нет и корзина стоит вплотную к скачиванию.",
+      strings: ["Download", "Show in Media Library", "Download report", "Delete report"] },
+    { name: "Легенда хитмапа Publication time", status: "nopage", where: "карточка канала (в прототипе страницы нет)",
+      note: "Из брифа по проду.",
       strings: ["Fewer uploads", "More uploads"] },
     { name: "Иконка-«монитор» в строке канала", status: "soon", where: "Basic data",
       note: "Ни aria-label, ни тултипа — назначение непонятно.",
@@ -442,9 +493,9 @@ const G6 = {
     { name: "Аббревиатуры колонок и суффикс all", status: "soon", where: "Basic data, Deep data",
       note: "Расшифровка живёт только в ховер-тултипе, на тач-устройствах недоступна; «all» нигде не объяснён.",
       strings: ["PVCO — paid views carried over", "MEV — median engagement views", "all — across all content types"] },
-    { name: "Индикатор «+N» у топиков", status: "soon", where: "Basic data, Deep data, страница коллекции",
-      note: "Должен раскрывать полный список, сейчас не реагирует ни на клик, ни на ховер.",
-      strings: ["+2", "Show all topics"] }
+    { name: "Индикатор «+N» у топиков", status: "live", where: "Basic data, Deep data, страница коллекции",
+      note: "Работает: клик по «+N» раскрывает полный список топиков, клик по топику ставит фильтр.",
+      strings: ["+2"] }
   ]
 };
 
@@ -469,9 +520,12 @@ const G7 = {
       strings: ["Stop collecting", "Deactivate collection"] },
     { name: "Групповые заголовки колонок Basic data", status: "soon", where: "Basic data",
       strings: ["Subscribers", "Views", "Videos", "Derived"] },
-    { name: "Growth period: значение, календарь, чипы", status: "copy", where: "Basic data, Deep data, Videos data",
-      note: "Активный чип визуально не отличается; на Explorer чипы 7 и 90 должны быть заблокированы с апселлом.",
+    { name: "Growth period: значение, календарь, чипы", status: "live", where: "Basic data, Deep data, Videos data",
+      note: "Активный чип отличается (состояние is-on). Не сделано другое: на Explorer чипы 7 и 90 должны быть заблокированы с апселлом.",
       strings: ["Growth period", "Custom", "90 days", "30 days", "7 days"] },
+    { name: "Гейтинг чипов периода на Explorer", status: "soon", where: "Basic data, Deep data, Videos data",
+      note: "На Explorer период фиксирован 30 днями: чипы 7 и 90 должны быть видны и заблокированы с апселлом.",
+      strings: ["7 days is available on Pro and above", "Upgrade plan"] },
     { name: "Селектор коллекции с состояниями", status: "live", where: "Basic data, Deep data",
       note: "Первым пунктом All collections, группы по состоянию — до выбора видно, где Deep data готова.",
       strings: ["All collections", "Activated", "Collecting data", "Sourcing channels", "Not activated", "Create collection"] },
@@ -490,8 +544,9 @@ const G7 = {
       demo: '<div class="sg-row"><span class="and-chan" style="width:220px"><span class="an-chan__name">ТСН</span>' +
         '<button class="and-pin" type="button" style="opacity:1" data-tip="Unpin">' + IC.pin + "</button></span></div>",
       strings: ["Pin on top", "Unpin", "“ТСН” pinned on top", "“ТСН” unpinned"] },
-    { name: "Кликабельные баджи топиков и «+N»", status: "soon", where: "Basic data, Deep data, страница коллекции",
-      strings: ["+2", "Show all topics"] },
+    { name: "Кликабельные баджи топиков и «+N»", status: "live", where: "Basic data, Deep data, страница коллекции",
+      note: "Клик по топику ставит фильтр по теме, «+N» раскрывает список остальных.",
+      strings: ["+2"] },
     { name: "Счётчик записей вместо «Pages: 74,046»", status: "soon", where: "Basic data, Deep data",
       strings: ["2.2m channels · showing 1–30", "Pages: 74,046"] },
     { name: "Sticky скроллбар и заморозка первой колонки", status: "live", where: "Basic data, Deep data",
@@ -516,6 +571,24 @@ const G7 = {
       strings: ["22 of 25 channels", "Upgrade"] }
   ]
 };
+
+// Ссылки на прод — только для того, что там есть. У нового ставим null, иначе агент
+// будет искать несуществующее и решит, что просто не нашёл.
+const PROD = "https://app.subsub.io";
+const PROD_BY_PLACE = [
+  [/Basic data/i, PROD + "/analytics"],
+  [/Deep data/i, PROD + "/analytics/deep"],
+  [/My collections|страница коллекции|список/i, PROD + "/analytics/collections"],
+  [/Videos data/i, PROD + "/analytics/videos"],
+  [/Reports/i, PROD + "/reports/market"]
+];
+function prodLink(c) {
+  if (c.status === "soon") return null;              // на проде этого ещё нет
+  if (c.status === "nopage") return PROD + "/analytics";  // элемент прода, страницы у нас нет
+  const where = c.where || "";
+  for (var i = 0; i < PROD_BY_PLACE.length; i++) if (PROD_BY_PLACE[i][0].test(where)) return PROD_BY_PLACE[i][1];
+  return null;
+}
 
 const GROUPS = [G1, G2, G3, G4, G5, G6, G7];
 
@@ -601,10 +674,66 @@ const inner = `
           t._sg = setTimeout(function () { t.hidden = true; }, 2600);
         }
       });
+
+      // Диплинк ?show=<id>: открываем карточку и её элемент сразу при загрузке —
+      // агенту не нужно кликать по цепочке и наводить курсор.
+      (function deepLink() {
+        var id = new URLSearchParams(location.search).get("show");
+        if (!id) return;
+        var card = document.getElementById(id);
+        if (!card) return;
+        card.classList.add("sg-card--target");
+        card.scrollIntoView({ block: "center" });
+        var btn = card.querySelector("[data-sg-open], [data-ai-open], [data-rep-open]");
+        if (btn) setTimeout(function () { btn.dispatchEvent(new MouseEvent("click", { bubbles: true })); }, 120);
+        var tipHost = card.querySelector("[data-tip]");
+        if (!btn && tipHost) setTimeout(function () {
+          tipHost.dispatchEvent(new MouseEvent("mouseover", { bubbles: true }));
+        }, 120);
+      })();
     </script>`;
 
 // шаблон тот же, что у продуктовых страниц: A.html — это home.html, в него buildPage
 // подставляет сиды и js/analytics.js
 fs.writeFileSync(DIR + "analytics-styleguide.html", A.buildPage(A.html, "Analytics styleguide", inner, "styleguide"));
-const n = GROUPS.reduce(function (a, g) { return a + g.cards.length; }, 0);
-console.log("written: analytics-styleguide.html (" + GROUPS.length + " групп, " + n + " элементов)");
+// Машиночитаемый каталог: тот же источник, поэтому JSON не разъезжается со страницей.
+const items = [];
+GROUPS.forEach(function (g) {
+  g.cards.forEach(function (c) {
+    items.push({
+      id: c.id || slug(c.name),
+      group: g.id,
+      groupTitle: g.title,
+      name: c.name,
+      status: c.status || "live",
+      statusLabel: (ST[c.status] || ST.live).t,
+      where: c.where || "",
+      trigger: c.trigger || "",
+      note: c.note ? c.note.replace(/<[^>]+>/g, "") : "",
+      strings: c.strings || [],
+      prototype: "http://localhost:8778/analytics-styleguide.html?show=" + (c.id || slug(c.name)),
+      prod: prodLink(c),
+      repro: repro(c)
+    });
+  });
+});
+const meta = {
+  generated: "build/build-styleguide.js",
+  page: "analytics-styleguide.html",
+  servers: {
+    pro: "http://localhost:8778 — про-план с демо-данными",
+    newcomer: "http://localhost:8780 — новичок: Explorer, только sample-коллекции, ни отчётов, ни файлов"
+  },
+  demoApi: {
+    "subsubState(name, state)": "created | sourcing | deep | activated — состояние коллекции",
+    "subsubStates()": "состояния всех коллекций",
+    "subsubPlan(plan)": "explorer | pro | business | enterprise",
+    "subsubFast(true)": "процессы в 10 раз быстрее: канал раз в 1.5с, сбор 3с"
+  },
+  statuses: Object.keys(ST).map(function (k) { return { id: k, label: ST[k].t }; }),
+  deepLink: "analytics-styleguide.html?show=<id> открывает элемент сразу, без ховера и кликов"
+};
+fs.writeFileSync(DIR + "analytics-styleguide.json", JSON.stringify({ meta: meta, items: items }, null, 2));
+const n = items.length;
+console.log("written: analytics-styleguide.html + .json (" + GROUPS.length + " групп, " + n + " элементов, " +
+  items.reduce(function (a, i) { return a + i.strings.length; }, 0) + " строк)");
