@@ -2587,12 +2587,16 @@ body.is-open:not(.is-collapsed) .main { margin-left: 306px; }
 .cc-step2__back:hover { background: var(--color-shade-100); }
 .cc-step2__back svg { width: 18px; height: 18px; }
 .cc-step2__title { margin: 0; font-size: 16px; font-weight: 600; color: var(--color-black); }
-.cc-ro { display: flex; gap: 10px; padding: 10px 12px; border-radius: 8px; background: var(--color-shade-90); }
+/* промпт первого шага: подпись над текстом — длинное описание больше не жмётся в колонку */
+.cc-ro { display: flex; flex-direction: column; gap: 4px; padding: 12px 14px; border-radius: 8px;
+  background: var(--color-shade-90); }
 .cc-ro__k { flex-shrink: 0; font-size: 11px; font-weight: 600; line-height: 20px; letter-spacing: .04em;
   text-transform: uppercase; color: var(--color-shade-700); }
 .cc-ro__v { min-width: 0; font-size: 14px; font-weight: 300; line-height: 20px; color: var(--color-black);
   overflow-wrap: anywhere; }
-.ff-group { display: flex; flex-direction: column; gap: 10px; }
+/* группы разделены линией: три блока условий читаются как три блока */
+.ff-group { display: flex; flex-direction: column; gap: 12px; }
+.ff-group + .ff-group { padding-top: 20px; border-top: 1px solid var(--color-shade-200); }
 .ff-group__t { margin: 0; font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase;
   color: var(--color-shade-700); }
 /* одна сетка на группу: пары полей выстраиваются по вертикали во всех строках */
@@ -2601,14 +2605,16 @@ body.is-open:not(.is-collapsed) .main { margin-left: 306px; }
 .ff-presets { grid-column: 2; display: flex; flex-wrap: wrap; gap: 6px; }
 .ff-lbl { display: flex; flex-direction: column; font-size: 14px; font-weight: 400; color: var(--color-black); }
 .ff-lbl__sub { font-size: 12px; font-weight: 300; color: var(--color-shade-700); }
-.ff-pair { display: grid; grid-template-columns: 1fr 12px 1fr; align-items: center; gap: 8px; max-width: 320px; }
-.ff-pair--sel { grid-template-columns: auto auto; justify-content: start; gap: 12px; max-width: none; }
+/* поля занимают всю ширину колонки: узкие пары выглядели обрезанными */
+.ff-pair { display: grid; grid-template-columns: 1fr 12px 1fr; align-items: center; gap: 10px; }
+.ff-pair--sel { grid-template-columns: 1fr auto; align-items: center; gap: 12px; }
 .ff-inp { width: 100%; height: 40px; padding: 0 12px; font-size: 14px; }
 .ff-inp.is-bad { border-color: var(--color-red); background: #fff8f8; }
 .ff-dash { text-align: center; color: var(--color-shade-700); }
 /* селект под общий стиль полей: свой шеврон вместо системного */
 .ff-selwrap { position: relative; display: inline-flex; }
-.ff-sel { width: 176px; height: 40px; padding: 0 34px 0 12px; font-size: 14px; appearance: none;
+.ff-selwrap { width: 100%; }
+.ff-sel { width: 100%; height: 40px; padding: 0 34px 0 12px; font-size: 14px; appearance: none;
   -webkit-appearance: none; background: #fff; cursor: pointer; }
 .ff-selwrap__chev { position: absolute; top: 50%; right: 10px; transform: translateY(-50%); display: inline-flex;
   pointer-events: none; color: var(--color-shade-700); }

@@ -901,7 +901,7 @@ const aiModalHtml = `
             <h3 class="cc-step2__title">Narrow down results</h3>
           </div>
           <div class="cc-ro" data-cc-prompt-ro>
-            <span class="cc-ro__k">Looking for</span>
+            <span class="cc-ro__k">Sourcing description</span>
             <span class="cc-ro__v" data-cc-prompt-txt></span>
           </div>
 
@@ -914,17 +914,17 @@ const aiModalHtml = `
                 <button class="ff-preset" type="button" data-ff-preset="100000:1000000">Mid 100k–1m</button>
                 <button class="ff-preset" type="button" data-ff-preset="1000000:">Large 1m+</button>
               </nav>
-              <span class="ff-lbl">Subscribers</span>
+              <span class="ff-lbl">Subscribers<span class="ff-lbl__sub">now</span></span>
               <div class="ff-pair">
-                <input class="an-input ff-inp" type="text" inputmode="numeric" placeholder="Any" data-ff="subsFrom" aria-label="Subscribers from" />
+                <input class="an-input ff-inp" type="text" inputmode="numeric" placeholder="Min" data-ff="subsFrom" aria-label="Subscribers from" />
                 <span class="ff-dash">–</span>
-                <input class="an-input ff-inp" type="text" inputmode="numeric" placeholder="Any" data-ff="subsTo" aria-label="Subscribers to" />
+                <input class="an-input ff-inp" type="text" inputmode="numeric" placeholder="Max" data-ff="subsTo" aria-label="Subscribers to" />
               </div>
-              <span class="ff-lbl">Total views</span>
+              <span class="ff-lbl">Total views<span class="ff-lbl__sub">all time</span></span>
               <div class="ff-pair">
-                <input class="an-input ff-inp" type="text" inputmode="numeric" placeholder="Any" data-ff="viewsFrom" aria-label="Total views from" />
+                <input class="an-input ff-inp" type="text" inputmode="numeric" placeholder="Min" data-ff="viewsFrom" aria-label="Total views from" />
                 <span class="ff-dash">–</span>
-                <input class="an-input ff-inp" type="text" inputmode="numeric" placeholder="Any" data-ff="viewsTo" aria-label="Total views to" />
+                <input class="an-input ff-inp" type="text" inputmode="numeric" placeholder="Max" data-ff="viewsTo" aria-label="Total views to" />
               </div>
             </div>
           </section>
@@ -934,11 +934,11 @@ const aiModalHtml = `
             <div class="ff-rows">
               <span class="ff-lbl">Videos published<span class="ff-lbl__sub">all time</span></span>
               <div class="ff-pair">
-                <input class="an-input ff-inp" type="text" inputmode="numeric" placeholder="Any" data-ff="videosFrom" aria-label="Videos published from" />
+                <input class="an-input ff-inp" type="text" inputmode="numeric" placeholder="Min" data-ff="videosFrom" aria-label="Videos published from" />
                 <span class="ff-dash">–</span>
-                <input class="an-input ff-inp" type="text" inputmode="numeric" placeholder="Any" data-ff="videosTo" aria-label="Videos published to" />
+                <input class="an-input ff-inp" type="text" inputmode="numeric" placeholder="Max" data-ff="videosTo" aria-label="Videos published to" />
               </div>
-              <span class="ff-lbl">Last upload</span>
+              <span class="ff-lbl">Last upload<span class="ff-lbl__sub">how recent</span></span>
               <div class="ff-pair ff-pair--sel">
                 <span class="ff-selwrap">
                 <select class="an-input ff-sel" data-ff-last aria-label="Last upload">
@@ -951,7 +951,7 @@ const aiModalHtml = `
                 <span class="ff-selwrap__chev" aria-hidden="true">${IC.chevSelect}</span>
                 </span>
                 <label class="ff-custom" data-ff-custom hidden>
-                  <input class="an-input ff-inp" type="text" inputmode="numeric" placeholder="Days" data-ff="lastDays" aria-label="Days since last upload" />
+                  <input class="an-input ff-inp" type="text" inputmode="numeric" placeholder="30" data-ff="lastDays" aria-label="Days since last upload" />
                   <span class="ff-custom__u">days</span>
                 </label>
               </div>
@@ -963,9 +963,9 @@ const aiModalHtml = `
             <div class="ff-rows">
               <span class="ff-lbl">Avg views<span class="ff-lbl__sub">last 3 videos</span></span>
               <div class="ff-pair">
-                <input class="an-input ff-inp" type="text" inputmode="numeric" placeholder="Any" data-ff="avgFrom" aria-label="Average views from" />
+                <input class="an-input ff-inp" type="text" inputmode="numeric" placeholder="Min" data-ff="avgFrom" aria-label="Average views from" />
                 <span class="ff-dash">–</span>
-                <input class="an-input ff-inp" type="text" inputmode="numeric" placeholder="Any" data-ff="avgTo" aria-label="Average views to" />
+                <input class="an-input ff-inp" type="text" inputmode="numeric" placeholder="Max" data-ff="avgTo" aria-label="Average views to" />
               </div>
             </div>
           </section>

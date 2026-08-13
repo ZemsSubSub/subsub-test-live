@@ -3633,7 +3633,7 @@
     if (n === 2) {
       var q = aiTxt("[data-ai-query]");
       var ro = ffEl("[data-cc-prompt-txt]");
-      if (ro) ro.textContent = q || "No description — sourcing will use filters only";
+      if (ro) ro.textContent = q || "No description yet — sourcing will rely on filters only";
       ffSync();
     } else ffChipsRender();
     ccFiltersBtnSync();
@@ -4225,7 +4225,9 @@
       else {
         var pool = (typeof aiChannelPool === "function" ? aiChannelPool() : []);
         var n = pool.filter(ffFits).length;
-        prev.textContent = "≈ " + n + (n === 1 ? " channel matches these filters" : " channels match these filters");
+        // «в нашей базе» — иначе число читается как оценка по всему ютубу
+        prev.textContent = "≈ " + n + (n === 1 ? " channel in our base matches" : " channels in our base match") +
+          " these filters";
       }
     }
     ffChipsRender();
