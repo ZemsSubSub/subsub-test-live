@@ -1565,7 +1565,7 @@ const deepInner = `
         <span class="an-blank__ico" aria-hidden="true">${IC.graph}</span>
         <h2 class="an-blank__title" data-dd-state-title></h2>
         <p class="an-blank__text" data-dd-state-text></p>
-        <div class="an-blank__bar" data-dd-state-bar hidden><span data-dd-state-fill></span></div>
+        <span class="an-blank__spin" data-dd-state-spin hidden aria-hidden="true"></span>
         <button class="an-btn an-btn--primary" type="button" data-dd-state-act hidden></button>
       </section>
 

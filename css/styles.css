@@ -2368,10 +2368,12 @@ body.is-open:not(.is-collapsed) .main { margin-left: 306px; }
 .an-blank .an-btn { margin-top: 4px; text-decoration: none; }
 .an-blank .an-btn[hidden] { display: none; }
 /* прогресс сбора Deep data: не нули в таблице, а честное состояние процесса */
-.an-blank__bar { width: 240px; height: 6px; border-radius: 9999px; background: var(--color-shade-200); overflow: hidden; }
-.an-blank__bar[hidden] { display: none; }
-.an-blank__bar > span { display: block; height: 100%; width: 0; border-radius: 9999px;
-  background: var(--color-purple-900); transition: width .4s ease; }
+/* Сбор идёт неизвестно сколько: крутилка вместо полосы прогресса — полоса обещает
+   предсказуемый остаток, которого у нас нет. */
+.an-blank__spin { width: 24px; height: 24px; border-radius: 50%;
+  border: 2px solid var(--color-shade-200); border-top-color: var(--color-purple-900);
+  animation: ce-spin .8s linear infinite; }
+.an-blank__spin[hidden] { display: none; }
 .dd-state { margin-top: 4px; }
 /* заблокированный контрол виден и объясняет причину */
 .an-btn[disabled], .mc-status__link[disabled], .ce-trash[disabled] { opacity: .45; cursor: not-allowed; }

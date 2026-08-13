@@ -1063,12 +1063,7 @@
     return s === "sourcing" ? "Sourcing is already running for this collection"
          : s === "deep" ? CS_TIP.sourceWaitDeep : "";
   }
-  function collProgress(name) {          // 0..1 по времени сбора Deep data
-    var at = collDeepAt(name);
-    if (!at) return 0.1;
-    var left = at - Date.now();
-    return Math.max(0.05, Math.min(0.95, 1 - left / DEEP_MS));
-  }
+
   // ---- запуск и отмена процессов ----
   function collActivateDeep(name) {
     if (collState(name) !== "created" || collChans(name) < 1) return false;
@@ -1198,6 +1193,60 @@
     }
     return aiChannelsOf(name).length;
   }
+  // В сборке строки Deep data есть только у демо-коллекций. Активировали свою —
+  // рисуем её строки по составу коллекции, иначе при готовых данных таблица пустая.
+  function ddEnsureRows(name) {
+    var body = tblBody("deep");
+    if (!body || !name) return false;
+    var rows = tblAllRows("deep");
+    var have = {};
+    rows.forEach(function (r) {
+      if ((r.getAttribute("data-coll") || "") !== name) return;
+      var n = r.querySelector(".an-chan__name");
+      if (n) have[n.textContent.trim()] = true; else have.__avg = true;
+    });
+    var chans = aiChannelsOf(name);
+    var tbody = body.querySelector(".an-tbody");
+    var protoAvg = rows.filter(function (r) { return r.classList.contains("an-tr--avg"); })[0];
+    var proto = rows.filter(function (r) { return !r.classList.contains("an-tr--avg"); })[0];
+    if (!chans.length || !proto || !tbody) return false;
+    var pool = (typeof aiChannelPool === "function" ? aiChannelPool() : []);
+    function metaOf(nm) {
+      for (var i = 0; i < pool.length; i++) if (pool[i].name === nm) return pool[i];
+      return null;
+    }
+    var added = false;
+    if (!have.__avg && protoAvg) {
+      var avg = protoAvg.cloneNode(true);
+      avg.setAttribute("data-coll", name);
+      avg.removeAttribute("data-filtered");
+      tbody.appendChild(avg);
+      added = true;
+    }
+    chans.forEach(function (nm) {
+      if (have[nm]) return;
+      var row = proto.cloneNode(true);
+      row.setAttribute("data-coll", name);
+      row.removeAttribute("data-filtered");
+      row.removeAttribute("data-ord");
+      row.classList.remove("is-selected", "is-pinned");
+      var chk = row.querySelector("[data-an-check]");
+      if (chk) chk.classList.remove("is-checked");
+      var meta = metaOf(nm);
+      var ava = row.querySelector(".an-chan__ava");
+      if (ava) {
+        ava.textContent = (meta && meta.initial) || nm.charAt(0).toUpperCase();
+        ava.setAttribute("style", "background:var(" + ((meta && meta.color) || "--color-avatar-3") + ")");
+      }
+      var nmEl = row.querySelector(".an-chan__name");
+      if (nmEl) nmEl.textContent = nm;
+      var pin = row.querySelector("[data-dp-pin-row]");
+      if (pin) { pin.title = "Pin on top"; pin.setAttribute("aria-pressed", "false"); }
+      tbody.appendChild(row);
+      added = true;
+    });
+    return added;
+  }
   // Deep data: если коллекция не активирована или ещё собирается — состояние вместо таблицы
   function ddStateSync() {
     var box = document.querySelector("[data-dd-state]");
@@ -1209,6 +1258,8 @@
     // показываем состояние, когда данных в таблице нет: коллекция не выбрана,
     // коллекций вообще нет или выбранная ещё не активирована
     var show = !nm || st !== "activated";
+    // данные готовы, но строк в сборке нет — дорисовываем по составу коллекции
+    if (nm && st === "activated" && ddEnsureRows(nm)) flApply();
     box.hidden = !show;
     var wrapT = document.querySelector('[data-an-tablewrap="deep"]');
     if (wrapT) wrapT.style.display = show ? "none" : "";
@@ -1218,21 +1269,20 @@
     if (srow) srow.style.display = show ? "none" : "";
     var exp = document.querySelector("[data-an-export]");
     if (exp) {
-      exp.disabled = st !== "activated";
-      if (st === "activated") exp.removeAttribute("title"); else exp.title = CS_TIP.noDeep;
+      offSet(exp, st !== "activated");
+      tipSet(exp, st === "activated" ? "" : CS_TIP.noDeep);
     }
     if (!show) return;
     var title = box.querySelector("[data-dd-state-title]");
     var text = box.querySelector("[data-dd-state-text]");
-    var bar = box.querySelector("[data-dd-state-bar]");
-    var fill = box.querySelector("[data-dd-state-fill]");
+    var spin = box.querySelector("[data-dd-state-spin]");
     var act = box.querySelector("[data-dd-state-act]");
     // коллекций нет вовсе: единственный путь — создать первую
     if (!colls.length) {
       title.textContent = "No collections yet";
       text.textContent = "Deep data is collected per collection: growth, engagement and performance " +
         "for every channel in it. Create a collection and activate deep data for it.";
-      bar.hidden = true;
+      spin.hidden = true;
       act.hidden = false;
       act.className = "an-btn an-btn--ai";
       act.textContent = "Create collection";
@@ -1246,7 +1296,7 @@
       title.textContent = "Select a collection";
       text.textContent = "Deep data is shown per collection — pick one above to see its channels " +
         "and metrics.";
-      bar.hidden = true;
+      spin.hidden = true;
       act.hidden = false;
       act.className = "an-btn an-btn--secondary";
       act.textContent = "Select collection";
@@ -1260,8 +1310,7 @@
       title.textContent = CS_LBL.deep;
       text.textContent = "We're collecting deep metrics for " + collChans(nm) + " channels of “" + nm +
         "”. You can leave the page — collection continues.";
-      bar.hidden = false;
-      fill.style.width = Math.round(collProgress(nm) * 100) + "%";
+      spin.hidden = false;
       act.hidden = false;
       act.textContent = "Cancel collection";
       act.disabled = false;
@@ -1273,15 +1322,16 @@
     title.textContent = "Deep data isn't activated";
     text.textContent = "Activate deep data for “" + nm + "” — we'll collect growth, engagement and " +
       "performance for every channel in it.";
-    bar.hidden = true;
+    spin.hidden = true;
     act.hidden = false;
     act.className = "an-btn an-btn--primary";
     act.textContent = "Activate deep data";
-    var tip = !plan().deep && !collIsSample(nm) ? CS_TIP.planDeep
+    var planWall = !plan().deep && !collIsSample(nm);
+    var tip = planWall ? "Deep data is available on Pro and above"
             : st === "sourcing" ? CS_TIP.deepWaitSourcing
             : collChans(nm) < 1 ? CS_TIP.needChannel : "";
-    act.disabled = !!tip;
-    if (tip) act.title = tip; else act.removeAttribute("title");
+    offSet(act, !!tip);
+    tipSet(act, tip, planWall);
   }
   function csFill(wrap, q) {
     var box = wrap.querySelector("[data-an-collsel-opts]");
@@ -4906,6 +4956,7 @@
       offSet(add, !canAdd);
       tipSet(add, canAdd ? "" : collAddBlockTip(nm));
     });
+    ceLimitSync();                        // вместимость может добавить свою блокировку
     [].slice.call(document.querySelectorAll("[data-ce-remove]")).forEach(function (b) {
       offSet(b, !edit);
       tipSet(b, edit ? "" : CS_TIP.editWaitDeep);
@@ -4921,7 +4972,7 @@
     if (dup) {
       var busyProc = st === "sourcing" || st === "deep";
       dup.disabled = busyProc;
-      if (busyProc) dup.title = CS_TIP.busy; else dup.removeAttribute("title");
+      tipSet(dup, busyProc ? CS_TIP.busy : "");
     }
     ceDeepSync();
     ceAiSync();
@@ -5671,13 +5722,13 @@
     if (fill) fill.style.width = Math.min(100, Math.round(used / cap * 100)) + "%";
     box.classList.toggle("is-full", full);
     var up = box.querySelector("[data-ce-upgrade]");
-    if (up) up.title = full
-      ? "Collection limit reached — upgrade the plan to add more channels"
-      : "Upgrade the plan for a bigger collection";
+    tipSet(up, full ? "Collection is full on the " + plan().label + " plan"
+                    : "Upgrade the plan for a bigger collection");
+    // добавлять некуда, пока план не расширили: причина и апгрейд — в тултипе
     var add = document.querySelector("[data-nc-open]");
-    if (add) {
-      add.disabled = full;                     // добавлять некуда, пока план не расширили
-      add.title = full ? "Collection limit reached — upgrade the plan" : "";
+    if (add && full) {
+      offSet(add, true);
+      tipSet(add, "Collection is full on the " + plan().label + " plan (" + used + "/" + cap + ")", true);
     }
   }
   function ceLimitLeft() {
