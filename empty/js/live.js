@@ -1166,7 +1166,8 @@
       }).join("") + S.filters.channels.map(function (id) {
         var c = chan(id);
         return chip("Channel: " + (c ? c.name : id), 'data-lv-unchip="channels:' + id + '"');
-      }).join("") + (hasFilters() ? btn("Clear all", "secondary", "data-lv-clear") : "");
+      }).join("") + (hasFilters() ? '<button class="an-fchips__clear" type="button" data-lv-clear>Clear all</button>' : "");
+      chips.hidden = !hasFilters();
     }
 
     // скелетон — только в теле, тулбар и пагинация остаются
@@ -3985,8 +3986,9 @@
     if (chips) {
       chips.innerHTML = CALV.statuses.map(function (st) {
         return chip("Status: " + (ST[st] ? ST[st].label : st), 'data-lv-calunchip="statuses:' + st + '"');
-      }).join("") + (CALV.statuses.length ? btn("Clear all", "secondary", "data-lv-calclear") : "") +
+      }).join("") + (CALV.statuses.length ? '<button class="an-fchips__clear" type="button" data-lv-calclear>Clear all</button>' : "") +
       (calAll() ? '<span class="an-hint">' + T.calAllRO + "</span>" : "");
+      chips.hidden = !CALV.statuses.length && !calAll();
     }
     // алерт остался один: нулевой баланс. Пересечений в расписании не бывает — их не дают создать
     var warn = document.querySelector("[data-lv-calwarn]");

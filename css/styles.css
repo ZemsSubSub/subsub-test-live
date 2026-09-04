@@ -4383,7 +4383,9 @@ body.ce-ro .ce-table .an-tbody .an-tr > .an-td:last-child { display: none; }
   gap: 12px; min-width: 0; padding-bottom: 12px; }
 .lv-dmain { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
 .lv-dcover--big { width: 100%; height: auto; aspect-ratio: 16 / 9; }
-.lv-dside .lv-dacts { flex-wrap: wrap; justify-content: flex-start; margin-left: 0; }
+.lv-dside .lv-dacts { flex-wrap: nowrap; justify-content: flex-start; margin-left: 0; }
+.lv-dside .lv-dacts .an-btn { padding: 0 12px; min-width: 0; }
+.lv-dside .lv-dacts .mc-more { flex-shrink: 0; }
 /* метрики состояния — одной линией; Stop здесь не живёт, он в шапке */
 /* значения в плашке разнесены; если пар много — переносим строкой, но не режем */
 .lv-dside .lv-state { flex-wrap: wrap; gap: 12px 24px; overflow: hidden; }
