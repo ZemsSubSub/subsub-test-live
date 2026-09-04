@@ -1875,7 +1875,7 @@
         "</div>" +
         '<div class="lv-plcard__foot">' +
           (used.length
-            ? '<span class="lv-next__more" tabindex="0" data-tip="' + UI.esc(used.map(function (s) { return s.name; }).join(" · ")) + '">' +
+            ? '<span class="lv-next__more">' +
               (IC.video || "") + "Used in " + UI.plural(used.length, "stream", "streams") + "</span>"
             : '<span class="an-muted">' + (IC.video || "") + "Not used in streams</span>") +
           '<span class="lv-plcard__upd">' + UI.dt(p.updated, TZ) + "</span>" +
