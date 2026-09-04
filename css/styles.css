@@ -3992,7 +3992,7 @@ body.ce-ro .ce-table .an-tbody .an-tr > .an-td:last-child { display: none; }
 .lv-cal { border: 1px solid var(--color-shade-200); border-radius: 12px; background: var(--color-white); overflow: hidden; }
 .lv-cal__nowrow { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-bottom: 1px solid var(--color-shade-200); background: var(--color-green-10); flex-wrap: wrap; }
 .lv-cal__nowlbl { font-size: 12px; font-weight: 500; color: var(--color-green-dark); }
-.lv-cal__nowrow .lv-bar { position: static; height: 30px; min-width: 200px; }
+.lv-cal__nowrow .lv-bar { position: static; height: 30px; min-width: 200px; background: var(--color-green-dark); color: var(--color-white); }
 
 /* колонка часов шире на 8px: в её шапке живёт пара кнопок масштаба, им нужны поля */
 .lv-cal__grid { display: grid; grid-template-columns: 72px 1fr; }
