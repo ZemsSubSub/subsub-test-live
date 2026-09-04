@@ -3756,6 +3756,9 @@ body.ce-ro .ce-table .an-tbody .an-tr > .an-td:last-child { display: none; }
 .lv-dtitle__edit svg { width: 18px; height: 18px; }
 .lv-dmeta { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; font-size: 14px; color: var(--color-shade-700); }
 .lv-dmeta a { color: var(--color-purple-900); }
+.lv-usetags { display: inline-flex; flex-wrap: wrap; gap: 6px; }
+.lv-dmeta a.lv-usetag { color: var(--color-shade-800); text-decoration: none; }
+.lv-dmeta a.lv-usetag:hover { background: var(--color-shade-200); color: var(--color-black); }
 .lv-dacts { display: flex; align-items: center; gap: 8px; margin-left: auto; flex-wrap: wrap; }
 
 /* Полоса состояния */

@@ -2055,7 +2055,12 @@
             : '<span class="an-hint">All changes saved</span>') + "</div>" +
         '<div class="lv-dmeta"><span>' + st.count + (st.count === 1 ? " video" : " videos") + " · " + UI.dur(st.sec) + " · " + UI.bytes(st.bytes) +
           (st.off ? " · " + st.off + " off" : "") + "</span>" +
-          "<span>" + (draft ? "Not saved yet" : used.length ? "Used in " + UI.plural(used.length, "stream", "streams") + ": " + UI.esc(used.map(function (s) { return s.name; }).join(", ")) : "Not used in streams") + "</span>" +
+          "<span>" + (draft ? "Not saved yet" : used.length ? "Used in " + UI.plural(used.length, "stream", "streams") + ":" : "Not used in streams") + "</span>" +
+          (!draft && used.length
+            ? '<span class="lv-usetags">' + used.map(function (s) {
+                return '<a class="ml-tag ml-tag--muted lv-usetag" href="' + streamHref(s) + '">' + UI.esc(s.name) + "</a>";
+              }).join("") + "</span>"
+            : "") +
         "</div></div>" +
         '<div class="lv-dacts">' + acts + "</div></div>" +
       '<section class="rp-card">' +
