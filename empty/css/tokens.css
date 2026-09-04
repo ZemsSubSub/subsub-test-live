@@ -1,0 +1,250 @@
+/* Слой значений прототипа. СГЕНЕРИРОВАНО — правки руками стираются.
+ *
+ *   node build/gen-values.js
+ *
+ * Источник: <PLATFORM>/layers/core/assets/css/main.css
+ * Правило: цвет, кегль, тень и радиус в styles.css берутся только отсюда (ADR-0020).
+ */
+
+:root {
+  /* Шрифты */
+  --font-display: "Inter", "sans-serif";
+  --font-inter: "Inter", sans-serif;
+  --font-mulish: "Mulish", sans-serif;
+
+  /* Тени */
+  --shadow: 0 4px 15px 0 rgba(0, 0, 0, 0.06);
+  --shadow-table-column: 0 8px 14px 0 rgba(0, 0, 0, 0.05);
+
+  /* Цвета */
+  --color-black: #19191a;
+  --color-shade-90: #fafafa;
+  --color-shade-100: #f3f3f3;
+  --color-shade-200: #e6e6e6;
+  --color-shade-300: #cfcfcf;
+  --color-shade-500: #a9a9a9;
+  --color-shade-600: #8c8c8c;
+  --color-shade-700: #707070;
+  --color-shade-800: #424242;
+  --color-lemon: #d6fc00;
+  --color-lavender: #edd1ff;
+  --color-purple-900: #b351f6;
+  --color-purple-100: #f7eefe;
+  --color-purple-200: #edd5ff;
+  --color-dark-blue: #12141e;
+  --color-white: #fff;
+  --color-green-dark: #389838;
+  --color-green: #1bbc40;
+  --color-green-20: #dcf1e1;
+  --color-green-10: #eaffea;
+  --color-red: #e92929;
+  --color-red-shade-900: #e92929;
+  --color-red-shade-300: #ffb8b8;
+  --color-red-shade-100: #ffebeb;
+  --color-yellow: #edb627;
+  --color-yellow-20: #fdf7d5;
+  --color-yellow-900: #b8791b;
+  --color-yellow-700: #edb627;
+  --color-yellow-600: #dfba84;
+  --color-yellow-300: #fff0da;
+  --color-yellow-200: #fdf7d5;
+  --color-yellow-100: #fdf7e7;
+  --color-orange: #bd6414;
+  --color-orange-20: #fbead7;
+  --color-blue: #3a56b2;
+  --color-blue-20: #e1e8ff;
+  --color-brick-orange: #ff8215;
+  --color-indigo: #5766f0;
+  --color-violet: #786df2;
+  --color-accent: #6c5ce7;
+  --color-telegram: #229ed9;
+  --color-avatar-0: #6c5ce7;
+  --color-avatar-1: #e17055;
+  --color-avatar-2: #00b894;
+  --color-avatar-3: #0984e3;
+  --color-avatar-4: #fdcb6e;
+  --color-avatar-5: #e84393;
+  --color-avatar-6: #00cec9;
+
+  /* Типографика */
+  --text-title-bold-14: 14px;
+  --text-title-bold-14--font-weight: 600;
+  --text-table-title-semi-12: 12px;
+  --text-table-title-semi-12--line-height: 16px;
+  --text-table-title-semi-12--font-weight: 500;
+  --text-footnote-reg-12: 12px;
+  --text-footnote-reg-12--line-height: 16px;
+  --text-footnote-reg-12--font-weight: 300;
+  --text-title-semi-32: 32px;
+  --text-title-semi-32--line-height: 130%;
+  --text-title-semi-32--font-weight: 500;
+  --text-title-med-32: 32px;
+  --text-title-med-32--line-height: 130%;
+  --text-title-med-32--font-weight: 400;
+  --text-title-semi-26: 26px;
+  --text-title-semi-26--line-height: 130%;
+  --text-title-semi-26--font-weight: 500;
+  --text-title-semi-24: 24px;
+  --text-title-semi-24--line-height: 130%;
+  --text-title-semi-24--font-weight: 500;
+  --text-title-med-20: 20px;
+  --text-title-med-20--line-height: 26px;
+  --text-title-med-20--font-weight: 400;
+  --text-title-semi-20: 20px;
+  --text-title-semi-20--line-height: 26px;
+  --text-title-semi-20--font-weight: 500;
+  --text-title-semi-18: 18px;
+  --text-title-semi-18--line-height: 130%;
+  --text-title-semi-18--font-weight: 500;
+  --text-title-med-18: 18px;
+  --text-title-med-18--line-height: 130%;
+  --text-title-med-18--font-weight: 400;
+  --text-title-reg-28: 28px;
+  --text-title-reg-28--line-height: 36px;
+  --text-title-reg-28--font-weight: 300;
+  --text-title-reg-24: 24px;
+  --text-title-reg-24--line-height: 130%;
+  --text-title-reg-24--font-weight: 300;
+  --text-title-reg-20: 20px;
+  --text-title-reg-20--line-height: 130%;
+  --text-title-reg-20--font-weight: 300;
+  --text-body-med-24: 24px;
+  --text-body-med-24--line-height: 130%;
+  --text-body-med-24--font-weight: 400;
+  --text-body-semi-24: 24px;
+  --text-body-semi-24--line-height: 130%;
+  --text-body-semi-24--font-weight: 500;
+  --text-body-semi-22: 22px;
+  --text-body-semi-22--line-height: 130%;
+  --text-body-semi-22--font-weight: 500;
+  --text-body-semi-18: 18px;
+  --text-body-semi-18--line-height: 130%;
+  --text-body-semi-18--font-weight: 500;
+  --text-body-med-18: 18px;
+  --text-body-med-18--line-height: 130%;
+  --text-body-med-18--font-weight: 400;
+  --text-body-med-18-140: 18px;
+  --text-body-med-18-140--line-height: 140%;
+  --text-body-med-18-140--font-weight: 400;
+  --text-body-reg-18-140: 18px;
+  --text-body-reg-18-140--line-height: 140%;
+  --text-body-reg-18-140--font-weight: 300;
+  --text-body-reg-18: 18px;
+  --text-body-reg-18--line-height: 130%;
+  --text-body-reg-18--font-weight: 300;
+  --text-body-semi-16: 16px;
+  --text-body-semi-16--line-height: 140%;
+  --text-body-semi-16--font-weight: 500;
+  --text-body-med-16: 16px;
+  --text-body-med-16--line-height: 140%;
+  --text-body-med-16--font-weight: 400;
+  --text-body-reg-16: 16px;
+  --text-body-reg-16--line-height: 130%;
+  --text-body-reg-16--font-weight: 300;
+  --text-body-med-16-140: 16px;
+  --text-body-med-16-140--line-height: 140%;
+  --text-body-med-16-140--font-weight: 400;
+  --text-body-semi-14: 14px;
+  --text-body-semi-14--line-height: 140%;
+  --text-body-semi-14--font-weight: 500;
+  --text-body-med-12: 12px;
+  --text-body-med-12--line-height: 140%;
+  --text-body-med-12--font-weight: 400;
+  --text-body-med-14: 14px;
+  --text-body-med-14--line-height: 140%;
+  --text-body-med-14--font-weight: 400;
+  --text-paragraph-reg-14: 14px;
+  --text-paragraph-reg-14--line-height: 140%;
+  --text-paragraph-reg-14--font-weight: 300;
+  --text-body-reg-14: 14px;
+  --text-body-reg-14--line-height: 130%;
+  --text-body-reg-14--font-weight: 300;
+  --text-body-reg-12: 12px;
+  --text-body-reg-12--line-height: 130%;
+  --text-body-reg-12--font-weight: 300;
+  --text-callout-med-16: 16px;
+  --text-callout-med-16--line-height: 24px;
+  --text-callout-med-16--font-weight: 400;
+  --text-callout-reg-16: 16px;
+  --text-callout-reg-16--line-height: 24px;
+  --text-callout-reg-16--font-weight: 300;
+  --text-callout-med-14: 14px;
+  --text-callout-med-14--line-height: 24px;
+  --text-callout-med-14--font-weight: 400;
+  --text-callout-reg-14: 14px;
+  --text-callout-reg-14--line-height: 24px;
+  --text-callout-reg-14--font-weight: 300;
+
+  /* Анимация */
+  --animate-slideDown: slideDown 250ms cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-slideUp: slideUp 200ms cubic-bezier(0.4, 0, 1, 1);
+  --animate-overlayShow: overlayShow 150ms cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-contentShow: contentShow 150ms cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-slideFullLeftToRight: slideFullLeftToRight 400ms cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-slideDownAndFade: slideDownAndFade 400ms cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-slideLeftAndFade: slideLeftAndFade 400ms cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-slideUpAndFade: slideUpAndFade 400ms cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-slideRightAndFade: slideRightAndFade 400ms cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-hide: hide 100ms ease-in;
+  --animate-slideIn: slideIn 150ms cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-swipeOut: swipeOut 100ms ease-out;
+  --animate-rotate-360: rotate-360 1s linear infinite;
+  --animate-pulse: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  --animate-tada: tada 2s ease-in-out both;
+
+  /* Точки перелома */
+  --breakpoint-mobile-s: 320px;
+  --breakpoint-mobile-m: 375px;
+  --breakpoint-mobile-l: 425px;
+
+  /* Прочее из платформы */
+  --page-max-width: 93.75rem;
+
+  /* Раскладка прототипа */
+  --header-height-desktop: 72px;
+  --header-height-mobile: 56px;
+  --header-height: 72px;
+  --spaces-menu-width: 72px;
+
+  /* Бренд YouTube: фирменный красный кнопок публикации */
+  --color-youtube: #ff0000;
+  --color-youtube-hover: #d90000;
+
+  /* Красный продукта: ховеры кнопок и мягкий фон ошибки */
+  --color-red-hover: #c81e1e;
+  --color-red-10: #fdecec;
+
+  /* Чистые крайности: оверлеи и обводки */
+  --color-pure-black: #000;
+
+  /* Просмотрщик медиатеки: тёмная хромота вокруг контента */
+  --color-viewer-900: #0b1120;
+  --color-viewer-800: #0f172a;
+  --color-viewer-700: #12141e;
+  --color-viewer-600: #3a4a5a;
+  --color-viewer-500: #525659;
+  --color-viewer-400: #64748b;
+  --color-viewer-300: #cbd5e1;
+  --color-viewer-200: #e2e8f0;
+  --color-viewer-100: #d9d9d9;
+
+  /* Тепловая карта и акценты Analytics */
+  --color-heat-violet: #c084fc;
+  --color-heat-green: #86efac;
+  --color-heat-blue: #7dd3fc;
+  --color-indigo-900: #4453d6;
+
+  /* Легаси-лендинги: градиенты и тёплые подложки */
+  --color-warm-300: #f6d365;
+  --color-warm-400: #fda085;
+  --color-warm-500: #e2703a;
+  --color-warm-600: #e0a500;
+  --color-warm-100: #faeeda;
+  --color-warm-50: #fdf4d8;
+  --color-lilac-300: #a18cd1;
+  --color-lilac-50: #fdfaff;
+
+  /* Ставятся из JS — здесь дефолт, чтобы ссылка разрешалась */
+  --lv-hour: 44px;
+  --lvlines: 2;
+}

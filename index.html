@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SubSub Live — clickable prototype</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/tokens.css" />
+  <style>
+    /* Точка входа в прототип. Отдельные стили: страница не часть продуктового UI,
+       поэтому не тянет styles.css и не зависит от его правок. */
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; padding: 48px 24px 64px;
+      font-family: Inter, system-ui, sans-serif;
+      color: var(--color-black, #19191a); background: var(--color-shade-90, #fafafa);
+    }
+    .wrap { max-width: 880px; margin: 0 auto; }
+    h1 { margin: 0 0 8px; font-size: 32px; font-weight: 600; letter-spacing: -.02em; }
+    .sub { margin: 0 0 8px; font-size: 16px; font-weight: 300; color: var(--color-shade-800, #4a4a4a); }
+    .note {
+      margin: 0 0 40px; padding: 12px 16px; border-radius: 10px;
+      background: var(--color-orange-20, #fbead7); color: var(--color-orange, #bd6414);
+      font-size: 14px; line-height: 1.45;
+    }
+    h2 {
+      margin: 32px 0 12px; font-size: 12px; font-weight: 600; letter-spacing: .06em;
+      text-transform: uppercase; color: var(--color-shade-700, #707070);
+    }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+    a.card {
+      display: block; padding: 16px 18px; border-radius: 12px; text-decoration: none;
+      background: #fff; border: 1px solid var(--color-shade-200, #e6e6e6);
+      transition: border-color .15s ease, transform .15s ease;
+    }
+    a.card:hover { border-color: var(--color-black, #19191a); transform: translateY(-1px); }
+    .card__t { font-size: 16px; font-weight: 500; color: var(--color-black, #19191a); }
+    .card__d { margin-top: 4px; font-size: 13px; font-weight: 300; color: var(--color-shade-700, #707070); }
+    footer { margin-top: 48px; font-size: 13px; color: var(--color-shade-700, #707070); }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>SubSub Live — clickable prototype</h1>
+    <p class="sub">Static prototype of the Live section: HTML + vanilla JS, no backend.</p>
+    <p class="note">Data is hard-coded, asynchronous steps are simulated with timers, and state lives in your browser's localStorage.
+      Uploads, conversion, YouTube connection and payments are imitated. Other sections of the product are not part of this prototype.</p>
+
+    <h2>Account with data</h2>
+    <div class="grid">
+      <a class="card" href="live-streams.html">
+        <div class="card__t">Streams</div>
+        <div class="card__d">Existing streams, playlists and channels, one stream on air</div>
+      </a>
+      <a class="card" href="live-playlists.html">
+        <div class="card__t">Playlists</div>
+        <div class="card__d">Playlists with quality badges and usage in streams</div>
+      </a>
+      <a class="card" href="live-calendar.html">
+        <div class="card__t">Calendar</div>
+        <div class="card__d">Scheduled windows, repeats, drag to move or resize</div>
+      </a>
+    </div>
+
+    <h2>New account, nothing created yet</h2>
+    <div class="grid">
+      <a class="card" href="empty/live-streams.html">
+        <div class="card__t">Streams</div>
+        <div class="card__d">Channel connected, no streams, playlists or videos</div>
+      </a>
+      <a class="card" href="empty/live-playlists.html">
+        <div class="card__t">Playlists</div>
+        <div class="card__d">Empty playlists page</div>
+      </a>
+      <a class="card" href="empty/live-calendar.html">
+        <div class="card__t">Calendar</div>
+        <div class="card__d">Empty calendar</div>
+      </a>
+    </div>
+
+    <footer>Each variant keeps its own state. To start over, clear site data for this page or run <code>subsubLiveReset()</code> in the browser console.</footer>
+  </div>
+</body>
+</html>

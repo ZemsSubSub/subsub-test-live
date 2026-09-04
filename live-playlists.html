@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Playlists — SubSub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/tokens.css" />
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body class="is-open" data-space="streams" data-lv-page="playlists">
+  <svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
+<symbol id="ic-rocket" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13a8 8 0 0 1 7 7a6 6 0 0 0 3 -5a9 9 0 0 0 6 -8a3 3 0 0 0 -3 -3a9 9 0 0 0 -8 6a6 6 0 0 0 -5 3" /><path d="M7 14a6 6 0 0 0 -3 6a6 6 0 0 0 6 -3" /><path d="M15 9m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" /></symbol>
+<symbol id="ic-chart" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M18 3a3 3 0 0 1 3 3v12a3 3 0 0 1 -3 3h-12a3 3 0 0 1 -3 -3v-12a3 3 0 0 1 3 -3h12zm-2.293 6.293a1 1 0 0 0 -1.414 0l-2.293 2.292l-1.293 -1.292a1 1 0 0 0 -1.414 0l-3 3a1 1 0 0 0 0 1.414l.094 .083a1 1 0 0 0 1.32 -.083l2.293 -2.292l1.293 1.292l.094 .083a1 1 0 0 0 1.32 -.083l2.293 -2.292l1.293 1.292a1 1 0 0 0 1.414 -1.414l-2 -2z" /></symbol>
+<symbol id="ic-chartpie" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M9.883 2.207a1.9 1.9 0 0 1 2.087 1.522l.025 .167l.005 .104v7a1 1 0 0 0 .883 .993l.117 .007h6.8a2 2 0 0 1 2 2a1 1 0 0 1 -.026 .226a10 10 0 1 1 -12.27 -11.933l.27 -.067l.11 -.02z" /><path d="M14 3.5v5.5a1 1 0 0 0 1 1h5.5a1 1 0 0 0 .943 -1.332a10 10 0 0 0 -6.11 -6.111a1 1 0 0 0 -1.333 .943z" /></symbol>
+<symbol id="ic-document" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 2l.117 .007a1 1 0 0 1 .876 .876l.007 .117v4l.005 .15a2 2 0 0 0 1.838 1.844l.157 .006h4l.117 .007a1 1 0 0 1 .876 .876l.007 .117v9a3 3 0 0 1 -2.824 2.995l-.176 .005h-10a3 3 0 0 1 -2.995 -2.824l-.005 -.176v-14a3 3 0 0 1 2.824 -2.995l.176 -.005zm3 14h-6a1 1 0 0 0 0 2h6a1 1 0 0 0 0 -2m0 -4h-6a1 1 0 0 0 0 2h6a1 1 0 0 0 0 -2m-5 -4h-1a1 1 0 1 0 0 2h1a1 1 0 0 0 0 -2" /><path d="M19 7h-4l-.001 -4.001z" /></symbol>
+<symbol id="ic-collections" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M20.894 15.553a1 1 0 0 1 -.447 1.341l-8 4a1 1 0 0 1 -.894 0l-8 -4a1 1 0 0 1 .894 -1.788l7.553 3.774l7.554 -3.775a1 1 0 0 1 1.341 .447m0 -4a1 1 0 0 1 -.447 1.341l-8 4a1 1 0 0 1 -.894 0l-8 -4a1 1 0 0 1 .894 -1.788l7.552 3.775l7.554 -3.775a1 1 0 0 1 1.341 .447m-8.887 -8.552q .056 0 .111 .007l.111 .02l.086 .024l.012 .006l.012 .002l.029 .014l.05 .019l.016 .009l.012 .005l8 4a1 1 0 0 1 0 1.788l-8 4a1 1 0 0 1 -.894 0l-8 -4a1 1 0 0 1 0 -1.788l8 -4l.011 -.005l.018 -.01l.078 -.032l.011 -.002l.013 -.006l.086 -.024l.11 -.02l.056 -.005z" /></symbol>
+<symbol id="ic-publicpage" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M19 4a3 3 0 0 1 3 3v10a3 3 0 0 1 -3 3h-14a3 3 0 0 1 -3 -3v-10a3 3 0 0 1 3 -3zm-12.99 3l-.127 .007a1 1 0 0 0 .117 1.993l.127 -.007a1 1 0 0 0 -.117 -1.993zm3 0l-.127 .007a1 1 0 0 0 .117 1.993l.127 -.007a1 1 0 0 0 -.117 -1.993z" /></symbol>
+<symbol id="ic-user" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 2a5 5 0 1 1 -5 5l.005 -.217a5 5 0 0 1 4.995 -4.783z" /><path d="M14 14a5 5 0 0 1 5 5v1a2 2 0 0 1 -2 2h-10a2 2 0 0 1 -2 -2v-1a5 5 0 0 1 5 -5h4z" /></symbol>
+<symbol id="ic-donate" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M6.979 3.074a6 6 0 0 1 4.988 1.425l.037 .033l.034 -.03a6 6 0 0 1 4.733 -1.44l.246 .036a6 6 0 0 1 3.364 10.008l-.18 .185l-.048 .041l-7.45 7.379a1 1 0 0 1 -1.313 .082l-.094 -.082l-7.493 -7.422a6 6 0 0 1 3.176 -10.215z" /></symbol>
+<symbol id="ic-membership" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M16.486 3.143l-4.486 2.69l-4.486 -2.69a1 1 0 0 0 -1.514 .857v13a1 1 0 0 0 .486 .857l5 3a1 1 0 0 0 1.028 0l5 -3a1 1 0 0 0 .486 -.857v-13a1 1 0 0 0 -1.514 -.857z" /></symbol>
+<symbol id="ic-subs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 7m-4 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0" /><path d="M3 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /><path d="M21 21v-2a4 4 0 0 0 -3 -3.85" /></symbol>
+<symbol id="ic-widgets" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M9 3a2 2 0 0 1 2 2v4a2 2 0 0 1 -2 2h-4a2 2 0 0 1 -2 -2v-4a2 2 0 0 1 2 -2z" /><path d="M19 3a2 2 0 0 1 2 2v4a2 2 0 0 1 -2 2h-4a2 2 0 0 1 -2 -2v-4a2 2 0 0 1 2 -2z" /><path d="M9 13a2 2 0 0 1 2 2v4a2 2 0 0 1 -2 2h-4a2 2 0 0 1 -2 -2v-4a2 2 0 0 1 2 -2z" /><path d="M19 13a2 2 0 0 1 2 2v4a2 2 0 0 1 -2 2h-4a2 2 0 0 1 -2 -2v-4a2 2 0 0 1 2 -2z" /></symbol>
+<symbol id="ic-content" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M20.117 7.625a1 1 0 0 0 -.564 .1l-4.553 2.275v4l4.553 2.275a1 1 0 0 0 1.447 -.892v-6.766a1 1 0 0 0 -.883 -.992z" /><path d="M5 5c-1.645 0 -3 1.355 -3 3v8c0 1.645 1.355 3 3 3h8c1.645 0 3 -1.355 3 -3v-8c0 -1.645 -1.355 -3 -3 -3z" /></symbol>
+<symbol id="ic-wallet" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M22 10v6a4 4 0 0 1 -4 4h-12a4 4 0 0 1 -4 -4v-6h20zm-14.99 4h-.01a1 1 0 1 0 .01 2a1 1 0 0 0 0 -2zm5.99 0h-2a1 1 0 0 0 0 2h2a1 1 0 0 0 0 -2zm5 -10a4 4 0 0 1 4 4h-20a4 4 0 0 1 4 -4h12z" /></symbol>
+<symbol id="ic-moneyreceive" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M19 5a3 3 0 0 1 3 3v8a3 3 0 0 1 -3 3h-14a3 3 0 0 1 -3 -3v-8a3 3 0 0 1 3 -3zm-7 4a3 3 0 0 0 -2.996 2.85l-.004 .15a3 3 0 1 0 3 -3m6.01 2h-.01a1 1 0 0 0 0 2h.01a1 1 0 0 0 0 -2m-12 0h-.01a1 1 0 1 0 .01 2a1 1 0 0 0 0 -2" /></symbol>
+<symbol id="ic-stream" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 10a2 2 0 0 1 1.497 3.327l2.452 7.357a1 1 0 1 1 -1.898 .632l-.44 -1.316h-3.224l-.438 1.317a1 1 0 0 1 -1.152 .663l-.113 -.03a1 1 0 0 1 -.633 -1.265l2.452 -7.357a2 2 0 0 1 -.503 -1.328l.005 -.15a2 2 0 0 1 1.995 -1.85" /><path d="M18.093 4.078a10 10 0 0 1 3.137 11.776a1 1 0 0 1 -1.846 -.77a8 8 0 1 0 -14.769 0a1 1 0 0 1 -1.846 .77a10 10 0 0 1 15.324 -11.776" /><path d="M15.657 7.243a6 6 0 0 1 1.882 7.066a1 1 0 1 1 -1.846 -.77a4 4 0 1 0 -7.384 0a1 1 0 1 1 -1.846 .77a6 6 0 0 1 9.194 -7.066" /></symbol>
+<symbol id="ic-folder" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M9 3a1 1 0 0 1 .608 .206l.1 .087l2.706 2.707h6.586a3 3 0 0 1 2.995 2.824l.005 .176v8a3 3 0 0 1 -2.824 2.995l-.176 .005h-14a3 3 0 0 1 -2.995 -2.824l-.005 -.176v-11a3 3 0 0 1 2.824 -2.995l.176 -.005h4z" /></symbol>
+<symbol id="ic-tfaoff" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M11.998 2l.118 .007l.059 .008l.061 .013l.111 .034a.993 .993 0 0 1 .217 .112l.104 .082l.255 .218a11 11 0 0 0 7.189 2.537l.342 -.01a1 1 0 0 1 1.005 .717a13 13 0 0 1 -9.208 16.25a1 1 0 0 1 -.502 0a13 13 0 0 1 -9.209 -16.25a1 1 0 0 1 1.005 -.717a11 11 0 0 0 7.531 -2.527l.263 -.225l.096 -.075a.993 .993 0 0 1 .217 -.112l.112 -.034a.97 .97 0 0 1 .119 -.021l.115 -.007zm.002 7a2 2 0 0 0 -1.995 1.85l-.005 .15l.005 .15a2 2 0 0 0 .995 1.581v1.769l.007 .117a1 1 0 0 0 1.993 -.117l.001 -1.768a2 2 0 0 0 -1.001 -3.732z" /></symbol>
+<symbol id="ic-youtube" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M18 3a5 5 0 0 1 5 5v8a5 5 0 0 1 -5 5h-12a5 5 0 0 1 -5 -5v-8a5 5 0 0 1 5 -5zm-9 6v6a1 1 0 0 0 1.514 .857l5 -3a1 1 0 0 0 0 -1.714l-5 -3a1 1 0 0 0 -1.514 .857z" /></symbol>
+<symbol id="ic-fileexport" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 2l.117 .007a1 1 0 0 1 .876 .876l.007 .117v4l.005 .15a2 2 0 0 0 1.838 1.844l.157 .006h4l.117 .007a1 1 0 0 1 .876 .876l.007 .117v9a3 3 0 0 1 -2.824 2.995l-.176 .005h-10a3 3 0 0 1 -2.995 -2.824l-.005 -.176v-14a3 3 0 0 1 2.824 -2.995l.176 -.005zm0 8a1 1 0 0 0 -1 1v3.585l-.793 -.792a1 1 0 0 0 -1.32 -.083l-.094 .083a1 1 0 0 0 0 1.414l2.5 2.5l.044 .042l.068 .055l.11 .071l.114 .054l.105 .035l.15 .03l.116 .006l.117 -.007l.117 -.02l.108 -.033l.081 -.034l.098 -.052l.092 -.064l.094 -.083l2.5 -2.5a1 1 0 0 0 0 -1.414l-.094 -.083a1 1 0 0 0 -1.32 .083l-.793 .791v-3.584a1 1 0 0 0 -.883 -.993zm2.999 -7.001l4.001 4.001h-4z" /></symbol>
+<symbol id="ic-created" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M4.929 4.929a10 10 0 1 1 14.141 14.141a10 10 0 0 1 -14.14 -14.14zm8.071 4.071a1 1 0 1 0 -2 0v2h-2a1 1 0 1 0 0 2h2v2a1 1 0 1 0 2 0v-2h2a1 1 0 1 0 0 -2h-2v-2z" /></symbol>
+<symbol id="ic-calendar" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M16 2a1 1 0 0 1 .993 .883l.007 .117v1h1a3 3 0 0 1 2.995 2.824l.005 .176v12a3 3 0 0 1 -2.824 2.995l-.176 .005h-12a3 3 0 0 1 -2.995 -2.824l-.005 -.176v-12a3 3 0 0 1 2.824 -2.995l.176 -.005h1v-1a1 1 0 0 1 1.993 -.117l.007 .117v1h6v-1a1 1 0 0 1 1 -1zm3 7h-14v9.625c0 .705 .386 1.286 .883 1.366l.117 .009h12c.513 0 .936 -.53 .993 -1.215l.007 -.16v-9.625z" /><path d="M12 12a1 1 0 0 1 .993 .883l.007 .117v3a1 1 0 0 1 -1.993 .117l-.007 -.117v-2a1 1 0 0 1 -.117 -1.993l.117 -.007h1z" /></symbol>
+<symbol id="ic-listbulleted" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M18 3a3 3 0 0 1 3 3v2a3 3 0 0 1 -3 3h-12a3 3 0 0 1 -3 -3v-2a3 3 0 0 1 3 -3z" /><path d="M18 13a3 3 0 0 1 3 3v2a3 3 0 0 1 -3 3h-12a3 3 0 0 1 -3 -3v-2a3 3 0 0 1 3 -3z" /></symbol>
+<symbol id="ic-repair" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M14.647 4.081a.724 .724 0 0 0 1.08 .448c2.439 -1.485 5.23 1.305 3.745 3.744a.724 .724 0 0 0 .447 1.08c2.775 .673 2.775 4.62 0 5.294a.724 .724 0 0 0 -.448 1.08c1.485 2.439 -1.305 5.23 -3.744 3.745a.724 .724 0 0 0 -1.08 .447c-.673 2.775 -4.62 2.775 -5.294 0a.724 .724 0 0 0 -1.08 -.448c-2.439 1.485 -5.23 -1.305 -3.745 -3.744a.724 .724 0 0 0 -.447 -1.08c-2.775 -.673 -2.775 -4.62 0 -5.294a.724 .724 0 0 0 .448 -1.08c-1.485 -2.439 1.305 -5.23 3.744 -3.745a.722 .722 0 0 0 1.08 -.447c.673 -2.775 4.62 -2.775 5.294 0zm-2.647 4.919a3 3 0 1 0 0 6a3 3 0 0 0 0 -6z" /></symbol>
+<symbol id="ic-transfer" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M19 3a3 3 0 0 1 1 5.83v4.17a6 6 0 0 1 -6 6h-.585l1.292 1.293a1 1 0 0 1 .083 1.32l-.083 .094a1 1 0 0 1 -1.414 0l-2.959 -2.959a1 1 0 0 1 -.238 -.32l-.038 -.091l-.028 -.094a.98 .98 0 0 1 .187 -.866l.076 -.084l3 -3a1 1 0 0 1 1.414 1.414l-1.293 1.293h.586a4 4 0 0 0 3.995 -3.8l.005 -.2v-4.171a3 3 0 0 1 -2 -2.829l.005 -.176a3 3 0 0 1 2.995 -2.824m-8.293 -.707l3 3a.98 .98 0 0 1 .263 .95l-.01 .031l-.003 .018l-.008 .018l-.007 .027l-.016 .035l-.01 .032l-.007 .01l-.005 .014a1 1 0 0 1 -.232 .316l-2.965 2.963a1 1 0 0 1 -1.32 .083l-.094 -.083a1 1 0 0 1 0 -1.414l1.291 -1.293h-.584a4 4 0 0 0 -3.995 3.8l-.005 .2v4.171a3.001 3.001 0 1 1 -4 2.829l.005 -.176a3 3 0 0 1 1.995 -2.654v-4.17a6 6 0 0 1 6 -6h.585l-1.292 -1.293a1 1 0 0 1 -.083 -1.32l.083 -.094a1 1 0 0 1 1.414 0" /></symbol>
+<symbol id="ic-dollar" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M17 3.34a10 10 0 1 1 -15 8.66l.005 -.324a10 10 0 0 1 14.995 -8.336zm-5 2.66a1 1 0 0 0 -1 1a3 3 0 1 0 0 6v2a1.024 1.024 0 0 1 -.866 -.398l-.068 -.101a1 1 0 0 0 -1.732 .998a3 3 0 0 0 2.505 1.5h.161a1 1 0 0 0 .883 .994l.117 .007a1 1 0 0 0 1 -1l.176 -.005a3 3 0 0 0 -.176 -5.995v-2c.358 -.012 .671 .14 .866 .398l.068 .101a1 1 0 0 0 1.732 -.998a3 3 0 0 0 -2.505 -1.501h-.161a1 1 0 0 0 -1 -1zm1 7a1 1 0 0 1 0 2v-2zm-2 -4v2a1 1 0 0 1 0 -2z" /></symbol>
+<symbol id="ic-mail" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M22 7.535v9.465a3 3 0 0 1 -2.824 2.995l-.176 .005h-14a3 3 0 0 1 -2.995 -2.824l-.005 -.176v-9.465l9.445 6.297l.116 .066a1 1 0 0 0 .878 0l.116 -.066l9.445 -6.297z" /><path d="M19 4c1.08 0 2.027 .57 2.555 1.427l-9.555 6.37l-9.555 -6.37a2.999 2.999 0 0 1 2.354 -1.42l.201 -.007h14z" /></symbol>
+<symbol id="ic-alert" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 2c5.523 0 10 4.477 10 10a10 10 0 0 1 -19.995 .324l-.005 -.324l.004 -.28c.148 -5.393 4.566 -9.72 9.996 -9.72zm.01 13l-.127 .007a1 1 0 0 0 0 1.986l.117 .007l.127 -.007a1 1 0 0 0 0 -1.986l-.117 -.007zm-.01 -8a1 1 0 0 0 -.993 .883l-.007 .117v4l.007 .117a1 1 0 0 0 1.986 0l.007 -.117v-4l-.007 -.117a1 1 0 0 0 -.993 -.883z" /></symbol>
+<symbol id="ic-channelpage" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M18 3a3 3 0 0 1 2.995 2.824l.005 .176v12a3 3 0 0 1 -2.824 2.995l-.176 .005h-12a3 3 0 0 1 -2.995 -2.824l-.005 -.176v-12a3 3 0 0 1 2.824 -2.995l.176 -.005h12zm1 6h-14v9a1 1 0 0 0 .883 .993l.117 .007h12a1 1 0 0 0 .993 -.883l.007 -.117v-9z" /></symbol>
+<symbol id="ic-tax" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M17 2a3 3 0 0 1 3 3v16a1 1 0 0 1 -1.555 .832l-2.318 -1.545l-1.42 1.42a1 1 0 0 1 -1.32 .083l-.094 -.083l-1.293 -1.292l-1.293 1.292a1 1 0 0 1 -1.32 .083l-.094 -.083l-1.421 -1.42l-2.317 1.545l-.019 .012l-.054 .03l-.028 .017l-.054 .023l-.05 .023l-.049 .015l-.06 .019l-.052 .009l-.057 .011l-.084 .006l-.026 .003h-.022l-.049 -.003h-.039l-.013 -.003h-.016l-.041 -.008l-.038 -.005l-.015 -.005l-.018 -.002l-.034 -.011l-.04 -.01l-.019 -.007l-.015 -.004l-.029 -.013l-.04 -.015l-.021 -.011l-.013 -.005l-.028 -.016l-.036 -.018l-.014 -.01l-.018 -.01l-.038 -.027l-.022 -.014l-.01 -.009l-.02 -.014l-.045 -.041l-.012 -.008l-.024 -.024l-.035 -.039l-.02 -.02l-.007 -.011l-.011 -.012l-.032 -.045l-.02 -.025l-.012 -.019l-.03 -.054l-.017 -.028l-.023 -.054l-.023 -.05a1 1 0 0 1 -.034 -.108l-.01 -.057l-.01 -.053l-.009 -.132v-16a3 3 0 0 1 3 -3zm-2 12h-2a1 1 0 0 0 0 2h2a1 1 0 0 0 0 -2m0 -4h-6a1 1 0 0 0 0 2h6a1 1 0 0 0 0 -2m0 -4h-6a1 1 0 1 0 0 2h6a1 1 0 0 0 0 -2" /></symbol>
+<symbol id="ic-commentoss" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M5.821 4.91c3.899 -2.765 9.468 -2.539 13.073 .535c3.667 3.129 4.168 8.238 1.152 11.898c-2.841 3.447 -7.965 4.583 -12.231 2.805l-.233 -.101l-4.374 .931l-.04 .006l-.035 .007h-.018l-.022 .005h-.038l-.033 .004l-.021 -.001l-.023 .001l-.033 -.003h-.035l-.022 -.004l-.022 -.002l-.035 -.007l-.034 -.005l-.016 -.004l-.024 -.005l-.049 -.016l-.024 -.005l-.011 -.005l-.022 -.007l-.045 -.02l-.03 -.012l-.011 -.006l-.014 -.006l-.031 -.018l-.045 -.024l-.016 -.011l-.037 -.026l-.04 -.027l-.002 -.004l-.013 -.009l-.043 -.04l-.025 -.02l-.006 -.007l-.056 -.062l-.013 -.014l-.011 -.014l-.039 -.056l-.014 -.019l-.005 -.01l-.042 -.073l-.007 -.012l-.004 -.008l-.007 -.012l-.014 -.038l-.02 -.042l-.004 -.016l-.004 -.01l-.017 -.061l-.007 -.018l-.002 -.015l-.005 -.019l-.005 -.033l-.008 -.042l-.002 -.031l-.003 -.01v-.016l-.004 -.054l.001 -.036l.001 -.023l.002 -.053l.004 -.025v-.019l.008 -.035l.005 -.034l.005 -.02l.004 -.02l.018 -.06l.003 -.013l1.15 -3.45l-.022 -.037c-2.21 -3.747 -1.209 -8.391 2.413 -11.119z" /></symbol>
+<symbol id="ic-notifications" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M14.235 19c.865 0 1.322 1.024 .745 1.668a3.992 3.992 0 0 1 -2.98 1.332a3.992 3.992 0 0 1 -2.98 -1.332c-.552 -.616 -.158 -1.579 .634 -1.661l.11 -.006h4.471z" /><path d="M12 2c1.358 0 2.506 .903 2.875 2.141l.046 .171l.008 .043a8.013 8.013 0 0 1 4.024 6.069l.028 .287l.019 .289v2.931l.021 .136a3 3 0 0 0 1.143 1.847l.167 .117l.162 .099c.86 .487 .56 1.766 -.377 1.864l-.116 .006h-16c-1.028 0 -1.387 -1.364 -.493 -1.87a3 3 0 0 0 1.472 -2.063l.021 -.143l.001 -2.97a8 8 0 0 1 3.821 -6.454l.248 -.146l.01 -.043a3.003 3.003 0 0 1 2.562 -2.29l.182 -.017l.176 -.004z" /></symbol>
+<symbol id="ic-book" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12.088 4.82a10 10 0 0 1 9.412 .314a1 1 0 0 1 .493 .748l.007 .118v13a1 1 0 0 1 -1.5 .866a8 8 0 0 0 -8 0a1 1 0 0 1 -1 0a8 8 0 0 0 -7.733 -.148l-.327 .18l-.103 .044l-.049 .016l-.11 .026l-.061 .01l-.117 .006h-.042l-.11 -.012l-.077 -.014l-.108 -.032l-.126 -.056l-.095 -.056l-.089 -.067l-.06 -.056l-.073 -.082l-.064 -.089l-.022 -.036l-.032 -.06l-.044 -.103l-.016 -.049l-.026 -.11l-.01 -.061l-.004 -.049l-.002 -.068v-13a1 1 0 0 1 .5 -.866a10 10 0 0 1 9.412 -.314l.088 .044l.088 -.044z" /></symbol>
+<symbol id="ic-pencil" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M17.828 2a3 3 0 0 1 1.977 .743l.145 .136l1.171 1.17a3 3 0 0 1 .136 4.1l-.136 .144l-1.706 1.707l2.292 2.293a1 1 0 0 1 .083 1.32l-.083 .094l-4 4a1 1 0 0 1 -1.497 -1.32l.083 -.094l3.292 -3.293l-1.586 -1.585l-7.464 7.464a3.828 3.828 0 0 1 -2.474 1.114l-.233 .008c-.674 0 -1.33 -.178 -1.905 -.508l-1.216 1.214a1 1 0 0 1 -1.497 -1.32l.083 -.094l1.214 -1.216a3.828 3.828 0 0 1 .454 -4.442l.16 -.17l10.586 -10.586a3 3 0 0 1 1.923 -.873l.198 -.006zm0 2a1 1 0 0 0 -.608 .206l-.099 .087l-1.707 1.707l2.586 2.585l1.707 -1.706a1 1 0 0 0 .284 -.576l.01 -.131a1 1 0 0 0 -.207 -.609l-.087 -.099l-1.171 -1.171a1 1 0 0 0 -.708 -.293z" /></symbol>
+  </svg>
+
+  <!-- =============================================================== HEADER -->
+  <header class="header">
+    <div class="header__inner">
+      <div class="header__left">
+        <a href="index.html" class="logo">
+          <span class="sr-only">SubSub</span>
+          <img src="icons/subsublogo.webp" alt="SubSub" />
+        </a>
+        <a class="feedback-btn" href="#">
+          <!-- OutlineIconPencil -->
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path fill-rule="evenodd" clip-rule="evenodd" d="M15.8008 3.02686C17.0179 2.87628 18.2492 3.35782 19.5003 4.49682L19.5017 4.49813C20.757 5.64676 21.3285 6.81195 21.2428 7.99872C21.1599 9.1455 20.4728 10.1161 19.6893 10.917M19.6893 10.917L11.1297 19.6831C10.8884 19.9374 10.5635 20.1527 10.2555 20.3121C9.94348 20.4735 9.58261 20.6116 9.24382 20.6699L9.23861 20.6708L5.88102 21.2257C5.06682 21.3615 4.28606 21.1646 3.72987 20.6543C3.17447 20.1446 2.92904 19.4015 3.01996 18.6097L3.02023 18.6074L3.40785 15.3233C3.45287 14.9966 3.57827 14.643 3.72608 14.3364C3.87337 14.0308 4.07432 13.7067 4.31213 13.4618L4.31366 13.4602L12.8775 4.68975C13.6614 3.88852 14.6248 3.17237 15.8008 3.02686M14.0143 5.72996C14.0142 5.7301 14.0144 5.72983 14.0143 5.72996L5.45252 14.4983C5.45235 14.4985 5.4527 14.4981 5.45252 14.4983C5.36702 14.5866 5.24956 14.7574 5.14412 14.9762C5.04058 15.191 4.97839 15.3897 4.95974 15.5175L4.57504 18.7769C4.575 18.7773 4.57496 18.7776 4.57492 18.7779C4.53058 19.1664 4.65537 19.4171 4.80653 19.5558C4.95705 19.6939 5.21939 19.7998 5.61518 19.7338L5.61638 19.7336L8.97215 19.179C9.10282 19.1561 9.30416 19.0875 9.51774 18.977C9.73427 18.865 9.89715 18.7442 9.97869 18.6577L9.98803 18.6478L18.552 9.87736C19.2495 9.16447 19.637 8.51485 19.6819 7.89316C19.7239 7.31136 19.4767 6.5592 18.4275 5.59885C17.3841 4.64914 16.5972 4.45456 15.9993 4.52852C15.3605 4.60756 14.7114 5.01755 14.0143 5.72996Z" fill="currentColor"/>
+            <path fill-rule="evenodd" clip-rule="evenodd" d="M11.8966 5.92504C12.3235 5.86069 12.7235 6.14337 12.7901 6.55644C13.1834 8.99948 15.2326 10.8692 17.7803 11.1175C18.2102 11.1594 18.5236 11.5306 18.4803 11.9465C18.437 12.3625 18.0534 12.6657 17.6236 12.6238C14.3716 12.3069 11.7477 9.91757 11.2441 6.78949C11.1775 6.37642 11.4697 5.98939 11.8966 5.92504Z" fill="currentColor"/>
+          </svg>
+          <span>Leave feedback</span>
+        </a>
+      </div>
+
+      <div class="header__right">
+        <!-- AI sourcing: персиковая пилюля со спиннером (визуал взят у прод-DeepDataStatuses,
+             но текст — свой, про sourcing, чтобы не путать с активацией Deep Data), по ховеру —
+             поповер со списком коллекций в подборе. Скрыт по умолчанию; показывается из analytics.js. -->
+        <div class="dd" id="ddProcessing" hidden>
+          <button class="dd__pill" type="button" aria-haspopup="true">
+            <span class="dd__ico" aria-hidden="true">
+              <!-- FilledIconLoader: color #BD6414, circleColor #CB7E3959 -->
+              <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8" stroke="#CB7E3959" stroke-width="2"/><path d="M12 3C14.3869 3 16.6761 3.94821 18.364 5.63604C20.0518 7.32387 21 9.61305 21 12H19C19 10.1435 18.2625 8.36301 16.9497 7.05025C15.637 5.7375 13.8565 5 12 5V3Z" fill="#BD6414"/></svg>
+            </span>
+            <span class="dd__label">Sourcing channels…</span>
+            <span class="dd__count" data-dd-count hidden>1</span>
+          </button>
+          <div class="dd__pop" role="dialog" aria-label="Sourcing in progress">
+            <section class="dd__head">
+              <span class="dd__bar" aria-hidden="true"></span>
+              <div class="dd__headtxt">
+                <h3 class="dd__title">Sourcing in progress</h3>
+                <p class="dd__desc">We're finding channels for these collections. This can take a few minutes.</p>
+              </div>
+            </section>
+            <section class="dd__listwrap">
+              <ul class="dd__list" data-dd-list></ul>
+            </section>
+          </div>
+        </div>
+
+        <!-- Фоновая задача «транскрибация»: бейдж-пилюля в топбаре (по образцу прод-конвертации
+             «Converting», но indigo вместо оранжевого) + попап «File transcription» с прогрессом.
+             Скрыт по умолчанию; показывается из media.js при запуске транскрибации. -->
+        <div class="jobs" id="jobsTranscribe" hidden>
+          <button class="jobs__badge" type="button" data-jobs-toggle aria-haspopup="true" aria-expanded="false">
+            <svg class="jobs__spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.34-5.66"/><path d="M20 4v4h-4"/></svg>
+            <svg class="jobs__done-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>
+            <span class="jobs__label" data-jobs-label>Transcribing</span>
+            <span class="jobs__count" data-jobs-count>1</span>
+          </button>
+          <div class="jobs__panel" data-jobs-panel role="dialog" aria-label="File transcription" hidden>
+            <header class="jobs__head">
+              <p class="jobs__title">File transcription</p>
+              <button class="jobs__clear" type="button" data-jobs-clear>Clear all</button>
+            </header>
+            <div class="jobs__list" data-jobs-list></div>
+          </div>
+        </div>
+
+        <div class="balance-chip">
+          <!-- FilledIconWallet -->
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path fill-rule="evenodd" clip-rule="evenodd" d="M17.7689 8.3818H22C22 4.98459 19.9644 3 16.5156 3H7.48444C4.03556 3 2 4.98459 2 8.33847V15.6615C2 19.0154 4.03556 21 7.48444 21H16.5156C19.9644 21 22 19.0154 22 15.6615V15.3495H17.7689C15.8052 15.3495 14.2133 13.7975 14.2133 11.883C14.2133 9.96849 15.8052 8.41647 17.7689 8.41647V8.3818ZM17.7689 9.87241H21.2533C21.6657 9.87241 22 10.1983 22 10.6004V13.131C21.9952 13.5311 21.6637 13.8543 21.2533 13.8589H17.8489C16.8548 13.872 15.9855 13.2084 15.76 12.2643C15.6471 11.6783 15.8056 11.0736 16.1931 10.6122C16.5805 10.1509 17.1573 9.88007 17.7689 9.87241ZM17.92 12.533H18.2489C18.6711 12.533 19.0133 12.1993 19.0133 11.7877C19.0133 11.3761 18.6711 11.0424 18.2489 11.0424H17.92C17.7181 11.0401 17.5236 11.1166 17.38 11.255C17.2364 11.3934 17.1555 11.5821 17.1556 11.779C17.1555 12.1921 17.4964 12.5282 17.92 12.533ZM6.73778 8.3818H12.3822C12.8044 8.3818 13.1467 8.04812 13.1467 7.63649C13.1467 7.22487 12.8044 6.89119 12.3822 6.89119H6.73778C6.31903 6.89116 5.9782 7.2196 5.97333 7.62783C5.97331 8.04087 6.31415 8.37705 6.73778 8.3818Z" fill="currentColor"/>
+          </svg>
+          <span data-lv-wallet>$0.50</span>
+        </div>
+
+        <div class="notif" id="notif">
+          <button class="icon-btn notif__bell" type="button" id="notifBell" aria-label="Notifications" aria-haspopup="true" aria-expanded="false">
+            <!-- OutlineIconNotifications -->
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12.0183 3.66751C8.98413 3.66751 6.51829 6.13334 6.51829 9.16751V11.8167C6.51829 12.3758 6.27996 13.2283 5.99579 13.705L4.94163 15.4558C4.29079 16.5375 4.73996 17.7383 5.93163 18.1417C9.88246 19.4617 14.145 19.4617 18.0958 18.1417C19.205 17.775 19.6908 16.4642 19.0858 15.4558L18.0316 13.705C17.7566 13.2283 17.5183 12.3758 17.5183 11.8167V9.16751C17.5183 6.14251 15.0433 3.66751 12.0183 3.66751Z" stroke="currentColor" stroke-width="1.375" stroke-miterlimit="10" stroke-linecap="round"/>
+              <path d="M13.7142 3.93334C13.43 3.85084 13.1367 3.78667 12.8342 3.75C11.9542 3.64 11.1108 3.70417 10.3225 3.93334C10.5883 3.255 11.2483 2.77834 12.0183 2.77834C12.7883 2.77834 13.4483 3.255 13.7142 3.93334Z" stroke="currentColor" stroke-width="1.375" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M14.7683 18.4717C14.7683 19.9842 13.5308 21.2217 12.0183 21.2217C11.2666 21.2217 10.57 20.91 10.075 20.415C9.57998 19.92 9.26831 19.2233 9.26831 18.4717" stroke="currentColor" stroke-width="1.375" stroke-miterlimit="10"/>
+            </svg>
+            <span class="notif__badge" data-notif-count>2</span>
+          </button>
+
+          <!-- Панель нотификаций (поповер) — как в приложении: 370px, rounded-lg, тень -->
+          <div class="notif__panel" id="notifPanel" role="dialog" aria-label="Notifications" hidden>
+            <header class="notif__head">
+              <p class="notif__title">Notifications</p>
+              <button class="notif__closeall" type="button" data-notif-closeall>Close all</button>
+            </header>
+            <div class="notif__list" data-notif-list>
+
+              <!-- Нотификация «поделился файлом» (структура по референсу): иконка типа файла +
+                   «[Имя] shared [файл] with you.» + время. Экшны сохранены (Dismiss / View →
+                   медиа-библиотека, вкладка Shared media, открывает файл). Стили — как сейчас. -->
+              <article class="notif-item notif-item--file">
+                <span class="notif-item__fileicon">
+                  <svg viewBox="0 0 24 24" fill="none"><path d="M2 9H22M8 9.33333V20.6667M2 15H22M21 3H3C2.44771 3 2 3.44771 2 4V20C2 20.5523 2.44771 21 3 21H21C21.5523 21 22 20.5523 22 20V4C22 3.44771 21.5523 3 21 3Z" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" /></svg>
+                </span>
+                <div class="notif-item__main">
+                  <div class="notif-item__row">
+                    <p class="notif-item__text"><strong>Jon Card</strong> shared <strong>Team-Roster.xls</strong> with you.</p>
+                    <button class="notif-item__close" type="button" data-notif-dismiss aria-label="Dismiss">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+                    </button>
+                  </div>
+                  <p class="notif-item__time">17 mins ago</p>
+                  <div class="notif-item__actions">
+                    <button class="notif-item__act" type="button" data-notif-dismiss>Dismiss</button>
+                    <a aria-disabled="true" data-tip="Not included in this prototype" class="is-off notif-item__act notif-item__act--view" href="#">View</a>
+                  </div>
+                </div>
+              </article>
+
+              <article class="notif-item notif-item--file">
+                <span class="notif-item__fileicon">
+                  <svg viewBox="0 0 24 24" fill="none"><path d="M6 13.7754C6.62326 13.7754 7.2214 14.0222 7.66211 14.4629C8.10282 14.9036 8.34961 15.5017 8.34961 16.125C8.34961 16.7483 8.10282 17.3464 7.66211 17.7871C7.2214 18.2278 6.62326 18.4746 6 18.4746H4.97461V19.5C4.97461 19.626 4.92502 19.7469 4.83594 19.8359C4.74686 19.925 4.62598 19.9746 4.5 19.9746C4.37402 19.9746 4.25314 19.925 4.16406 19.8359C4.07498 19.7469 4.02539 19.626 4.02539 19.5V14.25C4.02539 14.124 4.07498 14.0031 4.16406 13.9141C4.25314 13.825 4.37402 13.7754 4.5 13.7754H6ZM12 13.7754C12.8222 13.7754 13.611 14.1013 14.1924 14.6826C14.7737 15.264 15.0996 16.0528 15.0996 16.875C15.0996 17.6972 14.7737 18.486 14.1924 19.0674C13.611 19.6487 12.8222 19.9746 12 19.9746H10.5C10.374 19.9746 10.2531 19.925 10.1641 19.8359C10.075 19.7469 10.0254 19.626 10.0254 19.5V14.25C10.0254 14.124 10.075 14.0031 10.1641 13.9141C10.2531 13.825 10.374 13.7754 10.5 13.7754H12ZM20.25 13.7754C20.376 13.7754 20.4969 13.825 20.5859 13.9141C20.675 14.0031 20.7246 14.124 20.7246 14.25C20.7246 14.376 20.675 14.4969 20.5859 14.5859C20.4969 14.675 20.376 14.7246 20.25 14.7246H17.7246V16.7754H19.5C19.626 16.7754 19.7469 16.825 19.8359 16.9141C19.925 17.0031 19.9746 17.124 19.9746 17.25C19.9746 17.376 19.925 17.4969 19.8359 17.5859C19.7469 17.675 19.626 17.7246 19.5 17.7246H17.7246V19.5C17.7246 19.626 17.675 19.7469 17.5859 19.8359C17.4969 19.925 17.376 19.9746 17.25 19.9746C17.124 19.9746 17.0031 19.925 16.9141 19.8359C16.825 19.7469 16.7754 19.626 16.7754 19.5V14.25C16.7754 14.124 16.825 14.0031 16.9141 13.9141C17.0031 13.825 17.124 13.7754 17.25 13.7754H20.25ZM10.9746 19.0254H12C12.5702 19.0254 13.1173 18.7987 13.5205 18.3955C13.9237 17.9923 14.1504 17.4452 14.1504 16.875C14.1504 16.3048 13.9237 15.7577 13.5205 15.3545C13.1173 14.9513 12.5702 14.7246 12 14.7246H10.9746V19.0254ZM4.97461 17.5254H6C6.3713 17.5254 6.72768 17.3778 6.99023 17.1152C7.25279 16.8527 7.40039 16.4963 7.40039 16.125C7.40039 15.7537 7.25279 15.3973 6.99023 15.1348C6.72768 14.8722 6.3713 14.7246 6 14.7246H4.97461V17.5254ZM14.25 2.52539L14.3428 2.53418C14.3731 2.54019 14.403 2.54871 14.4316 2.56055C14.4893 2.58439 14.5418 2.61997 14.5859 2.66406L19.8359 7.91406C19.88 7.95821 19.9156 8.0107 19.9395 8.06836C19.9632 8.12592 19.9746 8.18773 19.9746 8.25V10.5C19.9746 10.626 19.925 10.7469 19.8359 10.8359C19.7469 10.925 19.626 10.9746 19.5 10.9746C19.374 10.9746 19.2531 10.925 19.1641 10.8359C19.075 10.7469 19.0254 10.626 19.0254 10.5V8.72461H14.25C14.124 8.72461 14.0031 8.67502 13.9141 8.58594C13.825 8.49686 13.7754 8.37598 13.7754 8.25V3.47461H5.25C5.17707 3.47461 5.10724 3.50409 5.05566 3.55566C5.00409 3.60724 4.97461 3.67707 4.97461 3.75V10.5C4.97461 10.626 4.92502 10.7469 4.83594 10.8359C4.74686 10.925 4.62598 10.9746 4.5 10.9746C4.37402 10.9746 4.25314 10.925 4.16406 10.8359C4.07498 10.7469 4.02539 10.626 4.02539 10.5V3.75C4.02539 3.42511 4.15406 3.11352 4.38379 2.88379C4.61352 2.65406 4.92511 2.52539 5.25 2.52539H14.25ZM14.7246 7.77539H18.3535L14.7246 4.14551V7.77539Z" fill="currentColor" stroke="currentColor" stroke-width="0.2" /></svg>
+                </span>
+                <div class="notif-item__main">
+                  <div class="notif-item__row">
+                    <p class="notif-item__text"><strong>Katherine Moss</strong> shared <strong>Brand-Guidelines.pdf</strong> with you.</p>
+                    <button class="notif-item__close" type="button" data-notif-dismiss aria-label="Dismiss">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+                    </button>
+                  </div>
+                  <p class="notif-item__time">1 hour ago</p>
+                  <div class="notif-item__actions">
+                    <button class="notif-item__act" type="button" data-notif-dismiss>Dismiss</button>
+                    <a aria-disabled="true" data-tip="Not included in this prototype" class="is-off notif-item__act notif-item__act--view" href="#">View</a>
+                  </div>
+                </div>
+              </article>
+
+              <!-- Обычная нотификация (как сейчас: заголовок + описание + таймстемп + крестик) -->
+              <article class="notif-item">
+                <div class="notif-item__main">
+                  <div class="notif-item__row">
+                    <p class="notif-item__title">Payout completed</p>
+                    <button class="notif-item__close" type="button" data-notif-dismiss aria-label="Dismiss">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+                    </button>
+                  </div>
+                  <p class="notif-item__desc">Your $0.50 payout has been sent to your connected wallet.</p>
+                  <p class="notif-item__time">14 Jul 2026</p>
+                </div>
+              </article>
+
+              <article class="notif-item">
+                <div class="notif-item__main">
+                  <div class="notif-item__row">
+                    <p class="notif-item__title">Content Export is ready</p>
+                    <button class="notif-item__close" type="button" data-notif-dismiss aria-label="Dismiss">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+                    </button>
+                  </div>
+                  <p class="notif-item__desc">Your catalog export finished and is available to download.</p>
+                  <p class="notif-item__time">13 Jul 2026</p>
+                </div>
+              </article>
+
+            </div>
+          </div>
+        </div>
+
+        <button class="user-chip" type="button">
+          <span class="sr-only">User menu</span>
+          <span class="user-chip__avatar">
+            <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4Zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4Z"/>
+            </svg>
+          </span>
+          <span class="user-chip__meta">
+            <span class="user-chip__name">Yevhenii Zemskov</span>
+            <span class="user-chip__role">Personal</span>
+          </span>
+          <!-- OutlineIconChevronDown -->
+          <svg viewBox="0 0 16 8" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path fill-rule="evenodd" clip-rule="evenodd" d="M0.180571 0.26192C0.450138 -0.0525743 0.923613 -0.0889955 1.23811 0.180571L7.75001 5.76221L14.2619 0.180572C14.5764 -0.0889949 15.0499 -0.0525737 15.3195 0.261921C15.589 0.576415 15.5526 1.04989 15.2381 1.31946L8.23811 7.31946C7.95724 7.5602 7.54279 7.5602 7.26192 7.31946L0.26192 1.31946C-0.0525743 1.04989 -0.0889955 0.576414 0.180571 0.26192Z" fill="currentColor"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ============================================================== SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <section class="sidebar__wrap">
+      <!-- узкая колонка: Home (закреплён) + radio-группа пространств -->
+      <div class="sidebar__col">
+        <div class="sidebar__home">
+          <a class="sidebar-item sidebar-item--home" href="index.html">
+            <span class="sidebar-item__chip">
+              <!-- FilledIconHome -->
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M4 18.96V9.92057C4 9.65434 4.06552 9.40232 4.19657 9.16451C4.32762 8.9267 4.50819 8.73084 4.73829 8.57693L10.8926 4.33591C11.2149 4.11197 11.5829 4 11.9966 4C12.4103 4 12.7806 4.11197 13.1074 4.33591L19.2617 8.57589C19.4926 8.7298 19.6731 8.92601 19.8034 9.16451C19.9345 9.40232 20 9.65434 20 9.92057V18.96C20 19.2387 19.8861 19.4817 19.6583 19.689C19.4305 19.8963 19.1634 20 18.8571 20H14.9897C14.7276 20 14.5082 19.9196 14.3314 19.7587C14.1547 19.5972 14.0663 19.3975 14.0663 19.1597V14.2001C14.0663 13.9623 13.9779 13.7629 13.8011 13.6021C13.6236 13.4405 13.4042 13.3598 13.1429 13.3598H10.8571C10.5958 13.3598 10.3768 13.4405 10.2 13.6021C10.0225 13.7629 9.93371 13.9623 9.93371 14.2001V19.1607C9.93371 19.3985 9.84533 19.5979 9.66857 19.7587C9.49181 19.9196 9.27276 20 9.01143 20H5.14286C4.83657 20 4.56952 19.8963 4.34171 19.689C4.1139 19.4817 4 19.2387 4 18.96Z" fill="currentColor"/>
+              </svg>
+            </span>
+            <span class="sidebar-item__label">Home</span>
+          </a>
+        </div>
+
+        <hr class="sidebar__hr" />
+
+        <!-- radio-группа: клик по label чекает input (без навигации),
+             активность через :has(input:checked); показ саб-меню — nav.js -->
+        <ul class="sidebar__list">
+          <li>
+            <label class="sidebar-item" for="space-analytics">
+              <input class="sidebar-radio" type="radio" name="spaces-menu-type" id="space-analytics" value="analytics" />
+              <img src="icons/product_analytics.webp" alt="Analytics" />
+              <span class="sidebar-item__label">Analytics</span>
+            </label>
+          </li>
+          <li>
+            <label class="sidebar-item" for="space-fanfunding">
+              <input class="sidebar-radio" type="radio" name="spaces-menu-type" id="space-fanfunding" value="fanfunding" />
+              <img src="icons/product_fanfunding.webp" alt="Fan Funding" />
+              <span class="sidebar-item__label">Fan Funding</span>
+            </label>
+          </li>
+          <li>
+            <label class="sidebar-item" for="space-wallet">
+              <input class="sidebar-radio" type="radio" name="spaces-menu-type" id="space-wallet" value="wallet" />
+              <img src="icons/product_wallet.webp" alt="Wallet" />
+              <span class="sidebar-item__label">Wallet</span>
+            </label>
+          </li>
+          <li>
+            <label class="sidebar-item" for="space-network">
+              <input class="sidebar-radio" type="radio" name="spaces-menu-type" id="space-network" value="network" />
+              <img src="icons/product_network.webp" alt="Network" />
+              <span class="sidebar-item__label">Network</span>
+            </label>
+          </li>
+          <li>
+            <label class="sidebar-item" for="space-streams">
+              <input class="sidebar-radio" type="radio" name="spaces-menu-type" id="space-streams" value="streams" checked />
+              <img src="icons/product_live.webp" alt="Live" />
+              <span class="sidebar-item__label">Live</span>
+            </label>
+          </li>
+          <li>
+            <label class="sidebar-item" for="space-mediaLibrary">
+              <input class="sidebar-radio" type="radio" name="spaces-menu-type" id="space-mediaLibrary" value="mediaLibrary" />
+              <img src="icons/product_media_library.webp" alt="Media Library" />
+              <span class="sidebar-item__label">Media Library</span>
+            </label>
+          </li>
+          <li>
+            <label class="sidebar-item" for="space-content">
+              <input class="sidebar-radio" type="radio" name="spaces-menu-type" id="space-content" value="content" />
+              <img src="icons/product_contentexport.webp" alt="Content Export" />
+              <span class="sidebar-item__label">Content Export</span>
+            </label>
+          </li>
+          
+        </ul>
+      </div>
+
+      <!-- второе (саб-)меню: открывается по выбранному radio; контент-заглушка -->
+      <div class="submenu">
+        <!-- Кнопка «свернуть» (‹) на правом крае раскрытой панели, у её верха -->
+        <button class="toggle toggle--collapse" id="collapseBtn" type="button" aria-label="Collapse menu">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="toggle__icon">
+            <path fill-rule="evenodd" clip-rule="evenodd" d="M14.8 3L6 12L14.8 21L17 18.75L10.4 12L17 5.25L14.8 3Z" fill="currentColor"/>
+          </svg>
+        </button>
+        <div class="submenu__header">
+          <p class="submenu__title" id="submenuTitle">Live</p>
+          <span class="submenu__badge">enterprise</span>
+        </div>
+        <hr class="submenu__hr" />
+        <div class="submenu__body">
+          <!-- Пункты сняты с прода; иконки по маппингу MenuIcon.vue; ссылки-заглушки href=#. -->
+          <div class="submenu__menu" data-space="analytics" hidden><div class="m-list"><a class="m-item" href="#"><span class="m-ico"><svg><use href="#ic-rocket"></use></svg></span>Overview</a><div class="m-group"><span class="m-group__title"><span class="m-ico"><svg><use href="#ic-chart"></use></svg></span>Market insights</span><div class="m-group__items"><a aria-disabled="true" data-tip="Not included in this prototype" class="is-off m-item" href="#"><span class="m-ico"></span>Basic data</a><a aria-disabled="true" data-tip="Not included in this prototype" class="is-off m-item" data-m-lock="Deep data" href="#"><span class="m-ico"></span>Deep data</a><a class="m-item" data-m-lock="Real-time trends" href="#"><span class="m-ico"></span>Real-time trends</a></div></div><div class="m-group"><span class="m-group__title"><span class="m-ico"><svg><use href="#ic-chartpie"></use></svg></span>My performance</span><div class="m-group__items"><a class="m-item" href="#"><span class="m-ico"></span>Linked channels</a><div class="m-group"><span class="m-group__title"><span class="m-ico"></span>Data</span><div class="m-group__items"><a class="m-item" href="#"><span class="m-ico"></span>By channels</a><a class="m-item" href="#"><span class="m-ico"></span>By videos</a><a class="m-item" href="#"><span class="m-ico"></span>By tags</a></div></div><a class="m-item" href="#"><span class="m-ico"></span>Tag collections</a></div></div><a aria-disabled="true" data-tip="Not included in this prototype" class="is-off m-item" data-m-lock="Reports" href="#"><span class="m-ico"><svg><use href="#ic-document"></use></svg></span>Reports</a><a aria-disabled="true" data-tip="Not included in this prototype" class="is-off m-item" href="#"><span class="m-ico"><svg><use href="#ic-collections"></use></svg></span>My collections</a></div><a class="m-item m-bottom" href="#"><span class="m-ico"><svg><use href="#ic-book"></use></svg></span>Metrics glossary</a></div>
+          <div class="submenu__menu" data-space="fanfunding" hidden><div class="m-section-label">Pages</div><div class="m-switcher"><span class="m-switcher__avatar">Y</span><span class="m-switcher__name">Your page</span><svg viewBox="0 0 16 8" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M0.18 0.26C0.45-0.05 0.92-0.09 1.24 0.18L7.75 5.76 14.26 0.18C14.58-0.09 15.05-0.05 15.32 0.26 15.59 0.58 15.55 1.05 15.24 1.32L8.24 7.32C7.96 7.56 7.54 7.56 7.26 7.32L0.26 1.32C-0.05 1.05-0.09 0.58 0.18 0.26Z" fill="currentColor"/></svg></div><div class="m-list"><a class="m-item" href="#"><span class="m-ico"><svg><use href="#ic-rocket"></use></svg></span>Overview</a><a class="m-item" href="#"><span class="m-ico"><svg><use href="#ic-publicpage"></use></svg></span>Public page</a><a class="m-item" href="#"><span class="m-ico"><svg><use href="#ic-user"></use></svg></span>Account</a><a class="m-item" href="#"><span class="m-ico"><svg><use href="#ic-donate"></use></svg></span>Support</a><a class="m-item" href="#"><span class="m-ico"><svg><use href="#ic-membership"></use></svg></span>Membership</a><a class="m-item" href="#"><span class="m-ico"><svg><use href="#ic-subs"></use></svg></span>Audience</a><a class="m-item" href="#"><span class="m-ico"><svg><use href="#ic-widgets"></use></svg></span>Graphic widgets</a><a class="m-item" href="#"><span class="m-ico"><svg><use href="#ic-content"></use></svg></span>Content</a></div><button class="m-create" type="button"><svg class="m-create__ico"><use href="#ic-pencil"></use></svg>Create</button></div>
+          <div class="submenu__menu" data-space="wallet" hidden><div class="m-list"><a class="m-item" href="#"><span class="m-ico"><svg><use href="#ic-wallet"></use></svg></span>Balance</a><a class="m-item" href="#"><span class="m-ico"><svg><use href="#ic-moneyreceive"></use></svg></span>Payment methods</a></div></div>
+          <div class="submenu__menu" data-space="network" hidden><div class="m-list"><a class="m-item" href="#"><span class="m-ico"><svg><use href="#ic-rocket"></use></svg></span>Overview</a></div></div>
+          <div class="submenu__menu" data-space="streams"><div class="m-list"><a class="m-item" href="#"><span class="m-ico"><svg><use href="#ic-rocket"></use></svg></span>Overview</a><a class="m-item" href="live-streams.html"><span class="m-ico"><svg><use href="#ic-stream"></use></svg></span>Streams</a><a class="m-item is-current" href="live-playlists.html"><span class="m-ico"><svg><use href="#ic-collections"></use></svg></span>Playlists</a><a class="m-item" href="live-calendar.html"><span class="m-ico"><svg><use href="#ic-calendar"></use></svg></span>Calendar</a></div></div>
+          <div class="submenu__menu" data-space="mediaLibrary" hidden><div class="m-list"><a class="m-item" href="#"><span class="m-ico"><svg><use href="#ic-rocket"></use></svg></span>Overview</a><a aria-disabled="true" data-tip="Not included in this prototype" class="is-off m-item" href="#"><span class="m-ico"><svg><use href="#ic-folder"></use></svg></span>Files</a></div></div>
+          <div class="submenu__menu" data-space="content" hidden><div class="m-list"><a class="m-item" href="#"><span class="m-ico"><svg><use href="#ic-rocket"></use></svg></span>Overview</a></div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Кнопка «развернуть» (›) на правом крае узкой колонки:
+         видна в исходном состоянии и когда панель свёрнута -->
+    <button class="toggle toggle--expand" id="expandBtn" type="button" aria-label="Expand menu">
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="toggle__icon">
+        <path fill-rule="evenodd" clip-rule="evenodd" d="M14.8 3L6 12L14.8 21L17 18.75L10.4 12L17 5.25L14.8 3Z" fill="currentColor"/>
+      </svg>
+    </button>
+  </aside>
+
+  <!-- ================================================================= MAIN -->
+  <main class="main">
+    <section class="an-page" data-lv-playlists>
+      <header class="an-head an-head--between">
+        <div class="an-head__left">
+          <h1 class="an-title">Playlists</h1>
+          <span class="an-muted" data-lv-plcount></span>
+        </div>
+        <div class="an-head__btns">
+          <button class="an-btn an-btn--primary an-btn--small" type="button" data-lv-plnew><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5l0 14" /><path d="M5 12l14 0" /></svg>New playlist</button>
+        </div>
+      </header>
+
+      <div class="ml-toolbar">
+        <div class="an-search" style="max-width:360px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 10m-7 0a7 7 0 1 0 14 0a7 7 0 1 0 -14 0" /><path d="M21 21l-6 -6" /></svg><input class="an-search__input" type="text" placeholder="Search playlists" data-lv-plq aria-label="Search playlists" /></div>
+      </div>
+
+      <div class="lv-plgrid" data-lv-pltable></div>
+      <div data-lv-plempty hidden></div>
+    </section>
+  </main>
+  
+    <div class="an-modal" id="lvPicker"><div class="an-modal__overlay" data-lv-close></div>
+      <div class="an-modal__dialog an-modal__dialog--lg" role="dialog" aria-modal="true" aria-label="Select from media library">
+        <div class="an-modal__head">
+          <h3 class="an-modal__title">Select from media library</h3>
+          <button class="an-modal__x" type="button" data-lv-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6l-12 12" /><path d="M6 6l12 12" /></svg></button>
+        </div>
+        <div class="lv-pick">
+          <div class="lv-pick__bar">
+            <div class="an-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 10m-7 0a7 7 0 1 0 14 0a7 7 0 1 0 -14 0" /><path d="M21 21l-6 -6" /></svg><input class="an-search__input" type="text" placeholder="Search files and folders" data-lv-pickq aria-label="Search files and folders" /></div>
+            <button class="an-btn an-btn--secondary an-btn--small" type="button" data-lv-pickupload><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2" /><path d="M7 9l5 -5l5 5" /><path d="M12 4l0 12" /></svg>Upload video</button>
+            <input type="file" accept="video/*" multiple data-lv-pickfileinput hidden />
+          </div>
+          <div class="ml-crumbs" data-lv-pickcrumbs></div>
+          <div class="lv-pick__body" data-lv-picklist></div>
+        </div>
+        <div class="an-modal__foot lv-pick__foot">
+          <label class="lv-pick__only">
+            <span>Videos only</span>
+            <button class="lv-sw is-on" type="button" role="switch" aria-checked="true" data-lv-pickonly aria-label="Videos only"><span class="lv-sw__dot"></span></button>
+          </label>
+          <span class="lv-pick__spacer"></span>
+          <button class="an-btn an-btn--secondary an-btn--small" type="button" data-lv-close>Cancel</button>
+          <button class="an-btn an-btn--primary an-btn--small is-off" type="button" data-lv-pickadd aria-disabled="true" data-tip="Select at least one video">Add to queue</button>
+        </div>
+      </div>
+    </div>
+
+  <script>window.LIVE_FIXTURES = {"now":"2026-08-21T14:30:00+03:00","account":{"tz":"Europe/Kyiv","tzLabel":"EEST","plan":"Usage-based","hourRate":0.023,"customRate":false,"horizonDays":60,"balanceWarnHours":6,"profile":{"w":1920,"h":1080,"fps":30,"vcodec":"h264","acodec":"aac","ac":2,"ar":48000,"audio":true},"mode":"payg","modes":{"trial":{"kind":"hours","creditHours":10.4,"label":"Free credit"},"payg":{"kind":"money","balance":12.4},"org":{"kind":"money","balance":148.2,"shared":true,"orgName":"GenTech Studio"},"empty":{"kind":"money","balance":0}}},"channels":[{"id":"ch1","name":"Zems Racing","initial":"Z","color":"var(--color-avatar-1)","connected":true,"liveEnabled":true},{"id":"ch2","name":"Big Air Racing","initial":"B","color":"var(--color-avatar-3)","connected":true,"liveEnabled":true,"ytThumbError":"403"},{"id":"ch3","name":"GenTech Studio","initial":"G","color":"var(--color-avatar-5)","connected":true,"liveEnabled":true,"ytThumbError":"429"},{"id":"ch4","name":"Zems Shorts","initial":"Z","color":"var(--color-avatar-2)","connected":true,"liveEnabled":true},{"id":"ch5","name":"Racing Archive","initial":"R","color":"var(--color-avatar-6)","connected":false,"liveEnabled":true,"revoked":true},{"id":"ch6","name":"Zems Moto","initial":"Z","color":"var(--color-avatar-4)","connected":false,"liveEnabled":true},{"id":"ch7","name":"Chill Rides","initial":"C","color":"var(--color-avatar-5)","connected":false,"liveEnabled":false}],"files":[{"id":"f1","name":"Forza Chill Ride 01.mp4","sec":1420,"bytes":1027604480,"container":"mp4","state":"ready","q":{"w":1920,"h":1080,"fps":30,"vcodec":"h264","acodec":"aac","ac":2,"ar":48000,"audio":true},"cover":"covers/racing.svg"},{"id":"f2","name":"Forza Chill Ride 02.mp4","sec":1685,"bytes":1180696576,"container":"mp4","state":"ready","q":{"w":1920,"h":1080,"fps":30,"vcodec":"h264","acodec":"aac","ac":2,"ar":48000,"audio":true},"cover":"covers/racing.svg"},{"id":"f3","name":"Forza Chill Ride 03.mp4","sec":2120,"bytes":1503657984,"container":"mp4","state":"ready","q":{"w":1920,"h":1080,"fps":30,"vcodec":"h264","acodec":"aac","ac":2,"ar":48000,"audio":true},"cover":"covers/racing.svg"},{"id":"f4","name":"Night Ride Loop.mp4","sec":3600,"bytes":2361393152,"container":"mp4","state":"ready","q":{"w":1920,"h":1080,"fps":30,"vcodec":"h264","acodec":"aac","ac":2,"ar":48000,"audio":true},"cover":"covers/lofi.svg"},{"id":"f5","name":"Retro Cut 1080p.mp4","sec":900,"bytes":650117120,"container":"mp4","state":"ready","q":{"w":1920,"h":1080,"fps":30,"vcodec":"h264","acodec":"aac","ac":2,"ar":48000,"audio":true},"cover":"covers/speedrun.svg"},{"id":"f6","name":"Retro Cut 720p.mp4","sec":880,"bytes":325058560,"container":"mp4","state":"ready","q":{"w":1280,"h":720,"fps":30,"vcodec":"h264","acodec":"aac","ac":2,"ar":48000,"audio":true},"cover":"covers/speedrun.svg"},{"id":"f7","name":"Retro Cut 480p.mp4","sec":910,"bytes":188743680,"container":"mp4","state":"ready","q":{"w":854,"h":480,"fps":30,"vcodec":"h264","acodec":"aac","ac":2,"ar":48000,"audio":true},"cover":"covers/speedrun.svg"},{"id":"f8","name":"Archive 25fps.mp4","sec":1200,"bytes":734003200,"container":"mp4","state":"ready","q":{"w":1920,"h":1080,"fps":25,"vcodec":"h264","acodec":"aac","ac":2,"ar":48000,"audio":true},"cover":"covers/generic.svg"},{"id":"f9","name":"Archive Silent.mp4","sec":1000,"bytes":524288000,"container":"mp4","state":"ready","q":{"w":1920,"h":1080,"fps":30,"vcodec":"h264","acodec":null,"ac":0,"ar":0,"audio":false},"cover":"covers/generic.svg"},{"id":"f10","name":"Portrait Teaser.mp4","sec":45,"bytes":94371840,"container":"mp4","state":"ready","q":{"w":1080,"h":1920,"fps":30,"vcodec":"h264","acodec":"aac","ac":2,"ar":48000,"audio":true},"cover":"covers/chill.svg"},{"id":"f11","name":"Lofi Beats 01.mp4","sec":2400,"bytes":1394606080,"container":"mp4","state":"ready","q":{"w":1920,"h":1080,"fps":30,"vcodec":"h264","acodec":"aac","ac":2,"ar":48000,"audio":true},"cover":"covers/lofi.svg"},{"id":"f12","name":"Lofi Beats 02.mp4","sec":2380,"bytes":1352663040,"container":"mp4","state":"missing","q":{"w":1920,"h":1080,"fps":30,"vcodec":"h264","acodec":"aac","ac":2,"ar":48000,"audio":true},"cover":"covers/lofi.svg"},{"id":"f13","name":"Speedrun VOD.mp4","sec":5400,"bytes":3326083072,"container":"mp4","state":"ready","q":{"w":1920,"h":1080,"fps":30,"vcodec":"h264","acodec":"aac","ac":2,"ar":48000,"audio":true},"cover":"covers/speedrun.svg"},{"id":"f24","name":"Timelapse 12fps.mp4","sec":900,"bytes":188743680,"container":"mp4","state":"ready","q":{"w":1920,"h":1080,"fps":12,"vcodec":"h264","acodec":"aac","ac":2,"ar":48000,"audio":true}},{"id":"f25","name":"Podcast Cut 44.1k.mp4","sec":1300,"bytes":838860800,"container":"mp4","state":"ready","q":{"w":1920,"h":1080,"fps":30,"vcodec":"h264","acodec":"aac","ac":2,"ar":44100,"audio":true}},{"id":"f14","name":"Tech News 29.97.mp4","sec":1100,"bytes":671088640,"container":"mp4","state":"ready","q":{"w":1920,"h":1080,"fps":29.97,"vcodec":"h264","acodec":"aac","ac":2,"ar":48000,"audio":true},"cover":"covers/technews.svg"},{"id":"f15","name":"Processing Upload.mp4","sec":0,"bytes":536870912,"container":"mp4","state":"processing","q":null},{"id":"f16","name":"Broken Upload.mp4","sec":0,"bytes":134217728,"container":"mp4","state":"failed","q":null},{"id":"f17","name":"Chill Beats Mix.mp4","sec":3000,"bytes":1761607680,"container":"mp4","state":"ready","q":{"w":1920,"h":1080,"fps":30,"vcodec":"h264","acodec":"aac","ac":2,"ar":48000,"audio":true},"cover":"covers/chill.svg"},{"id":"f18","name":"Morning Drive.mp4","sec":2700,"bytes":1379926016,"container":"mp4","state":"ready","q":{"w":1920,"h":1080,"fps":30,"vcodec":"h264","acodec":"aac","ac":2,"ar":48000,"audio":true},"cover":"covers/morning.svg"},{"id":"f19","name":"Wall Loop 720.mp4","sec":1500,"bytes":668991488,"container":"mp4","state":"converting","q":{"w":1280,"h":720,"fps":30,"vcodec":"h264","acodec":"aac","ac":2,"ar":48000,"audio":true},"progress":40,"cover":"covers/speedrun.svg"},{"id":"f20","name":"Recap 720.mp4","sec":1800,"bytes":754974720,"container":"mp4","state":"convfail","q":{"w":1280,"h":720,"fps":30,"vcodec":"h264","acodec":"aac","ac":2,"ar":48000,"audio":true},"cover":"covers/generic.svg"},{"id":"f21","name":"Fresh Upload 40.mp4","sec":0,"bytes":775946240,"container":"mp4","state":"uploading","q":null,"progress":40},{"id":"f22","name":"Fresh Upload 80.mp4","sec":0,"bytes":1027604480,"container":"mp4","state":"uploading","q":null,"progress":80}],"folders":[{"id":"fold1","name":"Racing Stream","fileIds":["f1","f2","f3","f4"]},{"id":"fold2","name":"Retro Cuts","fileIds":["f5","f6","f7"]},{"id":"fold3","name":"Lo-fi","fileIds":["f11","f12","f17"]},{"id":"fold4","name":"Transcriptions","system":true,"fileIds":[]},{"id":"fold5","name":"Reports","system":true,"fileIds":[]},{"id":"fold6","name":"Analytics","system":true,"fileIds":[]}],"playlists":[{"id":"pl1","name":"Racing Marathon","items":[{"fileId":"f1","off":false},{"fileId":"f2","off":false},{"fileId":"f3","off":false},{"fileId":"f4","off":true}],"updated":"2026-08-19T10:30:00+03:00"},{"id":"pl2","name":"Highlights Mix","items":[{"fileId":"f5","off":false},{"fileId":"f6","off":false},{"fileId":"f7","off":false}],"updated":"2026-08-20T08:30:00+03:00"},{"id":"pl3","name":"Archive Mixed","items":[{"fileId":"f5","off":false},{"fileId":"f8","off":false},{"fileId":"f9","off":false}],"updated":"2026-08-18T12:30:00+03:00"},{"id":"pl4","name":"Lo-fi Nights","items":[{"fileId":"f11","off":false},{"fileId":"f12","off":false},{"fileId":"f17","off":false}],"updated":"2026-08-21T02:30:00+03:00"},{"id":"pl5","name":"Empty Set","items":[],"updated":"2026-08-21T08:30:00+03:00"},{"id":"pl6","name":"Tech News Replay","items":[{"fileId":"f5","off":false},{"fileId":"f14","off":false},{"fileId":"f25","off":false}],"updated":"2026-08-17T14:30:00+03:00"},{"id":"pl7","name":"Speedrun Archive","items":[{"fileId":"f13","off":false}],"updated":"2026-08-16T14:30:00+03:00"},{"id":"pl8","name":"Morning Drive","items":[{"fileId":"f18","off":false},{"fileId":"f17","off":false}],"updated":"2026-08-20T18:30:00+03:00"},{"id":"pl9","name":"Retro Wall Loop","items":[{"fileId":"f5","off":false},{"fileId":"f19","off":false}],"updated":"2026-08-21T11:30:00+03:00"},{"id":"pl10","name":"Autumn Recap","items":[{"fileId":"f5","off":false},{"fileId":"f20","off":false}],"updated":"2026-08-19T22:30:00+03:00"}],"streams":[{"id":"s1","name":"Forza Chill Ride","channelId":"ch1","ytThumb":true,"dest":{"mode":"connected"},"playlistId":"pl1","playback":{"loop":true,"shuffle":false},"backup":true,"status":"live","schedules":[{"id":"sl1","start":"2026-08-21T08:00:00+03:00","end":"2026-08-21T20:00:00+03:00","tz":"Europe/Kyiv","repeat":{"type":"none"}}],"onAir":{"fileId":"f2","passedSec":940},"viewers":128,"spentTotal":1.4,"metrics":{"views":842,"likes":91,"comments":12,"users":128,"rev":3.4},"runs":[{"id":"r1-3","index":3,"start":"2026-08-21T08:00:00+03:00","end":null,"spent":0.3,"events":[{"at":"2026-08-21T08:00:00+03:00","type":"scheduled","text":"Scheduled by You"},{"at":"2026-08-21T08:12:00+03:00","type":"live","text":"Went live"},{"at":"2026-08-21T11:24:00+03:00","type":"playlist","text":"Playlist changed — 1 added, 0 removed","author":"You"},{"at":"2026-08-21T13:30:00+03:00","type":"charged","text":"Charged $0.25"}]},{"id":"r1-2","index":2,"start":"2026-08-20T08:00:00+03:00","end":"2026-08-21T07:54:00+03:00","spent":1.1,"events":[{"at":"2026-08-20T08:00:00+03:00","type":"live","text":"Went live"},{"at":"2026-08-21T07:54:00+03:00","type":"stopped","text":"Stopped — schedule window ended"}]}]},{"id":"s2","name":"Retro Racing Marathon","channelId":"ch2","dest":{"mode":"connected"},"playlistId":"pl7","playback":{"loop":true,"shuffle":true},"backup":false,"status":"live","virtual_status":"stopping","schedules":[],"onAir":{"fileId":"f13","passedSec":3100},"viewers":47,"spentTotal":0.42,"metrics":{"views":1210,"likes":140,"comments":22,"users":47,"rev":2.1},"runs":[{"id":"r2-1","index":1,"start":"2026-08-21T11:18:00+03:00","end":null,"spent":0.07,"events":[{"at":"2026-08-21T11:18:00+03:00","type":"live","text":"Went live"}]}]},{"id":"s3","name":"Sunday Chill Stream","channelId":"ch3","cover":{"src":"covers/uploaded.svg","uploaded":true},"dest":{"mode":"connected"},"playlistId":"pl1","playback":{"loop":true,"shuffle":false},"backup":false,"status":"created","virtual_status":"scheduled","schedules":[{"id":"sl2","start":"2026-08-22T22:00:00+03:00","end":"2026-08-22T23:30:00+03:00","tz":"Europe/Kyiv","repeat":{"type":"weekly","days":["Sat"]}},{"id":"sl3","start":"2026-08-21T16:00:00+03:00","end":"2026-08-21T17:30:00+03:00","tz":"Europe/Kyiv","repeat":{"type":"daily"}}],"spentTotal":0,"metrics":{},"runs":[{"id":"r3-1","index":1,"start":null,"end":null,"spent":0,"events":[{"at":"2026-08-20T18:30:00+03:00","type":"created","text":"Created","author":"You"},{"at":"2026-08-20T18:30:00+03:00","type":"scheduled","text":"Scheduled"}]}]},{"id":"s4","name":"Hunt Showdown Highlights","channelId":"ch4","dest":{"mode":"connected"},"playlistId":"pl2","playback":{"loop":false,"shuffle":false},"backup":false,"status":"needs_conversion","schedules":[],"spentTotal":0,"metrics":{},"runs":[{"id":"r4-1","index":1,"start":null,"end":null,"spent":0,"events":[{"at":"2026-08-19T22:30:00+03:00","type":"created","text":"Created","author":"You"},{"at":"2026-08-19T23:30:00+03:00","type":"conversion_decided","text":"2 files need conversion"}]}]},{"id":"s5","name":"Weekend Warm-up","channelId":"ch4","dest":{"mode":"connected"},"playlistId":"pl7","playback":{"loop":true,"shuffle":false},"backup":false,"status":"ready","virtual_status":"starting","schedules":[{"id":"sl4","start":"2026-08-21T14:34:00+03:00","end":"2026-08-21T16:34:00+03:00","tz":"Europe/Kyiv","repeat":{"type":"none"}}],"spentTotal":0,"metrics":{},"runs":[{"id":"r5-1","index":1,"start":null,"end":null,"spent":0,"events":[{"at":"2026-08-21T14:27:00+03:00","type":"scheduled","text":"Start requested","author":"You"}]}]},{"id":"s6","name":"Night Lo-fi Loop","channelId":"ch3","dest":{"mode":"connected"},"playlistId":"pl4","playback":{"loop":true,"shuffle":true},"backup":false,"status":"live","schedules":[{"id":"sl5","start":"2026-08-21T05:30:00+03:00","end":"2026-08-21T15:30:00+03:00","tz":"Europe/Kyiv","repeat":{"type":"daily"}}],"onAir":{"fileId":"f11","passedSec":1750},"viewers":36,"spentTotal":0.31,"metrics":{"views":96,"likes":7,"comments":1,"users":12,"rev":0},"runs":[{"id":"r6-1","index":1,"start":"2026-08-21T05:30:00+03:00","end":null,"spent":0.21,"events":[{"at":"2026-08-21T05:30:00+03:00","type":"live","text":"Went live"}]}]},{"id":"s7","name":"Speedrun Archive","channelId":"ch3","dest":{"mode":"connected"},"playlistId":"pl7","playback":{"loop":true,"shuffle":false},"backup":false,"status":"stopped","stopReason":"schedule","schedules":[{"id":"sl6","start":"2026-08-14T12:30:00+03:00","end":"2026-08-15T00:30:00+03:00","tz":"Europe/Kyiv","repeat":{"type":"none"}}],"spentTotal":2.76,"metrics":{"views":1904,"likes":210,"comments":34,"users":66,"rev":7.1},"runs":[{"id":"r7-2","index":2,"start":"2026-08-14T12:30:00+03:00","end":"2026-08-15T00:30:00+03:00","spent":0.28,"events":[{"at":"2026-08-14T12:30:00+03:00","type":"live","text":"Went live"},{"at":"2026-08-15T00:30:00+03:00","type":"stopped","text":"Stopped — schedule window ended"}]},{"id":"r7-1","index":1,"start":"2026-08-13T12:30:00+03:00","end":"2026-08-14T00:30:00+03:00","spent":0.28,"events":[{"at":"2026-08-13T12:30:00+03:00","type":"live","text":"Went live"},{"at":"2026-08-14T00:30:00+03:00","type":"stopped","text":"Stopped by You","author":"You"}]}]},{"id":"s8","name":"Tech News Replay","channelId":"ch2","dest":{"mode":"manual","key":"abcd-1234-efgh-5678","link":"https://youtube.com/live/technews"},"playlistId":"pl6","playback":{"loop":false,"shuffle":false},"backup":false,"status":"stopped","stopReason":"youtube","schedules":[{"id":"sl7","start":"2026-08-20T12:30:00+03:00","end":"2026-08-20T15:00:00+03:00","tz":"Europe/Kyiv","repeat":{"type":"none"}}],"spentTotal":0.06,"metrics":{"views":34,"likes":2,"comments":0,"users":6,"rev":0},"runs":[{"id":"r8-1","index":1,"start":"2026-08-20T12:30:00+03:00","end":"2026-08-20T13:06:00+03:00","spent":0.01,"events":[{"at":"2026-08-20T12:30:00+03:00","type":"live","text":"Went live"},{"at":"2026-08-20T13:06:00+03:00","type":"stopped","text":"Stream ended on YouTube or the key is no longer valid"}]}]},{"id":"s9","name":"Chill Beats 24/7","channelId":"ch3","dest":{"mode":"connected"},"playlistId":"pl1","playback":{"loop":true,"shuffle":false},"backup":false,"status":"downloading","schedules":[],"spentTotal":0,"metrics":{},"runs":[{"id":"r9-1","index":1,"start":null,"end":null,"spent":0,"events":[{"at":"2026-08-21T14:06:00+03:00","type":"created","text":"Created","author":"You"}]}]},{"id":"s10","name":"Morning Drive Loop","channelId":"ch1","dest":{"mode":"connected"},"playlistId":"pl8","playback":{"loop":true,"shuffle":false},"backup":false,"status":"created","virtual_status":"scheduled","schedules":[{"id":"sl9","start":"2026-08-24T08:00:00+03:00","end":"2026-08-24T14:00:00+03:00","tz":"Europe/Kyiv","repeat":{"type":"weekdays"},"backToBack":{"on":true,"pauseMin":5,"maxCycles":3}}],"spentTotal":0,"metrics":{},"runs":[]},{"id":"s11","name":"Night Ride Loop","channelId":"ch1","dest":{"mode":"connected"},"playlistId":null,"fileId":"f4","playback":{"loop":true,"shuffle":false},"loopLimit":3,"backup":false,"status":"created","virtual_status":"scheduled","schedules":[{"id":"sl10","start":"2026-08-21T16:30:00+03:00","end":"2026-08-21T19:30:00+03:00","tz":"Europe/Kyiv","repeat":{"type":"none"}}],"spentTotal":0,"metrics":{},"runs":[]},{"id":"s12","name":"Retro Cuts Night","channelId":null,"dest":{"mode":"manual","key":"abcd-1234-efgh-5678","link":"https://youtube.com/live/retro","channelName":"Retro Cuts"},"playlistId":"pl8","playback":{"loop":false,"shuffle":false},"backup":false,"status":"created","schedules":[],"spentTotal":0,"metrics":{},"runs":[]},{"id":"s13","name":"Spring Promo Loop","channelId":"ch2","dest":{"mode":"connected"},"playlistId":"pl7","playback":{"loop":true,"shuffle":false},"backup":false,"status":"archived","schedules":[],"spentTotal":4.1,"metrics":{"views":5204,"likes":480,"comments":61,"users":190,"rev":18.2},"runs":[{"id":"r13-1","index":1,"start":"2026-07-23T10:30:00+03:00","end":"2026-07-24T10:30:00+03:00","spent":0.55,"events":[{"at":"2026-07-23T10:30:00+03:00","type":"live","text":"Went live"},{"at":"2026-07-24T10:30:00+03:00","type":"stopped","text":"Stopped by You","author":"You"},{"at":"2026-07-31T18:30:00+03:00","type":"archived","text":"Archived","author":"You"}]}]},{"id":"s14","name":"Retro Night Wall","channelId":"ch2","dest":{"mode":"connected"},"playlistId":"pl9","playback":{"loop":true,"shuffle":false},"backup":false,"status":"converting","schedules":[],"spentTotal":0,"metrics":{},"runs":[{"id":"r14-1","index":1,"start":null,"end":null,"spent":0,"events":[{"at":"2026-08-21T13:18:00+03:00","type":"conversion_decided","text":"Converting 1 of 2 files to 1080p"}]}]},{"id":"s15","name":"Autumn Recap","channelId":"ch4","dest":{"mode":"connected"},"playlistId":"pl10","playback":{"loop":false,"shuffle":false},"backup":false,"status":"conversion_failed","schedules":[],"spentTotal":0,"metrics":{},"runs":[{"id":"r15-1","index":1,"start":null,"end":null,"spent":0,"events":[{"at":"2026-08-20T22:30:00+03:00","type":"conversion_decided","text":"Converting 1 of 2 files to 1080p"},{"at":"2026-08-20T23:00:00+03:00","type":"blocked","text":"Conversion did not finish","code":"RUNPOD_TIMEOUT"}]}]},{"id":"s16","name":"City Lights Loop","channelId":"ch1","dest":{"mode":"connected"},"playlistId":"pl8","playback":{"loop":true,"shuffle":false},"backup":false,"status":"stopped","stopReason":"you","schedules":[],"spentTotal":0.91,"metrics":{"views":610,"likes":44,"comments":8,"users":51,"rev":1.2},"runs":[{"id":"r16-1","index":1,"start":"2026-08-17T10:30:00+03:00","end":"2026-08-19T01:30:00+03:00","spent":0.91,"events":[{"at":"2026-08-17T10:30:00+03:00","type":"live","text":"Went live"},{"at":"2026-08-19T01:30:00+03:00","type":"stopped","text":"Stopped by You","author":"You"}]}]},{"id":"s17","name":"Deep Focus Radio","channelId":"ch3","dest":{"mode":"connected"},"playlistId":"pl7","playback":{"loop":true,"shuffle":false},"backup":false,"status":"stopped","stopReason":"balance","schedules":[],"spentTotal":1.34,"metrics":{"views":980,"likes":71,"comments":9,"users":40,"rev":0.8},"runs":[{"id":"r17-1","index":1,"start":"2026-08-08T06:30:00+03:00","end":"2026-08-10T16:30:00+03:00","spent":1.34,"events":[{"at":"2026-08-08T06:30:00+03:00","type":"live","text":"Went live"},{"at":"2026-08-10T16:30:00+03:00","type":"blocked","text":"Balance ran out","code":"low_balance"},{"at":"2026-08-10T16:30:00+03:00","type":"stopped","text":"Stopped — balance ran out"}]}]},{"id":"s19","name":"Custom Queue Demo","channelId":"ch3","dest":{"mode":"connected"},"playlistId":null,"queue":[{"fileId":"f1","off":false},{"fileId":"f4","off":false},{"fileId":"f1","off":false}],"srcPl":null,"detached":false,"playback":{"loop":true,"shuffle":false},"backup":false,"status":"created","virtual_status":"scheduled","schedules":[{"id":"s19-1","start":"2026-08-22T20:30:00+03:00","end":"2026-08-22T23:30:00+03:00","tz":"Europe/Kyiv","repeat":{"type":"none"}}],"spentTotal":0,"metrics":{},"runs":[]},{"id":"s20","name":"Detached From Playlist","channelId":"ch3","dest":{"mode":"connected"},"playlistId":null,"queue":[{"fileId":"f1","off":false},{"fileId":"f2","off":false},{"fileId":"f3","off":false},{"fileId":"f7","off":false}],"srcPl":"pl1","detached":true,"playback":{"loop":true,"shuffle":false},"backup":false,"status":"created","virtual_status":null,"schedules":[],"spentTotal":0,"metrics":{},"runs":[]},{"id":"s21","name":"Uploads In Flight","channelId":"ch4","dest":{"mode":"connected"},"playlistId":null,"queue":[{"fileId":"f21","off":false},{"fileId":"f15","off":false},{"fileId":"f16","off":false},{"fileId":"f12","off":false},{"fileId":"f1","off":false}],"srcPl":null,"detached":false,"playback":{"loop":true,"shuffle":false},"backup":false,"status":"created","virtual_status":null,"schedules":[],"spentTotal":0,"metrics":{},"runs":[]},{"id":"s22","name":"Single File Queue","channelId":"ch1","dest":{"mode":"connected"},"playlistId":null,"queue":[{"fileId":"f4","off":false}],"srcPl":null,"detached":false,"playback":{"loop":true,"shuffle":false},"backup":false,"status":"created","virtual_status":null,"schedules":[],"spentTotal":0,"metrics":{},"runs":[]},{"id":"s23","name":"Shuffled Queue","channelId":"ch2","dest":{"mode":"connected"},"playlistId":null,"queue":[{"fileId":"f1","off":false},{"fileId":"f2","off":false},{"fileId":"f3","off":false}],"srcPl":null,"detached":false,"playback":{"loop":true,"shuffle":true},"backup":false,"status":"created","virtual_status":null,"schedules":[],"spentTotal":0,"metrics":{},"runs":[]},{"id":"s18","name":"Late Night Replay","channelId":"ch2","dest":{"mode":"connected"},"playlistId":"pl6","playback":{"loop":false,"shuffle":false},"backup":false,"status":"stopped","schedules":[],"spentTotal":0.2,"metrics":{"views":120,"likes":9,"comments":2,"users":14,"rev":0},"runs":[{"id":"r18-1","index":1,"start":"2026-08-03T16:30:00+03:00","end":"2026-08-04T01:30:00+03:00","spent":0.2,"events":[{"at":"2026-08-03T16:30:00+03:00","type":"live","text":"Went live"},{"at":"2026-08-04T01:30:00+03:00","type":"stopped","text":"Stopped"}]}]}],"notifications":{"telegram":{"state":"connected","account":"@zems"},"email":"zemskov@gen.tech","matrix":{"wentLive":{"on":[true,false,false]},"recovered":{"on":[true,false,false]},"stayedDown":{"on":[true,true,true],"locked":[true,false,false]},"autostartFail":{"on":[true,true,true],"locked":[true,false,false]},"finished":{"on":[true,false,false]},"backup":{"on":[true,true,true],"locked":[true,false,false]},"convFinished":{"on":[true,false,false]},"convFailed":{"on":[true,false,false]}}}};</script>
+  <script src="js/nav.js"></script>
+  <script src="js/live-icons.js"></script>
+  <script src="js/ui-kit.js"></script>
+  <script src="js/live.js"></script>
+</body>
+</html>
