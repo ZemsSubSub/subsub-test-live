@@ -126,7 +126,7 @@
     document.body.appendChild(t);
     return t;
   }
-  function tipShow(host) {
+  function tipShow(host, e) {
     var text = host.getAttribute("data-tip");
     if (!text) return;
     var tip = tipEl();
@@ -138,10 +138,17 @@
     if (actLabel) act.textContent = actLabel;
     tip.hidden = false;
     var r = host.getBoundingClientRect(), w = tip.offsetWidth, h = tip.offsetHeight;
+    // высокий якорь (подложка окна во весь день) или якорь, ушедший за экран: подсказка встаёт у курсора,
+    // иначе она уезжала к верху элемента далеко за пределы видимой области
+    if (e && typeof e.clientX === "number" && (r.height > 80 || r.top < 0 || r.bottom > window.innerHeight)) {
+      r = { left: e.clientX, right: e.clientX, width: 0, top: e.clientY - 10, bottom: e.clientY + 10, height: 20 };
+    }
     var left = Math.min(Math.max(8, r.left + r.width / 2 - w / 2), window.innerWidth - w - 8);
     var below = r.bottom + 10 + h < window.innerHeight;
+    var top = below ? r.bottom + 10 : r.top - h - 10;
+    top = Math.max(8, Math.min(top, window.innerHeight - h - 8));
     tip.style.left = Math.round(left) + "px";
-    tip.style.top = Math.round(below ? r.bottom + 10 : r.top - h - 10) + "px";
+    tip.style.top = Math.round(top) + "px";
     var arrow = tip.querySelector("[data-lv-tip-arrow]");
     arrow.style.left = Math.round(Math.min(Math.max(10, r.left + r.width / 2 - left - 4), w - 18)) + "px";
     arrow.style.top = below ? "-4px" : "";
@@ -159,7 +166,7 @@
 
   document.addEventListener("mouseover", function (e) {
     var host = e.target.closest && e.target.closest("[data-tip]");
-    if (host) { tipShow(host); return; }
+    if (host) { tipShow(host, e); return; }
     if (e.target.closest && e.target.closest("[data-lv-tip]")) { clearTimeout(tipT); return; }
     tipHide();
   });
