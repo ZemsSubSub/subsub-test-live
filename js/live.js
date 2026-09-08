@@ -4012,8 +4012,9 @@
       chips.innerHTML = CALV.statuses.map(function (st) {
         return chip("Status: " + (ST[st] ? ST[st].label : st), 'data-lv-calunchip="statuses:' + st + '"');
       }).join("") + (CALV.statuses.length ? '<button class="an-fchips__clear" type="button" data-lv-calclear>Clear all</button>' : "") +
-      (calAll() ? '<span class="an-hint">' + T.calAllRO + "</span>" : "");
-      chips.hidden = !CALV.statuses.length && !calAll();
+      // подпись про переключение канала имеет смысл, только когда есть каналы, на которые можно переключиться
+      (calAll() && calChans().length ? '<span class="an-hint">' + T.calAllRO + "</span>" : "");
+      chips.hidden = !CALV.statuses.length && !(calAll() && calChans().length);
     }
     // алерт остался один: нулевой баланс. Пересечений в расписании не бывает — их не дают создать
     var warn = document.querySelector("[data-lv-calwarn]");
@@ -4053,7 +4054,8 @@
             (liveNoWin.length
               ? '<p class="an-blank__text">“' + UI.esc(liveNoWin[0].name) + "” is live without a window, so it isn’t on the calendar.</p>"
               : "") +
-            '<div class="an-head__btns">' + btn("New stream", "primary", "data-lv-new") + "</div></div>";
+            '<div class="an-head__btns">' + (calChans().length ? "" : btn("Connect YouTube", "secondary", "data-lv-connectyt")) +
+              btn("New stream", "primary", "data-lv-new") + "</div></div>";
     }
 
     var listHost = document.querySelector("[data-lv-callist]");
@@ -4910,6 +4912,9 @@
       if (!free) { UI.toast("Every channel on this Google account is already connected."); return; }
       free.connected = true;
       S.connected = (S.connected || []).concat([free.id]); save();
+      // календарь стоял в обзоре только потому, что каналов не было: после подключения показываем новый канал
+      if (CALV && CALV.channel === "__all") { CALV.channel = null; S.calChannel = null; save(); }
+      if (PAGE === "calendar") renderCalendar();
       if (FORM) { FORM.destMode = "connected"; FORM.channelId = free.id; renderForm(); }
       else render();
       UI.toast("Channel connected — " + free.name + ".");
