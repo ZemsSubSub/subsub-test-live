@@ -4003,7 +4003,8 @@
         UI.selectValue({ label: curCh.label, avatar: curCh.avatar }), { label: "Channel" });
     }
     var tzWrap = document.querySelector("[data-lv-caltzwrap]");
-    if (tzWrap) tzWrap.innerHTML = selTrig("calTz", UI.selectValue({ label: tzShort(calTz()) }), { label: "Time zone" });
+    // в закрытом селекте только смещение: город с UTC не помещается, а в списке он и так рядом с каждым поясом
+    if (tzWrap) tzWrap.innerHTML = selTrig("calTz", UI.selectValue({ label: tzOffLabel(calTz()) }), { label: "Time zone" });
     var range = document.querySelector("[data-lv-calrange]");
     if (range) range.textContent = calPeriodLabel(r, fromMs, toMs);
     var chips = document.querySelector("[data-lv-calchips]");
