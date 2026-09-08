@@ -4231,6 +4231,8 @@ body.ce-ro .ce-table .an-tbody .an-tr > .an-td:last-child { display: none; }
 .lv-calbar__tot b { font-size: 15px; font-weight: 700; color: var(--color-black); font-variant-numeric: tabular-nums; }
 /* lv-calhead — период и масштаб календаря в шапке страницы, перед Filters; попап календаря позиционируется от этой обёртки */
 .lv-calhead { gap: 8px; }
+.lv-calhead .an-dr__field { height: 40px; min-width: 0; }
+.lv-calhead .an-select__trig { min-width: 0; width: auto; min-height: 40px; font-size: 14px; }
 .an-periodbar--panel .nc-seg { width: auto; flex: 0 0 auto; height: 38px; }
 .an-periodbar--panel .nc-seg__btn { padding: 0 14px; }
 .an-periodbar--panel .an-select__trig { min-width: 0; width: auto; min-height: 38px; font-size: 14px; }
