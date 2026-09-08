@@ -4017,8 +4017,8 @@
     }
     var chWrap = document.querySelector("[data-lv-calchanwrap]");
     if (chWrap) {
-      // один канал — выбирать нечего, селектор не показываем
-      chWrap.hidden = calChans().length < 2;
+      // селектор виден с первого подключённого канала: он показывает, чей календарь открыт, и даёт обзор всех
+      chWrap.hidden = !calChans().length;
       var host2 = chWrap.querySelector("[data-lv-calchansel]");
       var curCh = calAll()
         ? { label: "All channels" }
