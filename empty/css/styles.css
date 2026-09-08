@@ -4092,8 +4092,8 @@ body.ce-ro .ce-table .an-tbody .an-tr > .an-td:last-child { display: none; }
 .lv-bar--needconv { background: var(--color-yellow-20); color: var(--color-yellow-900); }
 .lv-bar--convfail { background: var(--color-red-shade-100); color: var(--color-red); }
 /* lv-bar--long — окно длиннее суток: полосатая подложка без заголовка под остальными полосами */
-.lv-bar--long, .lv-bar--long.is-past { display: none; left: 3px; right: 3px; z-index: 0; opacity: .45;
-  background-image: repeating-linear-gradient(135deg, transparent 0 10px, color-mix(in srgb, currentColor 30%, transparent) 10px 20px); }
+.lv-bar--long, .lv-bar--long.is-past { display: none; left: 3px; right: 3px; z-index: 0; opacity: .4;
+  background-image: repeating-linear-gradient(135deg, transparent 0 10px, color-mix(in srgb, currentColor 18%, transparent) 10px 20px); }
 .lv-bar--long.is-shown { display: flex; }
 .lv-bar--long:hover { opacity: .6; }
 /* is-narrow — узкая колонка при одновременных окнах: имя в одну строку с многоточием */

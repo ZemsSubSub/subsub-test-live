@@ -4042,7 +4042,7 @@
       empty.innerHTML = !none ? ""
         : '<div class="an-blank lv-empty"><span class="an-blank__ico"><svg><use href="#ic-calendar"></use></svg></span>' +
             '<p class="an-blank__title">Nothing scheduled in this period</p>' +
-            '<p class="an-blank__text">Click any slot to schedule a stream. You can plan up to ' + F.account.horizonDays + " days ahead.</p>" +
+            '<p class="an-blank__text">Drag across the grid to schedule a stream. You can plan up to ' + F.account.horizonDays + " days ahead.</p>" +
             // эфир без окна в сетку не попадает: иначе пустой календарь при живом эфире читается как ошибка
             (liveNoWin.length
               ? '<p class="an-blank__text">“' + UI.esc(liveNoWin[0].name) + "” is live without a window, so it isn’t on the calendar.</p>"
@@ -4453,8 +4453,16 @@
     tip.style.background = getComputedStyle(d.bar).color;
     tip.style.left = (e.clientX + 14) + "px"; tip.style.top = (e.clientY + 18) + "px";
   }
+  // Открытая карточка окна: нажатие на пустую сетку только закрывает её вместе с подложкой и не
+  // начинает протяжку; следующее нажатие работает как обычно (решение владельца 08.09).
   document.addEventListener("mousedown", function (e) {
-    if (PAGE === "calendar" && calAll()) return;        // обзор всех каналов — только чтение
+    if (PAGE !== "calendar") return;
+    var popOpen = document.querySelector("[data-lv-pop]:not([hidden])");
+    if (popOpen && !(e.target.closest && (e.target.closest("[data-lv-pop]") || e.target.closest("[data-lv-occ]")))) {
+      var onGrid = e.target.closest && (e.target.closest("[data-lv-calcells]") || e.target.closest(".lv-cal__mcell"));
+      if (onGrid) { closePop(); e.preventDefault(); return; }
+    }
+    if (calAll()) return;                                // обзор всех каналов — только чтение
     var grip = e.target.closest && e.target.closest("[data-lv-resize]");
     if (grip) { calDragStart(e, grip, "resize"); return; }
     var bar = e.target.closest && e.target.closest("[data-lv-occ]");
@@ -4496,7 +4504,8 @@
   }
   function calDrawEnd() {
     var d = DRAW; DRAW = null;
-    if (!d.moved || d.to === null) { if (d.ghost) d.ghost.remove(); calNewAt(d.date, d.from / 1440); return; }
+    // окно создаётся только протяжкой: простой клик по сетке ничего не заводит (решение владельца 08.09)
+    if (!d.moved || d.to === null) { if (d.ghost) d.ghost.remove(); return; }
     var a = Math.min(d.from, d.to), b = Math.max(d.from, d.to);
     if (b - a < 15) b = a + 15;
     var day0 = dayStartMs(d.date, calTz());
@@ -5003,9 +5012,7 @@
     // в недельной сетке окно создаёт протяжка (mouseup), клик здесь не нужен
     if (t.closest && t.closest("[data-lv-calcells]")) return;
     var mcell = t.closest && t.closest("[data-lv-calday]");
-    if (mcell && CALV.scale === "month" && !t.closest("[data-lv-occ]")) {
-      calNewAt(mcell.getAttribute("data-lv-calday"), 0.5); return;
-    }
+    if (mcell && CALV.scale === "month" && !t.closest("[data-lv-occ]")) return;   // в месяце окна не заводят кликом
     // ---- форма стрима
     var dm2 = t.closest && t.closest("[data-lv-destmode]");
     if (dm2) { FORM.destMode = dm2.getAttribute("data-lv-destmode"); renderForm(); return; }
