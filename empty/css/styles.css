@@ -4026,7 +4026,8 @@ body.ce-ro .ce-table .an-tbody .an-tr > .an-td:last-child { display: none; }
 .lv-cal__hours { position: relative; }
 .lv-cal__h { height: var(--lv-hour, 44px); border-top: 1px solid var(--color-shade-100); font-size: 11px; color: var(--color-shade-600); padding: 2px 4px; box-sizing: border-box;
   display: flex; justify-content: center; align-items: center; }   /* подписи часов по центру клетки */
-.lv-cal__cols { display: grid; }
+/* остаток высоты контейнера уходит строке часов, иначе он делился между шапкой и полосой длинных окон */
+.lv-cal__cols { display: grid; grid-template-rows: auto auto 1fr; }
 /* колонка — display: contents: шапки в первой строке сетки, полоса длинных окон во второй, часы в третьей */
 .lv-cal__col { display: contents; }
 .lv-cal__col > .lv-cal__colhead, .lv-cal__col > .lv-cal__cells { border-left: 1px solid var(--color-shade-200); }
