@@ -87,6 +87,29 @@
     // файл в наборе не выровнять: конвертация не спасёт, запуск заблокирован
     cant:       { label: "Not aligned" }
   };
+  // Фильтры статусов работают по группам, бейджи остаются подробными. Список фильтрует жизненный
+  // цикл стрима, проблемы контента собраны в «Needs attention»; календарь отвечает на четыре вопроса:
+  // что идёт сейчас, что запланировано, где проблема, что уже прошло (решение владельца 09.09).
+  var ATTENTION_KEYS = ["needconv", "converting", "convfail", "cant"];
+  var LIST_ST_GROUPS = [
+    { k: "draft", label: "Draft", keys: ["draft"] },
+    { k: "ready", label: "Ready to start", keys: ["ready"] },
+    { k: "scheduled", label: "Scheduled", keys: ["scheduled"] },
+    { k: "live", label: "Live", keys: ["live", "starting", "preparing", "stopping"] },
+    { k: "stopped", label: "Stopped", keys: ["stopped"] },
+    { k: "archived", label: "Archived", keys: ["archived"] },
+    { k: "attention", label: "Needs attention", keys: ATTENTION_KEYS }
+  ];
+  var CAL_ST_GROUPS = [
+    { k: "onair", label: "On air", keys: ["live", "starting", "preparing", "stopping"] },
+    { k: "scheduled", label: "Scheduled", keys: ["ready", "scheduled"] },
+    { k: "attention", label: "Needs attention", keys: ATTENTION_KEYS },
+    { k: "finished", label: "Finished", keys: ["stopped", "archived"] }
+  ];
+  function stGroup(groups, k) { return groups.filter(function (g) { return g.keys.indexOf(k) !== -1; })[0] || null; }
+  function stGroupLabel(groups, gk) { var g = groups.filter(function (x) { return x.k === gk; })[0]; return g ? g.label : gk; }
+  // в сохранённом состоянии могли остаться старые ключи-статусы: они больше не фильтруют ничего
+  S.filters.status = S.filters.status.filter(function (k) { return LIST_ST_GROUPS.some(function (g) { return g.k === k; }); });
   var ST_RAW = { draft: "draft", created: "ready", ready: "ready", processing: "preparing", downloading: "preparing",
     live: "live", stopped: "stopped", archived: "archived", needs_conversion: "needconv",
     converting: "converting", conversion_failed: "convfail" };
@@ -1091,7 +1114,8 @@
       var k = stKey(x);
       // архив по умолчанию скрыт: он появляется только явным фильтром
       if (k === "archived" && S.filters.status.indexOf("archived") === -1) return false;
-      if (S.filters.status.length && S.filters.status.indexOf(k) === -1) return false;
+      var g = stGroup(LIST_ST_GROUPS, k);
+      if (S.filters.status.length && (!g || S.filters.status.indexOf(g.k) === -1)) return false;
       if (S.filters.channels.length && S.filters.channels.indexOf(x.channelId) === -1) return false;
       if (!s) return true;
       var ch = chan(x.channelId);
@@ -1174,7 +1198,7 @@
     var chips = document.querySelector("[data-lv-chips]");
     if (chips) {
       chips.innerHTML = S.filters.status.map(function (st) {
-        return chip("Status: " + (ST[st] ? ST[st].label : st), 'data-lv-unchip="status:' + st + '"');
+        return chip("Status: " + stGroupLabel(LIST_ST_GROUPS, st), 'data-lv-unchip="status:' + st + '"');
       }).join("") + S.filters.channels.map(function (id) {
         var c = chan(id);
         return chip("Channel: " + (c ? c.name : id), 'data-lv-unchip="channels:' + id + '"');
@@ -1261,9 +1285,9 @@
   function filtersPopover(anchor) {
     var pop = popEl();
     pop.innerHTML = '<p class="lv-pop__t">Status</p>' +
-      Object.keys(ST).map(function (k) {
-        return '<div class="lv-pop__row"><span>' + ST[k].label + "</span>" +
-          UI.switchHtml('data-lv-f="status:' + k + '"', S.filters.status.indexOf(k) !== -1, ST[k].label) + "</div>";
+      LIST_ST_GROUPS.map(function (g) {
+        return '<div class="lv-pop__row"><span>' + g.label + "</span>" +
+          UI.switchHtml('data-lv-f="status:' + g.k + '"', S.filters.status.indexOf(g.k) !== -1, g.label) + "</div>";
       }).join("") +
       '<p class="lv-pop__t" style="margin-top:10px">Channel</p>' +
       F.channels.filter(function (c) { return c.connected; }).map(function (c) {
@@ -3941,7 +3965,8 @@
     var out = [];
     S.streams.forEach(function (s) {
       if (!calAll() && s.channelId !== calChannel()) return;
-      if (CALV.statuses.length && CALV.statuses.indexOf(stKey(s)) === -1) return;
+      var sg = stGroup(CAL_ST_GROUPS, stKey(s));
+      if (CALV.statuses.length && (!sg || CALV.statuses.indexOf(sg.k) === -1)) return;
       (s.schedules || []).forEach(function (sl) {
         expand(s, sl, rangeFromMs, rangeToMs).forEach(function (o) { out.push(o); });
       });
@@ -4010,7 +4035,7 @@
     var chips = document.querySelector("[data-lv-calchips]");
     if (chips) {
       chips.innerHTML = CALV.statuses.map(function (st) {
-        return chip("Status: " + (ST[st] ? ST[st].label : st), 'data-lv-calunchip="statuses:' + st + '"');
+        return chip("Status: " + stGroupLabel(CAL_ST_GROUPS, st), 'data-lv-calunchip="statuses:' + st + '"');
       }).join("") + (CALV.statuses.length ? '<button class="an-fchips__clear" type="button" data-lv-calclear>Clear all</button>' : "") +
       // подпись про переключение канала имеет смысл, только когда есть каналы, на которые можно переключиться
       (calAll() && calChans().length ? '<span class="an-hint">' + T.calAllRO + "</span>" : "");
@@ -4712,9 +4737,9 @@
     var pop = popEl();
     // канал теперь не фильтр, а режим просмотра — он живёт в шапке
     pop.innerHTML = '<p class="lv-pop__t">Status</p>' +
-      Object.keys(ST).map(function (k) {
-        return '<div class="lv-pop__row"><span>' + ST[k].label + "</span>" +
-          UI.switchHtml('data-lv-calf="statuses:' + k + '"', CALV.statuses.indexOf(k) !== -1, ST[k].label) + "</div>";
+      CAL_ST_GROUPS.map(function (g) {
+        return '<div class="lv-pop__row"><span>' + g.label + "</span>" +
+          UI.switchHtml('data-lv-calf="statuses:' + g.k + '"', CALV.statuses.indexOf(g.k) !== -1, g.label) + "</div>";
       }).join("") +
       '<div class="lv-pop__foot">' + btn("Clear all", "secondary", "data-lv-calclear") + "</div>";
     placePop(pop, anchor);
