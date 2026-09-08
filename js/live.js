@@ -4147,6 +4147,8 @@
     [].slice.call(host.querySelectorAll(".lv-bar[data-lv-occ]")).forEach(function (b) {
       var n = b.querySelector(".lv-bar__n");
       if (!n) return;
+      // короткое окно — одна строка «имя · время», как в системных календарях
+      b.classList.toggle("is-short", b.clientHeight < 30);
       var room = b.clientHeight - (b.querySelector(".lv-bar__c") ? 20 : 6);
       n.style.setProperty("--lvlines", String(Math.max(1, Math.min(8, Math.floor(room / 15)))));
     });
@@ -4168,7 +4170,7 @@
   // ---- недельный и дневной вид: ось времени слева, полосы по колонкам дней
   // Окно длиннее суток — подложка: полосатый фон на всю ширину колонки без заголовка, под
   // остальными полосами; длительность видна в подсказке и в карточке. В дорожках не участвует.
-  function occLong(o) { return o.end - o.start > DAYMS; }
+  function occLong(o) { return o.open || o.end - o.start > DAYMS; }
   function calLongBar(o, s, top, height, ro, past, contAfter) {
     var tip = s.name + " · " + UI.durHuman((o.end - o.start) / 1000) + " · " +
       UI.dt(new Date(o.start).toISOString(), calTz()).replace(",", "") + " → " + UI.dt(new Date(o.end).toISOString(), calTz()).replace(",", "");
@@ -4208,6 +4210,17 @@
         });
         var n = Math.max(1, lanes.length);
         g.items.forEach(function (o) { o._lanes = n; });
+        // Геометрия: полоса, начавшаяся заметно позже нижней, ложится каскадом со сдвигом 12 px и
+        // оставляет её заголовок видимым; начавшаяся почти вместе — делит ширину колонки, иначе от
+        // нижней осталась бы щель в одну букву. Порог — высота одной строки заголовка в минутах.
+        var nearMs = Math.max(30, Math.round(32 / (calHour() || 44) * 60)) * 60e3;
+        g.items.forEach(function (o) {
+          var under = g.items.filter(function (x) { return x._lane < o._lane && x.start < o.end && o.start < x.end; });
+          var near = under.some(function (x) { return o.start - x.start < nearMs; });
+          var base = under.reduce(function (m, x) { return x._pct > m._pct || (x._pct === m._pct && x._px > m._px) ? x : m; }, { _pct: 0, _px: 3 });
+          if (near) { o._pct = o._lane / n * 100; o._px = 3; }
+          else { o._pct = base._pct; o._px = base._px + (under.length ? 12 : 0); }
+        });
       });
       var bars = dayOcc.map(function (o) {
         var s = stream(o.streamId), ch = chan(s.channelId);
@@ -4218,13 +4231,14 @@
         if (occLong(o)) return calLongBar(o, s, top, height, ro, past, contAfter);
         var depth = o._lane || 0;
         return '<button class="lv-bar lv-bar--' + stKey(s) +
-          (ro ? " is-ro" : "") + (past ? " is-past" : "") + '" type="button" ' +
-          'style="top:' + top.toFixed(2) + "%;height:" + Math.max(2.2, height).toFixed(2) +
-          "%;left:" + (3 + depth * 12) + "px;right:3px;z-index:" + (1 + depth) + '" ' +
+          (ro ? " is-ro" : "") + (past ? " is-past" : "") + (depth ? " is-over" : "") + '" type="button" ' +
+          'style="top:' + top.toFixed(2) + "%;height:max(22px, " + height.toFixed(2) +
+          "%);left:calc(" + (o._pct || 0).toFixed(2) + "% + " + (o._px || 3) + "px);right:3px;z-index:" + (1 + depth) + '" ' +
           'data-lv-occ="' + o.streamId + "|" + o.slotId + "|" + o.occDate + '" ' +
           (ro ? ' data-tip="' + UI.esc(T.calAllRO) + '"' : past ? ' data-tip="' + UI.esc(T.pastRun) + '"' : "") +
           'aria-label="' + UI.esc(s.name + ", " + UI.dt(new Date(o.start).toISOString(), calTz())) + '">' +
           '<span class="lv-bar__n">' + (cont ? "↑ " : "") + UI.esc(s.name) + (contAfter ? " ↓" : "") + "</span>" +
+          '<span class="lv-bar__t">' + UI.time(new Date(o.start).toISOString(), calTz()) + "</span>" +
           // канал на полосе нужен только в обзоре: при одном канале он и так в шапке
           (ro
             ? '<span class="lv-bar__c">' + UI.esc(chanName(s)) +

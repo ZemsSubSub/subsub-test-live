@@ -4073,9 +4073,17 @@ body.ce-ro .ce-table .an-tbody .an-tr > .an-td:last-child { display: none; }
 .lv-bar--needconv { background: var(--color-yellow-20); color: var(--color-yellow-900); }
 .lv-bar--convfail { background: var(--color-red-shade-100); color: var(--color-red); }
 /* lv-bar--long — окно длиннее суток: полосатая подложка без заголовка под остальными полосами */
-.lv-bar--long, .lv-bar--long.is-past { left: 3px; right: 3px; z-index: 0; opacity: .55;
-  background-image: repeating-linear-gradient(135deg, transparent 0 7px, var(--color-white) 7px 14px); }
-.lv-bar--long:hover { opacity: .8; }
+.lv-bar--long, .lv-bar--long.is-past { left: 3px; right: 3px; z-index: 0; opacity: .5;
+  background-image: repeating-linear-gradient(135deg, transparent 0 6px, currentColor 6px 7px); }
+.lv-bar--long:hover { opacity: .7; }
+/* is-short — окно ниже двух строк: имя и время в одну строку, без метки повтора */
+.lv-bar__t { display: none; }
+.lv-bar.is-short { flex-direction: row; align-items: center; gap: 4px; padding: 0 6px; }
+.lv-bar.is-short .lv-bar__n { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 0 1 auto; min-width: 0; }
+.lv-bar.is-short .lv-bar__t { display: inline; flex: 0 0 auto; opacity: .8; }
+.lv-bar.is-short .lv-bar__c { display: none; }
+/* is-over — полоса поверх другой в каскаде: белая обводка отделяет её от нижней того же цвета */
+.lv-bar.is-over { box-shadow: 0 0 0 2px var(--color-white); }
 
 .lv-cal__month { display: flex; flex-direction: column; }
 .lv-cal__wds { display: grid; grid-template-columns: repeat(7, 1fr); border-bottom: 1px solid var(--color-shade-200); }
