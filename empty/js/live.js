@@ -4039,10 +4039,15 @@
       var none = !occ.length && !calRunningNoWindow().length;
       empty.hidden = !none;
       var liveNoWin = calRunningNoWindow();
+      // протяжка доступна только при выбранном канале и хотя бы одном стриме: подсказка не обещает лишнего
+      var noStreams = !S.streams.length, canDraw = !calAll() && !noStreams;
+      var hint = noStreams ? "Create your first stream and it will appear here."
+        : canDraw ? "Drag across the grid to schedule a stream."
+        : "Pick a channel to schedule streams by dragging across the grid.";
       empty.innerHTML = !none ? ""
         : '<div class="an-blank lv-empty"><span class="an-blank__ico"><svg><use href="#ic-calendar"></use></svg></span>' +
-            '<p class="an-blank__title">Nothing scheduled in this period</p>' +
-            '<p class="an-blank__text">Drag across the grid to schedule a stream. You can plan up to ' + F.account.horizonDays + " days ahead.</p>" +
+            '<p class="an-blank__title">' + (noStreams ? "No streams yet" : "Nothing scheduled in this period") + "</p>" +
+            '<p class="an-blank__text">' + hint + " You can plan up to " + F.account.horizonDays + " days ahead.</p>" +
             // эфир без окна в сетку не попадает: иначе пустой календарь при живом эфире читается как ошибка
             (liveNoWin.length
               ? '<p class="an-blank__text">“' + UI.esc(liveNoWin[0].name) + "” is live without a window, so it isn’t on the calendar.</p>"
