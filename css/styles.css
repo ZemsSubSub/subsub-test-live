@@ -4076,7 +4076,7 @@ body.ce-ro .ce-table .an-tbody .an-tr > .an-td:last-child { display: none; }
 .lv-cal__draw__t { font-size: var(--text-callout-reg-14); font-weight: 500; color: var(--color-black); }
 .lv-cal__draw__w { font-size: var(--text-footnote-reg-12); color: var(--color-shade-800); }
 /* панель решения под заготовкой: окно, длительность, стрим и подтверждение */
-.lv-cal__drawbar { position: absolute; left: 3px; z-index: 6; display: flex; align-items: center; gap: 8px;
+.lv-cal__drawbar { position: fixed; z-index: 1200; display: flex; align-items: center; gap: 8px;
   padding: 6px; border-radius: 8px; background: var(--color-white); border: 1px solid var(--color-shade-200);
   box-shadow: 0 12px 32px rgba(0,0,0,.16); white-space: nowrap; }
 .lv-cal__drawbar__w { font-size: var(--text-callout-reg-14); color: var(--color-black); font-variant-numeric: tabular-nums; }

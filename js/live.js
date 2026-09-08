@@ -4206,15 +4206,26 @@
         .sort(function (a2, b2) { return a2.start - b2.start; })[0];
       return Object.assign({}, o, { end: next ? next.start : Math.max(rangeTo, o.start + DAYMS), endless: !next });
     });
+    // Запуски одного бесконечного правила стыкуются друг с другом (каждый идёт до следующего) —
+    // это один непрерывный эфир, а не цепочка суточных полос: склеиваем их в одну полосу и одну подложку.
+    var chained = [], lastOf = {};
+    occV.slice().sort(function (a2, b2) { return a2.start - b2.start; }).forEach(function (o) {
+      if (!(o.open && occLong(o))) { chained.push(o); return; }
+      var key = o.streamId + "|" + o.slotId, prev = lastOf[key];
+      if (prev && prev.end >= o.start) { prev.end = Math.max(prev.end, o.end); prev.endless = o.endless; return; }
+      lastOf[key] = o; chained.push(o);
+    });
+    occV = chained;
     var longs = occV.filter(occLong).sort(function (a2, b2) { return a2.start - b2.start; });
     var laneEnds = [];
     var topBars = longs.map(function (o) {
       var s = stream(o.streamId);
-      var li = 0; while (laneEnds[li] !== undefined && laneEnds[li] > o.start) li++;
-      laneEnds[li] = o.end;
       var c1 = r.days.indexOf(partsIn(Math.max(o.start, rangeFrom), calTz()).date);
       var c2 = r.days.indexOf(partsIn(Math.min(o.end, rangeTo) - 1, calTz()).date);
       if (c1 < 0) c1 = 0; if (c2 < 0) c2 = r.days.length - 1;
+      // строка полосы выбирается по колонкам дней: две полосы одной строки не делят колонку
+      var li = 0; while (laneEnds[li] !== undefined && laneEnds[li] >= c1) li++;
+      laneEnds[li] = c2;
       var before = o.start < rangeFrom, after = o.end >= rangeTo || o.endless;
       var tip = s.name + " · " + UI.dt(new Date(o.start).toISOString(), calTz()).replace(",", "") + " → " +
         (o.open ? T.openEndVal.toLowerCase() : UI.dt(new Date(o.end).toISOString(), calTz()).replace(",", "") + " · " + UI.durHuman((o.end - o.start) / 1000));
@@ -4520,15 +4531,26 @@
     var bar = DRAWN.bar || document.createElement("div");
     DRAWN.bar = bar;
     bar.className = "lv-cal__drawbar";
-    bar.style.top = "calc(" + DRAWN.ghost.style.top + " + " + DRAWN.ghost.style.height + " + 6px)";
     bar.innerHTML =
       '<span class="lv-cal__drawbar__w">' + UI.time(new Date(DRAWN.start).toISOString(), calTz()) +
         ' <span class="an-muted">→</span> ' + UI.time(new Date(DRAWN.end).toISOString(), calTz()) + "</span>" +
       '<span class="lv-cal__drawbar__d">' + UI.dur((DRAWN.end - DRAWN.start) / 1000) + "</span>" +
       btn("Create stream", "primary", "data-lv-drawadd") +
       '<button class="mc-more" type="button" data-lv-drawcancel aria-label="Discard the window">' + (IC.close || "") + "</button>";
-    if (!bar.parentNode) DRAWN.cells.appendChild(bar);
+    if (!bar.parentNode) document.body.appendChild(bar);
+    calDrawPlace();
   }
+  // Панель живёт у вьюпорта, а не в колонке: в крайней колонке или у нижнего края она иначе
+  // уезжала за край прокручиваемой сетки. Под заготовкой, если влезает, иначе над ней; всегда в экране.
+  function calDrawPlace() {
+    if (!DRAWN || !DRAWN.bar || !DRAWN.ghost) return;
+    var bar = DRAWN.bar, r = DRAWN.ghost.getBoundingClientRect(), w = bar.offsetWidth, h = bar.offsetHeight;
+    bar.style.left = Math.round(Math.max(12, Math.min(r.left, window.innerWidth - w - 12))) + "px";
+    var top = r.bottom + h + 12 <= window.innerHeight ? r.bottom + 6 : r.top - h - 6;
+    bar.style.top = Math.round(Math.max(12, Math.min(top, window.innerHeight - h - 12))) + "px";
+  }
+  document.addEventListener("scroll", function () { if (DRAWN) calDrawPlace(); }, true);
+  window.addEventListener("resize", function () { if (DRAWN) calDrawPlace(); });
   function calDrawDrop() {
     if (!DRAWN) return;
     if (DRAWN.ghost) DRAWN.ghost.remove();
