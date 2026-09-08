@@ -4328,9 +4328,11 @@ body.ce-ro .ce-table .an-tbody .an-tr > .an-td:last-child { display: none; }
 /* --- Модификаторы к общим примитивам: Live не заводит свои таблицы, теги и плашки --- */
 /* таблица на сетке: ширины колонок задаёт строка, оформление берём у an-table */
 .an-table--grid { width: auto; }
-.an-table--grid .an-tr { display: grid; align-items: stretch; width: 100%; min-width: 0; min-height: 64px; box-sizing: border-box;
-  border-bottom: 1px solid var(--color-shade-200); }
-.an-table--grid .an-tr:last-child { border-bottom: 0; }
+.an-table--grid .an-tr { display: grid; align-items: stretch; width: 100%; min-width: 0; min-height: 64px; box-sizing: border-box; }
+/* разделитель рисует каждая ячейка, а не строка: при боковой прокрутке строка шириной 100% заканчивалась раньше колонок */
+.an-table--grid .an-td { box-shadow: inset 0 -1px 0 var(--color-shade-200); }
+.an-table--grid .an-tr--avg { border-bottom: 0; }
+.an-table--grid .an-tr:last-child .an-td { box-shadow: none; }
 .an-table--grid .an-tr--head { min-height: 44px; }
 /* Заголовки колонок в таблицах Live без капса: он спорит с содержимым строк.
    Таблицы Analytics оставляем как есть — там заголовок фиксирован постановкой (ADR-0018). */
