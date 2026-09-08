@@ -381,7 +381,7 @@
     });
     var vis = selVisible();
     if (SEL.active >= vis.length) SEL.active = vis.length - 1;
-    if (SEL.active < 0) SEL.active = 0;
+    if (SEL.active < -1) SEL.active = -1;
     var rows = vis.length
       ? vis.map(function (o, i) {
           if (o.kind === "sep") return '<hr class="mc-menu__sep" />';
@@ -404,7 +404,7 @@
         UI.esc(cfg.search) + '" data-lv-selq aria-label="' + UI.esc(cfg.search) + '" value="' + UI.esc(q) + '" /></div>' : "") +
       '<div class="an-select__list" role="listbox" tabindex="-1" data-lv-sellist' +
         (cfg.label ? ' aria-label="' + UI.esc(cfg.label) + '"' : "") +
-        (vis.length ? ' aria-activedescendant="lvSelOpt' + SEL.active + '"' : "") + ">" + rows + "</div>";
+        (vis.length && SEL.active >= 0 ? ' aria-activedescendant="lvSelOpt' + SEL.active + '"' : "") + ">" + rows + "</div>";
     pop.hidden = false;
     // позиционирование по якорю; сторона — где больше места, список ужимается под него,
     // иначе попап прижимается к краю экрана и перекрывает сам триггер
@@ -430,9 +430,9 @@
   UI.select = function (trig, cfg) {
     if (UI.isOff(trig)) return;
     if (SEL && SEL.trig === trig) { UI.selectClose(); return; }
-    SEL = { trig: trig, cfg: cfg, opts: cfg.options.slice(), q: "", active: 0, buf: "", bufT: null };
-    var vis = selVisible();
-    for (var i = 0; i < vis.length; i++) if (vis[i].value === cfg.value) { SEL.active = i; break; }
+    // при открытии ни один пункт не подсвечен: подсветка «активного» выглядела как ховер без ховера;
+    // курсор появляется от стрелок или набора текста, выбранное значение и так отмечено галочкой
+    SEL = { trig: trig, cfg: cfg, opts: cfg.options.slice(), q: "", active: -1, buf: "", bufT: null };
     trig.setAttribute("aria-expanded", "true");
     selRender();
     var inp = document.querySelector("[data-lv-selq]");
@@ -467,7 +467,7 @@
   function selMove(delta) {
     var vis = selVisible();
     if (!vis.length) return;
-    var i = SEL.active;
+    var i = SEL.active < 0 ? (delta > 0 ? -1 : 0) : SEL.active;
     for (var step = 0; step < vis.length; step++) {
       i = (i + delta + vis.length) % vis.length;
       if (vis[i].kind !== "sep") break;
