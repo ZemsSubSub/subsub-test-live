@@ -4146,6 +4146,7 @@ body.ce-ro .ce-table .an-tbody .an-tr > .an-td:last-child { display: none; }
 
 .an-select__pop { padding: 6px; z-index: 1600; /* селект открывается и внутри модалок (1500) */ }
 .an-select__srch { padding: 4px 4px 8px; }
+.an-select__srch .an-input { display: block; width: 100%; height: 40px; font-size: 14px; }
 .an-select__srch .an-input { height: 40px; }
 .an-select__list { display: flex; flex-direction: column; gap: 2px; max-height: 300px; overflow-y: auto; outline: 0; }
 .an-select__opt { display: flex; align-items: center; gap: 10px; width: 100%; padding: 8px 10px; border: 0; border-radius: 8px; background: none; font-family: inherit; font-size: 14px; color: var(--color-black); text-align: left; cursor: pointer; }
