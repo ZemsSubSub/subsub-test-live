@@ -158,7 +158,7 @@
     notLive: "This stream is not live.",
     inProgress: "Action in progress.",
     draftStart: "Finish the setup to start.",
-    openEnd: "Loop has no limit — the stream runs until you stop it. Set a loop limit or switch to Play once for a fixed window.",
+    openEnd: "Loop has no limit — the stream runs until you stop it.",
     openEndVal: "Until you stop it",
     pastRun: "Past runs stay as history — only future runs can be changed.",
     draftOnly: "Finish the setup first.",
@@ -1012,7 +1012,7 @@
         act: b && b.act ? b.act : null,
         onClick: function () { running(s.status) ? askStop(s) : doStart(s); } },
       { label: "Edit", icon: IC.edit, off: !!why("edit", s), reason: why("edit", s),
-        onClick: function () { location.href = streamHref(s); } },
+        onClick: function () { location.href = "live-stream-create.html?id=" + encodeURIComponent(s.id); } },
       { label: "Start again", icon: IC.restart, off: !!why("startAgain", s), reason: why("startAgain", s),
         onClick: function () { askStartAgain(s); } },
       { label: "Duplicate", icon: IC.copy, off: !!why("duplicate", s), reason: why("duplicate", s),
@@ -3184,9 +3184,7 @@
             var c = channelBusy(pseudo0, sl);
             return '<div class="ai-grid lv-slot__row' + (c ? " lv-slot--conflict" : "") + '">' +
               field("Starts", dtField(sl, "start", pseudo0)) +
-              (formSlotOpen()
-                ? field("Ends", '<div class="an-input lv-ro">' + (sl.open ? T.openEndVal : UI.dt(sl.end, FORM.tz).replace(",", "")) + "</div>")
-                : field("Ends", dtField(sl, "end", pseudo0))) +
+              (formSlotOpen() ? "" : field("Ends", dtField(sl, "end", pseudo0))) +
               // правило повтора принадлежит слоту: у каждого окна своё
               field("Repeat",
                 '<div class="lv-frep">' + selTrig("slotRep",
