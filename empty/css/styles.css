@@ -1946,7 +1946,7 @@ body.is-open:not(.is-collapsed) .main { margin-left: 306px; }
 /* внешней плашки нет: карта шагов сама себе поверхность, шаг живёт на фоне страницы */
 .lv-wiz { display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 32px; }
 .lv-wiz__map { display: flex; flex-direction: column; gap: 28px; padding: 20px 24px 24px; border-radius: 12px;
-  background: linear-gradient(160deg, var(--color-purple-100), var(--color-yellow-100)); align-self: start; }
+  background: linear-gradient(160deg, var(--color-purple-100), var(--color-yellow-100)); align-self: start; position: sticky; top: 88px; }
 .lv-wiz__maptitle { margin: 0 0 -4px; font-size: var(--text-body-semi-16);
   font-weight: var(--text-body-semi-16--font-weight); color: var(--color-black); }
 .lv-wiz__st { position: relative; display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 16px;
