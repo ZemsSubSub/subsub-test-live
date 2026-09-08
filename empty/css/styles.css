@@ -4240,6 +4240,10 @@ body.ce-ro .ce-table .an-tbody .an-tr > .an-td:last-child { display: none; }
 .an-periodbar--panel .an-dr__field { height: 38px; }
 .lv-calbar__ctl[hidden] { display: none; }
 
+/* lv-calcard — панель календаря как шапка таблицы: одна карточка со стоимостью, видом, каналом и поясом сверху и сеткой снизу */
+.lv-calcard { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; border: 1px solid var(--color-shade-200); border-radius: 12px; background: var(--color-white); overflow: hidden; }
+.lv-calcard > .an-periodbar--panel { flex: 0 0 auto; border: 0; border-radius: 0; border-bottom: 1px solid var(--color-shade-200); padding: 10px 12px; }
+.lv-calcard .lv-cal, .lv-calcard .an-tablewrap--surface { border: 0; border-radius: 0; }
 .lv-calbody { position: relative; flex: 1 1 auto; min-height: 0; display: flex; }
 .lv-calnone { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none;  z-index: 7; }
 .lv-calnone[hidden] { display: none; }
