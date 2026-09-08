@@ -348,51 +348,51 @@
           <h1 class="an-title">Calendar</h1>
         </div>
         <div class="an-head__btns">
+          <div class="an-periodbar lv-calhead">
+            <div class="an-dr" data-lv-dr>
+              <div class="an-dr__field lv-perfield">
+                <button class="lv-per__nav" type="button" data-lv-calprev aria-label="Previous period"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6l6 6" /></svg></button>
+                <button class="lv-per__trig" type="button" data-lv-drtrig aria-haspopup="dialog" aria-expanded="false">
+                  <span class="an-dr__ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2v-12z" /><path d="M16 3v4" /><path d="M8 3v4" /><path d="M4 11h16" /><path d="M11 15h1" /><path d="M12 15v3" /></svg></span>
+                  <span class="an-dr__val" data-lv-calrange></span>
+                </button>
+                <button class="lv-per__nav" type="button" data-lv-calnext aria-label="Next period"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6l-6 6" /></svg></button>
+              </div>
+              <div class="an-dr__pop" data-lv-drpop hidden role="dialog" aria-label="Select period">
+                <aside class="an-dr__presets" data-lv-drpresets></aside>
+                <div class="an-dr__main">
+                  <div class="an-dr__nav">
+                    <button class="an-dr__arrow" type="button" data-lv-drprev aria-label="Previous month"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6l6 6" /></svg></button>
+                    <span class="an-dr__mon" data-lv-drmon="0"></span>
+                    <span class="an-dr__mon" data-lv-drmon="1"></span>
+                    <button class="an-dr__arrow" type="button" data-lv-drnext aria-label="Next month"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6l-6 6" /></svg></button>
+                  </div>
+                  <div class="an-dr__grids">
+                    <div class="an-dr__grid" data-lv-drgrid="0"></div>
+                    <div class="an-dr__grid" data-lv-drgrid="1"></div>
+                  </div>
+                  <div class="an-dr__foot">
+                    <input class="an-input an-dr__inp" type="text" data-lv-drfrom aria-label="From" placeholder="dd.mm.yyyy" />
+                    <span class="an-dr__dash">–</span>
+                    <input class="an-input an-dr__inp" type="text" data-lv-drto aria-label="To" placeholder="dd.mm.yyyy" />
+                    <span class="an-hint" data-lv-drnote hidden></span>
+                    <span class="an-dr__spacer"></span>
+                    <button class="an-btn an-btn--secondary an-btn--small" type="button" data-lv-drcancel>Cancel</button>
+                    <button class="an-btn an-btn--primary an-btn--small" type="button" data-lv-drapply>Apply</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <span class="lv-calbar__ctl" data-lv-calscalesel></span>
+          </div>
           <button class="an-btn an-btn--secondary an-btn--small" type="button" data-lv-calfilters><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v2.172a2 2 0 0 1 -.586 1.414l-4.414 4.414v7l-6 2v-8.5l-4.48 -4.928a2 2 0 0 1 -.52 -1.345v-2.227z" /></svg>Filters</button>
           <a class="an-btn an-btn--primary an-btn--small" href="live-stream-create.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5l0 14" /><path d="M5 12l14 0" /></svg>New stream</a>
         </div>
       </header>
 
       <div class="an-periodbar an-periodbar--panel">
-        <div class="an-head__btns">
-          <div class="an-dr" data-lv-dr>
-            <div class="an-dr__field lv-perfield">
-              <button class="lv-per__nav" type="button" data-lv-calprev aria-label="Previous period"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6l6 6" /></svg></button>
-              <button class="lv-per__trig" type="button" data-lv-drtrig aria-haspopup="dialog" aria-expanded="false">
-                <span class="an-dr__ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2v-12z" /><path d="M16 3v4" /><path d="M8 3v4" /><path d="M4 11h16" /><path d="M11 15h1" /><path d="M12 15v3" /></svg></span>
-                <span class="an-dr__val" data-lv-calrange></span>
-              </button>
-              <button class="lv-per__nav" type="button" data-lv-calnext aria-label="Next period"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6l-6 6" /></svg></button>
-            </div>
-            <div class="an-dr__pop" data-lv-drpop hidden role="dialog" aria-label="Select period">
-              <aside class="an-dr__presets" data-lv-drpresets></aside>
-              <div class="an-dr__main">
-                <div class="an-dr__nav">
-                  <button class="an-dr__arrow" type="button" data-lv-drprev aria-label="Previous month"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6l6 6" /></svg></button>
-                  <span class="an-dr__mon" data-lv-drmon="0"></span>
-                  <span class="an-dr__mon" data-lv-drmon="1"></span>
-                  <button class="an-dr__arrow" type="button" data-lv-drnext aria-label="Next month"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6l-6 6" /></svg></button>
-                </div>
-                <div class="an-dr__grids">
-                  <div class="an-dr__grid" data-lv-drgrid="0"></div>
-                  <div class="an-dr__grid" data-lv-drgrid="1"></div>
-                </div>
-                <div class="an-dr__foot">
-                  <input class="an-input an-dr__inp" type="text" data-lv-drfrom aria-label="From" placeholder="dd.mm.yyyy" />
-                  <span class="an-dr__dash">–</span>
-                  <input class="an-input an-dr__inp" type="text" data-lv-drto aria-label="To" placeholder="dd.mm.yyyy" />
-                  <span class="an-hint" data-lv-drnote hidden></span>
-                  <span class="an-dr__spacer"></span>
-                  <button class="an-btn an-btn--secondary an-btn--small" type="button" data-lv-drcancel>Cancel</button>
-                  <button class="an-btn an-btn--primary an-btn--small" type="button" data-lv-drapply>Apply</button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
         <div class="lv-calbar__tot"><span>Total cost</span><b data-lv-caltotal></b></div>
         <div class="lv-calbar__r">
-          <span class="lv-calbar__ctl" data-lv-calscalesel></span>
           <div class="nc-seg cc-seg" role="group" aria-label="View" data-lv-calviews></div>
           <span class="lv-calbar__ctl" data-lv-calchanwrap hidden><span data-lv-calchansel></span></span>
           <span class="lv-calbar__ctl" data-lv-caltzwrap></span>
