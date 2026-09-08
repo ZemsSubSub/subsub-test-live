@@ -4250,6 +4250,9 @@ body.ce-ro .ce-table .an-tbody .an-tr > .an-td:last-child { display: none; }
 .lv-calnone { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none;  z-index: 7; }
 .lv-calnone[hidden] { display: none; }
 .lv-empty__x { position: absolute; top: 12px; right: 12px; }
+/* кнопки пустого состояния календаря одной ширины: две равные колонки */
+.lv-calnone .lv-empty .an-head__btns { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; }
+.lv-calnone .lv-empty .an-head__btns .an-btn { width: 100%; }
 .lv-calnone .an-blank.lv-empty { position: relative; pointer-events: auto; max-width: 460px; border-radius: 14px;
   background: var(--color-white); box-shadow: 0 8px 30px rgba(0, 0, 0, .08); }
 .lv-calbody > .lv-cal { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
