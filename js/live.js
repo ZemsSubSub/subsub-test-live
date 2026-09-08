@@ -1819,7 +1819,9 @@
       var opts = F.channels.filter(function (c) { return c.connected; }).map(chanOpt);
       opts.push({ kind: "sep" });
       opts.push({ value: "__all", label: "All channels", sub: "Overview only — slots can’t be moved" });
+      opts.push({ value: "__connect", label: "Connect YouTube", kind: "action", icon: IC.youtube });
       return { value: calChannel(), options: opts, label: "Channel", onPick: function (v) {
+        if (v === "__connect") { ytConnectAsk(); return; }
         CALV.channel = v; S.calChannel = v; save(); renderCalendar();
       } };
     }
