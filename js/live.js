@@ -4166,6 +4166,18 @@
   }
 
   // ---- недельный и дневной вид: ось времени слева, полосы по колонкам дней
+  // Окно длиннее суток — подложка: полосатый фон на всю ширину колонки без заголовка, под
+  // остальными полосами; длительность видна в подсказке и в карточке. В дорожках не участвует.
+  function occLong(o) { return o.end - o.start > DAYMS; }
+  function calLongBar(o, s, top, height, ro, past, contAfter) {
+    var tip = s.name + " · " + UI.durHuman((o.end - o.start) / 1000) + " · " +
+      UI.dt(new Date(o.start).toISOString(), calTz()).replace(",", "") + " → " + UI.dt(new Date(o.end).toISOString(), calTz()).replace(",", "");
+    return '<button class="lv-bar lv-bar--' + stKey(s) + " lv-bar--long" + (ro ? " is-ro" : "") + (past ? " is-past" : "") + '" type="button" ' +
+      'style="top:' + top.toFixed(2) + "%;height:" + Math.max(2.2, height).toFixed(2) + '%" ' +
+      'data-lv-occ="' + o.streamId + "|" + o.slotId + "|" + o.occDate + '" data-tip="' + UI.esc(tip) + '" aria-label="' + UI.esc(tip) + '">' +
+      (ro || past || contAfter ? "" : '<span class="lv-bar__grip" data-lv-resize="' + o.streamId + "|" + o.slotId + '"></span>') +
+      "</button>";
+  }
   function calTime(r, occ, dim) {
     var ro = calAll();                     // обзор всех каналов: окна не двигаем
     var hours = "";
@@ -4175,10 +4187,12 @@
       var dFrom = dayStartMs(d, calTz()), dTo = dFrom + DAYMS;
       var dayOcc = occ.filter(function (o) { return o.start < dTo && o.end > dFrom; })
         .sort(function (a2, b2) { return a2.start - b2.start; });
-      // дорожки считаем внутри группы реально пересекающихся окон: одинокая полоса
-      // занимает всю ширину колонки, делят её только те, кому действительно тесно
+      // Наложения — каскадом, как в системных календарях: каждая следующая пересекающаяся полоса
+      // сдвинута вправо и лежит поверх предыдущей, правый край общий. Глубина каскада считается
+      // внутри группы реально пересекающихся окон; многодневные подложки в ней не участвуют.
+      var laneOcc = dayOcc.filter(function (o) { return !occLong(o); });
       var groups = [], cur = null;
-      dayOcc.forEach(function (o) {
+      laneOcc.forEach(function (o) {
         var st2 = Math.max(o.start, dFrom), en2 = Math.min(o.end, dTo);
         if (!cur || st2 >= cur.end) { cur = { end: en2, items: [o] }; groups.push(cur); }
         else { cur.items.push(o); cur.end = Math.max(cur.end, en2); }
@@ -4200,12 +4214,13 @@
         var top = Math.max(0, (o.start - dFrom) / DAYMS) * 100;
         var height = Math.min(100 - top, ((Math.min(o.end, dTo) - Math.max(o.start, dFrom)) / DAYMS) * 100);
         var cont = o.start < dFrom, contAfter = o.end > dTo;
-        var w = 100 / (o._lanes || 1), left = o._lane * w;
         var past = o.start <= nowMs();                 // запуск уже начался или прошёл — это история
+        if (occLong(o)) return calLongBar(o, s, top, height, ro, past, contAfter);
+        var depth = o._lane || 0;
         return '<button class="lv-bar lv-bar--' + stKey(s) +
           (ro ? " is-ro" : "") + (past ? " is-past" : "") + '" type="button" ' +
           'style="top:' + top.toFixed(2) + "%;height:" + Math.max(2.2, height).toFixed(2) +
-          "%;left:calc(" + left.toFixed(2) + "% + 3px);width:calc(" + w.toFixed(2) + '% - 6px)" ' +
+          "%;left:" + (3 + depth * 12) + "px;right:3px;z-index:" + (1 + depth) + '" ' +
           'data-lv-occ="' + o.streamId + "|" + o.slotId + "|" + o.occDate + '" ' +
           (ro ? ' data-tip="' + UI.esc(T.calAllRO) + '"' : past ? ' data-tip="' + UI.esc(T.pastRun) + '"' : "") +
           'aria-label="' + UI.esc(s.name + ", " + UI.dt(new Date(o.start).toISOString(), calTz())) + '">' +
@@ -4278,6 +4293,7 @@
             : UI.day(new Date(o.start).toISOString(), calTz()) === UI.day(new Date(o.end).toISOString(), calTz())
               ? UI.time(new Date(o.end).toISOString(), calTz())
               : UI.dt(new Date(o.end).toISOString(), calTz()))) +
+        kv("Duration", UI.durHuman(hours * 3600)) +
         kv("Playlist", UI.esc(pl ? pl.name : "—")) +
         kv(o.open ? "One day on air" : "Window cost", "≈" + UI.money(hours * rateNum(s))) +
         (o.rep !== "none" ? kv("Repeat", REP[o.rep] || o.rep) : "") +

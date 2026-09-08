@@ -4072,6 +4072,10 @@ body.ce-ro .ce-table .an-tbody .an-tr > .an-td:last-child { display: none; }
 .lv-bar--ready, .lv-bar--stopped, .lv-bar--stopping, .lv-bar--archived { background: var(--color-purple-100); color: var(--color-purple-900); }
 .lv-bar--needconv { background: var(--color-yellow-20); color: var(--color-yellow-900); }
 .lv-bar--convfail { background: var(--color-red-shade-100); color: var(--color-red); }
+/* lv-bar--long — окно длиннее суток: полосатая подложка без заголовка под остальными полосами */
+.lv-bar--long, .lv-bar--long.is-past { left: 3px; right: 3px; z-index: 0; opacity: .55;
+  background-image: repeating-linear-gradient(135deg, transparent 0 7px, var(--color-white) 7px 14px); }
+.lv-bar--long:hover { opacity: .8; }
 
 .lv-cal__month { display: flex; flex-direction: column; }
 .lv-cal__wds { display: grid; grid-template-columns: repeat(7, 1fr); border-bottom: 1px solid var(--color-shade-200); }
