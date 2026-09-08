@@ -78,6 +78,8 @@ button { font-family: inherit; }
 }
 .balance-chip svg { width: 24px; height: 24px; flex-shrink: 0; color: var(--color-black); }
 .balance-chip span { font-size: 14px; font-weight: 400; color: var(--color-black); }
+a.balance-chip { text-decoration: none; }
+a.balance-chip:hover { filter: brightness(.97); }
 
 .icon-btn {
   display: flex;
