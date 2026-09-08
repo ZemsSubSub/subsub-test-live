@@ -4247,7 +4247,8 @@ body.ce-ro .ce-table .an-tbody .an-tr > .an-td:last-child { display: none; }
 .lv-calbody { position: relative; flex: 1 1 auto; min-height: 0; display: flex; }
 .lv-calnone { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none;  z-index: 7; }
 .lv-calnone[hidden] { display: none; }
-.lv-calnone .an-blank.lv-empty { pointer-events: auto; max-width: 460px; border-radius: 14px;
+.lv-empty__x { position: absolute; top: 12px; right: 12px; }
+.lv-calnone .an-blank.lv-empty { position: relative; pointer-events: auto; max-width: 460px; border-radius: 14px;
   background: var(--color-white); box-shadow: 0 8px 30px rgba(0, 0, 0, .08); }
 .lv-calbody > .lv-cal { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
 .lv-calbody > .lv-cal[hidden] { display: none; }

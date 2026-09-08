@@ -4065,7 +4065,8 @@
     var empty = document.querySelector("[data-lv-calempty]");
     if (empty) {
       var none = !occ.length && !calRunningNoWindow().length;
-      empty.hidden = !none;
+      // крестик убирает карточку до перезагрузки страницы: сетка под ней остаётся рабочей
+      empty.hidden = !none || !!CALV.emptyDismissed;
       var liveNoWin = calRunningNoWindow();
       // протяжка доступна только при выбранном канале и хотя бы одном стриме: подсказка не обещает лишнего
       var noStreams = !S.streams.length, canDraw = !calAll() && !noStreams;
@@ -4073,7 +4074,9 @@
         : canDraw ? "Drag across the grid to schedule a stream."
         : "Pick a channel to schedule streams by dragging across the grid.";
       empty.innerHTML = !none ? ""
-        : '<div class="an-blank lv-empty"><span class="an-blank__ico"><svg><use href="#ic-calendar"></use></svg></span>' +
+        : '<div class="an-blank lv-empty">' +
+            '<button class="an-modal__x lv-empty__x" type="button" data-lv-calemptyclose aria-label="Close">' + (IC.close || "") + "</button>" +
+            '<span class="an-blank__ico"><svg><use href="#ic-calendar"></use></svg></span>' +
             '<p class="an-blank__title">' + (noStreams ? "No streams yet" : "Nothing scheduled in this period") + "</p>" +
             '<p class="an-blank__text">' + hint + " You can plan up to " + F.account.horizonDays + " days ahead.</p>" +
             // эфир без окна в сетку не попадает: иначе пустой календарь при живом эфире читается как ошибка
@@ -5027,6 +5030,7 @@
     if (t.closest && t.closest("[data-lv-drapply]")) { cdrApply(); return; }
     if (t.closest && t.closest("[data-lv-calfilters]")) { calFiltersPopover(t.closest("[data-lv-calfilters]")); return; }
     if (t.closest && t.closest("[data-lv-calclear]")) { CALV.statuses = []; closePop(); renderCalendar(); return; }
+    if (t.closest && t.closest("[data-lv-calemptyclose]")) { CALV.emptyDismissed = true; renderCalendar(); return; }
     var cun = t.closest && t.closest("[data-lv-calunchip]");
     if (cun) {
       var cp = cun.getAttribute("data-lv-calunchip").split(":");
