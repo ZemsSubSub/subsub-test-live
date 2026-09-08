@@ -4510,6 +4510,9 @@
       var onGrid = e.target.closest && (e.target.closest("[data-lv-calcells]") || e.target.closest(".lv-cal__mcell"));
       if (onGrid) { closePop(); e.preventDefault(); return; }
     }
+    // пока открыта карточка пустого состояния, сетка не рисует окна: сначала её закрывают крестиком
+    var emptyCard = document.querySelector("[data-lv-calempty]");
+    if (emptyCard && !emptyCard.hidden) return;
     if (calAll()) return;                                // обзор всех каналов — только чтение
     var grip = e.target.closest && e.target.closest("[data-lv-resize]");
     if (grip) { calDragStart(e, grip, "resize"); return; }
