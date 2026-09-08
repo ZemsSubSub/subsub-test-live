@@ -49,6 +49,11 @@
   if (!S.filters) S.filters = { status: [], channels: [] };
   // загруженные в демо файлы живут в состоянии, иначе после перезагрузки очередь осиротеет
   if (DEMO && S.extraFiles && S.extraFiles.length) F.files = F.files.concat(S.extraFiles);
+  // сконвертированные файлы: фикстуры получают сохранённый профиль и размер
+  Object.keys(S.conv || {}).forEach(function (id) {
+    var cf = F.files.filter(function (x) { return x.id === id; })[0];
+    if (cf) { cf.q = S.conv[id].q; if (S.conv[id].bytes) cf.bytes = S.conv[id].bytes; cf.state = "ready"; }
+  });
   // подключённые через консент каналы тоже живут в состоянии: флаг connected лежит в фикстурах
   (S.connected || []).forEach(function (id) { var c = chan(id); if (c) { c.connected = true; c.revoked = false; } });
   function save() { UI.storeSet(KEY, S); }
@@ -672,7 +677,7 @@
       var pl0 = content(s), prof0 = profileOf(pl0), n0 = 0;
       ((pl0 && pl0.items) || []).forEach(function (i) {
         var f = file(i.fileId);
-        if (!i.off && f && fileState(f, prof0) === "needconv") { f.state = "converting"; f.progress = 10 + (n0 * 25) % 60; n0++; }
+        if (!i.off && f && fileState(f, prof0) === "needconv") { convStart(f, prof0); n0++; }
       });
       var etaS = convEta(pl0);
       s.status = "processing"; s.virtual_status = null;
@@ -1447,8 +1452,7 @@
       var badge = (slim ? "" : fileFmt(f)) + fileBadge(f, profileOf(pl));
       var prog = isOnAir && s.onAir
         ? '<div class="lv-qr__bar"><i style="width:' + Math.round(100 * s.onAir.passedSec / (f.sec || 1)) + '%"></i></div>'
-        : f.state === "converting"
-          ? '<div class="lv-qr__bar lv-qr__bar--conv"><i style="width:' + (f.progress || 0) + '%"></i></div>' : "";
+        : "";                                       // конвертация видна бейджем с процентами, без полосы под строкой
       return '<div class="lv-qr' + (solo ? " is-solo" : "") + (i.off ? " is-off-file" : "") +
           (isOnAir ? " is-onair" : "") + (isNext ? " is-next" : "") +
           (f.state === "missing" ? " is-missing" : "") + '" data-lv-row="' + i.fileId + '"' +
@@ -2222,8 +2226,11 @@
       pl.items.forEach(function (i) {
         if (i.off) return;
         var f = file(i.fileId);
-        if (f && f.q && Math.min(f.q.w, f.q.h) !== sel && ["ready", "needconv"].indexOf(fileState(f, profileOf(pl))) !== -1) {
-          f.state = "converting"; f.progress = 15 + (n * 25) % 60; n++;
+        // в конвертацию идёт всё, что не совпадает с профилем цели: и другая ступень, и другая
+        // ориентация или частота при той же ступени
+        var stP = f ? fileState(f, profileOf(pl)) : "";
+        if (f && f.q && (stP === "needconv" || (stP === "ready" && Math.min(f.q.w, f.q.h) !== sel))) {
+          convStart(f, resProfile(sel, false)); n++;
         }
       });
       var real = pl.id ? playlist(pl.id) : null;
@@ -2931,9 +2938,41 @@
     renderForm();
     UI.toast("Upload started.");
   }
+  // Конвертация в прототипе действительно идёт: прогресс растёт по таймеру, в конце файл получает
+  // профиль цели (кадр, частота, кодеки, звук, битрейт в норме) и становится Ready. Результат
+  // хранится в состоянии, чтобы пережить перезагрузку. Пока файл конвертируется, страница
+  // перерисовывается, но не под руками у человека: с фокусом в поле ввода перерисовки нет.
+  var CONV_T = {}, CONV_MS = 6000;
+  function convStart(f, prof) {
+    if (!f || CONV_T[f.id]) return;
+    f.state = "converting"; f.progress = 0;
+    // прогресс считается от реального времени, а не от числа тиков: в фоновой вкладке таймеры душат
+    var startedAt = Date.now();
+    CONV_T[f.id] = setInterval(function () {
+      f.progress = Math.min(100, Math.round((Date.now() - startedAt) / CONV_MS * 100));
+      if (f.progress >= 100) { clearInterval(CONV_T[f.id]); delete CONV_T[f.id]; convDone(f, prof); }
+      convRedraw();
+    }, 500);
+  }
+  function convDone(f, prof) {
+    var rng = rateRangeFor(prof.row || resRow(prof.h, prof.w), fpsCol(prof.fps), prof.vert);
+    f.q = Object.assign({}, f.q || {}, { w: prof.w, h: prof.h, fps: prof.fps, vcodec: prof.vcodec,
+      acodec: prof.acodec, ac: prof.ac, ar: prof.ar, audio: prof.audio });
+    if (rng && f.sec) f.bytes = Math.round((rng[0] + rng[1]) / 2 * 1e6 / 8 * f.sec);
+    f.state = "ready"; delete f.progress;
+    S.conv = S.conv || {}; S.conv[f.id] = { q: f.q, bytes: f.bytes }; save();
+  }
+  // разметка пикера лежит в странице всегда, поэтому «пикер открыт» проверяется по видимости модалки
+  function pickerOpen() { var pk = document.getElementById("lvPicker"); return !!(PICK && pk && getComputedStyle(pk).display !== "none"); }
+  function convRedraw() {
+    var a = document.activeElement;
+    if (a && /^(INPUT|TEXTAREA)$/.test(a.tagName)) return;
+    if (pickerOpen()) { pickRender(); return; }
+    render();
+  }
   // прогресс загрузки видно там, где человек сейчас: в открытом пикере или в очереди мастера
   function uploadRedraw() {
-    if (PICK && document.querySelector("[data-lv-picklist]")) { pickRender(); return; }
+    if (pickerOpen()) { pickRender(); return; }
     if (PAGE === "form" && FORM) renderForm();
   }
   function formQueueTick(f) {

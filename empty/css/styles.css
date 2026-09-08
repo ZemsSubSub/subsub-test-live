@@ -4494,11 +4494,12 @@ body.ce-ro .ce-table .an-tbody .an-tr > .an-td:last-child { display: none; }
 .lv-target .nc-seg__btn { flex: 0 0 auto; height: 30px; padding: 0 10px; }
 /* ориентация: тумблер своей строкой под ступенями качества */
 .lv-qfoot .lv-card__sub { font-variant-numeric: tabular-nums; }
-.lv-wiz .lv-qr { grid-template-columns: 24px 18px 40px minmax(0, 1fr) 58px 78px 128px 40px 32px;
+.lv-wiz .lv-qr { grid-template-columns: 24px 18px 40px minmax(0, 1fr) 64px 84px 128px 40px 32px;
   gap: 8px; padding: 8px 12px; }
-.lv-wiz .lv-qr.is-solo { grid-template-columns: 40px minmax(0, 1fr) 58px 78px 128px 40px 32px; }
+.lv-wiz .lv-qr.is-solo { grid-template-columns: 40px minmax(0, 1fr) 64px 84px 128px 40px 32px; }
 /* имя не липнет к превью: своя прибавка после узкого зазора сетки */
 .lv-wiz .lv-qr .lv-qr__n { padding-left: 4px; }
+.lv-wiz .lv-qr { column-gap: 18px; }
 .lv-wiz .lv-qr .ml-tag { max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
 .lv-wiz .lv-qr .ml-preview { width: 44px; height: 30px; }
 .lv-wiz .lv-qr .ml-preview svg { width: 16px; height: 16px; }
