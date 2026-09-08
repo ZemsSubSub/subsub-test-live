@@ -3862,27 +3862,20 @@
     return addDaysStr(dateStr, -((new Date(Date.parse(dateStr + "T12:00:00Z")).getUTCDay() + 6) % 7));
   }
   // подпись периода: сначала человеческое «This week», потом точные даты
+  // Без относительных слов («This week», «Today»): от них скакала ширина поля периода;
+  // сегодняшний день и так подсвечен в сетке, а быстрые переходы живут в пресетах календаря.
   function calPeriodLabel(r, fromMs, toMs) {
-    var today = partsIn(nowMs(), calTz()).date;
-    if (CALV.scale === "day") {
-      var rel = r.days[0] === today ? "Today · "
-        : r.days[0] === addDaysStr(today, 1) ? "Tomorrow · "
-        : r.days[0] === addDaysStr(today, -1) ? "Yesterday · " : "";
-      return rel + UI.day(new Date(fromMs).toISOString(), calTz());
-    }
+    if (CALV.scale === "day") return UI.day(new Date(fromMs).toISOString(), calTz());
     if (CALV.scale === "week") {
-      var tw = weekStart(today), rel2 = r.from === tw ? "This week · "
-        : r.from === addDaysStr(tw, 7) ? "Next week · "
-        : r.from === addDaysStr(tw, -7) ? "Last week · " : "";
       // недели читаются по числам: дни недели и так стоят в шапках колонок
       var f2 = UI.day(new Date(fromMs).toISOString(), calTz()).replace(/^[A-Z][a-z]{2} /, "");
       var t2 = UI.day(new Date(toMs - DAYMS).toISOString(), calTz()).replace(/^[A-Z][a-z]{2} /, "");
       var same = f2.split(" ")[1] === t2.split(" ")[1];
-      return rel2 + (same ? f2.split(" ")[0] + " — " + t2 : f2 + " — " + t2) + " · W" + isoWeek(r.from);
+      return (same ? f2.split(" ")[0] + " — " + t2 : f2 + " — " + t2) + " · W" + isoWeek(r.from);
     }
     var mLbl = new Intl.DateTimeFormat("en-GB", { timeZone: calTz(), month: "long", year: "numeric" })
       .format(new Date(dayStartMs(calAnchor(), calTz())));
-    return (r.month === today.slice(0, 7) ? "This month · " : "") + mLbl;
+    return mLbl;
   }
   // сколько эфира и денег в периоде: окна режем по границам диапазона
   function clipSec(o, fromMs, toMs) {
