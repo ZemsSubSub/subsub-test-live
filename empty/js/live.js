@@ -4038,10 +4038,9 @@
     if (chips) {
       chips.innerHTML = CALV.statuses.map(function (st) {
         return chip("Status: " + stGroupLabel(CAL_ST_GROUPS, st), 'data-lv-calunchip="statuses:' + st + '"');
-      }).join("") + (CALV.statuses.length ? '<button class="an-fchips__clear" type="button" data-lv-calclear>Clear all</button>' : "") +
-      // подпись про переключение канала имеет смысл, только когда есть каналы, на которые можно переключиться
-      (calAll() && calChans().length ? '<span class="an-hint">' + T.calAllRO + "</span>" : "");
-      chips.hidden = !CALV.statuses.length && !(calAll() && calChans().length);
+      }).join("") + (CALV.statuses.length ? '<button class="an-fchips__clear" type="button" data-lv-calclear>Clear all</button>' : "");
+      // причина «только чтение» в обзоре живёт подсказкой на полосах, отдельной строки над таблицей нет
+      chips.hidden = !CALV.statuses.length;
     }
     // алерт остался один: нулевой баланс. Пересечений в расписании не бывает — их не дают создать
     var warn = document.querySelector("[data-lv-calwarn]");
