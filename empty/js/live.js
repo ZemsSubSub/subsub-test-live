@@ -475,7 +475,7 @@
   function cost(s) {
     var a = acc(), r = rateNum(s);
     var slot = nextSlot(s);
-    var windowH = slot ? (Date.parse(slot.end) - Date.parse(slot.start)) / 3600e3 : 0;
+    var windowH = slot ? (slotOpen(s, slot) ? 24 : (Date.parse(slot.end) - Date.parse(slot.start)) / 3600e3) : 0;
     var balHours = a.kind === "hours" ? a.creditHours : (r > 0 ? a.balance / r : 0);
     // сколько на самом деле будет идти вещание: без цикла — один проход, с лимитом циклов —
     // столько проходов; окно только ограничивает сверху, а платить за простой не за что
@@ -1318,6 +1318,11 @@
   function closePop() {
     var pop = document.querySelector("[data-lv-pop]");
     if (pop) pop.hidden = true;
+    calUnderlays(null);
+  }
+  function calUnderlays(occKey) {
+    [].forEach.call(document.querySelectorAll(".lv-bar--long.is-shown"), function (b) { b.classList.remove("is-shown"); });
+    if (occKey) [].forEach.call(document.querySelectorAll('.lv-bar--long[data-lv-occ="' + occKey + '"]'), function (b) { b.classList.add("is-shown"); });
   }
 
   // ============================================================ Э2 · карточка
@@ -1336,7 +1341,7 @@
       inner = "";
     } else if (k === "scheduled") {
       inner = box("Starts", UI.until(sl ? sl.start : null, nowMs())) +
-        (sl ? box("Window", windowStr(sl)) : "") +
+        (sl ? box("Window", windowStr(sl, s)) : "") +
         (repLabel(sl) ? box("Repeat", repLabel(sl)) : "");
     } else if (k === "preparing") {
       // прогрев идёт и по крону за час до старта, и по нажатию Start
@@ -1349,7 +1354,7 @@
       inner = box("On air", UI.durHuman(onAirSec)) +
         box("Viewers", String(s.viewers || 0)) +
         (s.backup ? box("Backup", "Active") : "") +
-        box(sl && !sl.open ? "Window ends" : "Ends", sl && !sl.open ? UI.until(sl.end, nowMs()).replace(/^in /, "")
+        box(sl && !slotOpen(s, sl) ? "Window ends" : "Ends", sl && !slotOpen(s, sl) ? UI.until(sl.end, nowMs()).replace(/^in /, "")
           : s.loopLimit ? s.loopLimit + " loops"
           : s.playback.loop ? "Until stop" : "Queue ends");
     } else if (k === "stopping") {
@@ -1455,7 +1460,7 @@
     var rows =
       kvRow("Spent this run", UI.money(runOf(s) ? runOf(s).spent : 0)) +
       kvRow("Spent all time", UI.money(s.spentTotal)) +
-      kvRow(c.windowH ? "Window " + winLen(c.windowH) : "No window",
+      kvRow(!c.windowH ? "No window" : slotOpen(s, nextSlot(s)) ? "One day on air" : "Window " + winLen(c.windowH),
             c.windowH ? "≈" + UI.money(c.windowCost) : "Runs until you stop it");
       // остаток в часах не строка карточки: баланс виден в топбаре, а нехватку
       // называет предупреждение ниже
@@ -1659,8 +1664,8 @@
       (reason ? ' aria-disabled="true" data-tip="' + UI.esc(reason) + '"' : "") + ">" + label + "</button>";
   }
   // конец окна с датой, если он в другой день: «21 Aug, 08:00 → 22 Aug, 08:00»
-  function windowStr(sl) {
-    if (sl.open) return UI.dt(sl.start, TZ) + " → " + T.openEndVal.toLowerCase() + " (" + TZL + ")";
+  function windowStr(sl, s) {
+    if (sl.open || slotOpen(s, sl)) return UI.dt(sl.start, TZ) + " → " + T.openEndVal.toLowerCase() + " (" + TZL + ")";
     var sameDay = UI.day(sl.start, TZ) === UI.day(sl.end, TZ);
     return UI.dt(sl.start, TZ) + " → " + (sameDay ? UI.time(sl.end, TZ) : UI.dt(sl.end, TZ)) + " (" + TZL + ")";
   }
@@ -1671,7 +1676,7 @@
     return s.schedules.map(function (sl) {
       var runs = next3(sl);
       return '<div class="lv-slot">' +
-        '<span class="lv-slot__w"><span class="lv-slot__t">' + windowStr(sl) + "</span>" +
+        '<span class="lv-slot__w"><span class="lv-slot__t">' + windowStr(sl, s) + "</span>" +
           (repLabel(sl) ? '<span class="lv-slot__m">Repeat: ' + repLabel(sl) + "</span>" : "") +
         "</span>" +
         '<span class="lv-slot__runs"><span class="lv-slot__m">' +
@@ -3907,8 +3912,12 @@
     return { from: gridFrom, to: days2[41], days: days2, month: a.slice(0, 7) };
   }
   // разворот слота в конкретные запуски внутри диапазона
+  // Луп без лимита не имеет конца: правило читается из стрима, а не из сохранённого окна,
+  // поэтому и старые фикстуры, и стримы, сохранённые до этого правила, ведут себя одинаково.
+  function slotOpen(s, sl) { return !!(sl && s && s.playback && s.playback.loop && !(s.loopLimit > 0)); }
   function expand(s, sl, fromMs, toMs) {
-    var out = [], start = Date.parse(sl.start), dur = Date.parse(sl.end) - start;
+    var open = slotOpen(s, sl);
+    var out = [], start = Date.parse(sl.start), dur = open ? DAYMS : Date.parse(sl.end) - start;
     var rep = (sl.repeat && sl.repeat.type) || "none";
     var skips = sl.skips || [];
     var step = rep === "weekly" ? 7 * DAYMS : DAYMS;
@@ -3920,7 +3929,7 @@
         var okDay = rep !== "weekdays" || (wd >= 1 && wd <= 5);
         if (sl.until && dstr >= sl.until) break;     // правило закончилось: дальше история другого слота
         if (okDay && skips.indexOf(dstr) === -1) {
-          out.push({ streamId: s.id, slotId: sl.id, start: t, end: t + dur, rep: rep, occDate: dstr, open: !!sl.open });
+          out.push({ streamId: s.id, slotId: sl.id, start: t, end: t + dur, rep: rep, occDate: dstr, open: open });
         }
       }
       if (rep === "none") break;
@@ -4149,6 +4158,7 @@
       if (!n) return;
       // короткое окно — одна строка «имя · время», как в системных календарях
       b.classList.toggle("is-short", b.clientHeight < 30);
+      b.classList.toggle("is-narrow", b.clientWidth < 84);
       var room = b.clientHeight - (b.querySelector(".lv-bar__c") ? 20 : 6);
       n.style.setProperty("--lvlines", String(Math.max(1, Math.min(8, Math.floor(room / 15)))));
     });
@@ -4185,9 +4195,42 @@
     var hours = "";
     for (var h = 0; h < 24; h++) hours += '<div class="lv-cal__h"><span>' + String(h).padStart(2, "0") + ":00</span></div>";
     var nowP = partsIn(nowMs(), calTz());
-    var cols = r.days.map(function (d) {
+    var rangeFrom = dayStartMs(r.days[0], calTz()), rangeTo = dayStartMs(r.days[r.days.length - 1], calTz()) + DAYMS;
+    // Длинные окна (луп без конца или дольше суток) живут в верхней полосе, как многодневные события
+    // в Google Calendar; в сетке от них остаётся подложка. Бесконечное окно тянется до следующего
+    // запуска того же правила, а без него — за край видимого периода.
+    var occV = occ.map(function (o) {
+      if (!occLong(o)) return o;
+      if (!o.open) return o;
+      var next = occ.filter(function (x) { return x.slotId === o.slotId && x.streamId === o.streamId && x.start > o.start; })
+        .sort(function (a2, b2) { return a2.start - b2.start; })[0];
+      return Object.assign({}, o, { end: next ? next.start : Math.max(rangeTo, o.start + DAYMS), endless: !next });
+    });
+    var longs = occV.filter(occLong).sort(function (a2, b2) { return a2.start - b2.start; });
+    var laneEnds = [];
+    var topBars = longs.map(function (o) {
+      var s = stream(o.streamId);
+      var li = 0; while (laneEnds[li] !== undefined && laneEnds[li] > o.start) li++;
+      laneEnds[li] = o.end;
+      var c1 = r.days.indexOf(partsIn(Math.max(o.start, rangeFrom), calTz()).date);
+      var c2 = r.days.indexOf(partsIn(Math.min(o.end, rangeTo) - 1, calTz()).date);
+      if (c1 < 0) c1 = 0; if (c2 < 0) c2 = r.days.length - 1;
+      var before = o.start < rangeFrom, after = o.end >= rangeTo || o.endless;
+      var tip = s.name + " · " + UI.dt(new Date(o.start).toISOString(), calTz()).replace(",", "") + " → " +
+        (o.open ? T.openEndVal.toLowerCase() : UI.dt(new Date(o.end).toISOString(), calTz()).replace(",", "") + " · " + UI.durHuman((o.end - o.start) / 1000));
+      return '<button class="lv-tbar lv-bar--' + stKey(s) + (before ? " is-before" : "") + (after ? " is-after" : "") + '" type="button" ' +
+        'style="grid-column:' + (c1 + 1) + " / " + (c2 + 2) + ";grid-row:" + (li + 1) + '" ' +
+        'data-lv-occ="' + o.streamId + "|" + o.slotId + "|" + o.occDate + '" data-tip="' + UI.esc(tip) + '" aria-label="' + UI.esc(tip) + '">' +
+        '<span class="lv-tbar__n">' + UI.esc(s.name) + '</span><span class="lv-tbar__t">, ' + UI.time(new Date(o.start).toISOString(), calTz()) + "</span>" +
+        (o.rep !== "none" ? '<span class="lv-tbar__rep">' + (IC.restart || "") + "</span>" : "") +
+        "</button>";
+    }).join("");
+    var topRows = laneEnds.length;
+    var topH = topRows ? 8 + topRows * 24 + (topRows - 1) * 2 + 1 : 0;
+    var top = '<div class="lv-cal__top' + (topRows ? "" : " is-empty") + '" style="height:' + topH + "px;grid-template-columns:repeat(" + r.days.length + ', minmax(0, 1fr))">' + topBars + "</div>";
+    var cols = r.days.map(function (d, di) {
       var dFrom = dayStartMs(d, calTz()), dTo = dFrom + DAYMS;
-      var dayOcc = occ.filter(function (o) { return o.start < dTo && o.end > dFrom; })
+      var dayOcc = occV.filter(function (o) { return o.start < dTo && o.end > dFrom; })
         .sort(function (a2, b2) { return a2.start - b2.start; });
       // Наложения — каскадом, как в системных календарях: каждая следующая пересекающаяся полоса
       // сдвинута вправо и лежит поверх предыдущей, правый край общий. Глубина каскада считается
@@ -4218,8 +4261,11 @@
           var under = g.items.filter(function (x) { return x._lane < o._lane && x.start < o.end && o.start < x.end; });
           var near = under.some(function (x) { return o.start - x.start < nearMs; });
           var base = under.reduce(function (m, x) { return x._pct > m._pct || (x._pct === m._pct && x._px > m._px) ? x : m; }, { _pct: 0, _px: 3 });
-          if (near) { o._pct = o._lane / n * 100; o._px = 3; }
-          else { o._pct = base._pct; o._px = base._px + (under.length ? 12 : 0); }
+          if (near) {
+            o._pct = o._lane / n * 100; o._px = 3; o._rpct = (n - 1 - o._lane) / n * 100;
+            // нижние полосы тоже становятся колонками: иначе верхняя закрыла бы их заголовок
+            under.forEach(function (x) { x._rpct = Math.max(x._rpct || 0, (n - 1 - x._lane) / n * 100); });
+          } else { o._pct = base._pct; o._px = base._px + (under.length ? 12 : 0); o._rpct = o._rpct || 0; }
         });
       });
       var bars = dayOcc.map(function (o) {
@@ -4228,12 +4274,12 @@
         var height = Math.min(100 - top, ((Math.min(o.end, dTo) - Math.max(o.start, dFrom)) / DAYMS) * 100);
         var cont = o.start < dFrom, contAfter = o.end > dTo;
         var past = o.start <= nowMs();                 // запуск уже начался или прошёл — это история
-        if (occLong(o)) return calLongBar(o, s, top, height, ro, past, contAfter);
+        if (occLong(o)) return calLongBar(o, s, top, height, ro, past, contAfter || o.open);
         var depth = o._lane || 0;
         return '<button class="lv-bar lv-bar--' + stKey(s) +
           (ro ? " is-ro" : "") + (past ? " is-past" : "") + (depth ? " is-over" : "") + '" type="button" ' +
           'style="top:' + top.toFixed(2) + "%;height:max(22px, " + height.toFixed(2) +
-          "%);left:calc(" + (o._pct || 0).toFixed(2) + "% + " + (o._px || 3) + "px);right:3px;z-index:" + (1 + depth) + '" ' +
+          "%);left:calc(" + (o._pct || 0).toFixed(2) + "% + " + (o._px || 3) + "px);right:calc(" + (o._rpct || 0).toFixed(2) + "% + 3px);z-index:" + (1 + depth) + '" ' +
           'data-lv-occ="' + o.streamId + "|" + o.slotId + "|" + o.occDate + '" ' +
           (ro ? ' data-tip="' + UI.esc(T.calAllRO) + '"' : past ? ' data-tip="' + UI.esc(T.pastRun) + '"' : "") +
           'aria-label="' + UI.esc(s.name + ", " + UI.dt(new Date(o.start).toISOString(), calTz())) + '">' +
@@ -4255,17 +4301,17 @@
         return n + (en3 > st3 ? (en3 - st3) / 1000 : 0);
       }, 0);
       return '<div class="lv-cal__col' + (isToday ? " is-today" : "") + (dim ? " is-dim" : "") + '" data-lv-calday="' + d + '">' +
-        '<div class="lv-cal__colhead"><span class="lv-cal__dh">' +
+        '<div class="lv-cal__colhead" style="grid-column:' + (di + 1) + '"><span class="lv-cal__dh">' +
           '<b class="lv-cal__dnum">' + Number(d.slice(8)) + '</b><span class="lv-cal__dwd">' + wd3(d) + "</span></span>" +
           (dSec ? '<span class="lv-cal__dtot">' + UI.dur(Math.round(dSec)) + "</span>" : "") + "</div>" +
-        '<div class="lv-cal__cells" data-lv-calcells="' + d + '">' + nowLine + bars + "</div></div>";
+        '<div class="lv-cal__cells" style="grid-column:' + (di + 1) + '" data-lv-calcells="' + d + '">' + nowLine + bars + "</div></div>";
     }).join("");
     return calRunRow() +
       '<div class="lv-cal__grid"><div class="lv-cal__axis"><div class="lv-cal__colhead lv-cal__zoom">' +
         '<button class="an-btn an-btn--secondary an-btn--tiny" type="button" data-lv-calzoom="-" aria-label="Shorter rows">−</button>' +
         '<button class="an-btn an-btn--secondary an-btn--tiny" type="button" data-lv-calzoom="+" aria-label="Taller rows">+</button>' +
-      '</div><div class="lv-cal__hours">' + hours + "</div></div>" +
-      '<div class="lv-cal__cols">' + cols + "</div></div>";
+      '</div><div class="lv-cal__topaxis' + (topRows ? "" : " is-empty") + '" style="height:' + topH + 'px"></div><div class="lv-cal__hours">' + hours + "</div></div>" +
+      '<div class="lv-cal__cols" style="grid-template-columns:repeat(' + r.days.length + ', minmax(120px, 1fr))">' + top + cols + "</div></div>";
   }
 
   // ---- месяц: до трёх полос в дне, дальше «+N more»
@@ -4307,7 +4353,7 @@
             : UI.day(new Date(o.start).toISOString(), calTz()) === UI.day(new Date(o.end).toISOString(), calTz())
               ? UI.time(new Date(o.end).toISOString(), calTz())
               : UI.dt(new Date(o.end).toISOString(), calTz()))) +
-        kv("Duration", UI.durHuman(hours * 3600)) +
+        kv("Duration", o.open ? T.openEndVal : UI.durHuman(hours * 3600)) +
         kv("Playlist", UI.esc(pl ? pl.name : "—")) +
         kv(o.open ? "One day on air" : "Window cost", "≈" + UI.money(hours * rateNum(s))) +
         (o.rep !== "none" ? kv("Repeat", REP[o.rep] || o.rep) : "") +
@@ -4520,7 +4566,7 @@
       var busy = channelBusy(s, { id: sl.id, start: sl.start, end: new Date(newEnd).toISOString(), repeat: sl.repeat });
       if (busy) { renderCalendar(); UI.toast(busy.msg); return; }
       // растянутое рукой окно — уже выбор человека: луп без конца становится окном с концом
-      sl.end = new Date(newEnd).toISOString(); sl.endSet = true; sl.open = false;
+      sl.end = new Date(newEnd).toISOString(); sl.endSet = true;
       save(); renderCalendar();
       UI.toast("Window is now " + UI.durHuman((Date.parse(sl.end) - Date.parse(sl.start)) / 1000) +
         " · ≈" + UI.money(((Date.parse(sl.end) - Date.parse(sl.start)) / 3600e3) * rateNum(s)) + ".");
@@ -4940,7 +4986,11 @@
     }
     var occEl = t.closest && t.closest("[data-lv-occ]");
     if (occEl) {
-      var op = occEl.getAttribute("data-lv-occ").split("|");
+      // подложка длинного окна в сетке показывается только пока открыта его карточка
+      var occKey = occEl.getAttribute("data-lv-occ");
+      calUnderlays(null);
+      if (occEl.classList.contains("lv-tbar") || occEl.classList.contains("lv-bar--long")) calUnderlays(occKey);
+      var op = occKey.split("|");
       var os = stream(op[0]);
       var osl = (os.schedules || []).filter(function (x) { return x.id === op[1]; })[0];
       if (osl) {
@@ -5678,7 +5728,7 @@
     var fixed = formEndSec(), pass = formPassSec(), open = formSlotOpen();
     FORM.schedules.forEach(function (sl) {
       var broken = Date.parse(sl.end) <= Date.parse(sl.start);
-      sl.open = open && (!sl.endSet || broken);
+      sl.open = open;
       if (sl.open) { sl.end = new Date(Date.parse(sl.start) + OPEN_MS).toISOString(); return; }
       // сломанное окно лечим даже поверх своего выбора: конец раньше начала не бывает
       var len = fixed || (sl.endSet && !broken ? 0 : pass);
