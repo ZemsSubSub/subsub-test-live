@@ -4549,8 +4549,10 @@ body.ce-ro .ce-table .an-tbody .an-tr > .an-td:last-child { display: none; }
 .wl-tx__head { padding: 16px 24px; }
 .wl-sep { color: var(--color-shade-500); }
 .wl-fhead__r { display: inline-flex; align-items: center; gap: 12px; }
-.wl-tx .an-tr, .wl-usagetbl .an-tr { padding: 0 24px; }
-.wl-tx .an-th, .wl-tx .an-td { padding-right: 16px; }
+.wl-tx .an-th, .wl-tx .an-td, .wl-usagetbl .an-th, .wl-usagetbl .an-td { padding-right: 16px; }
+.wl-tx .an-th:first-child, .wl-tx .an-td:first-child, .wl-usagetbl .an-th:first-child, .wl-usagetbl .an-td:first-child { padding-left: 24px; }
+.wl-tx .an-th:last-child, .wl-tx .an-td:last-child, .wl-usagetbl .an-th:last-child, .wl-usagetbl .an-td:last-child { padding-right: 24px; }
+.wl-td--rest { color: var(--color-shade-800); }
 .wl-tx__row { cursor: pointer; }
 .wl-tx__row:hover .an-td { background: var(--color-shade-90); }
 .wl-td--name { gap: 12px; }
