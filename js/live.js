@@ -569,7 +569,16 @@
   }
   // единая проверка на все входы (форма, модалка окна, перенос в календаре):
   // окно сравнивается с другими окнами того же стрима и с окнами стримов на том же ключе
+  // Повторяющееся окно длиннее шага повтора наехало бы на собственный следующий запуск —
+  // тот же запрет «стрим не идёт дважды», только внутри одного правила.
+  function repeatStepMs(rep) { return rep === "weekly" ? 7 * 24 * 3600e3 : 24 * 3600e3; }
+  function T_REPEAT_LONG(rep) {
+    return (rep === "weekly" ? "A weekly window can’t be longer than a week" : "A repeating window can’t be longer than a day") +
+      " — the next run would start before this one ends.";
+  }
   function channelBusy(s, cand) {
+    var rep = cand && cand.repeat && cand.repeat.type;
+    if (rep && rep !== "none" && Date.parse(cand.end) - Date.parse(cand.start) > repeatStepMs(rep)) return { msg: T_REPEAT_LONG(rep) };
     if (slotHitsOwn((s && s.schedules) || [], cand)) return { msg: T_SELF_OVERLAP };
     return keyClash(s, cand);
   }
@@ -1707,9 +1716,9 @@
   function chanOpts(withManual) {
     var out = F.channels.filter(function (c) { return c.connected; }).map(chanOpt);
     if (withManual) {
-      out.push({ kind: "sep" });
-      out.push({ value: "__manual", label: "Enter stream key manually", kind: "action" });
-      out.push({ value: "__connect", label: "Connect YouTube", kind: "action" });
+      if (out.length) out.push({ kind: "sep" });
+      out.push({ value: "__manual", label: "Enter stream key manually", kind: "action", icon: IC.link });
+      out.push({ value: "__connect", label: "Connect YouTube", kind: "action", icon: IC.youtube });
     }
     return out;
   }
@@ -3095,6 +3104,11 @@
     var connected = FORM.destMode === "connected";
 
     return '<div class="lv-wiz__step lv-form">' +
+      // без подключённого канала шаг начинается с подключения: баннер стоит над всеми полями
+      (F.channels.filter(function (c) { return c.connected; }).length ? "" :
+        '<div class="lv-banner lv-banner--info">' + (IC.info || "") +
+        "<span>No channel connected yet.</span>" +
+        '<span class="lv-banner__acts">' + btn("Connect YouTube", "primary", "data-lv-connectyt") + "</span></div>") +
       // обложка и имя — одна строка: то, как стрим выглядит и как называется
       '<div class="ai-grid ai-grid--2 lv-fpair">' +
         formCoverBox() +
@@ -3134,10 +3148,6 @@
                 UI.esc(FORM.desc || "") + "</textarea>",
               "Up to 5000 characters. Goes to YouTube with the broadcast.")
           : "") +
-        (F.channels.filter(function (c) { return c.connected; }).length ? "" :
-          '<div class="lv-banner lv-banner--info">' + (IC.info || "") +
-          "<span>No channel connected yet.</span>" +
-          '<span class="lv-banner__acts">' + btn("Connect YouTube", "primary", "data-lv-connectyt") + "</span></div>") +
       '<div class="lv-fplay lv-form">' +
         '<div class="lv-form__row"><label class="lv-pick__only"><span>Backup stream</span>' +
           UI.switchHtml('data-lv-f="backup"', FORM.backup, "Backup stream") + "</label></div>" +
@@ -3243,7 +3253,7 @@
     return '<div class="lv-wiz__step">' +
       '<div class="lv-sum__rd lv-sum__rd--' + (line ? "warn" : "ok") + '" data-lv-ready>' +
         (line ? (IC.attention || "") : (IC.check || "")) + "<span>" +
-        UI.esc(line || "Ready to create") + "</span></div>" +
+        UI.esc(line || (formEditing() ? "Ready to save" : "Ready to create")) + "</span></div>" +
       '<div class="lv-rev__g"><div class="lv-sum__rows">' +
         kvRow("Goes on air",
               (st.count ? st.count + (st.count === 1 ? " video" : " videos") : "Nothing") +
@@ -3282,7 +3292,7 @@
     if (!host) return;
     if (!FORM) formInit();
     formSyncEnds();
-    var editing = !!FORM.id;
+    var editing = formEditing();
     var pseudo0 = formPseudo();
     document.title = (editing ? "Edit stream" : "New stream") + " — SubSub";
 
@@ -3308,11 +3318,18 @@
     wizBindDnd(host);
     void 0;
   }
+  // черновик ведёт себя как новый стрим (formSubmit): правкой считается только сохранённый стрим
+  function formEditing() {
+    var s = FORM && FORM.id ? stream(FORM.id) : null;
+    return !!(s && s.status !== "draft");
+  }
   // карта шагов и полоса значений: обновляются и при печати в поле, без перерисовки шага
   function wizMapHtml(editing) {
-    return '<h2 class="lv-wiz__maptitle">' + (editing ? "Stream setup" : "New stream setup") + "</h2>" +
+    return '<h2 class="lv-wiz__maptitle">' + (editing ? "Edit stream" : "New stream setup") + "</h2>" +
         WZ_STEPS.map(function (s, i) {
           var n = i + 1;
+          var title = editing && s.k === "review" ? "Review & save" : s.t;
+          var desc = editing && s.k === "review" ? "Cost and changes." : s.d;
           var reachable = n <= WZ.max;
           var satisfied = !wizBlocked(n);
           var current = n === WZ.step;
@@ -3327,7 +3344,7 @@
             (tip ? ' data-tip="' + UI.esc(tip) + '"' : "") +
             (current ? ' aria-current="step"' : "") + ">" +
             '<span class="lv-wiz__ico">' + (done ? (IC.check || "") : attention ? (IC.attention || "") : (IC[s.ic] || "")) + "</span>" +
-            '<span class="lv-wiz__tx"><b>' + s.t + "</b><span>" + UI.esc(val || s.d) + "</span></span></button>";
+            '<span class="lv-wiz__tx"><b>' + title + "</b><span>" + UI.esc(val || desc) + "</span></span></button>";
         }).join("") +
         wizStrip();
   }
@@ -4470,9 +4487,8 @@
       var lenMs = calResizeEndAt(pt, sl, d.occDate) - occStartMs(sl, d.occDate);
       var newEnd = Date.parse(sl.start) + lenMs;
       if (newEnd === Date.parse(sl.end)) return;
-      if (!slotFits(s, { id: sl.id, start: sl.start, end: new Date(newEnd).toISOString() })) {
-        renderCalendar(); UI.toast(T_SELF_OVERLAP); return;
-      }
+      var busy = channelBusy(s, { id: sl.id, start: sl.start, end: new Date(newEnd).toISOString(), repeat: sl.repeat });
+      if (busy) { renderCalendar(); UI.toast(busy.msg); return; }
       // растянутое рукой окно — уже выбор человека: луп без конца становится окном с концом
       sl.end = new Date(newEnd).toISOString(); sl.endSet = true; sl.open = false;
       save(); renderCalendar();
@@ -4510,7 +4526,8 @@
             start: new Date(dayStartMs(occDate, calTz()) + (Date.parse(sl.start) - day0) + shift).toISOString(),
             end: new Date(dayStartMs(occDate, calTz()) + (Date.parse(sl.end) - day0) + shift).toISOString() };
       // окно, занятое другим стримом того же канала, не отдаём: пересечений в данных не бывает
-      if (!slotFits(s, cand)) { renderCalendar(); UI.toast(T_SELF_OVERLAP); return; }
+      var busy = channelBusy(s, cand);
+      if (busy) { renderCalendar(); UI.toast(busy.msg); return; }
       if (onlyThis) {
         sl.skips = (sl.skips || []).concat([occDate]);
         s.schedules.push(cand);
@@ -5706,9 +5723,9 @@
     for (var m = 0; m < 1440; m += 30) {
       var ms = d0 + m * 60e3;
       var cand = which === "start"
-        ? { id: sl.id, start: new Date(ms).toISOString(),
+        ? { id: sl.id, repeat: sl.repeat, start: new Date(ms).toISOString(),
             end: new Date(ms + (Date.parse(sl.end) - Date.parse(sl.start))).toISOString() }
-        : { id: sl.id, start: sl.start, end: new Date(ms).toISOString() };
+        : { id: sl.id, repeat: sl.repeat, start: sl.start, end: new Date(ms).toISOString() };
       var bad = which === "end" && ms <= Date.parse(sl.start) ? { msg: "Before the start." } : channelBusy(pseudo, cand);
       out.push({ value: String(ms), label: UI.time(new Date(ms).toISOString(), FORM.tz),
         off: !!bad, reason: bad ? bad.msg : "" });

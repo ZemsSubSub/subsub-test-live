@@ -2761,7 +2761,7 @@ body.is-open:not(.is-collapsed) .main { margin-left: 306px; }
 /* недоступное действие не выглядит ссылкой: подчёркивание снимаем */
 .mc-status__link.is-off { text-decoration: none; }
 .mc-status__link.is-off:hover { text-decoration: none; }
-.an-toast { position: fixed; left: 50%; bottom: 32px; transform: translateX(-50%); z-index: 1600; padding: 12px 20px; background: var(--color-black); color: var(--color-white); border-radius: 8px; font-size: 14px; box-shadow: 0 12px 32px rgba(0,0,0,.24); }
+.an-toast { position: fixed; right: 28px; bottom: 28px; z-index: 1600; padding: 12px 20px; background: var(--color-black); color: var(--color-white); border-radius: 8px; font-size: 14px; box-shadow: 0 12px 32px rgba(0,0,0,.24); }
 .an-toast[hidden] { display: none; }
 
 /* ==================================================== AI-КОЛЛЕКЦИЯ (deep sourcing)
@@ -4117,6 +4117,8 @@ body.ce-ro .ce-table .an-tbody .an-tr > .an-td:last-child { display: none; }
 .an-select__opt.is-active { background: var(--color-shade-100); box-shadow: inset 0 0 0 1px var(--color-shade-300); }
 .an-select__opt.is-selected { font-weight: 500; }
 .an-select__opt--act { color: var(--color-purple-900); }
+.an-select__ico { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; flex-shrink: 0; color: inherit; }
+.an-select__ico svg { width: 16px; height: 16px; }
 .an-select__tick { margin-left: auto; display: inline-flex; color: var(--color-black); }
 .an-select__tick svg { width: 16px; height: 16px; }
 .an-select__empty { padding: 12px; font-size: 14px; color: var(--color-shade-700); }

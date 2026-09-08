@@ -392,6 +392,7 @@
             (o.off ? ' aria-disabled="true" data-tip="' + UI.esc(o.reason || "") + '"' : "") +
             ' data-lv-selopt="' + i + '">' +
             (o.avatar ? '<span class="an-chan__ava" style="background:' + o.avatar.color + '">' + UI.esc(o.avatar.initial) + "</span>" : "") +
+            (o.icon ? '<span class="an-select__ico">' + o.icon + "</span>" : "") +
             '<span class="an-select__txt"><span class="an-select__lbl">' + UI.esc(o.label) + "</span>" +
             (o.sub ? '<span class="an-select__sub">' + UI.esc(o.sub) + "</span>" : "") + "</span>" +
             (o.value === cfg.value ? '<span class="an-select__tick">' + (UI.checkIcon || "") + "</span>" : "") +
