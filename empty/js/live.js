@@ -1818,7 +1818,8 @@
     calChan: function () {
       var opts = F.channels.filter(function (c) { return c.connected; }).map(chanOpt);
       opts.push({ kind: "sep" });
-      opts.push({ value: "__all", label: "All channels", sub: "Overview only — slots can’t be moved" });
+      // обзор всех каналов имеет смысл только от двух каналов
+      if (opts.length > 2) opts.push({ value: "__all", label: "All channels", sub: "Overview only — slots can’t be moved" });
       opts.push({ value: "__connect", label: "Connect YouTube", kind: "action", icon: IC.youtube });
       return { value: calChannel(), options: opts, label: "Channel", onPick: function (v) {
         if (v === "__connect") { ytConnectAsk(); return; }
@@ -3824,7 +3825,10 @@
   function calChans() { return F.channels.filter(function (c) { return c.connected; }); }
   // выбор канала помнится между заходами: календарь почти всегда смотрят по одному каналу
   function calChannel() {
+    // единственный канал показываем сразу: обзора «всех» при одном канале нет
+    if (CALV.channel === "__all" && calChans().length === 1) { CALV.channel = calChans()[0].id; S.calChannel = CALV.channel; }
     if (CALV.channel) return CALV.channel;
+    if (S.calChannel === "__all" && calChans().length === 1) S.calChannel = calChans()[0].id;
     if (S.calChannel) { CALV.channel = S.calChannel; return CALV.channel; }
     var first = calChans()[0];
     CALV.channel = first ? first.id : "__all";
