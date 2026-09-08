@@ -4226,7 +4226,7 @@
         "</button>";
     }).join("");
     var topRows = laneEnds.length;
-    var topH = topRows ? 8 + topRows * 24 + (topRows - 1) * 2 + 1 : 0;
+    var topH = topRows ? 6 + topRows * 18 + (topRows - 1) * 2 + 1 : 0;
     var top = '<div class="lv-cal__top' + (topRows ? "" : " is-empty") + '" style="height:' + topH + "px;grid-template-columns:repeat(" + r.days.length + ', minmax(0, 1fr))">' + topBars + "</div>";
     var cols = r.days.map(function (d, di) {
       var dFrom = dayStartMs(d, calTz()), dTo = dFrom + DAYMS;
