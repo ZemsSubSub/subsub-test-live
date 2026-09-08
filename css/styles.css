@@ -1976,11 +1976,6 @@ body.is-open:not(.is-collapsed) .main { margin-left: 306px; }
 .lv-wiz .an-input, .lv-wiz .an-select__trig, .lv-wiz .lv-dt { height: 40px; min-height: 40px; }
 /* «Also set as the YouTube thumbnail» — своя строка под подсказкой, галочка по центру строки */
 /* строка под полем: галочка слева, ограничение справа; подпись по ховеру не подсвечивается */
-.lv-thumbcol__b { display: flex; align-items: center; gap: 8px 12px; flex-wrap: wrap; }
-.lv-thumbcol__b .an-hint { margin: 0; }
-.lv-thumbcol .an-cols__row { align-items: center; gap: 8px; padding: 0; margin: 0; width: auto; flex: 0 0 auto; }
-.lv-thumbcol .an-cols__row:hover { background: transparent; }
-.lv-thumbcol .an-cols__lbl { flex: 1 1 auto; font-size: var(--text-footnote-reg-12); line-height: 1.35; }
 /* в мастере пункты воспроизведения — одной строкой, тумблер вплотную к подписи */
 .lv-wiz .lv-sum__b > .lv-playrow { flex-direction: row; align-items: center; gap: 28px; }
 /* карта: пройденный шаг с галочкой, шаг, ставший невалидным, и read-only полоса значений */
@@ -3821,12 +3816,12 @@ body.ce-ro .ce-table .an-tbody .an-tr > .an-td:last-child { display: none; }
 
 /* Очередь плейлиста */
 .lv-q { display: flex; flex-direction: column; }
-.lv-qr { display: grid; grid-template-columns: 28px 24px 70px minmax(0, 1fr) 84px 76px 44px 130px 44px 32px; align-items: center; gap: 12px; padding: 8px 16px; border-top: 1px solid var(--color-shade-100); }
+.lv-qr { display: grid; grid-template-columns: 28px 24px 70px minmax(0, 1fr) 84px 76px 84px 130px 44px 32px; align-items: center; gap: 12px; padding: 8px 16px; border-top: 1px solid var(--color-shade-100); }
 .lv-qr:first-child { border-top: 0; }
 /* один файл: колонки номера и ручки не занимают место */
-.lv-qr.is-solo { grid-template-columns: 70px minmax(0, 1fr) 84px 76px 44px 130px 44px 32px; }
+.lv-qr.is-solo { grid-template-columns: 70px minmax(0, 1fr) 84px 76px 84px 130px 44px 32px; }
 /* страница плейлиста: к длительности и размеру добавлены разрешение и битрейт */
-.lv-q[data-lv-plqueue] .lv-qr { grid-template-columns: 28px 24px 70px minmax(0, 1fr) 84px 76px 62px 84px 44px 130px 44px 32px; }
+.lv-q[data-lv-plqueue] .lv-qr { grid-template-columns: 28px 24px 70px minmax(0, 1fr) 84px 76px 84px 84px 44px 130px 44px 32px; }
 .lv-q[data-lv-plqueue] .lv-qr.is-solo { grid-template-columns: 70px minmax(0, 1fr) 84px 76px 62px 84px 44px 130px 44px 32px; }
 .lv-qr.is-off-file { opacity: .55; }
 .lv-qr.is-onair { background: var(--color-green-10); }
@@ -3992,7 +3987,7 @@ body.ce-ro .ce-table .an-tbody .an-tr > .an-td:last-child { display: none; }
 /* Каждая строка пикера — отдельная сетка, поэтому все колонки заданы жёстко: трек auto
    считается по содержимому своей строки, и колонки расходятся между строками. */
 /* восемь ячеек: выбор, превью, имя, длительность, размер, разрешение, формат, состояние */
-.lv-pick__r { display: grid; grid-template-columns: 20px 44px minmax(0, 1fr) 74px 74px 56px 44px 120px;
+.lv-pick__r { display: grid; grid-template-columns: 20px 44px minmax(0, 1fr) 74px 74px 84px 44px 120px;
   align-items: center; gap: 16px; padding: 6px 8px; border-radius: 8px; }
 .lv-pick__r .lv-qr__meta { overflow: hidden; text-overflow: ellipsis; }
 /* стрелка входа в папку — у правого края строки; имя и счётчик стоят плотно */
@@ -4049,7 +4044,11 @@ body.ce-ro .ce-table .an-tbody .an-tr > .an-td:last-child { display: none; }
 .lv-bar__grip { position: absolute; left: 0; right: 0; bottom: 0; height: 8px; cursor: ns-resize; }
 .lv-bar.is-dragging { opacity: .9; z-index: 4; cursor: grabbing; pointer-events: none; box-shadow: 0 8px 24px rgba(0, 0, 0, .18); }
 /* lv-bar__drag — новое окно под курсором во время переноса или растягивания полосы */
-.lv-bar__drag { position: absolute; left: 6px; bottom: 6px; padding: 2px 6px; border-radius: 6px; background: currentColor; -webkit-text-fill-color: var(--color-white); font-size: 11px; white-space: nowrap; pointer-events: none; }
+.lv-bar__drag { position: fixed; z-index: 60; padding: 3px 8px; border-radius: 6px; color: var(--color-white); font-size: 11px; white-space: nowrap; pointer-events: none; }
+.lv-bar.is-ghost { opacity: .6; pointer-events: none; z-index: 3; }
+.lv-cal__rep { display: inline-flex; align-items: center; vertical-align: -2px; margin: 0 4px; color: var(--color-shade-700); }
+.lv-cal__rep svg { width: 12px; height: 12px; }
+.lv-mbar .lv-cal__rep { margin: 0 4px 0 0; color: inherit; vertical-align: -1px; }
 /* text-fill-color instead of color: the badge keeps the bar's accent as currentColor for its background */
 /* lv-cal__draw — заготовка окна под курсором: рамка, длительность и границы времени */
 .lv-cal__draw { position: absolute; left: 3px; right: 3px; z-index: 3; display: flex; flex-direction: column;
@@ -4441,8 +4440,6 @@ body.ce-ro .ce-table .an-tbody .an-tr > .an-td:last-child { display: none; }
   align-self: flex-start; }
 .lv-target .nc-seg__btn { flex: 0 0 auto; height: 30px; padding: 0 10px; }
 /* ориентация: тумблер своей строкой под ступенями качества */
-.lv-target__o { display: inline-flex; align-items: center; gap: 8px; width: max-content;
-  font-size: var(--text-callout-reg-14); color: var(--color-black); }
 .lv-qfoot .lv-card__sub { font-variant-numeric: tabular-nums; }
 .lv-wiz .lv-qr { grid-template-columns: 24px 18px 40px minmax(0, 1fr) 58px 50px 128px 40px 32px;
   gap: 8px; padding: 8px 12px; }
@@ -4529,7 +4526,18 @@ body.ce-ro .ce-table .an-tbody .an-tr > .an-td:last-child { display: none; }
 /* ==================== /Live ==================== */
 
 /* ---------- Wallet (wl-) ---------- */
-.wl-grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+/* wl-top — баланс с действиями слева, четыре метрики отдельными карточками 2×2 справа */
+.wl-top { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr); gap: 16px; align-items: stretch; }
+.wl-top > .rp-card { padding: 20px; gap: 12px; }
+.wl-top .wl-bal__acts { margin-top: auto; }
+.wl-quad { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.wl-metric { display: flex; flex-direction: column; gap: 8px; min-width: 0; padding: 14px 20px; }
+.wl-metric b { font-size: var(--text-title-semi-20); font-weight: 500; line-height: 1.1; white-space: nowrap; }
+.wl-dyn { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 4px 6px; min-height: 18px; font-size: var(--text-body-reg-12); color: var(--color-shade-700); white-space: nowrap; }
+.wl-delta { display: inline-flex; align-items: center; gap: 2px; padding: 2px 6px; border-radius: 6px; background: var(--color-shade-100); font-weight: 500; color: var(--color-black); }
+.wl-delta svg { width: 12px; height: 12px; }
+.wl-delta--up { color: var(--color-green-dark); background: var(--color-green-10); }
+.wl-delta--down { color: var(--color-red); background: var(--color-red-shade-100); }
 .wl-pad { padding: 24px; gap: 24px; }
 .wl-bal__lbl { display: inline-flex; align-items: center; gap: 8px; font-size: var(--text-body-reg-14); color: var(--color-shade-800); }
 .wl-eye { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; padding: 0; border: 0; border-radius: 4px; background: none; color: var(--color-shade-500); cursor: pointer; }
@@ -4556,10 +4564,13 @@ body.ce-ro .ce-table .an-tbody .an-tr > .an-td:last-child { display: none; }
 .wl-tx__row { cursor: pointer; }
 .wl-tx__row:hover .an-td { background: var(--color-shade-90); }
 .wl-td--name { gap: 12px; }
-.wl-tx__ico { display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; flex-shrink: 0; border-radius: 9999px; background: var(--color-shade-100); color: var(--color-black); }
+.wl-tx__ico { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; flex-shrink: 0; color: var(--color-shade-800); }
 .wl-tx__ico svg { width: 20px; height: 20px; }
 .wl-tx__name { font-weight: 500; }
+/* ячейки кошелька — обычное начертание, как text-body-reg-14 прода; суммы — medium */
+.wl-tx .an-td, .wl-usagetbl .an-td { font-weight: 400; }
 .wl-td--amount, .wl-th--amount { justify-content: flex-end; text-align: right; font-variant-numeric: tabular-nums; }
+.wl-td--amount { font-weight: 500; }
 .wl-pos { color: var(--color-green-dark); }
 .wl-neg { color: var(--color-red); }
 .wl-pend { color: var(--color-shade-500); }
@@ -4581,7 +4592,7 @@ body.ce-ro .ce-table .an-tbody .an-tr > .an-td:last-child { display: none; }
 .wl-rows__r dt { margin: 0; color: var(--color-shade-700); }
 .wl-rows__r dd { margin: 0; color: var(--color-black); text-align: right; }
 .wl-field { display: flex; flex-direction: column; gap: 8px; }
-.wl-field + .wl-chips, .wl-field + .wl-field, .wl-field + .an-alert, .wl-wdcards + .wl-field, .an-alert + .wl-rows { margin-top: 16px; }
+.wl-field + .wl-chips, .wl-field + .an-alert, .wl-wdcards + .wl-field, .an-alert + .wl-rows { margin-top: 16px; }
 .wl-inputrow { position: relative; display: flex; align-items: center; }
 .wl-inputrow .an-input { flex: 1; padding-right: 72px; }
 .wl-inputrow .an-btn { position: absolute; right: 8px; }
@@ -4604,21 +4615,26 @@ body.ce-ro .ce-table .an-tbody .an-tr > .an-td:last-child { display: none; }
 .wl-wdcards__arrow { position: absolute; left: 50%; top: 50%; display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; transform: translate(-50%, -50%); border-radius: 9999px; border: 4px solid var(--color-white); background: var(--color-shade-90); color: var(--color-black); }
 .wl-wdcards__arrow svg { width: 16px; height: 16px; }
 /* wl-pm — карточка сохранённого метода выплаты */
-.wl-pms { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 375px)); gap: 24px; }
+.wl-pms { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; }
 .wl-pm { display: flex; flex-direction: column; gap: 16px; padding: 24px; border: 1px solid var(--color-shade-300); border-radius: 12px; background: var(--color-white); }
 .wl-pm__head { display: grid; grid-template-columns: 32px 1fr 32px; align-items: center; gap: 8px; }
 .wl-pm__ico { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; flex-shrink: 0; border-radius: 8px; background: var(--color-shade-100); color: var(--color-black); }
 .wl-pm__ico svg { width: 18px; height: 18px; }
 .wl-pm__name { margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--text-body-med-16); font-weight: 500; color: var(--color-black); }
-.wl-pm__num { margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 16px; border-radius: 8px; background: var(--color-shade-100); font-size: var(--text-body-med-16); font-weight: 500; color: var(--color-black); }
+.wl-pm__num { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 0; padding: 10px 10px 10px 16px; border-radius: 8px; background: var(--color-shade-100); font-size: var(--text-body-med-16); font-weight: 500; color: var(--color-black); }
+.wl-pm__numv { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.wl-copy { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; flex-shrink: 0; padding: 0; border: 0; border-radius: 6px; background: none; color: var(--color-shade-700); cursor: pointer; }
+.wl-copy svg { width: 16px; height: 16px; }
+.wl-copy:hover { background: var(--color-shade-200); color: var(--color-black); }
 .wl-pm__rows { display: flex; flex-direction: column; gap: 8px; }
 .wl-pm__row { display: flex; justify-content: space-between; gap: 8px; margin: 0; font-size: var(--text-body-reg-14); }
 .wl-pm__row span:first-child { color: var(--color-shade-700); }
 /* wl-method — выбор метода на странице New payment method */
-.wl-narrow { max-width: 592px; }
+.wl-narrow { max-width: 960px; }
 .wl-back { align-self: flex-start; margin-left: -8px; }
 .wl-lead { margin: -8px 0 0; font-size: var(--text-body-reg-16); color: var(--color-shade-700); }
-.wl-methods { display: flex; flex-direction: column; gap: 16px; }
+.wl-methods { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; }
+.wl-method.is-on { grid-column: 1 / -1; }
 .wl-method { border: 1px solid var(--color-shade-300); border-radius: 12px; background: var(--color-white); }
 .wl-method.is-on { border-color: var(--color-black); }
 .wl-method__head { display: flex; align-items: center; gap: 12px; width: 100%; padding: 16px; border: 0; background: none; cursor: pointer; font-family: inherit; text-align: left; color: var(--color-black); }
@@ -4627,26 +4643,32 @@ body.ce-ro .ce-table .an-tbody .an-tr > .an-td:last-child { display: none; }
 .wl-method__t { display: flex; flex-direction: column; gap: 2px; }
 .wl-method__t b { font-size: var(--text-body-med-16); font-weight: 500; }
 .wl-method__t small { font-size: var(--text-body-reg-14); color: var(--color-shade-700); }
-.wl-method__fields { display: flex; flex-direction: column; gap: 16px; padding: 0 16px 16px 48px; }
+.wl-method__fields { display: flex; flex-direction: column; gap: 16px; padding: 8px 24px 24px 48px; }
+.wl-fields2 > .wl-field { margin-top: 0; }
 .wl-newfoot { display: flex; justify-content: flex-end; padding-bottom: 40px; }
 /* wl-usage — расход по услугам: график и таблица */
 .wl-usage__ctl { display: flex; align-items: center; gap: 12px; }
-.wl-chart { width: 100%; }
-.wl-chart__svg { display: block; width: 100%; height: 260px; }
+.wl-chartcard { flex-direction: row; align-items: stretch; gap: 4px; }
+.wl-chart__ylabel { display: flex; align-items: center; justify-content: center; width: 18px; flex-shrink: 0; padding-bottom: 24px;
+  writing-mode: vertical-rl; transform: rotate(180deg); font-size: var(--text-footnote-reg-12); font-weight: 500; color: var(--color-shade-700); white-space: nowrap; }
+.wl-chart__main { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; }
+.wl-chart__top { display: flex; align-items: center; justify-content: flex-end; height: 20px; }
+.wl-chart { width: 100%; min-width: 0; }
+.wl-chart__svg { display: block; width: 100%; height: 211px; }
 .an-page .wl-chart__svg { max-width: none; max-height: none; }
 .wl-alertico { display: inline-flex; flex-shrink: 0; }
 .wl-alertico svg { width: 20px; height: 20px; }
 .wl-chart__grid { stroke: var(--color-shade-200); }
-.wl-chart__y, .wl-chart__x { fill: var(--color-shade-700); font-size: var(--text-footnote-reg-12); }
-.wl-chart__line { fill: none; stroke-width: 2; }
+.wl-chart__x, .wl-chart__y { fill: var(--color-shade-700); font-size: var(--text-footnote-reg-12); }
+.wl-chart__axis { fill: var(--color-shade-700); font-size: var(--text-footnote-reg-12); font-weight: 500; }
+.wl-chart__line { fill: none; stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
 .wl-chart__line--streams { stroke: var(--color-blue); }
 .wl-chart__line--media { stroke: var(--color-green); }
-.wl-chart__area { opacity: .12; }
-.wl-chart__area--streams { fill: var(--color-blue); }
-.wl-chart__area--media { fill: var(--color-green); }
-.wl-legend { display: flex; gap: 16px; margin-top: 8px; font-size: var(--text-body-reg-14); color: var(--color-black); }
-.wl-legend span { display: inline-flex; align-items: center; gap: 6px; }
-.wl-sw { display: inline-block; width: 10px; height: 10px; border-radius: 4px; margin-right: 8px; }
+.wl-chart__stop--streams { stop-color: var(--color-blue); }
+.wl-chart__stop--media { stop-color: var(--color-green); }
+.wl-legend { display: flex; gap: 12px; font-size: var(--text-body-reg-14); color: var(--color-shade-700); }
+.wl-legend span { display: inline-flex; align-items: center; gap: 8px; }
+.wl-sw { display: inline-block; width: 8px; height: 8px; border-radius: 9999px; margin-right: 8px; }
 .wl-legend .wl-sw { margin-right: 0; }
 .wl-sw--streams { background: var(--color-blue); }
 .wl-sw--media { background: var(--color-green); }

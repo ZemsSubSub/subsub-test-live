@@ -10,8 +10,8 @@
   if (!UI || !F) return;
 
   // Демо-вариант порта: build/serve.js ставит <body data-demo="empty">, как в Analytics.
-  // Нулевой сценарий: канал подключён, аккаунт платный, но ни стримов, ни плейлистов,
-  // ни файлов ещё нет (решение 03.09). Состояние у варианта своё.
+  // Нулевой сценарий: аккаунт платный, но ни каналов, ни стримов, ни плейлистов, ни файлов
+  // ещё нет (решение 08.09: канал человек подключает сам). Состояние у варианта своё.
   function demoMode() {
     var v = document.body ? document.body.getAttribute("data-demo") : "";
     return v === "empty" ? v : "";
@@ -20,6 +20,7 @@
   if (DEMO) {
     F = JSON.parse(JSON.stringify(F));
     F.streams = []; F.playlists = []; F.notifications = []; F.files = []; F.folders = [];
+    F.channels.forEach(function (c) { c.connected = false; c.revoked = false; });
     F.account.mode = "payg";
   }
   var KEY = "subsub_live_state" + (DEMO ? "_" + DEMO : "");
@@ -157,6 +158,8 @@
     notLive: "This stream is not live.",
     inProgress: "Action in progress.",
     draftStart: "Finish the setup to start.",
+    openEnd: "Loop has no limit — the stream runs until you stop it. Set a loop limit or switch to Play once for a fixed window.",
+    openEndVal: "Until you stop it",
     pastRun: "Past runs stay as history — only future runs can be changed.",
     draftOnly: "Finish the setup first.",
     afterStop: "Available after the stream stops.",
@@ -1337,7 +1340,7 @@
       inner = box("On air", UI.durHuman(onAirSec)) +
         box("Viewers", String(s.viewers || 0)) +
         (s.backup ? box("Backup", "Active") : "") +
-        box(sl ? "Window ends" : "Ends", sl ? UI.until(sl.end, nowMs()).replace(/^in /, "")
+        box(sl && !sl.open ? "Window ends" : "Ends", sl && !sl.open ? UI.until(sl.end, nowMs()).replace(/^in /, "")
           : s.loopLimit ? s.loopLimit + " loops"
           : s.playback.loop ? "Until stop" : "Queue ends");
     } else if (k === "stopping") {
@@ -1648,6 +1651,7 @@
   }
   // конец окна с датой, если он в другой день: «21 Aug, 08:00 → 22 Aug, 08:00»
   function windowStr(sl) {
+    if (sl.open) return UI.dt(sl.start, TZ) + " → " + T.openEndVal.toLowerCase() + " (" + TZL + ")";
     var sameDay = UI.day(sl.start, TZ) === UI.day(sl.end, TZ);
     return UI.dt(sl.start, TZ) + " → " + (sameDay ? UI.time(sl.end, TZ) : UI.dt(sl.end, TZ)) + " (" + TZL + ")";
   }
@@ -2374,11 +2378,11 @@
   }
   // Уход из мастера: правка существующего стрима уходит молча, как и раньше; недособранный
   // новый стрим или открытый черновик — спрашиваем, оставить ли его черновиком (Э9, диалог 13)
-  function formLeave(href) {
+  function formLeave(href, exact) {
     var cur = FORM && FORM.id ? stream(FORM.id) : null;
     var reopened = !!(cur && cur.status === "draft");
     var existing = !!(cur && !reopened);
-    var to = existing ? href : "live-streams.html";
+    var to = existing || exact ? href : "live-streams.html";
     if (existing || !formDirty()) { location.href = to; return; }
     var body = '<p class="an-modal__text">' + (reopened
       ? "The draft keeps what you had before this visit unless you save it again."
@@ -2394,6 +2398,19 @@
       UI.closeModals(); UI.storeDel(FORM_DRAFT_KEY); location.href = to;
     };
   }
+  // Ссылки шелла (сайдбар, сабменю, шапка) уводят из мастера так же, как «Back»: недособранный
+  // новый стрим или открытый черновик получают тот же вопрос, а после ответа — исходный адрес ссылки.
+  document.addEventListener("click", function (e) {
+    if (PAGE !== "form" || !FORM || e.defaultPrevented) return;
+    var a = e.target.closest && e.target.closest("a[href]");
+    if (!a || a.closest("[data-lv-form]") || a.closest(".an-modal") || a.closest(".is-off") || a.getAttribute("aria-disabled")) return;
+    var href = a.getAttribute("href");
+    if (!href || href.charAt(0) === "#" || a.target === "_blank") return;
+    var cur = FORM.id ? stream(FORM.id) : null;
+    if ((cur && cur.status !== "draft") || !formDirty()) return;
+    e.preventDefault();
+    formLeave(href, true);
+  }, true);
   function formStash(step) {
     UI.storeSet(FORM_DRAFT_KEY, { form: FORM, step: step || WZ.step });
   }
@@ -2440,9 +2457,11 @@
         loopLimit: s.loopLimit || 0,
         backup: !!s.backup, tz: TZ, editStatus: s.status
       };
-      // прямая ссылка на шаг: «Edit slot» с карточки открывает расписание
+      // у сохранённого стрима заполнены все шаги: карта открыта целиком, прямая ссылка
+      // (`Edit slot` с карточки, `Edit` из календаря) ведёт на нужный шаг
       var stq0 = Number(new URLSearchParams(location.search).get("step"));
-      if (stq0 >= 1 && stq0 <= WZ_STEPS.length) { WZ.step = stq0; WZ.max = WZ_STEPS.length; }
+      WZ.max = WZ_STEPS.length;
+      WZ.step = stq0 >= 1 && stq0 <= WZ_STEPS.length ? stq0 : 1;
     } else {
       FORM = {
         id: null, name: "", channelId: null, destMode: "connected", key: "", link: "",
@@ -2614,11 +2633,6 @@
   function formCoverBox() {
     var own = FORM.cover || null, auto = coverOf(formPseudo());
     var src = own || auto;
-    var connected = FORM.destMode === "connected";
-    // thumbnails.set требует OAuth и конкретного канала: до выбора отдавать кадр некуда
-    var ytWhy = !connected ? "Connect the channel to set the YouTube thumbnail."
-      : !FORM.channelId ? "Pick the channel first." : "";
-    var ytOk = !ytWhy;
     var name = own ? (FORM.coverName || "Custom image") : auto ? "Frame from the first video" : "No file chosen";
     return field("Cover",
       '<div class="lv-thumbcol">' +
@@ -2630,16 +2644,8 @@
         "</button>" +
         '<input type="file" accept="image/png,image/jpeg" data-lv-coverfile hidden />' +
         (FORM.coverErr ? '<span class="an-hint an-hint--warn">' + UI.esc(FORM.coverErr) + "</span>" : "") +
-        // ограничение и галочка — одна строка: оба про обложку, а не про порядок действий
-        '<div class="lv-thumbcol__b">' +
-          '<label class="an-cols__row' + (FORM.ytThumb && ytOk ? " is-checked" : "") +
-            (ytOk ? "" : " is-off") + '"' + (ytOk ? "" : ' aria-disabled="true" data-tip="' + UI.esc(ytWhy) + '"') + ">" +
-            '<span class="an-check' + (FORM.ytThumb && ytOk ? " is-checked" : "") + '" role="checkbox" aria-checked="' +
-              (FORM.ytThumb && ytOk ? "true" : "false") + '"' + (ytOk ? ' data-lv-ytthumb' : "") + ">" + (IC.check || "") + "</span>" +
-            '<span class="an-cols__lbl">Set as YouTube thumbnail</span></label>' +
-          '<span class="an-hint">JPG or PNG, up to 2 MB.' +
-            (own ? ' · <button class="lv-link" type="button" data-lv-coverrm>Use the video frame</button>' : "") + "</span>" +
-        "</div>" +
+        '<span class="an-hint">JPG or PNG, up to 2 MB.' +
+          (own ? ' · <button class="lv-link" type="button" data-lv-coverrm>Use the video frame</button>' : "") + "</span>" +
       "</div>");
   }
 
@@ -2714,21 +2720,8 @@
   function formDetach() { if (FORM.srcPl) FORM.detached = true; }
   // цель эфира выбирается на шаге контента и хранится в стриме, а не в плейлисте
   function formProfile() { return resProfile(formRes(), formVert()); }
-  // ориентация: пока человек не выбрал — та, что у большинства файлов очереди
-  // тумблер вертикали: подпись, состояние и причина блокировки
-  function vertToggle(pl, prof) {
-    var canV = PRESETS.some(function (r) { return resFits(pl, r, true); });
-    var why = "The queue is landscape — a vertical frame would need upscaling.";
-    var off = canV ? "" : ' aria-disabled="true" data-tip="' + UI.esc(why) + '"';
-    return '<label class="lv-pick__only lv-target__o' + (canV ? "" : " is-off") + '"' + off + ">" +
-      "<span>Vertical video</span>" +
-      UI.switchHtml('data-lv-f="vert"' + (canV ? "" : ' data-tip="' + UI.esc(why) + '"'), prof.vert, "Vertical video") +
-      "</label>";
-  }
-  function formVert() {
-    if (FORM.vertTouched && (FORM.vert === true || FORM.vert === false)) return FORM.vert;
-    return resCap({ items: formQueue() }).vert;
-  }
+  // ориентация не выбирается: она та, что у большинства файлов очереди
+  function formVert() { return resCap({ items: formQueue() }).vert; }
   // цель не может быть выше потолка очереди: при добавлении меньшего файла она опускается
   var RES_DEFAULT = 1080;
   function formRes() {
@@ -2851,7 +2844,7 @@
       if (FORM.startMode === "now") return "Starts right after creation";
       var sl = FORM.schedules[0];
       if (!sl) return "";
-      return UI.dt(sl.start, FORM.tz).replace(",", "") + " → " + UI.time(sl.end, FORM.tz);
+      return UI.dt(sl.start, FORM.tz).replace(",", "") + " → " + (sl.open ? T.openEndVal.toLowerCase() : UI.time(sl.end, FORM.tz));
     }
     return "";
   }
@@ -3056,9 +3049,6 @@
             (off ? ' aria-disabled="true" data-tip="' + UI.esc(capWhy) + '"' : ' data-lv-res="' + r + '"') +
             ">" + resLabel(r) + "</button>";
         }).join("") + "</div>" +
-        // ориентация — да или нет, а не выбор из равных: тумблер. Если вертикаль
-        // невозможна, он заблокирован причиной (ADR-0002)
-        vertToggle(pl0, prof) +
         '<span class="an-hint">' + resDimLabel(prof.row, prof.vert) + " · " + tFps + " fps" +
           (q.length ? " from the files" : "") +
           (rng ? " · target bitrate " + rng[0].toFixed(1) + "–" + rng[1].toFixed(1) + " Mbps" : "") +
@@ -3194,7 +3184,9 @@
             var c = channelBusy(pseudo0, sl);
             return '<div class="ai-grid lv-slot__row' + (c ? " lv-slot--conflict" : "") + '">' +
               field("Starts", dtField(sl, "start", pseudo0)) +
-              field("Ends", dtField(sl, "end", pseudo0)) +
+              (formSlotOpen()
+                ? field("Ends", '<div class="an-input lv-ro">' + (sl.open ? T.openEndVal : UI.dt(sl.end, FORM.tz).replace(",", "")) + "</div>")
+                : field("Ends", dtField(sl, "end", pseudo0))) +
               // правило повтора принадлежит слоту: у каждого окна своё
               field("Repeat",
                 '<div class="lv-frep">' + selTrig("slotRep",
@@ -3211,9 +3203,11 @@
                 "</div>" : "") +
             "</div>";
           }).join("") +
-          (formEndWhy()
-            ? '<span class="an-hint">' + UI.esc(formEndWhy() + " " + formEndFree()) + "</span>"
-            : "") +
+          (formSlotOpen()
+            ? '<span class="an-hint">' + T.openEnd + "</span>"
+            : formEndWhy()
+              ? '<span class="an-hint">' + UI.esc(formEndWhy() + " " + formEndFree()) + "</span>"
+              : "") +
           '<div class="lv-form__row">' + btn("Add slot", "secondary", "data-lv-slotadd", IC.plus) +
             '<span class="an-hint">Up to ' + F.account.horizonDays + " days ahead.</span></div>" +
           (FORM.schedules.length
@@ -3247,6 +3241,7 @@
       (perWin ? " · " + UI.plural(perWin, "run", "runs") + " per window" : "") +
       (FORM.shuffle ? " · shuffled" : "");
     var ch4 = chan(FORM.channelId), prof4 = formProfile();
+    var open0 = FORM.startMode === "schedule" && !!(FORM.schedules[0] && FORM.schedules[0].open);
     return '<div class="lv-wiz__step">' +
       '<div class="lv-sum__rd lv-sum__rd--' + (line ? "warn" : "ok") + '" data-lv-ready>' +
         (line ? (IC.attention || "") : (IC.check || "")) + "<span>" +
@@ -3263,16 +3258,16 @@
         (FORM.startMode === "now"
           ? kvRow("Starts", "Right after creation")
           : runs.length
-            ? kvRow("First run", UI.dt(runs[0].start, FORM.tz).replace(",", "") + " → " + UI.time(runs[0].end, FORM.tz) +
-                " " + tzOffLabel(FORM.tz)) +
+            ? kvRow("First run", UI.dt(runs[0].start, FORM.tz).replace(",", "") + " → " +
+                (FORM.schedules[0].open ? T.openEndVal.toLowerCase() : UI.time(runs[0].end, FORM.tz)) + " " + tzOffLabel(FORM.tz)) +
               (FORM.schedules[0].repeat && FORM.schedules[0].repeat.type !== "none"
                 ? kvRow("Repeats", (optByValue(REP_OPTS, FORM.schedules[0].repeat.type) || {}).label || "")
                 : "") +
               (FORM.schedules.length > 1 ? kvRow("Windows planned", String(FORM.schedules.length)) : "")
             : kvRow("First run", "No slots yet")) +
         (FORM.backup ? kvRow("Backup stream", "On — the rate is doubled") : "") +
-        kvRow(unknown ? "This window costs" : c.windowH ? "This " + winLen(c.windowH) + " window costs" : "One day costs",
-              (unknown ? "—" : c.windowH ? "≈" + UI.money(c.windowCost) : "≈" + UI.money(c.perDay)) +
+        kvRow(unknown ? "This window costs" : c.windowH && !open0 ? "This " + winLen(c.windowH) + " window costs" : "One day on air costs",
+              (unknown ? "—" : c.windowH && !open0 ? "≈" + UI.money(c.windowCost) : "≈" + UI.money(c.perDay)) +
               " · " + (a.kind === "hours" ? "≈" + UI.hours(a.creditHours) + " of free credit" : c.rateStr)) +
         kvRow(a.shared ? "Organization balance covers" : "Your balance covers", "≈" + UI.hours(c.balHours) + " of streaming") +
       "</div></div>" +
@@ -3482,7 +3477,7 @@
   // разрешение как у пресетов: по короткой стороне, «1080p». Без метаданных — прочерк
   function fileRes(f) {
     if (!f || !f.q || !f.q.w || !f.q.h) return "—";
-    return Math.min(f.q.w, f.q.h) + "p";
+    return f.q.w + "×" + f.q.h;
   }
   function fileFmt(f) {
     return '<span class="lv-qr__fmt">' + UI.esc((f.container || "mp4").toUpperCase()) + "</span>";
@@ -3910,7 +3905,7 @@
         var okDay = rep !== "weekdays" || (wd >= 1 && wd <= 5);
         if (sl.until && dstr >= sl.until) break;     // правило закончилось: дальше история другого слота
         if (okDay && skips.indexOf(dstr) === -1) {
-          out.push({ streamId: s.id, slotId: sl.id, start: t, end: t + dur, rep: rep, occDate: dstr });
+          out.push({ streamId: s.id, slotId: sl.id, start: t, end: t + dur, rep: rep, occDate: dstr, open: !!sl.open });
         }
       }
       if (rep === "none") break;
@@ -4089,13 +4084,14 @@
             'style="grid-template-columns:' + CL_COLS + '" ' +
             'data-lv-occ="' + o.streamId + "|" + o.slotId + "|" + o.occDate + '">' +
             '<span class="an-td">' + UI.time(new Date(o.start).toISOString(), calTz()) + " → " +
-              UI.time(new Date(o.end).toISOString(), calTz()) + (cross ? ' <span class="an-muted">next day</span>' : "") + "</span>" +
-            '<span class="an-td">' + UI.esc(s.name) + "</span>" +
+              (o.open ? '<span class="an-muted">until stopped</span>'
+                : UI.time(new Date(o.end).toISOString(), calTz()) + (cross ? ' <span class="an-muted">next day</span>' : "")) + "</span>" +
+            '<span class="an-td">' + UI.esc(s.name) + repMark(o) + "</span>" +
             '<span class="an-td">' + chanHtml(s) + "</span>" +
             '<span class="an-td">' + stBadge(stKey(s)) + "</span>" +
             '<span class="an-td an-td--r"' + (onAirNow ? ' data-tip="Time on air so far."' : '') + ">" +
-              (onAirNow ? UI.dur(airSec) : UI.dur(sec)) + "</span>" +
-            '<span class="an-td an-td--r">≈' + UI.money((sec / 3600) * rateNum(s)) + "</span>" +
+              (onAirNow ? UI.dur(airSec) : o.open ? '<span class="an-muted">—</span>' : UI.dur(sec)) + "</span>" +
+            '<span class="an-td an-td--r">≈' + UI.money((sec / 3600) * rateNum(s)) + (o.open ? ' <span class="an-muted">/ day</span>' : "") + "</span>" +
             "</button>";
         }).join("");
     }).join("");
@@ -4125,6 +4121,11 @@
           return '<div class="an-th' + (i > 3 ? " an-th--r" : "") + '">' + h + "</div>";
         }).join("") + "</div>" +
       runRows + rows + "</div>";
+  }
+  // повтор виден в каждом виде календаря одинаково: та же иконка, что на полосе недели
+  function repMark(o) {
+    if (!o || o.rep === "none") return "";
+    return '<span class="lv-cal__rep" data-tip="Repeats ' + UI.esc((REP[o.rep] || o.rep).toLowerCase()) + '">' + (IC.restart || "") + "</span>";
   }
   // строк имени столько, сколько влезает: иначе в узкой дорожке многоточие съедает полназвания
   function calFitLabels(host) {
@@ -4234,7 +4235,7 @@
         var s = stream(o.streamId);
         return '<button class="lv-mbar lv-bar--' + stKey(s) + '" type="button" ' +
           'data-lv-occ="' + o.streamId + "|" + o.slotId + "|" + o.occDate + '">' +
-          UI.time(new Date(o.start).toISOString(), calTz()) + " " + UI.esc(s.name) + "</button>";
+          repMark(o) + UI.time(new Date(o.start).toISOString(), calTz()) + " " + UI.esc(s.name) + "</button>";
       }).join("");
       var more = list.length > 3 ? '<span class="lv-next__more" tabindex="0" data-tip="' +
         UI.esc(list.slice(3).map(function (o) { return (stream(o.streamId) || {}).name; }).join(" · ")) + '">+' +
@@ -4258,11 +4259,12 @@
       '<div class="lv-kv">' +
         kv("Channel", UI.esc(chanName(s))) +
         kv("Window", UI.dt(new Date(o.start).toISOString(), calTz()) + " → " +
-          (UI.day(new Date(o.start).toISOString(), calTz()) === UI.day(new Date(o.end).toISOString(), calTz())
-            ? UI.time(new Date(o.end).toISOString(), calTz())
-            : UI.dt(new Date(o.end).toISOString(), calTz()))) +
+          (o.open ? T.openEndVal.toLowerCase()
+            : UI.day(new Date(o.start).toISOString(), calTz()) === UI.day(new Date(o.end).toISOString(), calTz())
+              ? UI.time(new Date(o.end).toISOString(), calTz())
+              : UI.dt(new Date(o.end).toISOString(), calTz()))) +
         kv("Playlist", UI.esc(pl ? pl.name : "—")) +
-        kv("Window cost", "≈" + UI.money(hours * rateNum(s))) +
+        kv(o.open ? "One day on air" : "Window cost", "≈" + UI.money(hours * rateNum(s))) +
         (o.rep !== "none" ? kv("Repeat", REP[o.rep] || o.rep) : "") +
 
       "</div>" +
@@ -4281,15 +4283,84 @@
   // ---- перенос и растягивание
   var DRAG = null;
   function calDragStart(e, bar, mode) {
-    var parts = bar.getAttribute(mode === "resize" ? "data-lv-resize" : "data-lv-occ").split("|");
     var cells = bar.closest("[data-lv-calcells]");
     if (!cells) return;
     var el = bar.closest(".lv-bar") || bar;
     if (el.classList.contains("is-past")) return;
+    var parts = (el.getAttribute("data-lv-occ") || bar.getAttribute("data-lv-resize")).split("|");
+    var rect = cells.getBoundingClientRect();
     DRAG = { mode: mode, streamId: parts[0], slotId: parts[1], occDate: parts[2] || null,
-             y0: e.clientY, x0: e.clientX, h: cells.getBoundingClientRect().height,
-             bar: el, h0: el.style.height, moved: false };
+             y0: e.clientY, x0: e.clientX, h: rect.height, top: rect.top, day: cells.getAttribute("data-lv-calcells"),
+             bar: el, h0: el.style.height, moved: false, ghosts: [] };
     e.preventDefault();
+  }
+  // Точка под курсором в координатах сетки: день — из колонки под мышью (или той, где
+  // схватили полосу), минута — по высоте колонок, шаг 15 минут. Так конец окна можно
+  // утянуть в соседний день, а не только вниз по своей колонке.
+  function calPointAt(e) {
+    var d = DRAG, under = document.elementFromPoint(e.clientX, e.clientY);
+    var col = under && under.closest && under.closest("[data-lv-calday]");
+    var min = Math.round(((e.clientY - d.top) / d.h) * 1440 / 15) * 15;
+    return { day: col ? col.getAttribute("data-lv-calday") : d.day, min: Math.max(0, Math.min(1440, min)) };
+  }
+  // абсолютное начало схваченного запуска: правило хранит первый запуск, запуск — свою дату
+  function occStartMs(sl, occDate) {
+    var day0 = dayStartMs(partsIn(Date.parse(sl.start), calTz()).date, calTz());
+    return dayStartMs(occDate || partsIn(Date.parse(sl.start), calTz()).date, calTz()) + (Date.parse(sl.start) - day0);
+  }
+  function calResizeEndAt(pt, sl, occDate) {
+    var st = occStartMs(sl, occDate);
+    var want = dayStartMs(pt.day, calTz()) + pt.min * 60e3;
+    return st + Math.max(15 * 60e3, want - st);
+  }
+  function calTipEl() {
+    var t = document.getElementById("lvDragTip");
+    if (!t) { t = document.createElement("span"); t.id = "lvDragTip"; t.className = "lv-bar__drag"; document.body.appendChild(t); }
+    return t;
+  }
+  function calTipHide() { var t = document.getElementById("lvDragTip"); if (t) t.remove(); }
+  function calGhostsClear() { (DRAG && DRAG.ghosts || []).forEach(function (g) { g.remove(); }); if (DRAG) DRAG.ghosts = []; }
+  // Полоса едет за курсором с шагом 15 минут, а бадж у курсора называет новое окно и изменение
+  // длины: без этого перенос выглядел так, будто ничего не происходит, пока не отпустишь кнопку.
+  function calDragPreview(e) {
+    var d = DRAG, s = stream(d.streamId), sl = s && (s.schedules || []).filter(function (x) { return x.id === d.slotId; })[0];
+    if (!sl) return;
+    var stepPx = d.h / 96;
+    var dyMin = Math.round(((e.clientY - d.y0) / d.h) * 1440 / 15) * 15;
+    var dyPx = dyMin / 15 * stepPx;
+    var st = occStartMs(sl, d.occDate), len0 = Date.parse(sl.end) - Date.parse(sl.start);
+    var start = st, end = st + len0, text;
+    if (d.mode === "resize") {
+      end = calResizeEndAt(calPointAt(e), sl, d.occDate);
+      var colFrom = dayStartMs(d.day, calTz()), colTo = colFrom + DAYMS;
+      d.bar.style.height = Math.max(2, (Math.min(end, colTo) - Math.max(start, colFrom)) / DAYMS * d.h) + "px";
+      // хвост в следующих днях: призрачные полосы в тех колонках, что видны на экране
+      calGhostsClear();
+      for (var dayMs = colTo; dayMs < end; dayMs += DAYMS) {
+        var cells = document.querySelector('[data-lv-calcells="' + partsIn(dayMs, calTz()).date + '"]');
+        if (!cells) continue;
+        var g = document.createElement("div");
+        g.className = d.bar.className.replace("is-dragging", "") + " is-ghost";
+        g.style.top = "0"; g.style.height = Math.max(2, (Math.min(end, dayMs + DAYMS) - dayMs) / DAYMS * 100) + "%";
+        cells.appendChild(g); d.ghosts.push(g);
+      }
+      var delta = (end - start) - len0;
+      text = UI.durHuman((end - start) / 1000) +
+        (delta ? " (" + (delta > 0 ? "+" : "−") + UI.durHuman(Math.abs(delta) / 1000) + ")" : "") +
+        " · ends " + (partsIn(end, calTz()).date === d.day ? UI.time(new Date(end).toISOString(), calTz()) : UI.dt(new Date(end).toISOString(), calTz()).replace(",", ""));
+    } else {
+      d.bar.style.transform = "translate(" + (e.clientX - d.x0) + "px," + dyPx + "px)";
+      var p = calPointAt(e), shift = dyMin * 60e3;
+      if (p.day !== d.day) shift += dayStartMs(p.day, calTz()) - dayStartMs(d.day, calTz());
+      start += shift; end += shift;
+      text = UI.dt(new Date(start).toISOString(), calTz()).replace(",", "") + " → " +
+        (sl.open ? T.openEndVal.toLowerCase() : UI.time(new Date(end).toISOString(), calTz())) +
+        (shift ? " · " + shiftLabel(shift) : "");
+    }
+    var tip = calTipEl();
+    tip.textContent = text;
+    tip.style.background = getComputedStyle(d.bar).color;
+    tip.style.left = (e.clientX + 14) + "px"; tip.style.top = (e.clientY + 18) + "px";
   }
   document.addEventListener("mousedown", function (e) {
     if (PAGE === "calendar" && calAll()) return;        // обзор всех каналов — только чтение
@@ -4383,57 +4454,38 @@
     }
     if (DRAG.moved) calDragPreview(e);
   });
-  // Полоса едет за курсором с шагом 15 минут и показывает новое окно: без этого перенос
-  // выглядел так, будто ничего не происходит, пока не отпустишь кнопку.
-  function calDragPreview(e) {
-    var d = DRAG, s = stream(d.streamId), sl = s && (s.schedules || []).filter(function (x) { return x.id === d.slotId; })[0];
-    if (!sl) return;
-    var stepPx = d.h / 96;
-    var dyMin = Math.round(((e.clientY - d.y0) / d.h) * 1440 / 15) * 15;
-    var dyPx = dyMin / 15 * stepPx;
-    var start = Date.parse(sl.start), end = Date.parse(sl.end);
-    if (d.mode === "resize") {
-      var lenMin = Math.max(15, (end - start) / 60e3 + dyMin);
-      d.bar.style.height = Math.max(2, lenMin / 1440 * d.h) + "px";
-      end = start + lenMin * 60e3;
-    } else {
-      d.bar.style.transform = "translate(" + (e.clientX - d.x0) + "px," + dyPx + "px)";
-      start += dyMin * 60e3; end += dyMin * 60e3;
-    }
-    var tag = d.bar.querySelector(".lv-bar__drag");
-    if (!tag) { tag = document.createElement("span"); tag.className = "lv-bar__drag"; d.bar.appendChild(tag); }
-    tag.textContent = UI.time(new Date(start).toISOString(), calTz()) + " → " + UI.time(new Date(end).toISOString(), calTz());
-  }
   document.addEventListener("mouseup", function (e) {
     if (DRAW) { calDrawEnd(); return; }
     if (!DRAG) return;
-    var d = DRAG; DRAG = null;
+    var d = DRAG, pt = calPointAt(e);
+    calGhostsClear(); calTipHide();
+    DRAG = null;
     d.bar.classList.remove("is-dragging");
     d.bar.style.transform = ""; d.bar.style.height = d.h0 || "";
-    var dtag = d.bar.querySelector(".lv-bar__drag"); if (dtag) dtag.remove();
     if (!d.moved) return;                                   // обычный клик — карточка слота
     var s = stream(d.streamId), sl = (s.schedules || []).filter(function (x) { return x.id === d.slotId; })[0];
     if (!sl) return;
     // сдвиг по вертикали — время, по горизонтали — день
     var dyMin = Math.round(((e.clientY - d.y0) / d.h) * 1440 / 15) * 15;
-    var dayEl = document.elementFromPoint(e.clientX, e.clientY);
-    var col = dayEl && dayEl.closest && dayEl.closest("[data-lv-calday]");
-    var newDay = col ? col.getAttribute("data-lv-calday") : null;
+    var newDay = pt.day;
     if (d.mode === "resize") {
-      var newEnd = Date.parse(sl.end) + dyMin * 60e3;
-      if (newEnd - Date.parse(sl.start) < 15 * 60e3) return;
+      var lenMs = calResizeEndAt(pt, sl, d.occDate) - occStartMs(sl, d.occDate);
+      var newEnd = Date.parse(sl.start) + lenMs;
+      if (newEnd === Date.parse(sl.end)) return;
       if (!slotFits(s, { id: sl.id, start: sl.start, end: new Date(newEnd).toISOString() })) {
         renderCalendar(); UI.toast(T_SELF_OVERLAP); return;
       }
-      sl.end = new Date(newEnd).toISOString();
+      // растянутое рукой окно — уже выбор человека: луп без конца становится окном с концом
+      sl.end = new Date(newEnd).toISOString(); sl.endSet = true; sl.open = false;
       save(); renderCalendar();
       UI.toast("Window is now " + UI.durHuman((Date.parse(sl.end) - Date.parse(sl.start)) / 1000) +
         " · ≈" + UI.money(((Date.parse(sl.end) - Date.parse(sl.start)) / 3600e3) * rateNum(s)) + ".");
       return;
     }
     var shift = dyMin * 60e3;
-    if (newDay && d.occDate && newDay !== d.occDate) {
-      shift += (dayStartMs(newDay, calTz()) - dayStartMs(d.occDate, calTz()));
+    // день считается от колонки, где схватили: полоса, перетекшая с прошлого дня, не должна уезжать на сутки
+    if (newDay && newDay !== d.day) {
+      shift += (dayStartMs(newDay, calTz()) - dayStartMs(d.day, calTz()));
     }
     if (!shift) return;
     calMoveAsk(s, sl, d.occDate, shift);
@@ -4832,7 +4884,7 @@
     var copen = t.closest && t.closest("[data-lv-calopen]");
     if (copen) { location.href = "live-stream.html?id=" + encodeURIComponent(copen.getAttribute("data-lv-calopen")); return; }
     var cedit = t.closest && t.closest("[data-lv-caledit]");
-    if (cedit) { location.href = "live-stream-create.html?id=" + encodeURIComponent(cedit.getAttribute("data-lv-caledit")); return; }
+    if (cedit) { location.href = "live-stream-create.html?id=" + encodeURIComponent(cedit.getAttribute("data-lv-caledit")) + "&step=3"; return; }
     var cdel = t.closest && t.closest("[data-lv-calslotdel]");
     if (cdel) {
       var dp = cdel.getAttribute("data-lv-calslotdel").split("|");
@@ -5005,7 +5057,6 @@
       return;
     }
     if (t.closest && t.closest("[data-lv-coverrm]")) { FORM.cover = null; FORM.coverErr = ""; renderForm(); UI.toast("Cover removed."); return; }
-    if (t.closest && t.closest("[data-lv-ytthumb]")) { FORM.ytThumb = !FORM.ytThumb; renderForm(); return; }
     if (t.closest && t.closest("[data-lv-formpladd]")) { pickOpen({ kind: "formpl" }); return; }
     var fpmv = t.closest && t.closest("[data-lv-formplmv]");
     if (fpmv && !UI.isOff(fpmv)) {
@@ -5574,10 +5625,16 @@
   }
   // Окна приводятся к длине: при известном числе проходов — всегда, при бесконечном лупе —
   // пока человек не выбрал конец сам. Иначе окно жило бы с придуманными двумя часами.
+  // Луп без лимита не имеет конца: окно в данных живёт сутками (календарь и стоимость считают
+  // по дню), а подписи говорят «until you stop it». Конец, выбранный в календаре, остаётся.
+  var OPEN_MS = 24 * 3600e3;
+  function formSlotOpen() { return !!FORM.loop && !(FORM.loopLimit > 0); }
   function formSyncEnds() {
-    var fixed = formEndSec(), pass = formPassSec();
+    var fixed = formEndSec(), pass = formPassSec(), open = formSlotOpen();
     FORM.schedules.forEach(function (sl) {
       var broken = Date.parse(sl.end) <= Date.parse(sl.start);
+      sl.open = open && (!sl.endSet || broken);
+      if (sl.open) { sl.end = new Date(Date.parse(sl.start) + OPEN_MS).toISOString(); return; }
       // сломанное окно лечим даже поверх своего выбора: конец раньше начала не бывает
       var len = fixed || (sl.endSet && !broken ? 0 : pass);
       if (len) sl.end = new Date(Date.parse(sl.start) + len * 1000).toISOString();
@@ -5922,19 +5979,6 @@
     var ffs = el.getAttribute("data-lv-f");
     if (ffs && FORM) {
       if (ffs === "loop") { FORM.loop = e.detail.on; renderForm(); return; }
-      if (ffs === "vert") {
-        FORM.vert = e.detail.on;
-        FORM.vertTouched = true;
-        // ступень могла стать невозможной в новой ориентации — опускаем до допустимой
-        var plO = formQueuePl();
-        if (!resFits(plO, formRes(), FORM.vert)) {
-          var okRow = null;
-          PRESETS.forEach(function (r) { if (!okRow && resFits(plO, r, FORM.vert)) okRow = r; });
-          FORM.res = okRow;
-        }
-        renderForm();
-        return;
-      }
       if (ffs === "shuffle") FORM.shuffle = e.detail.on;
       else if (ffs === "loopLimitOn") FORM.loopLimit = e.detail.on ? 3 : 0;
       else if (ffs === "backup") FORM.backup = e.detail.on;
