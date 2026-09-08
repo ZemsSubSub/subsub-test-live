@@ -1932,6 +1932,12 @@ body.is-open:not(.is-collapsed) .main { margin-left: 306px; }
 .an-dr.is-open .an-dr__field { border-color: var(--color-black); box-shadow: 0 0 0 1px var(--color-black); }
 .an-dr__ico { display: inline-flex; }
 .an-dr__ico svg { width: 20px; height: 20px; color: var(--color-shade-700); }
+/* an-dr__clear — сброс своего периода к 30 дням, виден только при Custom */
+.an-dr__clear { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; margin: 0 -6px 0 2px;
+  border-radius: 4px; color: var(--color-shade-700); }
+.an-dr__clear[hidden] { display: none; }
+.an-dr__clear svg { width: 12px; height: 12px; }
+.an-dr__clear:hover { background: var(--color-shade-200); color: var(--color-black); }
 
 /* сегмент периодов: активный — белая пилюля на серой подложке */
 /* ---------- Мастер создания стрима: карта шагов слева, текущий шаг справа ---------- */
@@ -2165,7 +2171,19 @@ body.is-open:not(.is-collapsed) .main { margin-left: 306px; }
   overflow: hidden; text-overflow: ellipsis;
 }
 .an-topic:hover, .an-topic__more:hover { background: var(--color-shade-200); }
-.an-topics.is-expanded { flex-wrap: wrap; gap: 2px 4px; }
+.an-topic__more { border: 0; font-family: inherit; }
+/* an-topicpop — раскрывашка «+N» в колонке топиков: те же строки, что в панели фильтров */
+.an-topicpop { position: fixed; z-index: 60; width: max-content; max-width: 280px; padding: 4px; background: var(--color-white);
+  border: 1px solid var(--color-shade-200); border-radius: 8px; box-shadow: 0 8px 24px rgba(34,41,47,.12); }
+.an-topicpop .anf-opt { white-space: nowrap; }
+/* anf-chk — квадрат мультивыбора: выбранная строка не жирнеет, а получает галочку */
+.anf-chk { display: inline-flex; align-items: center; justify-content: center; width: 16px; height: 16px; flex-shrink: 0;
+  border: 1px solid var(--color-shade-300); border-radius: 4px; color: var(--color-white); }
+.anf-chk svg { width: 12px; height: 12px; opacity: 0; }
+.anf-opt--chk.is-selected { background: none; font-weight: 400; }
+.anf-opt--chk.is-selected:hover { background: var(--color-shade-100); }
+.anf-opt--chk.is-selected .anf-chk { background: var(--color-black); border-color: var(--color-black); }
+.anf-opt--chk.is-selected .anf-chk svg { opacity: 1; }
 .an-delta--pos { color: var(--color-green); }
 .an-delta--neg { color: var(--color-red); }
 .an-muted { color: var(--color-shade-500); }
@@ -3278,6 +3296,14 @@ body.filters-open .an-filters.is-active { display: flex; }
 .anf-select.is-open .anf-trig { border-color: var(--color-black); }
 .anf-val { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .anf-val.is-ph { color: var(--color-shade-700); } /* placeholder:text-shade-700 */
+/* anf-val--tags — выбранные значения мультиселекта как бейджи из таблицы; поле растёт по строкам */
+.anf-val--tags { display: flex; flex-wrap: wrap; gap: 4px; white-space: normal; overflow: visible; }
+.anf-val--tags .an-topic { display: inline-flex; align-items: center; gap: 4px; padding-right: 4px; cursor: default; }
+.anf-val--tags .an-topic:hover { background: var(--color-shade-100); }
+.anf-tag__x { display: inline-flex; align-items: center; justify-content: center; width: 14px; height: 14px; border-radius: 3px;
+  color: var(--color-shade-700); cursor: pointer; }
+.anf-tag__x svg { width: 10px; height: 10px; }
+.anf-tag__x:hover { background: var(--color-shade-300); color: var(--color-black); }
 .anf-chev { display: inline-flex; flex-shrink: 0; }
 .anf-chev svg { width: 18px; height: 18px; }
 .anf-menu {
@@ -4499,3 +4525,125 @@ body.ce-ro .ce-table .an-tbody .an-tr > .an-td:last-child { display: none; }
 .an-periodbar--panel .an-dr__field { min-width: 0; }
 .an-periodbar--panel .an-dr__val { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 /* ==================== /Live ==================== */
+
+/* ---------- Wallet (wl-) ---------- */
+.wl-grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+.wl-pad { padding: 24px; gap: 24px; }
+.wl-bal__lbl { display: inline-flex; align-items: center; gap: 8px; font-size: var(--text-body-reg-14); color: var(--color-shade-800); }
+.wl-eye { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; padding: 0; border: 0; border-radius: 4px; background: none; color: var(--color-shade-500); cursor: pointer; }
+.wl-eye svg { width: 16px; height: 16px; }
+.wl-eye:hover { color: var(--color-black); }
+.wl-bal__sum { display: flex; align-items: baseline; gap: 8px; }
+.wl-bal__sum b { font-size: var(--text-title-semi-32); font-weight: 500; line-height: 1.1; color: var(--color-black); }
+.wl-bal__sum span { font-size: var(--text-body-reg-16); color: var(--color-shade-500); }
+.wl-bal__acts { display: flex; flex-wrap: wrap; gap: 16px; }
+/* wl-verify — плашка «подтвердите личность»: как в проде, тёплый градиент слева */
+.wl-verify { flex-direction: row; align-items: center; gap: 16px; padding: 24px; background: linear-gradient(90deg, var(--color-yellow-300), var(--color-white) 55%); }
+.wl-verify__ico { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; flex-shrink: 0; border-radius: 9999px; background: var(--color-yellow); color: var(--color-white); }
+.wl-verify__ico svg { width: 16px; height: 16px; }
+.wl-verify__t { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 8px; }
+.wl-verify__h { margin: 0; font-size: var(--text-body-semi-16); font-weight: 600; color: var(--color-black); }
+.wl-verify__p { margin: 0; font-size: var(--text-body-reg-14); line-height: 1.45; color: var(--color-black); }
+.wl-tx__head { padding: 16px 24px; }
+.wl-sep { color: var(--color-shade-500); }
+.wl-fhead__r { display: inline-flex; align-items: center; gap: 12px; }
+.wl-tx .an-tr, .wl-usagetbl .an-tr { padding: 0 24px; }
+.wl-tx .an-th, .wl-tx .an-td { padding-right: 16px; }
+.wl-tx__row { cursor: pointer; }
+.wl-tx__row:hover .an-td { background: var(--color-shade-90); }
+.wl-td--name { gap: 12px; }
+.wl-tx__ico { display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; flex-shrink: 0; border-radius: 9999px; background: var(--color-shade-100); color: var(--color-black); }
+.wl-tx__ico svg { width: 20px; height: 20px; }
+.wl-tx__name { font-weight: 500; }
+.wl-td--amount, .wl-th--amount { justify-content: flex-end; text-align: right; font-variant-numeric: tabular-nums; }
+.wl-pos { color: var(--color-green-dark); }
+.wl-neg { color: var(--color-red); }
+.wl-pend { color: var(--color-shade-500); }
+.wl-sort { display: inline-flex; margin-left: 4px; padding: 0; border: 0; background: none; color: var(--color-shade-500); cursor: pointer; }
+.wl-sort svg { width: 14px; height: 14px; }
+.wl-sort.is-on { color: var(--color-black); }
+.wl-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+/* wl-txcard — карточка транзакции в модалке деталей: иконка в кольце, дата справа, сумма, имя */
+.wl-txcard { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 16px 16px 24px; border-radius: 12px; background: var(--color-shade-90); }
+.wl-txcard__top { position: relative; display: flex; justify-content: center; width: 100%; }
+.wl-txcard__ico { display: inline-flex; align-items: center; justify-content: center; width: 56px; height: 56px; border-radius: 9999px; border: 4px solid var(--color-white); background: var(--color-shade-90); color: var(--color-black); }
+.wl-txcard__ico svg { width: 28px; height: 28px; }
+.wl-txcard__date { position: absolute; right: 0; top: 0; font-size: var(--text-body-reg-14); color: var(--color-shade-700); }
+.wl-txcard__sum { margin: 0; font-size: var(--text-body-med-18); font-weight: 500; }
+.wl-txcard__name { margin: 0; font-size: var(--text-body-med-16); font-weight: 500; color: var(--color-black); }
+.wl-rows { display: flex; flex-direction: column; margin: 16px 0 0; }
+.wl-rows__r { display: flex; justify-content: space-between; gap: 16px; padding: 12px 0; border-top: 1px solid var(--color-shade-200); font-size: var(--text-body-reg-14); }
+.wl-rows__r:first-child { border-top: 0; }
+.wl-rows__r dt { margin: 0; color: var(--color-shade-700); }
+.wl-rows__r dd { margin: 0; color: var(--color-black); text-align: right; }
+.wl-field { display: flex; flex-direction: column; gap: 8px; }
+.wl-field + .wl-chips, .wl-field + .wl-field, .wl-field + .an-alert, .wl-wdcards + .wl-field, .an-alert + .wl-rows { margin-top: 16px; }
+.wl-inputrow { position: relative; display: flex; align-items: center; }
+.wl-inputrow .an-input { flex: 1; padding-right: 72px; }
+.wl-inputrow .an-btn { position: absolute; right: 8px; }
+.wl-err { margin: 0; font-size: var(--text-body-reg-14); color: var(--color-red); }
+.wl-req { color: var(--color-red); }
+.wl-fields2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+/* wl-pmrow — метод выплаты как радио-строка в диалоге вывода */
+.wl-pmlist { display: flex; flex-direction: column; gap: 12px; margin-top: 16px; }
+.wl-pmrow { display: flex; align-items: center; gap: 12px; width: 100%; padding: 12px 16px; border: 1px solid var(--color-shade-300); border-radius: 12px; background: var(--color-white); cursor: pointer; font-family: inherit; text-align: left; color: var(--color-black); }
+.wl-pmrow:hover { border-color: var(--color-shade-500); }
+.wl-pmrow.is-on { border-color: var(--color-black); }
+.wl-pmrow__t { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.wl-pmrow__t b { font-size: var(--text-body-med-16); font-weight: 500; }
+.wl-pmrow__t small { font-size: var(--text-body-reg-14); color: var(--color-shade-800); }
+.wl-addhint { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 16px; padding: 12px; border-radius: 8px; background: var(--color-shade-100); color: var(--color-black); text-decoration: none; font-size: var(--text-body-reg-14); }
+.wl-wdcards { position: relative; display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+.wl-wdcard { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-height: 140px; padding: 16px; border-radius: 12px; background: var(--color-shade-90); text-align: center; }
+.wl-wdcard b { font-size: var(--text-body-med-16); font-weight: 500; color: var(--color-black); }
+.wl-wdcard small { font-size: var(--text-body-reg-14); color: var(--color-shade-700); }
+.wl-wdcards__arrow { position: absolute; left: 50%; top: 50%; display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; transform: translate(-50%, -50%); border-radius: 9999px; border: 4px solid var(--color-white); background: var(--color-shade-90); color: var(--color-black); }
+.wl-wdcards__arrow svg { width: 16px; height: 16px; }
+/* wl-pm — карточка сохранённого метода выплаты */
+.wl-pms { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 375px)); gap: 24px; }
+.wl-pm { display: flex; flex-direction: column; gap: 16px; padding: 24px; border: 1px solid var(--color-shade-300); border-radius: 12px; background: var(--color-white); }
+.wl-pm__head { display: grid; grid-template-columns: 32px 1fr 32px; align-items: center; gap: 8px; }
+.wl-pm__ico { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; flex-shrink: 0; border-radius: 8px; background: var(--color-shade-100); color: var(--color-black); }
+.wl-pm__ico svg { width: 18px; height: 18px; }
+.wl-pm__name { margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--text-body-med-16); font-weight: 500; color: var(--color-black); }
+.wl-pm__num { margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 16px; border-radius: 8px; background: var(--color-shade-100); font-size: var(--text-body-med-16); font-weight: 500; color: var(--color-black); }
+.wl-pm__rows { display: flex; flex-direction: column; gap: 8px; }
+.wl-pm__row { display: flex; justify-content: space-between; gap: 8px; margin: 0; font-size: var(--text-body-reg-14); }
+.wl-pm__row span:first-child { color: var(--color-shade-700); }
+/* wl-method — выбор метода на странице New payment method */
+.wl-narrow { max-width: 592px; }
+.wl-back { align-self: flex-start; margin-left: -8px; }
+.wl-lead { margin: -8px 0 0; font-size: var(--text-body-reg-16); color: var(--color-shade-700); }
+.wl-methods { display: flex; flex-direction: column; gap: 16px; }
+.wl-method { border: 1px solid var(--color-shade-300); border-radius: 12px; background: var(--color-white); }
+.wl-method.is-on { border-color: var(--color-black); }
+.wl-method__head { display: flex; align-items: center; gap: 12px; width: 100%; padding: 16px; border: 0; background: none; cursor: pointer; font-family: inherit; text-align: left; color: var(--color-black); }
+.wl-radio { width: 20px; height: 20px; flex-shrink: 0; border-radius: 9999px; border: 2px solid var(--color-shade-300); box-sizing: border-box; }
+.wl-method.is-on .wl-radio { border-width: 6px; border-color: var(--color-black); }
+.wl-method__t { display: flex; flex-direction: column; gap: 2px; }
+.wl-method__t b { font-size: var(--text-body-med-16); font-weight: 500; }
+.wl-method__t small { font-size: var(--text-body-reg-14); color: var(--color-shade-700); }
+.wl-method__fields { display: flex; flex-direction: column; gap: 16px; padding: 0 16px 16px 48px; }
+.wl-newfoot { display: flex; justify-content: flex-end; padding-bottom: 40px; }
+/* wl-usage — расход по услугам: график и таблица */
+.wl-usage__ctl { display: flex; align-items: center; gap: 12px; }
+.wl-chart { width: 100%; }
+.wl-chart__svg { display: block; width: 100%; height: 260px; }
+.an-page .wl-chart__svg { max-width: none; max-height: none; }
+.wl-alertico { display: inline-flex; flex-shrink: 0; }
+.wl-alertico svg { width: 20px; height: 20px; }
+.wl-chart__grid { stroke: var(--color-shade-200); }
+.wl-chart__y, .wl-chart__x { fill: var(--color-shade-700); font-size: var(--text-footnote-reg-12); }
+.wl-chart__line { fill: none; stroke-width: 2; }
+.wl-chart__line--streams { stroke: var(--color-blue); }
+.wl-chart__line--media { stroke: var(--color-green); }
+.wl-chart__area { opacity: .12; }
+.wl-chart__area--streams { fill: var(--color-blue); }
+.wl-chart__area--media { fill: var(--color-green); }
+.wl-legend { display: flex; gap: 16px; margin-top: 8px; font-size: var(--text-body-reg-14); color: var(--color-black); }
+.wl-legend span { display: inline-flex; align-items: center; gap: 6px; }
+.wl-sw { display: inline-block; width: 10px; height: 10px; border-radius: 4px; margin-right: 8px; }
+.wl-legend .wl-sw { margin-right: 0; }
+.wl-sw--streams { background: var(--color-blue); }
+.wl-sw--media { background: var(--color-green); }
+.wl-tr--total .an-td { font-weight: 600; }

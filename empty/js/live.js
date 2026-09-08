@@ -5141,7 +5141,7 @@
       save(); closePop(); renderList(); return;
     }
     if (t.closest && t.closest("[data-lv-new]")) { location.href = "live-stream-create.html"; return; }
-    if (t.closest && t.closest("[data-lv-topup]")) { UI.toast("Top-up page will open in the billing section."); return; }
+    if (t.closest && t.closest("[data-lv-topup]")) { location.href = "wallet.html?topup=1"; return; }
     if (t.closest && t.closest("[data-lv-plbackform]")) { location.href = plBackTo() || "live-playlists.html"; return; }
     if (t.closest && t.closest("[data-an-back]")) { location.href = "live-streams.html"; return; }
     if (t.closest && t.closest("[data-lv-yt]")) { e.preventDefault(); UI.toast("The broadcast opens on YouTube."); return; }
