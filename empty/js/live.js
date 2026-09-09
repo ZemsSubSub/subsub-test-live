@@ -3089,16 +3089,16 @@
               ? '<button class="lv-link" type="button" data-lv-qsave>Save as playlist</button>' : "") +
             // шафл живёт в шапке очереди рядом с её именем: это свойство порядка, а не воспроизведения
             (q.length > 2
-              ? '<label class="lv-pick__only lv-qhead__shuffle" data-tip="Play videos in random order."><span class="lv-ico">' +
-                (IC.shuffle || "") + "Shuffle</span>" + UI.switchHtml('data-lv-f="shuffle"', FORM.shuffle, "Shuffle") + "</label>"
+              ? '<label class="lv-pick__only lv-qhead__shuffle" data-tip="Play videos in random order."><span>Shuffle</span>' + UI.switchHtml('data-lv-f="shuffle"', FORM.shuffle, "Shuffle") + "</label>"
               : "") +
             // при шафле порядок не имеет смысла: ручки и стрелки скрыты, а причина названа
             (FORM.shuffle && q.length > 1 ? '<span class="an-hint">Order is ignored while Shuffle is on.</span>' : "") +
           "</span>" +
+          // в шапке очереди подписи короткие: рядом стоят имя, ссылка и шафл, а строка одна
           '<span class="lv-qhead__acts">' +
-            btn("Add from library", "secondary", "data-lv-qadd", IC.folder, "tiny") +
+            btn("Library", "secondary", "data-lv-qadd", IC.folder, "tiny") +
             btn("Upload", "secondary", "data-lv-qupload", IC.upload, "tiny") +
-            btn("Clear all", "secondary", "data-lv-qclear", IC.trash, "tiny") +
+            btn("Clear", "secondary", "data-lv-qclear", IC.trash, "tiny") +
           "</span></div>" +
         ""
       : "";
