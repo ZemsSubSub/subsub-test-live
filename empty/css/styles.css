@@ -4101,6 +4101,13 @@ body.ce-ro .ce-table .an-tbody .an-tr > .an-td:last-child { display: none; }
 .lv-bar.is-short .lv-bar__n { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 0 1 auto; min-width: 0; }
 .lv-bar.is-short .lv-bar__t { display: inline; flex: 0 0 auto; opacity: .8; }
 .lv-bar.is-short .lv-bar__c { display: none; }
+/* is-tiny — окно ниже одной строки: пилюля не ниже 12 px с уменьшенным шрифтом, как 15-минутные события в Google Calendar;
+   то же для заготовки окна при протяжке */
+.lv-bar.is-tiny { overflow: hidden; padding: 0 6px; min-height: 12px; }
+.lv-bar.is-tiny .lv-bar__c { display: none; }
+.lv-bar.is-tiny .lv-bar__n, .lv-bar.is-tiny .lv-bar__t, .lv-cal__draw.is-tiny .lv-cal__draw__w { font-size: 10px; line-height: 1; }
+.lv-cal__draw.is-tiny { flex-direction: row; align-items: center; justify-content: flex-start; padding: 0 6px; min-height: 12px; }
+.lv-cal__draw.is-tiny .lv-cal__draw__t { display: none; }
 /* is-over — полоса поверх другой в каскаде: белая обводка отделяет её от нижней того же цвета */
 .lv-bar.is-over { box-shadow: 0 0 0 2px var(--color-white); }
 

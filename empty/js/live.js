@@ -4227,9 +4227,16 @@
     [].slice.call(host.querySelectorAll(".lv-bar[data-lv-occ]")).forEach(function (b) {
       var n = b.querySelector(".lv-bar__n");
       if (!n) return;
-      // короткое окно — одна строка «имя · время», как в системных календарях
+      // Высота полосы честная. Короткое окно — одна строка «имя · время», как в системных календарях;
+      // совсем маленькое (15 минут при обычном масштабе) — без текста, имя и время в подсказке, увеличить можно кнопкой «+»
       b.classList.toggle("is-short", b.clientHeight < 30);
       b.classList.toggle("is-narrow", b.clientWidth < 84);
+      var tiny = b.clientHeight < 18;
+      b.classList.toggle("is-tiny", tiny);
+      if (tiny && !b.hasAttribute("data-tip")) {
+        var tEl = b.querySelector(".lv-bar__t");
+        b.setAttribute("data-tip", n.textContent.trim() + (tEl ? " · " + tEl.textContent.trim() : ""));
+      }
       var room = b.clientHeight - (b.querySelector(".lv-bar__c") ? 20 : 6);
       n.style.setProperty("--lvlines", String(Math.max(1, Math.min(8, Math.floor(room / 15)))));
     });
@@ -4355,8 +4362,8 @@
         var depth = o._lane || 0;
         return '<button class="lv-bar lv-bar--' + stKey(s) +
           (ro ? " is-ro" : "") + (past ? " is-past" : "") + (depth ? " is-over" : "") + '" type="button" ' +
-          'style="top:' + top.toFixed(2) + "%;height:max(22px, " + height.toFixed(2) +
-          "%);left:calc(" + (o._pct || 0).toFixed(2) + "% + " + (o._px || 3) + "px);right:calc(" + (o._rpct || 0).toFixed(2) + "% + 3px);z-index:" + (1 + depth) + '" ' +
+          'style="top:' + top.toFixed(2) + "%;height:" + Math.max(1, height).toFixed(2) +
+          "%;left:calc(" + (o._pct || 0).toFixed(2) + "% + " + (o._px || 3) + "px);right:calc(" + (o._rpct || 0).toFixed(2) + "% + 3px);z-index:" + (1 + depth) + '" ' +
           'data-lv-occ="' + o.streamId + "|" + o.slotId + "|" + o.occDate + '" ' +
           (ro ? ' data-tip="' + UI.esc(T.calAllRO) + '"' : past ? ' data-tip="' + UI.esc(T.pastRun) + '"' : "") +
           'aria-label="' + UI.esc(s.name + ", " + UI.dt(new Date(o.start).toISOString(), calTz())) + '">' +
@@ -4574,6 +4581,8 @@
     }
     DRAW.ghost.style.top = (a / 1440 * 100).toFixed(2) + "%";
     DRAW.ghost.style.height = ((b - a) / 1440 * 100).toFixed(2) + "%";
+    // маленькая заготовка — одна строка с диапазоном и мелким шрифтом, как у коротких окон
+    DRAW.ghost.classList.toggle("is-tiny", DRAW.h * (b - a) / 1440 < 30);
     DRAW.ghost.innerHTML = '<span class="lv-cal__draw__t">' + UI.dur((b - a) * 60) + "</span>" +
       '<span class="lv-cal__draw__w">' + calDrawTime(a) + " → " + calDrawTime(b) + "</span>";
     return { a: a, b: b };
