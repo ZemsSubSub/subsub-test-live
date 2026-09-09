@@ -4500,6 +4500,7 @@ body.ce-ro .ce-table .an-tbody .an-tr > .an-td:last-child { display: none; }
 /* имя не липнет к превью: своя прибавка после узкого зазора сетки */
 .lv-wiz .lv-qr .lv-qr__n { padding-left: 4px; }
 .lv-wiz .lv-qr { column-gap: 18px; }
+.lv-qhead__shuffle { margin-left: 8px; }
 .lv-wiz .lv-qr .ml-tag { max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
 .lv-wiz .lv-qr .ml-preview { width: 44px; height: 30px; }
 .lv-wiz .lv-qr .ml-preview svg { width: 16px; height: 16px; }

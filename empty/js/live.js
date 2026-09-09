@@ -3087,6 +3087,11 @@
             // сохранять нечего, пока очередь совпадает со своим плейлистом
             (!FORM.srcPl || FORM.detached
               ? '<button class="lv-link" type="button" data-lv-qsave>Save as playlist</button>' : "") +
+            // шафл живёт в шапке очереди рядом с её именем: это свойство порядка, а не воспроизведения
+            (q.length > 2
+              ? '<label class="lv-pick__only lv-qhead__shuffle" data-tip="Play videos in random order."><span class="lv-ico">' +
+                (IC.shuffle || "") + "Shuffle</span>" + UI.switchHtml('data-lv-f="shuffle"', FORM.shuffle, "Shuffle") + "</label>"
+              : "") +
             // при шафле порядок не имеет смысла: ручки и стрелки скрыты, а причина названа
             (FORM.shuffle && q.length > 1 ? '<span class="an-hint">Order is ignored while Shuffle is on.</span>' : "") +
           "</span>" +
@@ -3152,11 +3157,6 @@
           '<div class="ai-field">' +
             seg("Playback mode", [{ k: "loop", l: "Loop" }, { k: "once", l: "Play once" }],
                 FORM.loop ? "loop" : "once", "data-lv-loopmode") + "</div>" +
-          (q.length > 2
-            ? '<div class="ai-field"><label class="lv-pick__only" data-tip="Play videos in random order."><span class="lv-ico">' +
-              (IC.shuffle || "") + "Shuffle</span>" +
-              UI.switchHtml('data-lv-f="shuffle"', FORM.shuffle, "Shuffle") + "</label></div>"
-            : "") +
           (FORM.loop
             ? '<div class="ai-field"><label class="lv-pick__only"><span class="lv-ico">' + (IC.clock || "") + "Loop limit</span>" +
               UI.switchHtml('data-lv-f="loopLimitOn"', FORM.loopLimit > 0, "Loop limit") + "</label>" +
