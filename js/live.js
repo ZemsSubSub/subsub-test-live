@@ -4236,18 +4236,6 @@
   }
 
   // ---- бегущие без окна: отдельная полоса сверху
-  function calRunRow() {
-    var run = calRunningNoWindow();
-    if (!run.length) return "";
-    return '<div class="lv-cal__nowrow"><span class="lv-cal__nowlbl">Running now · no end time</span>' +
-      run.map(function (s) {
-        var ch = chan(s.channelId);
-        return '<button class="lv-bar lv-bar--' + stKey(s) + ' lv-bar--inline" type="button" data-lv-calopen="' + s.id + '">' +
-          '<span class="lv-bar__n">' + UI.esc(s.name) + "</span>" +
-          '<span class="lv-bar__c">· ' + UI.esc(chanName(s)) + "</span></button>";
-      }).join("") + "</div>";
-  }
-
   // ---- недельный и дневной вид: ось времени слева, полосы по колонкам дней
   // Окно длиннее суток — подложка: полосатый фон на всю ширину колонки без заголовка, под
   // остальными полосами; длительность видна в подсказке и в карточке. В дорожках не участвует.
@@ -4276,6 +4264,13 @@
       var next = occ.filter(function (x) { return x.slotId === o.slotId && x.streamId === o.streamId && x.start > o.start; })
         .sort(function (a2, b2) { return a2.start - b2.start; })[0];
       return Object.assign({}, o, { end: next ? next.start : Math.max(rangeTo, o.start + DAYMS), endless: !next });
+    });
+    // Эфир без окна (стрим запущен вручную) — та же бесконечная полоса в верхней строке от начала
+    // прогона, а не отдельная зелёная строка над сеткой
+    calRunningNoWindow().forEach(function (s) {
+      var rs = Date.parse((runOf(s) || {}).start || new Date(nowMs()).toISOString());
+      occV.push({ streamId: s.id, slotId: "run", start: rs, end: Math.max(rangeTo, rs + DAYMS), rep: "none",
+        occDate: partsIn(rs, calTz()).date, open: true, endless: true });
     });
     // Запуски одного бесконечного правила стыкуются друг с другом (каждый идёт до следующего) —
     // это один непрерывный эфир, а не цепочка суточных полос: склеиваем их в одну полосу и одну подложку.
@@ -4388,8 +4383,7 @@
           (dSec ? '<span class="lv-cal__dtot">' + UI.dur(Math.round(dSec)) + "</span>" : "") + "</div>" +
         '<div class="lv-cal__cells" style="grid-column:' + (di + 1) + '" data-lv-calcells="' + d + '">' + nowLine + bars + "</div></div>";
     }).join("");
-    return calRunRow() +
-      '<div class="lv-cal__grid"><div class="lv-cal__axis"><div class="lv-cal__colhead lv-cal__zoom">' +
+    return '<div class="lv-cal__grid"><div class="lv-cal__axis"><div class="lv-cal__colhead lv-cal__zoom">' +
         '<button class="an-btn an-btn--secondary an-btn--tiny" type="button" data-lv-calzoom="-" aria-label="Shorter rows">−</button>' +
         '<button class="an-btn an-btn--secondary an-btn--tiny" type="button" data-lv-calzoom="+" aria-label="Taller rows">+</button>' +
       '</div><div class="lv-cal__topaxis' + (topRows ? "" : " is-empty") + '" style="height:' + topH + 'px"></div><div class="lv-cal__hours">' + hours + "</div></div>" +
@@ -4417,7 +4411,7 @@
         (d === partsIn(nowMs(), calTz()).date ? " is-today" : "") + '" data-lv-calday="' + d + '">' +
         '<span class="lv-cal__mday">' + Number(d.slice(8)) + "</span>" + shown + more + "</div>";
     }).join("");
-    return calRunRow() + '<div class="lv-cal__month"><div class="lv-cal__wds">' + wdays + "</div>" +
+    return '<div class="lv-cal__month"><div class="lv-cal__wds">' + wdays + "</div>" +
       '<div class="lv-cal__mgrid">' + cells + "</div></div>";
   }
 
@@ -4443,10 +4437,11 @@
       "</div>" +
       '<div class="lv-pop__foot">' +
         btn("Open", "secondary", 'data-lv-calopen="' + s.id + '"') +
-        // идущий стрим не редактируется и окно у него не удалить: та же причина, что на карточке
-        (why("edit", s) || o.start <= nowMs()
-          ? '<button class="an-btn an-btn--secondary an-btn--small is-off" type="button" aria-disabled="true" data-tip="' + UI.esc(why("edit", s) || T.pastRun) + '">Edit</button>' +
-            '<button class="an-btn an-btn--danger an-btn--small is-off" type="button" aria-disabled="true" data-tip="' + UI.esc(why("edit", s) || T.pastRun) + '">Delete slot</button>'
+        // без слота править нечего; прошедший запуск — история независимо от состояния стрима,
+        // идущий стрим не редактируется — та же причина, что на карточке
+        (!sl ? "" : why("edit", s) || o.start <= nowMs()
+          ? '<button class="an-btn an-btn--secondary an-btn--small is-off" type="button" aria-disabled="true" data-tip="' + UI.esc(o.start <= nowMs() ? T.pastRun : why("edit", s)) + '">Edit</button>' +
+            '<button class="an-btn an-btn--danger an-btn--small is-off" type="button" aria-disabled="true" data-tip="' + UI.esc(o.start <= nowMs() ? T.pastRun : why("edit", s)) + '">Delete slot</button>'
           : btn("Edit", "secondary", 'data-lv-caledit="' + s.id + '"') +
             btn("Delete slot", "danger", 'data-lv-calslotdel="' + s.id + "|" + sl.id + '"')) +
       "</div>";
@@ -5101,6 +5096,12 @@
       if (occEl.classList.contains("lv-tbar") || occEl.classList.contains("lv-bar--long")) calUnderlays(occKey);
       var op = occKey.split("|");
       var os = stream(op[0]);
+      // эфир без окна: карточка от начала прогона, без слота
+      if (op[1] === "run") {
+        var rs0 = Date.parse((runOf(os) || {}).start || new Date(nowMs()).toISOString());
+        calCard({ streamId: os.id, slotId: "run", start: rs0, end: rs0 + DAYMS, rep: "none", occDate: op[2], open: true }, occEl);
+        return;
+      }
       var osl = (os.schedules || []).filter(function (x) { return x.id === op[1]; })[0];
       if (osl) {
         var occs = expand(os, osl, dayStartMs(op[2], calTz()), dayStartMs(op[2], calTz()) + DAYMS);

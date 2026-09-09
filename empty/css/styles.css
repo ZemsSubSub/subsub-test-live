@@ -4016,9 +4016,6 @@ body.ce-ro .ce-table .an-tbody .an-tr > .an-td:last-child { display: none; }
 
 .an-input--tz { height: 40px; width: auto; min-width: 160px; }
 .lv-cal { border: 1px solid var(--color-shade-200); border-radius: 12px; background: var(--color-white); overflow: hidden; }
-.lv-cal__nowrow { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-bottom: 1px solid var(--color-shade-200); background: var(--color-green-10); flex-wrap: wrap; }
-.lv-cal__nowlbl { font-size: 12px; font-weight: 500; color: var(--color-green-dark); }
-.lv-cal__nowrow .lv-bar { position: static; height: 30px; min-width: 200px; background: var(--color-green-dark); color: var(--color-white); }
 
 /* колонка часов шире на 8px: в её шапке живёт пара кнопок масштаба, им нужны поля */
 .lv-cal__grid { display: grid; grid-template-columns: 72px 1fr; }
@@ -4084,8 +4081,6 @@ body.ce-ro .ce-table .an-tbody .an-tr > .an-td:last-child { display: none; }
 .lv-cal__drawbar__d { font-size: var(--text-footnote-reg-12); color: var(--color-shade-700); font-variant-numeric: tabular-nums; }
 .lv-cal__drawbar .an-btn { height: 32px; }
 .lv-cal__drawbar .mc-more { width: 28px; height: 28px; }
-.lv-bar--inline { position: static; flex-direction: row; align-items: center; gap: 6px; height: 26px; width: auto; }
-.lv-bar--inline .lv-bar__c { opacity: .7; }
 .lv-bar.is-conflict { background-image: repeating-linear-gradient(45deg, rgba(0,0,0,.06) 0 6px, transparent 6px 12px); box-shadow: inset 0 0 0 2px var(--color-yellow); }
 .lv-bar--live { background: var(--color-green-20); color: var(--color-green-dark); }
 .lv-bar--scheduled, .lv-bar--preparing, .lv-bar--converting { background: var(--color-blue-20); color: var(--color-blue); }
@@ -4260,7 +4255,6 @@ body.ce-ro .ce-table .an-tbody .an-tr > .an-td:last-child { display: none; }
 /* список слотов занимает то же место, что сетка, и скроллится внутри */
 .lv-calbody > .an-tablewrap { flex: 1 1 auto; min-width: 0; min-height: 0; overflow: auto; }
 .lv-calbody > .an-tablewrap[hidden] { display: none; }
-.lv-cal__nowrow { flex: 0 0 auto; }
 .lv-cal__grid { flex: 1 1 auto; min-height: 0; overflow: auto; }
 .lv-cal__axis { position: sticky; left: 0; z-index: 5; background: var(--color-white); }
 .lv-cal__colhead { position: sticky; top: 0; z-index: 4; background: var(--color-white); height: 40px;
