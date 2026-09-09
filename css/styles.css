@@ -4508,6 +4508,7 @@ body.ce-ro .ce-table .an-tbody .an-tr > .an-td:last-child { display: none; }
 .lv-qsurf .lv-qhead { flex-wrap: nowrap; gap: 10px; }
 .lv-qsurf .lv-qhead__l { flex: 1 1 auto; flex-wrap: nowrap; gap: 8px; }
 .lv-qsurf .lv-qhead__l .lv-card__t { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lv-qsurf .lv-qhead__l .lv-link { white-space: nowrap; }
 .lv-qsurf .lv-qhead__acts { flex: 0 0 auto; flex-wrap: nowrap; gap: 6px; }
 .lv-qsurf .lv-qhead__acts .an-btn--tiny { padding: 0 8px; }
 .lv-wiz .lv-qr .ml-tag { max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
