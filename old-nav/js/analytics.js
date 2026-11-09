@@ -1,0 +1,6986 @@
+// Analytics (basic-data) — косметический интерактив прототипа: ModePopover, выбор строк →
+// футер, очистка поиска. Данные статичны; сортировка/пагинация не подключены к бэкенду.
+(function () {
+  function updateFooter() {
+    // на Deep data у футера другая роль (B2: удаление из коллекции)
+    if (document.querySelector("[data-dp-remove]")) { dpFooter(); return; }
+    // на странице коллекции — своё массовое удаление (D1)
+    if (document.querySelector("[data-ce-bulk-remove]")) { ceFooter(); return; }
+    var n = document.querySelectorAll("[data-an-check].is-checked").length;
+    var footer = document.querySelector("[data-an-footer]");
+    if (!footer) return;
+    if (n > 0) {
+      footer.hidden = false;
+      var fromSel = footer.querySelector("[data-cc-from-sel-lbl]");
+      if (fromSel) fromSel.textContent = "Create collection from " + n + (n === 1 ? " channel" : " channels");
+      var btn = footer.querySelector("[data-an-footer-btn]");
+      if (btn) {
+        btn.textContent = "Add " + n + " channel" + (n === 1 ? "" : "s") + " to collection";
+        // добавлять некуда — своих коллекций нет: остаётся создать новую
+        var canAdd = (typeof aiAllColls === "function" ? aiAllColls() : [])
+          .some(function (c) { return collCanAdd(c.name); });
+        btn.hidden = !canAdd;
+      }
+    } else {
+      footer.hidden = true;
+    }
+    // состояние «select all» — считаем по видимым строкам страницы
+    var vis = [].slice.call(document.querySelectorAll("[data-an-check]")).filter(function (b) {
+      var r = b.closest(".an-tr");
+      return !(r && r.hidden);
+    });
+    var allBtn = document.querySelector("[data-an-check-all]");
+    var visOn = vis.filter(function (b) { return b.classList.contains("is-checked"); }).length;
+    if (allBtn) allBtn.classList.toggle("is-checked", vis.length > 0 && visOn === vis.length);
+  }
+  // A3: подсветка выбранных строк
+  function markSelected() {
+    [].slice.call(document.querySelectorAll("[data-an-check]")).forEach(function (b) {
+      var row = b.closest(".an-tr");
+      if (row) row.classList.toggle("is-selected", b.classList.contains("is-checked"));
+    });
+  }
+
+  document.addEventListener("click", function (e) {
+    // Заблокированный контрол виден и объясняет себя тултипом, но не срабатывает.
+    // Проверка одна на весь обработчик: раньше её приходилось дописывать в каждый вход,
+    // и часть кнопок (Add channels, Share) кликалась мимо блокировки.
+    if (e.target.closest && e.target.closest('.is-off[aria-disabled="true"]')) return;
+    // чекбоксы строк
+    var cb = e.target.closest("[data-an-check]");
+    if (cb) { cb.classList.toggle("is-checked"); markSelected(); updateFooter(); return; }
+    // select all
+    var cbAll = e.target.closest("[data-an-check-all]");
+    if (cbAll) {
+      var on = !cbAll.classList.contains("is-checked");
+      cbAll.classList.toggle("is-checked", on);
+      // выделяем только видимые строки текущей страницы — как на проде
+      var boxes = document.querySelectorAll("[data-an-check]");
+      for (var j = 0; j < boxes.length; j++) {
+        var r = boxes[j].closest(".an-tr");
+        if (r && r.hidden) continue;
+        boxes[j].classList.toggle("is-checked", on);
+      }
+      markSelected();
+      updateFooter();
+      return;
+    }
+    // футер: очистить выбор
+    if (e.target.closest("[data-an-footer-close]")) {
+      var all = document.querySelectorAll("[data-an-check], [data-an-check-all]");
+      for (var k = 0; k < all.length; k++) all[k].classList.remove("is-checked");
+      markSelected();
+      updateFooter();
+      return;
+    }
+    // --- P1.13: панель фильтров ---
+    if (e.target.closest("[data-an-filters-toggle]")) {
+      flOpen(!document.body.classList.contains("filters-open"));
+      return;
+    }
+    if (e.target.closest("[data-an-filters-apply]")) { flOpen(false); return; }
+    if (e.target.closest("[data-an-filters-close]")) { flOpen(false); return; }
+    if (e.target.closest("[data-an-filters-clear]")) { flClear(); return; }
+    var fchipX = e.target.closest("[data-an-fchip-x]");
+    if (fchipX) { flChipRemove(fchipX.getAttribute("data-an-fchip-x"), fchipX.getAttribute("data-an-fchip-val")); return; }
+    var untag = e.target.closest("[data-anf-untag]");
+    if (untag) {                                   // крестик на бейдже внутри триггера — меню не трогаем
+      var untagFld = untag.closest("[data-anf-field]");
+      if (untagFld) { flMultiSet(untagFld, untag.getAttribute("data-anf-untag"), false); flTouch(); }
+      return;
+    }
+    var fTrig = e.target.closest("[data-anf-trig]");
+    if (fTrig) {
+      var sel = fTrig.closest(".anf-select"), menu = sel.querySelector("[data-anf-menu]");
+      var willOpen = menu.hidden;
+      // закрываем остальные
+      [].slice.call(document.querySelectorAll(".anf-select")).forEach(function (o) {
+        if (o !== sel) { o.classList.remove("is-open"); var m = o.querySelector("[data-anf-menu]"); if (m) m.hidden = true; }
+      });
+      menu.hidden = !willOpen;
+      sel.classList.toggle("is-open", willOpen);
+      fTrig.setAttribute("aria-expanded", willOpen ? "true" : "false");
+      return;
+    }
+    var fOpt = e.target.closest("[data-anf-opt]");
+    if (fOpt) {
+      var selRoot = fOpt.closest(".anf-select");
+      var multiFld = selRoot.closest("[data-anf-field]");
+      if (multiFld && multiFld.hasAttribute("data-anf-multi")) {
+        fOpt.classList.toggle("is-selected");
+        fOpt.setAttribute("aria-selected", fOpt.classList.contains("is-selected") ? "true" : "false");
+        flMultiSync(multiFld);
+        flTouch();
+        return;
+      }
+      var valEl = selRoot.querySelector("[data-anf-val]");
+      if (valEl) { valEl.textContent = fOpt.getAttribute("data-anf-opt"); valEl.classList.remove("is-ph"); }
+      [].slice.call(selRoot.querySelectorAll(".anf-opt")).forEach(function (o) { o.classList.toggle("is-selected", o === fOpt); });
+      var m2 = selRoot.querySelector("[data-anf-menu]"); if (m2) m2.hidden = true;
+      selRoot.classList.remove("is-open");
+      flTouch();
+      return;
+    }
+    var fSeg = e.target.closest("[data-anf-seg]");
+    if (fSeg) {
+      [].slice.call(fSeg.parentNode.querySelectorAll(".anf-seg__btn")).forEach(function (b) {
+        b.classList.toggle("is-on", b === fSeg);
+        b.setAttribute("aria-checked", b === fSeg ? "true" : "false");
+      });
+      flTouch();
+      return;
+    }
+    var pSet = e.target.closest("[data-an-period-set]");
+    if (pSet) {
+      var pv = pSet.getAttribute("data-an-period-set");
+      if (pv === "custom") { drOpen(true); return; }          // A4: Custom → календарь
+      flSetPeriod(pv);
+      return;
+    }
+    // --- A4: календарь диапазона ---
+    if (e.target.closest("[data-an-period-clear]")) { flSetPeriod("30"); return; }   // крестик возвращает период по умолчанию — 30 дней
+    if (e.target.closest("[data-an-period-trig]")) {
+      var drW = document.querySelector("[data-an-dr]");
+      drOpen(drW ? drW.querySelector("[data-an-dr-pop]").hidden : true);
+      return;
+    }
+    var drDay = e.target.closest("[data-an-dr-day]");
+    if (drDay) { drPickDay(drDay.getAttribute("data-an-dr-day")); return; }
+    var drP = e.target.closest("[data-an-dr-preset]");
+    if (drP) { drUsePreset(drP.getAttribute("data-an-dr-preset")); return; }
+    if (e.target.closest("[data-an-dr-prev]")) { drShift(-1); return; }
+    if (e.target.closest("[data-an-dr-next]")) { drShift(1); return; }
+    if (e.target.closest("[data-an-dr-cancel]")) { drOpen(false); return; }
+    if (e.target.closest("[data-an-dr-apply]")) { drApply(); return; }
+    if (!e.target.closest("[data-an-dr]")) drOpen(false);
+    // --- D1/D3: массовые действия и футер страницы коллекции ---
+    if (e.target.closest("[data-ce-bulk-remove]")) { ceConfirm("remove"); return; }
+    // из выбранных каналов можно собрать новую коллекцию или запустить подбор похожих
+    if (e.target.closest("[data-ce-bulk-new]")) { ceBulkNew(); return; }
+    if (e.target.closest("[data-ce-bulk-similar]")) { ceBulkSimilar(); return; }
+    if (e.target.closest("[data-ce-delete]")) { ceMenu(false); ceConfirm("delete"); return; }
+    // ---- страница коллекции ----
+    if (e.target.closest("[data-ce-menu-trig]")) {
+      var cePop = document.querySelector("[data-ce-menu-pop]");
+      ceMenu(cePop ? cePop.hidden : true);
+      return;
+    }
+    if (e.target.closest("[data-ce-upgrade]")) { toast("Upgrade request sent — our team will contact you"); return; }
+    var ceS = e.target.closest("[data-ce-sort]");
+    if (ceS) { ceSort(ceS.getAttribute("data-ce-sort")); return; }
+    if (e.target.closest("[data-ce-leave]")) { ceMenu(false); ceConfirm("leave"); return; }
+    var ceDeepBtn = e.target.closest("[data-ce-deep]");
+    if (ceDeepBtn) {
+      ceMenu(false);
+      if (ceDeepBtn.disabled || isOff(ceDeepBtn)) return;
+      if (collState(ceName()) === "activated") {
+        window.location.href = "analytics-deep-data.html?coll=" + encodeURIComponent(ceName());
+      } else ceActivateAsk();
+      return;
+    }
+    if (e.target.closest("[data-ce-cancel]")) { collCancel(ceName()); return; }
+    var ceDupBtn = e.target.closest("[data-ce-duplicate]");
+    if (ceDupBtn) { if (ceDupBtn.disabled) return; ceMenu(false); ceDuplicate(); return; }
+    if (e.target.closest("[data-ce-blacklist]")) { blOpen(); return; }
+    if (e.target.closest("[data-bl-close]")) { blClose(); return; }
+    var blAl = e.target.closest("[data-bl-allow]");
+    if (blAl) { blAllow(blAl.getAttribute("data-bl-allow")); return; }
+    if (e.target.closest("[data-ce-rename]")) { ceRenameOpen(); return; }
+    if (e.target.closest("[data-ce-rename-close]")) { closeModal(document.getElementById("ceRename")); return; }
+    if (e.target.closest("[data-ce-rename-save]")) { ceRenameSave(); return; }
+    if (e.target.closest("[data-ce-share-trig]")) { ceShareOpen(true); return; }
+    if (e.target.closest("[data-ce-share-close]")) { ceShareOpen(false); return; }
+    // ссылка на расшаренный объект — как «Copy link» в шеринге Media Library
+    if (e.target.closest("[data-ce-share-copy]")) {
+      var shUrl = "https://app.subsub.io/shared/" + Math.abs(hashStr(shareTitleNow())).toString(16);
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(shUrl).then(function () { toast("Link copied"); }, function () { toast("Failed to copy link"); });
+      } else toast("Failed to copy link");
+      return;
+    }
+    var cePick = e.target.closest("[data-ce-share-pick]");
+    if (cePick) {
+      if (cePick.hasAttribute("disabled")) return;
+      ceShareAdd(cePick.getAttribute("data-name"), cePick.getAttribute("data-ce-share-pick"), cePick.getAttribute("data-color"));
+      return;
+    }
+    if (e.target.closest("[data-ce-invite]")) {
+      var mailInp = document.querySelector("[data-ce-share-search]");
+      var mail = mailInp ? mailInp.value.trim() : "";
+      if (mail) { ceShareAdd(mail.split("@")[0], mail, "--color-avatar-2"); mailInp.value = ""; ceShareSuggest(""); }
+      return;
+    }
+    var ceRev = e.target.closest("[data-ce-revoke]");
+    if (ceRev) { ceRevokeAsk(ceRev.closest("[data-ce-acc]")); return; }
+    // клик вне попапов страницы коллекции — закрыть (шеринг теперь модалка, у неё свой оверлей)
+    if (!e.target.closest("[data-ce-menu]")) ceMenu(false);
+    if (e.target.closest("[data-ce-deactivate]")) { ceMenu(false); ceConfirm("deactivate"); return; }
+    if (e.target.closest("[data-ce-close]")) { closeModal(document.getElementById("ceConfirm")); return; }
+    if (e.target.closest("[data-ce-c-confirm]")) { ceDoConfirm(); return; }
+    if (e.target.closest("[data-ce-save]")) { toast("Collection saved successfully"); return; }
+    // тип коллекции на My collections — сегмент в тулбаре
+    var mcCt = e.target.closest("[data-mc-ctype-set]");
+    if (mcCt) { mcCtypeSet(mcCt.getAttribute("data-mc-ctype-set")); return; }
+    // --- B1: один переключатель типа контента на все метрики ---
+    var ctB = e.target.closest("[data-an-ctype-set]");
+    if (ctB) { ctSet(ctB.getAttribute("data-an-ctype-set")); return; }
+    // ---- Reports ----
+    if (e.target.closest("[data-rep-open]")) { repOpen(); return; }
+    if (e.target.closest("[data-rep-note-x]")) {
+      var note = document.querySelector("[data-rep-note]");
+      if (note) note.hidden = true;
+      try { localStorage.setItem(REP_NOTE_KEY, "off"); } catch (e2) {}
+      if (typeof tblFit === "function") tblFit();
+      return;
+    }
+    if (e.target.closest("[data-rep-close]")) { closeModal(document.getElementById("repModal")); return; }
+    var rpT = e.target.closest("[data-rp-trig]");
+    if (rpT) {
+      var root = rpT.closest("[data-rp-sel]"), which = root.getAttribute("data-rp-sel");
+      var menu = root.querySelector("[data-rp-menu]");
+      var willOpen = menu.hidden;
+      repMenusClose();
+      repMenu(which, willOpen);
+      return;
+    }
+    var rpO = e.target.closest("[data-rp-opt]");
+    if (rpO) {
+      if (e.target.closest("[data-rp-hint]")) return;      // клик по «i» не выбирает тип
+      repSetSel("type", rpO.getAttribute("data-rp-opt"));
+      repMenu("type", false);
+      return;
+    }
+    var rpTg = e.target.closest("[data-rp-opt-target]");
+    if (rpTg) { repSetSel("target", rpTg.getAttribute("data-rp-opt-target")); repMenu("target", false); return; }
+    if (e.target.closest("[data-rp-cal-trig]")) {
+      var pop = document.querySelector("[data-rp-dr] [data-an-dr-pop]");
+      drOpen(pop ? pop.hidden : true);
+      return;
+    }
+    if (e.target.closest("[data-rp-submit]")) { repSubmit(); return; }
+    var repMoreBtn = e.target.closest("[data-rep-more]");
+    if (repMoreBtn) { e.stopPropagation(); repMenuOpen(repMoreBtn); return; }
+    var repAct = e.target.closest("[data-rep-act]");
+    if (repAct) { repMenuAct(repAct.getAttribute("data-rep-act")); return; }
+    if (!e.target.closest("#repMenu")) repMenuClose();
+    if (e.target.closest("[data-rep-ready-dismiss]")) {
+      var rc = document.querySelector("[data-rep-ready]"); if (rc) rc.hidden = true;
+      return;
+    }
+    if (e.target.closest("[data-rep-ready-view]")) {
+      var rc2 = document.querySelector("[data-rep-ready]");
+      repOpenInMl(rc2 ? rc2.getAttribute("data-file") : "");
+      return;
+    }
+    if (e.target.closest("[data-rep-download]")) { toast("Report download started"); return; }
+    var repMl = e.target.closest("[data-rep-inml]");
+    if (repMl) {
+      if (repMl.hasAttribute("disabled")) return;
+      repOpenInMl(repMl.getAttribute("data-rep-inml"));
+      return;
+    }
+    var repD = e.target.closest("[data-rep-del]");
+    if (repD) { repDelAsk(repD.closest("[data-rep-row]")); return; }
+    if (e.target.closest("[data-rep-rn-close]")) { closeModal(document.getElementById("repRename")); return; }
+    if (e.target.closest("[data-rep-rn-save]")) { repRenameSave(); return; }
+    if (e.target.closest("[data-rep-c-close]")) { closeModal(document.getElementById("repConfirm")); return; }
+    if (e.target.closest("[data-rep-c-confirm]")) { repDel(); return; }
+    // клик вне дропдаунов модалки — закрыть
+    if (!e.target.closest("[data-rp-sel]")) repMenusClose();
+    // копирование ссылки на канал (страница коллекции)
+    var ceCp = e.target.closest("[data-ce-copy]");
+    if (ceCp) {
+      var ceUrlVal = ceCp.getAttribute("data-ce-copy") || "";
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(ceUrlVal).then(function () { toast("Link copied"); }, function () { toast("Failed to copy link"); });
+      } else toast("Failed to copy link");
+      return;
+    }
+    // копирование заголовка видео (таб Videos) — как на проде
+    var vcB = e.target.closest("[data-vid-copy]");
+    if (vcB) {
+      e.preventDefault();
+      var vcT = vcB.getAttribute("data-vid-copy") || "";
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(vcT).then(function () { toast("Title copied"); },
+          function () { toast("Failed to copy title"); });
+      } else toast("Failed to copy title");
+      return;
+    }
+    // --- B2: массовое удаление каналов из коллекции ---
+    if (e.target.closest("[data-ac-open]")) { acOpen(); return; }
+    if (e.target.closest("[data-dp-pin]")) { dpPinToggle(); return; }
+    var pinBtn = e.target.closest("[data-dp-pin-row]");
+    if (pinBtn) {
+      e.stopPropagation();
+      dpPinRow(pinBtn.closest(".an-tr"));
+      return;
+    }
+    if (e.target.closest("[data-dp-remove]")) { dpAsk(); return; }
+    if (e.target.closest("[data-dp-close]")) { closeModal(document.getElementById("dpConfirm")); return; }
+    if (e.target.closest("[data-dp-confirm]")) { dpRemove(); return; }
+    // --- P1.8: сводка Average / Total ---
+    var gsT = e.target.closest("[data-an-gs-trig]");
+    if (gsT) {
+      var gsW = gsT.closest("[data-an-gs]");
+      var gsM = gsW.querySelector("[data-an-gs-menu]");
+      gsMenu(gsM ? gsM.hidden : true, gsW);
+      return;
+    }
+    var gsO = e.target.closest("[data-an-gs-opt]");
+    if (gsO) { gsSet(gsO.getAttribute("data-an-gs-opt")); return; }
+    if (!e.target.closest("[data-an-gs]")) gsMenu(false);
+    // --- P1.7: видимость колонок ---
+    if (e.target.closest("[data-an-cols-trig]")) {
+      var cvM = document.querySelector("[data-an-cols-menu]");
+      cvMenu(cvM ? cvM.hidden : true);
+      return;
+    }
+    if (e.target.closest("[data-an-cols-reset]")) { cvReset(); return; }
+    var cvOpt = e.target.closest("[data-an-cols-opt]");
+    if (cvOpt) { cvToggle(cvOpt.getAttribute("data-an-cols-opt")); return; }
+    var cvX = e.target.closest("[data-an-colx]");
+    if (cvX) { cvToggle(cvX.getAttribute("data-an-colx")); return; }   // × в шапке = снять колонку
+    if (!e.target.closest("[data-an-cols]")) cvMenu(false);
+    // --- P1.4: модалка «New channels» ---
+    if (e.target.closest("[data-nc-open]")) { ncOpen(); return; }
+    if (e.target.closest("[data-nc-close]")) { closeModal(document.getElementById("ncModal")); return; }
+    if (e.target.closest("[data-nc-new-open]")) { ncNewForm(true); return; }
+    if (e.target.closest("[data-nc-new-cancel]")) { ncNewForm(false); return; }
+    if (e.target.closest("[data-nc-new-submit]")) { ncCreate(); return; }
+    if (e.target.closest("[data-nc-submit]")) { ncSubmit(); return; }
+    var ncTb = e.target.closest("[data-nc-tab]");
+    if (ncTb) { ncSetTab(ncTb.getAttribute("data-nc-tab")); return; }        // D2
+    if (e.target.closest("[data-nc-ai-regen]")) { ncAiRegen(); return; }
+    var ncBi = e.target.closest("[data-nc-base-item]");
+    if (ncBi) {
+      var bn = ncBi.getAttribute("data-nc-base-item");
+      if (ncBaseSel[bn]) delete ncBaseSel[bn]; else ncBaseSel[bn] = true;
+      // отметку ставим на месте: перерисовка списка сбрасывала бы скролл
+      var bOn = !!ncBaseSel[bn];
+      ncBi.classList.toggle("is-on", bOn);
+      var bCk = ncBi.querySelector(".an-check");
+      if (bCk) bCk.classList.toggle("is-checked", bOn);
+      ncBaseCount();
+      return;
+    }
+    var ncIt = e.target.closest("[data-nc-item]");
+    if (ncIt) {
+      var ncNm = ncIt.getAttribute("data-nc-item");
+      if (ncSel[ncNm]) delete ncSel[ncNm]; else ncSel[ncNm] = true;
+      ncRender();
+      return;
+    }
+    // --- P1.1: селектор коллекции у счётчика ---
+    var csTrig = e.target.closest("[data-an-collsel-trig]");
+    if (csTrig) {
+      var csW = csTrig.closest("[data-an-collsel]");
+      var csM = csW.querySelector("[data-an-collsel-menu]");
+      csOpen(csW, csM.hidden);
+      return;
+    }
+    if (e.target.closest("[data-an-collsel-clear]")) {         // × в пилюле — сбросить коллекцию
+      csClear(e.target.closest("[data-an-collsel]"));
+      return;
+    }
+    if (e.target.closest("[data-an-collsel-new]")) {           // создание коллекции из селектора
+      csOpen(null, false);
+      aiOpen();
+      return;
+    }
+    if (e.target.closest("[data-an-collsel-all]")) {           // A3: All collections
+      csPickAll(e.target.closest("[data-an-collsel]"));
+      return;
+    }
+    var csOpt = e.target.closest("[data-an-collsel-opt]");
+    if (csOpt) {
+      csPick(csOpt.closest("[data-an-collsel]"), csOpt.getAttribute("data-an-collsel-opt"));
+      return;
+    }
+    // --- A5: топики кликабельны — клик включает/выключает топик в фильтре, «+N» раскрывает список ---
+    var tMore = e.target.closest("[data-an-topics-more]");
+    if (tMore) { topicPopToggle(tMore); return; }
+    var tPick = e.target.closest("[data-an-topic-pick]");
+    if (tPick) { topicToggle(tPick.getAttribute("data-an-topic-pick")); topicPopRender(); return; }
+    var tOne = e.target.closest("[data-an-topic]");
+    if (tOne) { topicToggle(tOne.getAttribute("data-an-topic")); return; }
+    // --- A8: футер «Add N channels to collection» ---
+    if (e.target.closest("[data-an-footer-btn]")) { acOpen(); return; }
+    if (e.target.closest("[data-cc-from-sel]")) { ccFromSelection(); return; }
+    var ddAct = e.target.closest("[data-dd-state-act]");
+    if (ddAct && !ddAct.disabled) {
+      var ddBox = ddAct.closest("[data-dd-state]");
+      var ddW = document.querySelector('[data-an-collsel="deep"]');
+      var ddNm = ddW ? csCurrent(ddW) : "";
+      var intent = ddBox ? ddBox.getAttribute("data-dd-act") : "";
+      if (intent === "create") { aiOpen(); return; }
+      if (intent === "select") { csOpen(ddW, true); return; }
+      if (intent === "upgrade") { toast("Upgrade request sent — our team will contact you"); return; }
+      if (!ddNm) return;
+      // 2.5: сбор останавливаем только после подтверждения — собранное отбрасывается
+      if (collState(ddNm) === "deep") mcDeactAsk(ddNm);
+      // B4: активация со страницы Deep data идёт через то же подтверждение, что в списке
+      // и на странице коллекции — это расход лимитов плана, а не мгновенное действие
+      else collActivateAsk(ddNm);
+      return;
+    }
+    if (e.target.closest("[data-ac-close]")) { closeModal(document.getElementById("acModal")); return; }
+    if (e.target.closest("[data-ac-submit]")) { acSubmit(); return; }
+    var ddCancel = e.target.closest("[data-dd-cancel-coll]");
+    if (ddCancel) { collCancel(ddCancel.getAttribute("data-dd-cancel-coll")); return; }
+    if (e.target.closest("[data-dd-toggle]")) { ddPanelToggle(); return; }
+    var ddExp = e.target.closest("[data-dd-expand]");
+    if (ddExp) {
+      var ddCard = ddExp.closest("[data-dd-job]"), ddId = ddCard.getAttribute("data-dd-job");
+      ddOpen[ddId] = !ddOpen[ddId];
+      ddCard.classList.toggle("is-expanded", ddOpen[ddId]);
+      ddExp.setAttribute("aria-expanded", String(ddOpen[ddId]));
+      var ddSub = ddCard.querySelector("[data-dd-sub]");
+      if (ddSub) ddSub.hidden = !ddOpen[ddId];
+      return;
+    }
+    var ddDis = e.target.closest("[data-dd-dismiss]");
+    if (ddDis) { ddDismiss([ddDis.getAttribute("data-dd-dismiss")]); return; }
+    if (e.target.closest("[data-dd-clear]")) {
+      ddDismiss(ddJobs().filter(function (j) { return !j.active; }).map(function (j) { return j.id; }));
+      return;
+    }
+    if (e.target.closest("[data-aw-close]")) { awPending = null; closeModals(); return; }
+    if (e.target.closest("[data-aw-deact]")) { awDeactivate(); return; }
+    if (e.target.closest("[data-aw-dup]")) { awDup(); return; }
+    if (e.target.closest("[data-dup-close]")) { closeModal(document.getElementById("dupModal")); return; }
+    if (e.target.closest("[data-dup-submit]")) { dupSubmit(); return; }
+    var acIt = e.target.closest("[data-ac-item]");
+    if (acIt) {
+      var acNm = acIt.getAttribute("data-ac-item");
+      if (acSel[acNm]) delete acSel[acNm]; else acSel[acNm] = true;
+      acRender();
+      return;
+    }
+    if (!e.target.closest("[data-an-collsel]")) csWraps().forEach(function (w) { csOpen(w, false); });
+    if (TPOP && !e.target.closest(".an-topicpop")) topicPopClose();
+    if (!e.target.closest(".anf-select")) {
+      [].slice.call(document.querySelectorAll(".anf-select.is-open")).forEach(function (o) {
+        o.classList.remove("is-open");
+        var m = o.querySelector("[data-anf-menu]"); if (m) m.hidden = true;
+      });
+    }
+    // --- P1.5: сортировка ---
+    var sortEl = e.target.closest("[data-an-sort]");
+    if (sortEl) {
+      var sKey = tblKeyOf(sortEl);
+      if (sKey) { tblSort(sKey, sortEl.getAttribute("data-an-sort")); return; }
+    }
+    // --- P1.5: пагинация ---
+    var pgBtn = e.target.closest("[data-rp-page]");
+    if (pgBtn) {
+      var pgKey = tblKeyOf(pgBtn);
+      if (pgKey && TBL[pgKey]) { TBL[pgKey].page = parseInt(pgBtn.getAttribute("data-rp-page"), 10) || 1; tblApply(pgKey); }
+      return;
+    }
+    var edgeBtn = e.target.closest("[data-rp-first], [data-rp-last]");
+    if (edgeBtn) {
+      var eKey = tblKeyOf(edgeBtn);
+      if (eKey && TBL[eKey]) {
+        var st2 = TBL[eKey];
+        st2.page = edgeBtn.hasAttribute("data-rp-first")
+          ? 1
+          : Math.max(1, Math.ceil(tblRows(eKey).length / st2.per));
+        tblApply(eKey);
+      }
+      return;
+    }
+    var prevEl = e.target.closest("[data-an-prev]"), nextEl = e.target.closest("[data-an-next]");
+    if (prevEl || nextEl) {
+      var pKey = tblKeyOf(prevEl || nextEl);
+      if (pKey) {
+        TBL[pKey].page += prevEl ? -1 : 1;
+        if (TBL[pKey].page < 1) TBL[pKey].page = 1;
+        tblApply(pKey);
+        return;
+      }
+    }
+    // --- P1.5: размер страницы ---
+    var ppTrig = e.target.closest("[data-an-perpage-trig]");
+    if (ppTrig) {
+      var ppKey = tblKeyOf(ppTrig);
+      var menuEl = ppTrig.parentNode.querySelector("[data-an-perpage-menu]");
+      tblPerPageMenu(ppKey, menuEl ? menuEl.hidden : true);
+      return;
+    }
+    var ppOpt = e.target.closest("[data-an-perpage]");
+    if (ppOpt) {
+      var oKey = tblKeyOf(ppOpt);
+      TBL[oKey].per = parseInt(ppOpt.getAttribute("data-an-perpage"), 10) || 30;
+      TBL[oKey].page = 1;
+      tblPerPageMenu(oKey, false);
+      tblApply(oKey);
+      return;
+    }
+    if (!e.target.closest("[data-an-perpage-wrap]")) {
+      ["basic", "deep", "coll", "video"].forEach(function (k) { tblPerPageMenu(k, false); });
+    }
+    // очистка поиска
+    if (e.target.closest("[data-vid-search-clear]")) {
+      var vinp = document.querySelector("[data-vid-search]");
+      if (vinp) vinp.value = "";
+      var vcl = document.querySelector("[data-vid-search-clear]"); if (vcl) vcl.hidden = true;
+      vidApply();
+      return;
+    }
+    if (e.target.closest("[data-an-search-clear]")) {
+      var inp = document.querySelector("[data-an-search]");
+      if (inp) inp.value = "";
+      var cl = document.querySelector("[data-an-search-clear]"); if (cl) cl.hidden = true;
+      flApply();
+      return;
+    }
+  });
+
+  // P1.9: поиск по видео — мгновенно
+  var vidSq = document.querySelector("[data-vid-search]");
+  if (vidSq) vidSq.addEventListener("input", function () {
+    var cl = document.querySelector("[data-vid-search-clear]");
+    if (cl) cl.hidden = vidSq.value.length === 0;   // крестик как в поиске Basic data
+    vidApply();
+  });
+
+  // P1.4: счётчик ссылок и поиск по коллекциям — мгновенно
+  var ncTa = document.querySelector("[data-nc-links]");
+  if (ncTa) ncTa.addEventListener("input", ncSync);
+  var ncSq = document.querySelector("[data-nc-search]");
+  if (ncSq) ncSq.addEventListener("input", ncRender);
+  var ncBq = document.querySelector("[data-nc-base-search]");
+  if (ncBq) ncBq.addEventListener("input", ncBaseRender);
+  var blQ = document.querySelector("[data-bl-search]");
+  if (blQ) blQ.addEventListener("input", blRender);
+  var ncAiTa = document.querySelector("[data-nc-ai-prompt]");
+  if (ncAiTa) ncAiTa.addEventListener("input", ncSync);
+  var ncNi = document.querySelector("[data-nc-new-name]");
+  if (ncNi) ncNi.addEventListener("keyup", function (e) { if (e.key === "Enter") ncCreate(); });
+  // C3: поиск по коллекциям — мгновенно
+  var mcSq = document.querySelector("[data-mc-search]");
+  if (mcSq) mcSq.addEventListener("input", mcSearchApply);
+  // A8: поиск и Enter в модалке «Add channels to collection»
+  var acSq = document.querySelector("[data-ac-search]");
+  if (acSq) acSq.addEventListener("input", acRender);
+  var acNi = document.querySelector("[data-ac-new-name]");
+  if (acNi) acNi.addEventListener("keyup", function (e) { if (e.key === "Enter") acCreate(); });
+  var repRnI = document.querySelector("[data-rep-rn-input]");
+  if (repRnI) repRnI.addEventListener("keyup", function (e) { if (e.key === "Enter") repRenameSave(); });
+
+  // 10k → 10,000: разряды расставляем по выходу из поля, чтобы не мешать вводу.
+  // Хост берём у самого поля: шаг фильтров живёт в двух модалках (B13).
+  function ffFieldSync(el) {
+    var m = el.closest(".an-modal");
+    if (m) ffHost(m.id);
+    ffRead();
+    ffNormalize();        // перевёрнутую пару разворачиваем здесь, а не ругаемся на неё
+    ffWrite();
+    ffSync();
+  }
+  document.addEventListener("change", function (e) {
+    var f = e.target.closest && e.target.closest("[data-ff]");
+    if (f) ffFieldSync(f);
+  });
+  document.addEventListener("blur", function (e) {
+    var f = e.target && e.target.closest && e.target.closest("[data-ff]");
+    if (f) ffFieldSync(f);
+  }, true);
+
+  var input = document.querySelector("[data-an-search]");
+  if (input) input.addEventListener("input", function () {
+    var cl = document.querySelector("[data-an-search-clear]");
+    if (cl) cl.hidden = input.value.length === 0;
+    flApply();                            // поиск применяется сразу, как в видео
+  });
+
+
+  // ================= P1.6: срезы метрик по типу контента =================
+  // Значения всех срезов лежат в data-атрибутах ячейки (data-sl-videos="1.7k|pos"),
+  // сводная строка — в data-avg-<срез> / data-total-<срез>. Выбор запоминается на колонку.
+  var SL_KEY = "subsub_deep_slice";
+  function slLoad() {
+    try { var v = JSON.parse(localStorage.getItem(SL_KEY) || "{}"); return v && typeof v === "object" ? v : {}; }
+    catch (e) { return {}; }
+  }
+  function slSave(col, slice) {
+    var st = slLoad();
+    st[col] = slice;
+    try { localStorage.setItem(SL_KEY, JSON.stringify(st)); } catch (e) {}
+  }
+  function slMenu(col) {
+    [].slice.call(document.querySelectorAll("[data-an-slice]")).forEach(function (w) {
+      var on = col && w.getAttribute("data-an-slice") === col;
+      var m = w.querySelector("[data-an-slice-menu]");
+      if (m) m.hidden = !on;
+      w.classList.toggle("is-open", !!on);
+    });
+  }
+  function slSetCol(col, slice, quiet) {
+    var body = tblBody("deep");
+    if (!body) return;
+    var opt = document.querySelector('[data-an-slice-opt="' + slice + '"][data-col="' + col + '"]');
+    var lbl = document.querySelector('[data-an-slice-lbl="' + col + '"]');
+    if (lbl && opt && slice !== "all") lbl.textContent = opt.getAttribute("data-lbl");
+    if (lbl && slice === "all" && opt) lbl.textContent = opt.getAttribute("data-lbl");
+    [].slice.call(document.querySelectorAll('[data-an-slice-opt][data-col="' + col + '"]')).forEach(function (b) {
+      b.classList.toggle("is-selected", b.getAttribute("data-an-slice-opt") === slice);
+    });
+    [].slice.call(body.querySelectorAll('.an-tbody > .an-tr:not(.an-tr--avg) [data-col="' + col + '"]')).forEach(function (cell) {
+      var raw = cell.getAttribute("data-sl-" + slice);
+      if (!raw) return;
+      var parts = raw.split("|"), heat = cell.querySelector(".an-heat");
+      if (!heat) return;
+      heat.textContent = parts[0];
+      heat.classList.toggle("an-heat--pos", parts[1] === "pos");
+      heat.classList.toggle("an-heat--neg", parts[1] !== "pos");
+    });
+    [].slice.call(body.querySelectorAll('.an-tr--avg [data-col="' + col + '"]')).forEach(function (cell) {
+      var a = cell.getAttribute("data-avg-" + slice), t = cell.getAttribute("data-total-" + slice);
+      if (a != null) cell.setAttribute("data-avg", a);
+      if (t != null) cell.setAttribute("data-total", t);
+    });
+    if (!quiet) { slSave(col, slice); gsApply(gsMode()); slMenu(null); }
+  }
+  function slInit() {
+    if (!tblBody("deep")) return;
+    ctInit();
+  }
+  // B1: тип контента — один переключатель на все метрики (было по дропдауну в каждой шапке)
+  var CT_KEY = "subsub_deep_ctype";
+  function ctGet() {
+    try { var v = localStorage.getItem(CT_KEY); return ["all", "videos", "shorts", "streams"].indexOf(v) >= 0 ? v : "all"; }
+    catch (e) { return "all"; }
+  }
+  function ctApply(slice) {
+    setTimeout(tblHugAll, 0);
+    var body = tblBody("deep");
+    if (!body) return;
+    [].slice.call(document.querySelectorAll("[data-an-ctype-set]")).forEach(function (b) {
+      var on = b.getAttribute("data-an-ctype-set") === slice;
+      b.classList.toggle("is-on", on);
+      b.setAttribute("aria-checked", on ? "true" : "false");
+    });
+    // все metric-колонки переводим на выбранный срез
+    [].slice.call(document.querySelectorAll("[data-an-metric-lbl]")).forEach(function (lbl) {
+      var col = lbl.getAttribute("data-an-metric-lbl");
+      slSetCol(col, slice, true);
+      // лейбл: «PVN» для all, «PVN Shorts» для срезов
+      var base = lbl.getAttribute("data-base") || lbl.textContent.trim();
+      if (!lbl.getAttribute("data-base")) lbl.setAttribute("data-base", base);
+      lbl.textContent = slice === "all" ? base : base + " " + slice.charAt(0).toUpperCase() + slice.slice(1);
+    });
+    gsApply(gsMode());
+  }
+  function ctSet(slice) {
+    try { localStorage.setItem(CT_KEY, slice); } catch (e) {}
+    ctApply(slice);
+  }
+  function ctInit() { ctApply(ctGet()); }
+
+  // ================= B2: массовое удаление каналов из коллекции (Deep data) =================
+  function dpChecked() {
+    return [].slice.call(document.querySelectorAll('[data-an-table-body="deep"] [data-an-check].is-checked'))
+      .map(function (b) {
+        var row = b.closest(".an-tr"), n = row && row.querySelector(".an-chan__name");
+        return { row: row, name: n ? n.textContent.trim() : "" };
+      }).filter(function (x) { return x.name; });
+  }
+  function dpFooter() {
+    var picked = dpChecked(), footer = document.querySelector("[data-an-footer]");
+    if (!footer) return;
+    footer.hidden = !picked.length;
+    var lbl = footer.querySelector("[data-dp-remove-lbl]");
+    if (lbl) lbl.textContent = "Remove " + picked.length + (picked.length === 1 ? " channel" : " channels");
+    var fromSel2 = footer.querySelector("[data-cc-from-sel-lbl]");
+    if (fromSel2) fromSel2.textContent = "Create collection from " + picked.length +
+      (picked.length === 1 ? " channel" : " channels");
+    var addLbl = footer.querySelector("[data-dp-add-lbl]");
+    if (addLbl) addLbl.textContent = "Add " + picked.length + (picked.length === 1 ? " channel" : " channels") + " to collection";
+    // Pin работает как одно действие на выбор: если выбраны и закреплённые, и обычные —
+    // непонятно, что делать, поэтому кнопку убираем.
+    var pinBtn = footer.querySelector("[data-dp-pin]");
+    var pinLbl = footer.querySelector("[data-dp-pin-lbl]");
+    var pinnedN = picked.filter(function (x) { return x.row.classList.contains("is-pinned"); }).length;
+    var mixed = pinnedN > 0 && pinnedN < picked.length;
+    if (pinBtn) pinBtn.hidden = mixed;
+    if (pinLbl) pinLbl.textContent = pinnedN === picked.length ? "Unpin" : "Pin on top";
+  }
+  function dpAsk() {
+    var picked = dpChecked();
+    if (!picked.length) return;
+    var w = document.querySelector('[data-an-collsel="deep"]');
+    var coll = w ? csCurrent(w) : "";
+    var t = document.querySelector("[data-dp-text]");
+    if (t) t.textContent = picked.length === 1
+      ? "“" + picked[0].name + "” will be removed from " + (coll || "the collection") + ". Deep data for this channel will no longer be collected."
+      : picked.length + " channels will be removed from " + (coll || "the collection") + ". Deep data for them will no longer be collected.";
+    openModal("dpConfirm");
+  }
+  function dpRemove() {
+    var picked = dpChecked();
+    var w = document.querySelector('[data-an-collsel="deep"]');
+    var coll = w ? csCurrent(w) : "";
+    picked.forEach(function (x) { if (x.row) x.row.remove(); });
+    // убираем и из состава коллекции в состоянии, чтобы счётчики совпали
+    if (coll) {
+      var extra = aiExtraLoad();
+      if (extra[coll] && extra[coll].channels) {
+        extra[coll].channels = extra[coll].channels.filter(function (n) {
+          return !picked.some(function (x) { return x.name === n; });
+        });
+        aiExtraSave(extra);
+      }
+      var removed = aiRemovedLoad();
+      removed[coll] = (removed[coll] || []).concat(picked.map(function (x) { return x.name; }));
+      aiRemovedSave(removed);
+    }
+    closeModal(document.getElementById("dpConfirm"));
+    var allBtn = document.querySelector('[data-an-table-body="deep"] [data-an-check-all]');
+    if (allBtn) allBtn.classList.remove("is-checked");
+    dpFooter();
+    TBL.deep.page = 1;
+    tblApply("deep");
+    if (typeof aiRenderCollections === "function") aiRenderCollections();
+    toastRemoved(picked.length, coll || ceName());
+  }
+  // закреплённые каналы: список на коллекцию, порядок сохраняем между перезагрузками
+  var DP_PIN_KEY = "subsub_deep_pinned";
+  function dpPinLoad() {
+    try { var v = JSON.parse(localStorage.getItem(DP_PIN_KEY) || "{}"); return v && typeof v === "object" ? v : {}; }
+    catch (e) { return {}; }
+  }
+  function dpPinSave(o) { try { localStorage.setItem(DP_PIN_KEY, JSON.stringify(o)); } catch (e) {} }
+  // Пины работают и на Deep data, и на Basic data: там и там строки живут в одной
+  // таблице, а закрепление имеет смысл только внутри выбранной коллекции.
+  function dpKey() { return tblBody("deep") ? "deep" : (tblBody("basic") ? "basic" : ""); }
+  function dpColl() {
+    var w = document.querySelector('[data-an-collsel="' + dpKey() + '"]');
+    return w ? csCurrent(w) : "";
+  }
+  // закреплённые строки поднимаем наверх (сразу после сводной), остальные — в исходном порядке
+  function dpApplyPins() {
+    var key = dpKey();
+    var b = key ? tblBody(key) : null;
+    if (!b) return;
+    var body = b.querySelector(".an-tbody");
+    var all = tblAllRows(key);
+    // исходный порядок помним в data-ord: по нему строки возвращаются после снятия закрепления
+    var mx = 0;
+    all.forEach(function (r) { var o = r.getAttribute("data-ord"); if (o !== null) mx = Math.max(mx, +o); });
+    all.forEach(function (r) { if (r.getAttribute("data-ord") === null) r.setAttribute("data-ord", ++mx); });
+    all.slice().sort(function (a, c) { return (+a.getAttribute("data-ord")) - (+c.getAttribute("data-ord")); })
+      .forEach(function (r) { body.appendChild(r); });
+    var coll = dpColl(), names = dpPinLoad()[coll] || [];
+    // На Deep data принадлежность строки коллекции размечена в data-coll, на Basic data
+    // такого атрибута нет: там строки уже отфильтрованы выбранной коллекцией.
+    function sameColl(r) {
+      var v = r.getAttribute("data-coll");
+      return v === null ? true : v === coll;
+    }
+    function rowOf(nm) {
+      return all.filter(function (r) {
+        var n = r.querySelector(".an-chan__name");
+        return n && n.textContent.trim() === nm && sameColl(r);
+      })[0];
+    }
+    all.forEach(function (row) {
+      var n = row.querySelector(".an-chan__name");
+      var on = !!coll && !!n && names.indexOf(n.textContent.trim()) !== -1 && sameColl(row);
+      row.classList.toggle("is-pinned", on);
+      var mark = row.querySelector("[data-dp-pin-row]");
+      if (mark) {
+        mark.hidden = !coll;               // без выбранной коллекции закреплять нечего
+        mark.title = on ? "Unpin" : "Pin on top";
+        mark.setAttribute("aria-label", on ? "Unpin channel" : "Pin channel on top");
+        mark.setAttribute("aria-pressed", on ? "true" : "false");
+      }
+    });
+    var avg = all.filter(function (r) {
+      return r.classList.contains("an-tr--avg") && sameColl(r);
+    })[0];
+    var anchor = avg ? avg.nextSibling : body.firstChild;
+    if (coll) names.forEach(function (nm) {
+      var row = rowOf(nm);
+      if (row) body.insertBefore(row, anchor);
+    });
+    tblApply(key);
+  }
+  // Кнопка в строке переключает закрепление одного канала, без выбора чекбоксом.
+  function dpPinRow(row) {
+    if (!row) return;
+    var n = row.querySelector(".an-chan__name");
+    var nm = n ? n.textContent.trim() : "";
+    var coll = dpColl();
+    if (!nm || !coll) return;
+    var store = dpPinLoad(), list = (store[coll] || []).slice();
+    var at = list.indexOf(nm), on = at !== -1;
+    if (on) list.splice(at, 1); else list.push(nm);
+    store[coll] = list;
+    dpPinSave(store);
+    dpApplyPins();
+    dpFooter();
+    toast("“" + nm + "” " + (on ? "unpinned" : "pinned on top"));
+  }
+  function dpPinToggle() {
+    var picked = dpChecked();
+    if (!picked.length) return;
+    var coll = dpColl();
+    if (!coll) return;
+    var store = dpPinLoad(), list = (store[coll] || []).slice();
+    var allPinned = picked.every(function (x) { return x.row.classList.contains("is-pinned"); });
+    picked.forEach(function (x) {
+      var i = list.indexOf(x.name);
+      if (allPinned) { if (i !== -1) list.splice(i, 1); }
+      else if (i === -1) list.push(x.name);
+    });
+    store[coll] = list;
+    dpPinSave(store);
+    [].slice.call(document.querySelectorAll('[data-an-table-body="deep"] [data-an-check], [data-an-table-body="deep"] [data-an-check-all]')).forEach(function (b2) { b2.classList.remove("is-checked"); });
+    dpApplyPins();
+    markSelected();
+    dpFooter();
+    toast(picked.length + (picked.length === 1 ? " channel " : " channels ") + (allPinned ? "unpinned" : "pinned on top"));
+  }
+
+  // удалённые каналы держим отдельно — иначе базовый состав из сборки их вернёт
+  var AI_REMOVED_KEY = "subsub_coll_removed";
+  function aiRemovedLoad() {
+    try { var v = JSON.parse(localStorage.getItem(AI_REMOVED_KEY) || "{}"); return v && typeof v === "object" ? v : {}; }
+    catch (e) { return {}; }
+  }
+  function aiRemovedSave(o) { try { localStorage.setItem(AI_REMOVED_KEY, JSON.stringify(o)); } catch (e) {} }
+
+  // ================= P1.8: сводная строка Average / Total =================
+  // В режиме Total прод гасит хитмап («Insights unavailable in Total mode»), повторяем.
+  var GS_KEY = "subsub_deep_gs";
+  function gsMode() {
+    try { return localStorage.getItem(GS_KEY) === "total" ? "total" : "average"; } catch (e) { return "average"; }
+  }
+  function gsApply(mode) {
+    var body = tblBody("deep");
+    if (!body) return;
+    [].slice.call(body.querySelectorAll(".an-tr--avg [data-avg]")).forEach(function (cell) {
+      cell.textContent = mode === "total" ? cell.getAttribute("data-total") : cell.getAttribute("data-avg");
+    });
+    body.classList.toggle("is-total", mode === "total");
+    [].slice.call(body.querySelectorAll("[data-an-gs-val]")).forEach(function (el) {
+      el.textContent = mode === "total" ? "Total" : "Average";
+    });
+    [].slice.call(body.querySelectorAll("[data-an-gs-opt]")).forEach(function (b) {
+      b.classList.toggle("is-selected", b.getAttribute("data-an-gs-opt") === mode);
+    });
+  }
+  function gsMenu(open, wrap) {
+    [].slice.call(document.querySelectorAll("[data-an-gs]")).forEach(function (w) {
+      var m = w.querySelector("[data-an-gs-menu]");
+      if (m) m.hidden = !(open && w === wrap);
+    });
+  }
+  function gsSet(mode) {
+    try { localStorage.setItem(GS_KEY, mode); } catch (e) {}
+    gsApply(mode);
+    gsMenu(false);
+  }
+  function gsInit() { if (tblBody("deep")) gsApply(gsMode()); }
+
+  // ================= колонки, закрытые тарифом (Basic data) =================
+  // Состав пришёл с dev-стенда: на Explorer закрыты Youtube topics, Views+, Views+/Subs+,
+  // AVV и Last upd. Колонки не прячем — шапка с замком и заглушенные ячейки показывают,
+  // что данные есть, а поверх области стоит карточка апселла.
+  // Deep data отдельно гасить не нужно: на этом тарифе вся страница за пейволом (B2).
+  var COL_LOCK_TIP = "Available on Pro and above";
+  function colLocked() { return plan().cols || []; }
+  // На бесплатном тарифе порядок колонок как на проде: сначала открытые метрики,
+  // потом закрытые подряд — иначе замки чередуются с данными и карточку апселла
+  // некуда поставить. У платных планов порядок наш: метрика рядом со своим приростом.
+  var EXPLORER_ORDER = ["check", "name", "stub", "subs", "views", "vids", "subsg",
+                        "viewsg", "avv", "topics", "vps", "lastupd", "created", "added"];
+  function colOrderSync() {
+    var body = tblBody("basic");
+    if (!body || !plan().cols) return;
+    var head = body.querySelector(".an-thead .an-tr--head");
+    if (!head || head.getAttribute("data-col-order") === "locked") return;
+    var ids = [].slice.call(head.children).map(function (c) { return c.getAttribute("data-col"); });
+    var order = EXPLORER_ORDER.filter(function (id) { return ids.indexOf(id) !== -1; });
+    ids.forEach(function (id) { if (order.indexOf(id) === -1) order.push(id); });   // неучтённые — в конец
+    var idx = order.map(function (id) { return ids.indexOf(id); });
+    colReorder(head, idx);
+    [].slice.call(body.querySelectorAll(".an-tbody .an-tr")).forEach(function (r) { colReorder(r, idx); });
+    head.setAttribute("data-col-order", "locked");
+  }
+  function colReorder(row, idx) {
+    var kids = [].slice.call(row.children);
+    idx.forEach(function (i) { if (kids[i]) row.appendChild(kids[i]); });
+  }
+  function colLockSync() {
+    var body = tblBody("basic");
+    if (!body) return;
+    var locked = colLocked();
+    var heads = [].slice.call(body.querySelectorAll(".an-thead .an-tr--head > [data-col]"));
+    var rows = [].slice.call(body.querySelectorAll(".an-tbody .an-tr"));
+    var off = plan().colsOff || [];       // этих колонок на тарифе нет вовсе
+    var mask = [];
+    heads.forEach(function (th, i) {
+      var gone = off.indexOf(th.getAttribute("data-col")) !== -1;
+      th.classList.toggle("is-colhidden", gone);
+      rows.forEach(function (r) {
+        var c = r.children[i];
+        if (c) c.classList.toggle("is-colhidden", gone);
+      });
+      var on = locked.indexOf(th.getAttribute("data-col")) !== -1;
+      mask[i] = on;
+      th.classList.toggle("is-locked", on);
+      var ico = th.querySelector("[data-col-lockico]");
+      if (on && !ico) {
+        ico = document.createElement("span");
+        ico.className = "an-th__lock";
+        ico.setAttribute("data-col-lockico", "");
+        ico.innerHTML = lockIcoHtml();
+        th.appendChild(ico);
+      } else if (!on && ico) ico.remove();
+      tipSet(th, on ? COL_LOCK_TIP : "", on);
+      rows.forEach(function (r) {
+        var cell = r.children[i];
+        if (cell) cell.classList.toggle("is-locked", on);
+      });
+    });
+    colLockFit();
+  }
+  // Карточка апселла стоит над закрытой областью. У нас метрика идёт в паре со своим
+  // приростом, поэтому закрытые колонки не сплошные, как на проде: карточку центруем
+  // по самой длинной непрерывной группе, иначе она накрыла бы открытые данные.
+  // Геометрия подложки и карточки считается отдельно от классов: ширины колонок
+  // досчитываются позже (tblHugAll, веб-шрифт, ресайз), и по первому замеру слой
+  // вставал мимо — накрывал открытые колонки и оставлял снаружи закрытые.
+  function colLockFit() {
+    var hold = document.querySelector("[data-col-hold]");
+    var veil = document.querySelector("[data-col-veil]");
+    var body = tblBody("basic");
+    if (!hold || !body) return;
+    var heads = [].slice.call(body.querySelectorAll(".an-thead .an-tr--head > [data-col]"));
+    var locked = colLocked();
+    var best = null, run = null;
+    heads.concat([null]).forEach(function (th, i) {
+      var on = th && locked.indexOf(th.getAttribute("data-col")) !== -1;
+      if (on) { if (!run) run = { from: i, to: i }; else run.to = i; return; }
+      if (run) {
+        if (!best || run.to - run.from > best.to - best.from) best = run;
+        run = null;
+      }
+    });
+    hold.hidden = !best;
+    if (veil) veil.hidden = !best;
+    if (!best) return;
+    var a = heads[best.from], b = heads[best.to];
+    var left = a.offsetLeft, right = b.offsetLeft + b.offsetWidth;
+    // подложка и держатель накрывают строки, но не шапку: замки в заголовках должны читаться
+    var thead = body.querySelector(".an-thead"), tbody = body.querySelector(".an-tbody");
+    var top = Math.round(thead ? thead.offsetHeight : 0);
+    var height = Math.round(tbody ? tbody.scrollHeight : 0);
+    [hold, veil].forEach(function (el) {
+      if (!el) return;
+      el.style.left = Math.round(left) + "px";
+      el.style.width = Math.round(right - left) + "px";
+      el.style.top = top + "px";
+      el.style.height = height + "px";
+    });
+  }
+  function lockIcoHtml() { return AI_ICO.lock; }
+  // Пункты навигации, закрытые тарифом: замок справа, пункт не кликается, причина в тултипе.
+  // Метку ставит сборка меню (data-m-lock), состав по плану — здесь.
+  // Фразу заканчивает действие в самом тултипе («Upgrade plan»), поэтому в тексте
+  // его не повторяем — иначе апселл звучит дважды подряд.
+  var NAV_LOCK_TIP = "Available on Pro and above";
+  function navLockSync() {
+    var off = !plan().deep;                 // на бесплатном тарифе этих разделов нет
+    [].slice.call(document.querySelectorAll("[data-m-lock]")).forEach(function (a) {
+      a.classList.toggle("is-locked", off);
+      var ico = a.querySelector("[data-m-lockico]");
+      if (off && !ico) {
+        ico = document.createElement("span");
+        ico.className = "m-item__lock";
+        ico.setAttribute("data-m-lockico", "");
+        ico.innerHTML = AI_ICO.lock;
+        a.appendChild(ico);
+      } else if (!off && ico) ico.remove();
+      tipSet(a, off ? NAV_LOCK_TIP : "", off);
+      if (off) { a.setAttribute("aria-disabled", "true"); a.removeAttribute("href"); }
+      else {
+        a.removeAttribute("aria-disabled");
+        if (!a.getAttribute("href")) a.setAttribute("href", NAV_HREF[a.getAttribute("data-m-lock")] || "#");
+      }
+    });
+  }
+  var NAV_HREF = { "Deep data": "analytics-deep-data.html", "Videos data": "analytics-videos-data.html",
+                   "Reports": "analytics-reports.html" };
+
+  // ================= P1.7: видимость колонок Deep data =================
+  // Отличие от прода: там изменения применяются при закрытии поповера, здесь — сразу
+  // (иначе в прототипе клик по чекбоксу выглядит как «не работает»).
+  var CV_KEY = "subsub_deep_cols";
+  function cvDefaults() {
+    var out = {};
+    [].slice.call(document.querySelectorAll("[data-an-cols-opt]")).forEach(function (b) {
+      out[b.getAttribute("data-an-cols-opt")] = b.classList.contains("is-checked");
+    });
+    return out;
+  }
+  var cvDefault = null;
+  function cvLoad() {
+    try { var v = JSON.parse(localStorage.getItem(CV_KEY) || "null"); return v && typeof v === "object" ? v : null; }
+    catch (e) { return null; }
+  }
+  function cvSave(v) { try { localStorage.setItem(CV_KEY, JSON.stringify(v)); } catch (e) {} }
+  function cvApply(state) {
+    var body = tblBody("deep");
+    if (!body) return;
+    Object.keys(state).forEach(function (id) {
+      var on = !!state[id];
+      [].slice.call(body.querySelectorAll('[data-col="' + id + '"]')).forEach(function (cell) {
+        cell.classList.toggle("is-colhidden", !on);
+      });
+      var box = document.querySelector('[data-an-cols-opt="' + id + '"]');
+      if (box) { box.classList.toggle("is-checked", on); box.setAttribute("aria-checked", on ? "true" : "false"); }
+    });
+  }
+  function cvInit() {
+    if (!document.querySelector("[data-an-cols]")) return;
+    cvDefault = cvDefaults();
+    var st = cvLoad();
+    if (st) cvApply(st);
+  }
+  function cvToggle(id) {
+    var st = cvLoad() || cvDefaults();
+    st[id] = !st[id];
+    cvSave(st);
+    cvApply(st);
+    tblHugAll();                       // ширины пересчитываем уже по новому составу колонок
+    if (typeof tblFit === "function") tblFit();
+  }
+  function cvReset() {
+    if (!cvDefault) return;
+    var st = {};
+    Object.keys(cvDefault).forEach(function (k) { st[k] = cvDefault[k]; });
+    cvSave(st);
+    cvApply(st);
+    cvMenu(false);
+    tblHugAll();
+  }
+  function cvMenu(open) {
+    var m = document.querySelector("[data-an-cols-menu]");
+    if (m) m.hidden = !open;
+  }
+
+  // ================= P1.1: селектор коллекции у счётчика =================
+  // Один компонент на Basic и Deep, но смысл разный: на Basic это тот же фильтр,
+  // что поле Collection в панели (держим их синхронно), на Deep — переключение набора
+  // строк (в разметке лежат строки всех активированных коллекций, помечены data-coll).
+  function csWraps() { return [].slice.call(document.querySelectorAll("[data-an-collsel]")); }
+  // ================= тултипы =================
+  // Нативный title не стилизуется и не умеет держать действие, поэтому свой:
+  // data-tip — текст, data-tip-up — показать «Upgrade plan» с ракетой.
+  var tipHideT = null;
+  function tipEl() { return document.querySelector("[data-an-tip]"); }
+  function tipShow(host) {
+    var tip = tipEl();
+    if (!tip || !host) return;
+    var text = host.getAttribute("data-tip");
+    if (!text) return;
+    clearTimeout(tipHideT);
+    var txt = tip.querySelector("[data-an-tip-txt]");
+    if (txt) txt.textContent = text;
+    var up = tip.querySelector("[data-an-tip-up]");
+    if (up) up.hidden = !host.hasAttribute("data-tip-up");
+    tip.hidden = false;
+    var r = host.getBoundingClientRect();
+    var w = tip.offsetWidth, h = tip.offsetHeight;
+    var left = Math.min(Math.max(8, r.left + r.width / 2 - w / 2), window.innerWidth - w - 8);
+    var below = r.bottom + 10 + h < window.innerHeight;
+    tip.style.left = Math.round(left) + "px";
+    tip.style.top = Math.round(below ? r.bottom + 10 : r.top - h - 10) + "px";
+    var arrow = tip.querySelector("[data-an-tip-arrow]");
+    if (arrow) {
+      arrow.style.left = Math.round(Math.min(Math.max(10, r.left + r.width / 2 - left - 4), w - 18)) + "px";
+      arrow.style.top = below ? "-4px" : "";
+      arrow.style.bottom = below ? "" : "-4px";
+    }
+    tip.classList.add("is-on");
+  }
+  function tipHide(now) {
+    var tip = tipEl();
+    if (!tip) return;
+    clearTimeout(tipHideT);
+    // задержка, чтобы можно было довести курсор до «Upgrade plan» внутри тултипа
+    tipHideT = setTimeout(function () {
+      tip.classList.remove("is-on");
+      tip.hidden = true;
+    }, now ? 0 : 140);
+  }
+  document.addEventListener("mouseover", function (e) {
+    var host = e.target.closest && e.target.closest("[data-tip]");
+    if (host) { tipShow(host); return; }
+    if (e.target.closest && e.target.closest("[data-an-tip]")) { clearTimeout(tipHideT); return; }
+    tipHide();
+  });
+  document.addEventListener("focusin", function (e) {
+    var host = e.target.closest && e.target.closest("[data-tip]");
+    if (host) tipShow(host);
+  });
+  document.addEventListener("focusout", function () { tipHide(); });
+  window.addEventListener("scroll", function () { tipHide(true); }, true);
+  // подсказку ставим одним хелпером: пусто — снять
+  function tipSet(el, text, upgrade) {
+    if (!el) return;
+    if (text) {
+      el.setAttribute("data-tip", text);
+      if (upgrade) el.setAttribute("data-tip-up", ""); else el.removeAttribute("data-tip-up");
+    } else {
+      el.removeAttribute("data-tip");
+      el.removeAttribute("data-tip-up");
+    }
+    el.removeAttribute("title");
+  }
+  // выключенный, но живой для ховера контрол
+  function offSet(el, off) {
+    if (!el) return;
+    el.classList.toggle("is-off", !!off);
+    if (off) el.setAttribute("aria-disabled", "true"); else el.removeAttribute("aria-disabled");
+    el.disabled = false;
+  }
+  function isOff(el) { return !!el && el.classList.contains("is-off"); }
+
+  // ================= состояния коллекции (instructions/07-collection-states.md) =================
+  // Подбор каналов и сбор Deep data никогда не идут одновременно по одной коллекции:
+  // пока активно одно, вход во второе заблокирован с объяснением, а не спрятан.
+  var CS_LBL = {
+    created: "Created", sourcing: "Sourcing channels",
+    deep: "Collecting data", activated: "Activated"
+  };
+  // 4.5: на блокировку из-за процесса ровно две фразы — про подбор и про сбор.
+  // Раньше их было пять, и одна и та же причина объяснялась по-разному.
+  var CS_TIP = {
+    editWaitDeep: "Channels can't be changed while deep data is being collected",
+    addWaitSourcing: "Sourcing is running — it fills the collection itself",
+    needChannel: "Add at least one channel first",
+    planDeep: "Deep data is available on Pro and above — upgrade to activate",
+    planDeepShort: "Deep data is available on Pro and above",
+    noDeep: "Deep data isn't collected yet",
+    sample: "Shared collection — only its owner can change the channels"
+  };
+  var DEEP_MS = demoFast() ? 3000 : 30000;   // сбор Deep data тоже долгий: показываем прогресс
+  var deepTimers = {};
+  // B2: Deep data закрыта тарифом ВЕЗДЕ, включая sample-коллекции. Исключение для сэмплов
+  // было воронкой «посмотри на готовом примере» — от него отказались: на Explorer
+  // Deep data не открывается ни по одной коллекции, вместо неё пейвол с апселлом.
+  function planDeepOn() { return !!plan().deep; }
+  // состояние Deep data живёт там же, где состав коллекции: в AI-записи или в слоте extra
+  function collDeepState(name) {
+    var c = aiCollByName(name);
+    if (c && c.deep) return c.deep === "none" ? "" : c.deep;
+    var slot = aiExtraLoad()[name];
+    if (slot && slot.deep) return slot.deep === "none" ? "" : slot.deep;
+    var seed = collStatus(name);          // из сборки: activated | pending | created
+    return seed === "activated" ? "activated" : seed === "pending" ? "collecting" : "";
+  }
+  function collDeepAt(name) {
+    var c = aiCollByName(name);
+    if (c && c.deepAt) return c.deepAt;
+    var slot = aiExtraLoad()[name];
+    return (slot && slot.deepAt) || 0;
+  }
+  function collSetDeep(name, val, at) {
+    var list = aiLoad(), isAi = false;
+    list.forEach(function (x) {
+      if (x.mode === "append" || x.name !== name) return;
+      x.deep = val; x.deepAt = at || 0; isAi = true;
+    });
+    if (isAi) aiSave(list);
+    var extra = aiExtraLoad();
+    extra[name] = extra[name] || { channels: [] };
+    extra[name].deep = val;
+    extra[name].deepAt = at || 0;
+    aiExtraSave(extra);
+  }
+  function collState(name) {
+    // B2: сэмплы больше не исключение — состояние читаем как у любой коллекции.
+    // Раньше они возвращались активированными всегда, и на Explorer через них
+    // открывался проход к Deep data мимо пейвола.
+    if (aiSourcingNames()[name]) return "sourcing";
+    var d = collDeepState(name);
+    if (d === "collecting") return "deep";
+    if (d === "activated") return "activated";
+    return "created";
+  }
+  // каналов в коллекции: на её странице считаем строки, иначе состав из состояния
+  function collChans(name) {
+    if (document.querySelector("[data-ce-row]") && ceName() === name) return ceRows().length;
+    return aiChannelsOf(name).length;
+  }
+  function collCanEdit(name) { return collState(name) !== "deep"; }
+  // Добавлять каналы нельзя, пока идёт подбор (он сам занимает места до потолка)
+  // и пока собирается Deep data (набор не должен меняться под датасетом).
+  function collCanAdd(name) {
+    // C3: sample-коллекция чужая — состав меняет её владелец, а не мы
+    if (collIsSample(name)) return false;
+    // B12: коллекция сверх лимита плана заморожена до апгрейда
+    if (collOverLimit(name)) return false;
+    var s = collState(name);
+    return s !== "sourcing" && s !== "deep";
+  }
+  function collAddBlockTip(name) {
+    if (collIsSample(name)) return CS_TIP.sample;
+    if (collOverLimit(name)) return collOverLimitTip();
+    var s = collState(name);
+    return s === "sourcing" ? CS_TIP.addWaitSourcing
+         : s === "deep" ? CS_TIP.editWaitDeep : "";
+  }
+  // C2: вместимость коллекции проверяем на каждом входе добавления, а не только
+  // на её странице — через мультиселект можно было молча получить 11 of 10.
+  // 4.3: единый текст «коллекция заполнена» — с дробью и апселлом
+  function collFullTip(short) {
+    var max = planFmt(plan().chans);
+    return "Collection is full on " + plan().label + " (" + max + "/" + max + ")" +
+      (short ? "" : " — upgrade to add more channels");
+  }
+  function collFitTip(name, n) {
+    var left = planChansLeft(name);
+    if (left === Infinity || (n || 1) <= left) return "";
+    return left
+      ? "Only " + left + (left === 1 ? " more channel fits" : " more channels fit") + " on " + plan().label
+      : collFullTip();
+  }
+  function collCanSource(name) {
+    if (collIsSample(name) || collOverLimit(name)) return false;   // чужая или замороженная
+    if (planChansLeft(name) === 0) return false;   // мест в коллекции нет — подбору некуда класть
+    var s = collState(name);
+    return s !== "sourcing" && s !== "deep";
+  }
+  // 1.1: досорсинг существующей коллекции упирается только в её вместимость.
+  // Лимит ЧИСЛА коллекций тут не при чём — он проверяется при создании новой.
+  function collSourceBlockTip(name) {
+    if (collIsSample(name)) return CS_TIP.sample;
+    if (collOverLimit(name)) return collOverLimitTip();
+    if (planChansLeft(name) === 0) return collFullTip();
+    var s = collState(name);
+    return s === "sourcing" ? CS_TIP.addWaitSourcing
+         : s === "deep" ? CS_TIP.editWaitDeep : "";
+  }
+
+  // ---- запуск и отмена процессов ----
+  function collActivateDeep(name) {
+    if (collState(name) !== "created" || collChans(name) < 1) return false;
+    if (!planDeepOn()) { toast(CS_TIP.planDeep); return false; }
+    collSetDeep(name, "collecting", Date.now() + DEEP_MS);
+    deepTick();
+    collSurfaces();
+    return true;
+  }
+  // Отмена сбора отбрасывает собранное целиком: коллекция возвращается в Created,
+  // повторная активация собирает заново.
+  function collCancelDeep(name) {
+    if (deepTimers[name]) { clearTimeout(deepTimers[name]); delete deepTimers[name]; }
+    collSetDeep(name, "none", 0);
+    collSurfaces();
+  }
+  function collCancelSourcing(name) {
+    var list = aiLoad().filter(function (r) {
+      return !(r.status === "pending" && aiSourcingTarget(r) === name);
+    });
+    aiSave(list);
+    collSurfaces();
+  }
+  function collCancel(name) {           // Cancel по текущему процессу коллекции
+    var s = collState(name);
+    if (s === "sourcing") { collCancelSourcing(name); toast("Sourcing canceled — “" + name + "”"); }
+    else if (s === "deep") { collCancelDeep(name); toast("Deep data deactivated — “" + name + "”"); }
+  }
+  // сбор Deep data идёт по таймеру и переживает переходы между страницами
+  function deepTick() {
+    aiAllColls().forEach(function (c) {
+      var nm = c.name;
+      if (collDeepState(nm) !== "collecting" || deepTimers[nm]) return;
+      var at = collDeepAt(nm) || (Date.now() + DEEP_MS);
+      deepTimers[nm] = setTimeout(function () {
+        delete deepTimers[nm];
+        collSetDeep(nm, "activated", 0);
+        toast("Deep data is ready — “" + nm + "”");
+        collSurfaces();
+      }, Math.max(400, at - Date.now()));
+    });
+  }
+  // одно обновление всех поверхностей, где видно состояние
+  function collSurfaces() {
+    aiRenderPill();
+    if (typeof aiRenderCollections === "function") aiRenderCollections();
+    ceStateSync();
+    ddStateSync();
+    csWraps().forEach(function (w) { if (w.classList.contains("is-open")) csFill(w, ""); });
+  }
+  // переключение состояния руками — для демо на интервью
+  window.subsubState = function (name, state) {
+    if (!name) return subsubStates();
+    collCancelSourcing(name);
+    if (deepTimers[name]) { clearTimeout(deepTimers[name]); delete deepTimers[name]; }
+    if (state === "sourcing") {
+      collSetDeep(name, "none", 0);
+      var list = aiLoad();
+      list.push({ id: "s" + Date.now(), name: name, target: name, mode: "append", isAi: true,
+                  status: "pending", query: "demo sourcing", filters: {}, channels: [],
+                  created: aiToday(), startAt: Date.now(), readyAt: Date.now() + AI_STEP_MS,
+                  endAt: Date.now() + AI_RUN_MS });
+      aiSave(list);
+      aiTick();
+    } else if (state === "deep") {
+      collSetDeep(name, "collecting", Date.now() + DEEP_MS);
+      deepTick();
+    } else if (state === "activated") {
+      collSetDeep(name, "activated", 0);
+    } else {
+      collSetDeep(name, "none", 0);
+    }
+    collSurfaces();
+    return subsubStates();
+  };
+  window.subsubPlan = function (id) {
+    if (!id) return planId();          // действующий план, включая демо-версию новичка
+    if (!PLANS[id]) return "unknown plan: use explorer | pro | business | enterprise";
+    try { localStorage.setItem("subsub_plan", id); } catch (e) {}
+    location.reload();
+  };
+  window.subsubStates = function () {
+    var out = {};
+    aiAllColls().forEach(function (c) { out[c.name] = collState(c.name); });
+    return out;
+  };
+  // 6.1: одна команда, чтобы вернуть демо в исходное. QA-прогоны оставляют в localStorage
+  // созданные коллекции, исключённые каналы, состояния Deep data, выбранный план,
+  // ускорение процессов и настройки таблиц — из-за них счётчики табов и лимиты врут.
+  var DEMO_KEYS = ["subsub_ai_collections", "subsub_coll_extra", "subsub_coll_removed",
+    "subsub_coll_ctype", "subsub_deep_cols", "subsub_deep_ctype", "subsub_deep_gs",
+    "subsub_deep_pinned", "subsub_deep_slice", "subsub_fast", "subsub_plan", "subsub_rep_note"];
+  window.subsubReset = function (opts) {
+    var keep = opts && opts.keepPlan;
+    DEMO_KEYS.forEach(function (k) {
+      if (keep && k === "subsub_plan") return;
+      try { localStorage.removeItem(k); } catch (e) {}
+    });
+    // таймеры процессов держат ссылки на удалённые записи — гасим до перезагрузки
+    Object.keys(aiTimers).forEach(function (id) { clearTimeout(aiTimers[id]); delete aiTimers[id]; });
+    Object.keys(deepTimers).forEach(function (nm) { clearTimeout(deepTimers[nm]); delete deepTimers[nm]; });
+    location.reload();
+  };
+
+  // статус коллекции из сборки/состояния — основа для collDeepState
+  function collStatus(name) {
+    var c = (typeof aiCollByName === "function" ? aiCollByName(name) : null);
+    if (c) return c.status || "created";
+    var slot = (typeof aiExtraLoad === "function" ? aiExtraLoad()[name] : null);
+    if (slot && slot.status) return slot.status;
+    var host = document.querySelector("[data-ce-statuses]");
+    var map = {};
+    try { map = JSON.parse((host && host.getAttribute("data-ce-statuses")) || "{}") || {}; } catch (e) {}
+    return map[name] || "created";
+  }
+  function csList(key) { return (typeof aiAllColls === "function" ? aiAllColls() : []); }
+  // Коллекции идут группами: сначала свои — по состоянию, в конце чужие.
+  // Sample-коллекции выданы всем и активированы, но мешать их со своими нельзя:
+  // менять их состав нельзя, и в списке это должно быть видно до выбора.
+  var CS_GROUPS = [
+    { id: "activated", label: CS_LBL.activated },
+    { id: "deep", label: CS_LBL.deep },
+    { id: "sourcing", label: CS_LBL.sourcing },
+    { id: "created", label: "Created" },
+    { id: "shared", label: "Shared with me" }
+  ];
+  function csGroupOf(key, name) { return collIsSample(name) ? "shared" : collState(name); }
+  // deep data открывается только по активированным коллекциям — остальные видно, но выбрать нельзя
+  function csActivated(key, name) {
+    if (key !== "deep" && key !== "video") return true;
+    if (collStatus(name) === "activated") return true;
+    var rows = tblAllRows(key);
+    for (var i = 0; i < rows.length; i++) if ((rows[i].getAttribute("data-coll") || "") === name) return true;
+    return false;
+  }
+  function csVal(wrap) { return wrap.querySelector("[data-an-collsel-val]"); }
+  function csCurrent(wrap) {
+    var v = csVal(wrap);
+    return v && !v.classList.contains("an-collsel__txt--ph") ? v.textContent.trim() : "";
+  }
+  // количество каналов у коллекции: в Deep/Videos — строки таблицы, иначе состав коллекции
+  function csCount(key, name) {
+    if (key === "deep" || key === "video") {
+      var n = tblAllRows(key).filter(function (r) {
+        return (r.getAttribute("data-coll") || "") === name && !r.classList.contains("an-tr--avg");
+      }).length;
+      if (n) return n;
+    }
+    return aiChannelsOf(name).length;
+  }
+  // В сборке строки Deep data есть только у демо-коллекций. Активировали свою —
+  // рисуем её строки по составу коллекции, иначе при готовых данных таблица пустая.
+  function ddEnsureRows(name) {
+    var body = tblBody("deep");
+    if (!body || !name) return false;
+    var rows = tblAllRows("deep");
+    var have = {};
+    rows.forEach(function (r) {
+      if ((r.getAttribute("data-coll") || "") !== name) return;
+      var n = r.querySelector(".an-chan__name");
+      if (n) have[n.textContent.trim()] = true; else have.__avg = true;
+    });
+    var chans = aiChannelsOf(name);
+    var tbody = body.querySelector(".an-tbody");
+    var protoAvg = rows.filter(function (r) { return r.classList.contains("an-tr--avg"); })[0];
+    var proto = rows.filter(function (r) { return !r.classList.contains("an-tr--avg"); })[0];
+    if (!chans.length || !proto || !tbody) return false;
+    var pool = (typeof aiChannelPool === "function" ? aiChannelPool() : []);
+    function metaOf(nm) {
+      for (var i = 0; i < pool.length; i++) if (pool[i].name === nm) return pool[i];
+      return null;
+    }
+    var added = false;
+    if (!have.__avg && protoAvg) {
+      var avg = protoAvg.cloneNode(true);
+      avg.setAttribute("data-coll", name);
+      avg.removeAttribute("data-filtered");
+      tbody.appendChild(avg);
+      added = true;
+    }
+    chans.forEach(function (nm) {
+      if (have[nm]) return;
+      var row = proto.cloneNode(true);
+      row.setAttribute("data-coll", name);
+      row.removeAttribute("data-filtered");
+      row.removeAttribute("data-ord");
+      row.classList.remove("is-selected", "is-pinned");
+      var chk = row.querySelector("[data-an-check]");
+      if (chk) chk.classList.remove("is-checked");
+      var meta = metaOf(nm);
+      var ava = row.querySelector(".an-chan__ava");
+      if (ava) {
+        ava.textContent = (meta && meta.initial) || nm.charAt(0).toUpperCase();
+        ava.setAttribute("style", "background:var(" + ((meta && meta.color) || "--color-avatar-3") + ")");
+      }
+      var nmEl = row.querySelector(".an-chan__name");
+      if (nmEl) nmEl.textContent = nm;
+      var pin = row.querySelector("[data-dp-pin-row]");
+      if (pin) { pin.title = "Pin on top"; pin.setAttribute("aria-pressed", "false"); }
+      tbody.appendChild(row);
+      added = true;
+    });
+    return added;
+  }
+  // Deep data: если коллекция не активирована или ещё собирается — состояние вместо таблицы
+  function ddStateSync() {
+    var box = document.querySelector("[data-dd-state]");
+    if (!box) return;
+    var w = document.querySelector('[data-an-collsel="deep"]');
+    var nm = w ? csCurrent(w) : "";
+    var colls = (typeof aiAllColls === "function" ? aiAllColls() : []);
+    var st = nm ? collState(nm) : "";
+    var wall = !planDeepOn();             // B2: тариф без Deep data — таблицы нет ни по одной коллекции
+    // показываем состояние, когда данных в таблице нет: коллекция не выбрана,
+    // коллекций вообще нет или выбранная ещё не активирована
+    var show = wall || !nm || st !== "activated";
+    // данные готовы, но строк в сборке нет — дорисовываем по составу коллекции
+    if (!wall && nm && st === "activated" && ddEnsureRows(nm)) flApply();
+    box.hidden = !show;
+    var wrapT = document.querySelector('[data-an-tablewrap="deep"]');
+    if (wrapT) wrapT.style.display = show ? "none" : "";
+    var tools = document.querySelector('[data-an-tab-panel="channels"] .an-toolbar');
+    if (tools) tools.style.display = show ? "none" : "";
+    var srow = document.querySelector('[data-an-tab-panel="channels"] .an-searchrow');
+    if (srow) srow.style.display = show ? "none" : "";
+    var exp = document.querySelector("[data-an-export]");
+    if (exp) {
+      offSet(exp, wall || st !== "activated");
+      tipSet(exp, wall ? CS_TIP.planDeepShort : st === "activated" ? "" : CS_TIP.noDeep, wall);
+    }
+    if (!show) return;
+    var title = box.querySelector("[data-dd-state-title]");
+    var text = box.querySelector("[data-dd-state-text]");
+    var spin = box.querySelector("[data-dd-state-spin]");
+    var act = box.querySelector("[data-dd-state-act]");
+    // B2: пейвол перекрывает все остальные состояния — на Explorer Deep data закрыта
+    // и по своим коллекциям, и по сэмплам
+    if (wall) {
+      title.textContent = "Deep data is available on Pro and above";
+      text.textContent = "Deep data shows growth, engagement and performance for every channel " +
+        "in a collection. Upgrade to Pro to collect it for your collections.";
+      spin.hidden = true;
+      act.hidden = false;
+      act.className = "an-btn an-btn--ai";
+      act.textContent = "Upgrade plan";
+      act.disabled = false;
+      offSet(act, false);
+      tipSet(act, "");
+      box.setAttribute("data-dd-act", "upgrade");
+      return;
+    }
+    // коллекций нет вовсе: единственный путь — создать первую
+    if (!colls.length) {
+      title.textContent = "No collections yet";
+      text.textContent = "Deep data is collected per collection: growth, engagement and performance " +
+        "for every channel in it. Create a collection and activate deep data for it.";
+      spin.hidden = true;
+      act.hidden = false;
+      act.className = "an-btn an-btn--ai";
+      act.textContent = "Create collection";
+      act.disabled = false;
+      act.removeAttribute("title");
+      box.setAttribute("data-dd-act", "create");
+      return;
+    }
+    // коллекции есть, но не выбрана ни одна
+    if (!nm) {
+      title.textContent = "Select a collection";
+      text.textContent = "Deep data is shown per collection — pick one above to see its channels " +
+        "and metrics.";
+      spin.hidden = true;
+      act.hidden = false;
+      act.className = "an-btn an-btn--secondary";
+      act.textContent = "Select collection";
+      act.disabled = false;
+      act.removeAttribute("title");
+      box.setAttribute("data-dd-act", "select");
+      return;
+    }
+    if (st === "deep") {
+      box.setAttribute("data-dd-act", "cancel");
+      title.textContent = CS_LBL.deep;
+      text.textContent = "We're collecting deep metrics for " + collChans(nm) + " channels of “" + nm +
+        "”. You can leave the page — collection continues.";
+      spin.hidden = false;
+      act.hidden = false;
+      act.textContent = "Stop collecting";
+      act.disabled = false;
+      act.removeAttribute("title");
+      act.className = "an-btn an-btn--secondary";
+      return;
+    }
+    box.setAttribute("data-dd-act", "activate");
+    title.textContent = "Deep data isn't activated";
+    text.textContent = "Activate deep data for “" + nm + "” — we'll collect growth, engagement and " +
+      "performance for every channel in it.";
+    spin.hidden = true;
+    act.hidden = false;
+    act.className = "an-btn an-btn--primary";
+    act.textContent = "Activate deep data";
+    // пейвол разобран выше, здесь остаются причины внутри тарифа
+    var tip = st === "sourcing" ? CS_TIP.addWaitSourcing
+            : collChans(nm) < 1 ? CS_TIP.needChannel : "";
+    offSet(act, !!tip);
+    tipSet(act, tip);
+  }
+  function csFill(wrap, q) {
+    var box = wrap.querySelector("[data-an-collsel-opts]");
+    if (!box) return;
+    var key = wrap.getAttribute("data-an-collsel");
+    var cur = csCurrent(wrap), s = (q || "").toLowerCase();
+    var list = csList(key).filter(function (c) {
+      return !s || c.name.toLowerCase().indexOf(s) !== -1;
+    });
+    // A3: на Basic data первым пунктом «All channels» — сброс фильтра по коллекции
+    var head = (key === "basic" && !s)
+      ? '<button class="anf-opt' + (cur ? "" : " is-selected") + '" type="button" role="option" data-an-collsel-all>All collections</button>'
+      : "";
+    function optHtml(c, off) {
+      var qty = '<span class="anf-opt__qty">' + csCount(key, c.name) + "</span>";
+      // бейдж с количеством — перед названием
+      return '<button class="anf-opt" type="button" role="option"' + (c.name === cur ? ' data-selected' : '') +
+             (off ? ' disabled title="Deep data is not activated for this collection"' : '') +
+             ' data-an-collsel-opt="' + escHtml(c.name) + '">' + qty +
+             '<span class="anf-opt__name">' + escHtml(c.name) + '</span></button>';
+    }
+    // выбрать можно любую коллекцию: неактивированная ведёт в состояние с кнопкой активации
+    var body = CS_GROUPS.map(function (g) {
+      var part = list.filter(function (c) { return csGroupOf(key, c.name) === g.id; });
+      if (!part.length) return "";
+      return '<div class="anf-group">' + g.label + "</div>" +
+        part.map(function (c) { return optHtml(c, false); }).join("");
+    }).join("");
+    // B10: искали и не нашли — «Nothing found»; коллекций нет вовсе — это другое состояние
+    var none = s ? TBL_NOTHING : "No collections";
+    box.innerHTML = head + (body || (head ? "" : '<div class="anf-empty">' + none + "</div>"));
+  }
+  // A3: сброс к «All channels» — снимаем и поле Collection в панели
+  function csPickAll(wrap) {
+    csSetLabel(wrap, "");
+    setTimeout(ddStateSync, 0);
+    csOpen(wrap, false);
+    var act = flActive();
+    var f = act && act.querySelector('[data-anf-field="collection"] [data-anf-val]');
+    if (f) {
+      var ph = f.getAttribute("data-anf-ph");
+      if (ph) f.textContent = ph;
+      f.classList.add("is-ph");
+    }
+    flApply();
+  }
+  function csOpen(wrap, open) {
+    csWraps().forEach(function (w) {
+      var m = w.querySelector("[data-an-collsel-menu]"), t = w.querySelector("[data-an-collsel-trig]");
+      var on = w === wrap && !!open;
+      if (m) m.hidden = !on;
+      w.classList.toggle("is-open", on);
+      if (t) t.setAttribute("aria-expanded", on ? "true" : "false");
+    });
+    if (open && wrap) {
+      csFill(wrap, "");
+      var si = wrap.querySelector("[data-an-collsel-search]");
+      if (si) { si.value = ""; si.focus(); }
+    }
+  }
+  function csSetLabel(wrap, name) {
+    var v = csVal(wrap);
+    if (!v) return;
+    if (name) { v.textContent = name; v.classList.remove("an-collsel__txt--ph"); }
+    else { v.textContent = v.getAttribute("data-an-collsel-ph") || ""; v.classList.add("an-collsel__txt--ph"); }
+    // бейдж с количеством каналов в самом селекторе — как в дропдауне
+    var qty = wrap.querySelector("[data-an-collsel-qty]");
+    if (qty) {
+      qty.textContent = name ? csCount(wrap.getAttribute("data-an-collsel"), name) : "";
+      qty.hidden = !name;
+    }
+    // × показываем только когда коллекция выбрана
+    var x = wrap.querySelector("[data-an-collsel-clear]");
+    if (x) x.hidden = !name;
+  }
+  // сброс выбранной коллекции: на Basic это «вся база», на Deep/Videos — пустое состояние
+  function csClear(wrap) {
+    var key = wrap.getAttribute("data-an-collsel");
+    if (key === "basic") { csPickAll(wrap); return; }
+    csSetLabel(wrap, "");
+    csOpen(wrap, false);
+    var act = flActive();
+    var f = act && act.querySelector('[data-anf-field="collection"] [data-anf-val]');
+    if (f) {
+      var ph = f.getAttribute("data-anf-ph");
+      if (ph) f.textContent = ph;
+      f.classList.add("is-ph");
+    }
+    var badge = document.querySelector("[data-ai-badge]");
+    if (badge) badge.hidden = true;
+    if (key === "video") { vidApply(); flDot(); return; }
+    // deep: без коллекции показывать нечего
+    var dBody = tblBody("deep");
+    if (dBody) dBody.setAttribute("data-empty-msg", "Select a collection to see deep data");
+    tblAllRows("deep").forEach(function (row) { row.setAttribute("data-filtered", ""); });
+    TBL.deep.page = 1;
+    tblApply("deep");
+    flDot();
+    ddStateSync();                        // без коллекции показываем состояние, а не пустую таблицу
+  }
+  function csPick(wrap, name) {
+    var key = wrap.getAttribute("data-an-collsel");
+    csSetLabel(wrap, name);
+    csOpen(wrap, false);
+    if (key === "deep") csApplyDeep(name);
+    else if (key === "video") csApplyVideo(name);
+    else csApplyBasic(name);
+    ddStateSync();                        // выбрали неактивированную — показываем её состояние
+  }
+  // Basic: коллекция — это фильтр, поэтому пишем значение в панель и применяем её целиком
+  function csApplyBasic(name) {
+    // поля Collection в панели нет: пилюля — единственный источник, просто применяем фильтры
+    flApply();
+    // закрепление привязано к коллекции: сменилась — пересобираем порядок и кнопки
+    setTimeout(dpApplyPins, 0);
+  }
+  // Deep: коллекция задаёт набор строк — пишем её в панель и применяем панель целиком
+  function csApplyDeep(name) {
+    setTimeout(function () { if (typeof dpApplyPins === "function") dpApplyPins(); }, 0);
+    var dBody = tblBody("deep");
+    if (dBody) dBody.setAttribute("data-empty-msg", "");     // коллекция снова выбрана
+    var act = flActive();
+    var f = act && act.querySelector('[data-anf-field="collection"] [data-anf-val]');
+    if (f) { f.textContent = name; f.classList.remove("is-ph"); }
+    var badge = document.querySelector("[data-ai-badge]");
+    if (badge) {
+      var rec = csList("deep").filter(function (c) { return c.name === name; })[0];
+      badge.hidden = !(rec && rec.isAi);
+    }
+    flApply();
+  }
+  // P1.9: таб Videos — свой набор строк на коллекцию + поиск по названию/каналу
+  function vidApply() {
+    var w = document.querySelector('[data-an-collsel="video"]');
+    var coll = w ? csCurrent(w) : "";
+    var q = (document.querySelector("[data-vid-search]") || {}).value || "";
+    q = q.trim().toLowerCase();
+    // тот же поиск есть и в панели фильтров — условия складываются
+    var pf = document.querySelector('[data-an-filters="deepVideos"] [data-anf-field="video"] [data-anf-text]');
+    var pq = pf ? pf.value.trim().toLowerCase() : "";
+    // без выбранной коллекции показывать нечего — своё пустое состояние
+    var vBody = tblBody("video");
+    if (vBody) vBody.setAttribute("data-empty-msg", coll ? "" : "Select a collection to see videos");
+    tblAllRows("video").forEach(function (row) {
+      var ok = !!coll && (row.getAttribute("data-coll") || "") === coll;
+      if (ok && (q || pq)) {
+        var t = row.querySelector(".vid-title__t"), ch = row.querySelector(".vid-title__chan");
+        var hay = ((t ? t.textContent : "") + " " + (ch ? ch.textContent : "")).toLowerCase();
+        if (q && hay.indexOf(q) === -1) ok = false;
+        if (pq && hay.indexOf(pq) === -1) ok = false;
+      }
+      if (ok) row.removeAttribute("data-filtered"); else row.setAttribute("data-filtered", "");
+    });
+    TBL.video.page = 1;
+    tblApply("video");
+  }
+  function csApplyVideo(name) {
+    var act = flActive();
+    var f = act && act.querySelector('[data-anf-field="collection"] [data-anf-val]');
+    if (f) { f.textContent = name; f.classList.remove("is-ph"); }
+    vidApply();
+    flDot();
+  }
+
+  // обратная синхронизация: значение поля Collection в панели → подпись селектора
+  function csSyncFromPanel() {
+    var w = document.querySelector('[data-an-collsel="basic"]');
+    if (!w) return;
+    var act = flActive();
+    var f = act && act.querySelector('[data-anf-field="collection"] [data-anf-val]');
+    if (!f) return;                    // поля Collection в панели нет — пилюлю не трогаем
+    csSetLabel(w, !f.classList.contains("is-ph") ? f.textContent.trim() : "");
+  }
+  csWraps().forEach(function (w) {
+    var si = w.querySelector("[data-an-collsel-search]");
+    if (si) si.addEventListener("input", function () { csFill(w, si.value); });
+  });
+  // на Deep коллекция выбрана всегда — поле Collection в панели показывает её же
+  function csSyncToPanel() {
+    var w = document.querySelector('[data-an-collsel="deep"]') || document.querySelector('[data-an-collsel="video"]');
+    if (!w) return;
+    var name = csCurrent(w);
+    if (!name) return;
+    var act = flActive();
+    var f = act && act.querySelector('[data-anf-field="collection"] [data-anf-val]');
+    if (f) { f.textContent = name; f.classList.remove("is-ph"); }
+  }
+
+  // ================= P1.5: клиентская сортировка + пагинация =================
+  // Работает по статическим строкам в DOM: сортировка переставляет узлы, пагинация
+  // скрывает лишние. Строки, скрытые другими фильтрами (data-filtered), в выборку не попадают.
+  var TBL = {
+    basic: { per: 30, sizes: [30, 50, 100], sort: null, page: 1 },
+    deep:  { per: 30, sizes: [30, 50, 100], sort: null, page: 1 },
+    coll:  { per: 15, sizes: [15, 30, 50],  sort: null, page: 1 },
+    video: { per: 10, sizes: [10, 25, 50],  sort: null, page: 1 },  // P1.9: на проде 10
+    repm:  { per: 10, sizes: [5, 10, 25, 50], sort: null, page: 1 },  // Reports → Market insights
+    repp:  { per: 10, sizes: [5, 10, 25, 50], sort: null, page: 1 }   // Reports → My performance
+  };
+  function tblBody(key) { return document.querySelector('[data-an-table-body="' + key + '"]'); }
+  function tblPagi(key) { return document.querySelector('[data-an-table="' + key + '"]'); }
+  function tblAllRows(key) {
+    var b = tblBody(key);
+    return b ? [].slice.call(b.querySelectorAll(".an-tbody > .an-tr")) : [];
+  }
+  // строки, доступные для показа (не отфильтрованные), без сводной строки Average/Total
+  function tblRows(key) {
+    return tblAllRows(key).filter(function (r) {
+      return !r.hasAttribute("data-filtered") && !r.classList.contains("an-tr--avg");
+    });
+  }
+  function tblColIndex(key, colId) {
+    var b = tblBody(key);
+    if (!b) return -1;
+    var cells = [].slice.call(b.querySelectorAll(".an-thead .an-tr--head > [data-col]"));
+    for (var i = 0; i < cells.length; i++) if (cells[i].getAttribute("data-col") === colId) return i;
+    return -1;
+  }
+  // «314m» → 314000000, «+3.6m» → 3600000, «19.11.2005» → таймстемп, иначе строка
+  // статусы сортируются по смыслу, а не по алфавиту: сначала то, что в работе
+  var STATUS_RANK = { "collecting data": 5, "in progress": 5, "sourcing…": 5, activated: 4, created: 3, inactive: 2 };
+  function tblVal(row, idx) {
+    var cell = row.children[idx];
+    var pill = cell ? cell.querySelector(".mc-status__t") : null;
+    if (pill) {
+      var rank = STATUS_RANK[String(pill.textContent || "").trim().toLowerCase()];
+      if (rank) return rank;
+    }
+    var t = cell ? String(cell.textContent || "").trim() : "";
+    if (!t || t === "—" || t === "–") return -Infinity;
+    var d = t.match(/^(\d{2})\.(\d{2})\.(\d{4})$/);
+    if (d) return new Date(+d[3], +d[2] - 1, +d[1]).getTime();
+    var n = t.replace(/[+,\s]/g, "").match(/^([\d.]+)(bn|m|k)?$/i);
+    if (n) {
+      var v = parseFloat(n[1]) || 0, u = (n[2] || "").toLowerCase();
+      if (u === "bn") v *= 1e9; else if (u === "m") v *= 1e6; else if (u === "k") v *= 1e3;
+      return v;
+    }
+    return t.toLowerCase();
+  }
+  function tblSort(key, colId) {
+    var st = TBL[key]; if (!st) return;
+    // первый клик — desc, дальше переключаем (как на проде)
+    st.sort = (st.sort && st.sort.col === colId)
+      ? { col: colId, dir: st.sort.dir === "desc" ? "asc" : "desc" }
+      : { col: colId, dir: "desc" };
+    st.page = 1;
+    var idx = tblColIndex(key, colId);
+    if (idx < 0) return;
+    var body = tblBody(key).querySelector(".an-tbody");
+    var rows = tblAllRows(key).filter(function (r) { return !r.classList.contains("an-tr--avg"); });
+    var dir = st.sort.dir === "asc" ? 1 : -1;
+    rows.map(function (r, i) { return { r: r, i: i, v: tblVal(r, idx) }; })
+      .sort(function (a, b) {
+        if (a.v === b.v) return a.i - b.i;                 // стабильность
+        if (typeof a.v === "string" || typeof b.v === "string")
+          return String(a.v).localeCompare(String(b.v)) * dir;
+        return (a.v > b.v ? 1 : -1) * dir;
+      })
+      .forEach(function (o) { body.appendChild(o.r); });
+    tblMarkSort(key);
+    tblApply(key);
+  }
+  function tblMarkSort(key) {
+    var b = tblBody(key); if (!b) return;
+    var st = TBL[key];
+    [].slice.call(b.querySelectorAll("[data-an-sort]")).forEach(function (el) {
+      var on = st.sort && st.sort.col === el.getAttribute("data-an-sort");
+      el.classList.toggle("is-sorted", !!on);
+      el.classList.toggle("is-asc", !!on && st.sort.dir === "asc");
+      el.setAttribute("aria-sort", on ? (st.sort.dir === "asc" ? "ascending" : "descending") : "none");
+    });
+  }
+  // показ страницы + пересчёт счётчиков
+  function tblApply(key) {
+    var st = TBL[key]; if (!st) return;
+    var rows = tblRows(key);
+    var pages = Math.max(1, Math.ceil(rows.length / st.per));
+    if (st.page > pages) st.page = pages;
+    var from = (st.page - 1) * st.per, to = from + st.per;
+    tblAllRows(key).forEach(function (r) {
+      // сводная строка видна всегда — кроме сводок «чужих» коллекций (P1.1)
+      if (r.classList.contains("an-tr--avg")) { r.hidden = r.hasAttribute("data-filtered"); return; }
+      r.hidden = true;
+    });
+    rows.slice(from, to).forEach(function (r) { r.hidden = false; });
+    if (typeof markSelected === "function") markSelected();
+    tblEmpty(key, rows.length);
+    var pagi = tblPagi(key);
+    if (pagi) {
+      var pagesEl = pagi.querySelector(".an-pagi__pages");
+      if (pagesEl) pagesEl.textContent = "Pages: " + pages.toLocaleString("en-US");
+      var input = pagi.querySelector("[data-an-page]");
+      if (input) input.value = String(st.page);
+      var prev = pagi.querySelector("[data-an-prev]"), next = pagi.querySelector("[data-an-next]");
+      if (prev) prev.disabled = st.page <= 1;
+      if (next) next.disabled = st.page >= pages;
+      var trig = pagi.querySelector("[data-an-perpage-trig]");
+      if (trig) trig.childNodes[0].nodeValue = st.per + " ";
+      var ofEl = pagi.querySelector("[data-rp-of]");
+      if (ofEl) ofEl.textContent = "of " + pages.toLocaleString("en-US");
+      var nums = pagi.querySelector("[data-rp-pages]");
+      if (nums) nums.innerHTML = tblPageBtns(st.page, pages);
+      var first = pagi.querySelector("[data-rp-first]"), last = pagi.querySelector("[data-rp-last]");
+      if (first) first.disabled = st.page <= 1;
+      if (last) last.disabled = st.page >= pages;
+    }
+    tblUpdateTotal(key, rows.length);
+    // смена страницы/размера меняет наличие скроллбара — колонки пересчитываем
+    if (HUG_SHRINK[key]) tblHug(key);
+    tblHugFix(key);
+  }
+  // номера страниц: первая, последняя, текущая с соседями, между ними «…»
+  function tblPageBtns(page, pages) {
+    var list = [], i;
+    if (pages <= 7) { for (i = 1; i <= pages; i++) list.push(i); }
+    else {
+      list.push(1);
+      var from = Math.max(2, page - 1), to = Math.min(pages - 1, page + 1);
+      if (from > 2) list.push(0);
+      for (i = from; i <= to; i++) list.push(i);
+      if (to < pages - 1) list.push(0);
+      list.push(pages);
+    }
+    return list.map(function (n) {
+      if (!n) return '<span class="rp-pagi__gap">…</span>';
+      return '<button class="rp-pg rp-pg--num' + (n === page ? " is-on" : "") + '" type="button" data-rp-page="' +
+        n + '">' + n + "</button>";
+    }).join("");
+  }
+  // B10: таблица без строк после поиска и фильтров говорит одно и то же на всех страницах.
+  // Разные «No channels found / No collections found / No results found» читались как разные
+  // ситуации, хотя ситуация одна: не нашлось ничего.
+  var TBL_NOTHING = "Nothing found";
+  var TBL_EMPTY = { basic: TBL_NOTHING, deep: TBL_NOTHING, video: TBL_NOTHING,
+    coll: TBL_NOTHING, repm: TBL_NOTHING, repp: TBL_NOTHING };
+  function tblEmpty(key, n) {
+    var b = tblBody(key); if (!b) return;
+    var body = b.querySelector(".an-tbody"); if (!body) return;
+    var el = body.querySelector(".an-empty");
+    if (n > 0) { if (el) el.remove(); return; }
+    var msg = b.getAttribute("data-empty-msg") || TBL_EMPTY[key] || "Nothing found";
+    if (el) { el.textContent = msg; return; }
+    el = document.createElement("div");
+    el.className = "an-empty";
+    el.textContent = msg;
+    body.appendChild(el);
+  }
+  // счётчик рядом с лейблом: единый формат «N единиц» на всех страницах.
+  // На Basic число не трогаем — там показан размер всей базы (2.2m channels).
+  function tblUpdateTotal(key, n) {
+    if (key === "basic") return;
+    // на My collections счётчика в строке пагинации нет — число живёт в бейдже у All
+    if (key === "coll") { mcCountSync(); return; }
+    var pagi = tblPagi(key); if (!pagi) return;
+    var tot = pagi.querySelector(".an-pagi__total");
+    if (tot) tot.textContent = n.toLocaleString("en-US");   // без слова-единицы
+  }
+  function tblPerPageMenu(key, open) {
+    var pagi = tblPagi(key); if (!pagi) return;
+    var wrap = pagi.querySelector("[data-an-perpage-wrap]"), menu = pagi.querySelector("[data-an-perpage-menu]");
+    if (!wrap || !menu) return;
+    if (open) {
+      menu.innerHTML = TBL[key].sizes.map(function (n) {
+        return '<button class="an-perpage__opt' + (n === TBL[key].per ? " is-selected" : "") +
+               '" type="button" role="option" data-an-perpage="' + n + '">' + n + "</button>";
+      }).join("");
+    }
+    menu.hidden = !open;
+    wrap.classList.toggle("is-open", !!open);
+  }
+  function tblKeyOf(el) {
+    var host = el.closest("[data-an-table]") || el.closest("[data-an-table-body]");
+    return host ? (host.getAttribute("data-an-table") || host.getAttribute("data-an-table-body")) : null;
+  }
+  // hug: колонка сужается до своего содержимого (шапка + видимые строки).
+  // Исходная ширина остаётся потолком (data-w0) — колонки только ужимаются, не разъезжаются.
+  // Закреплённые check/name и распорка stub не трогаются: от них зависят left-смещения.
+  var HUG_SKIP = { check: 1, stub: 1 };
+  // колонки, которые не участвуют в доборе ширины: кнопки не должны разъезжаться
+  var HUG_NOFILL = { actions: 1 };
+  // таблицы, которые всегда влезают в серфейс: не хватает места — ужимаем колонки с обрезкой
+  var HUG_SHRINK = { repm: 1, repp: 1 };
+  // колонки фиксированного формата (дата, тип, статус) не обрезаем — ужимаем только текстовые
+  var HUG_NOSHRINK = { created: 1, type: 1, status: 1 };
+  var HUG_MIN = 72;
+  function tblHug(key) {
+    var b = tblBody(key);
+    if (!b || b.offsetParent === null) return;
+    var heads = [].slice.call(b.querySelectorAll(".an-thead .an-tr--head > *"));
+    var all = tblAllRows(key);
+    // в таблицах каналов name закреплён слева: его ширина участвует в left-смещениях
+    var pinned = !!b.querySelector('[data-col="check"]') || !!b.querySelector(".an-th--stub");
+    var grown = [];
+    heads.forEach(function (h, i) {
+      var col = h.getAttribute("data-col");
+      // скрытые колонки пропускаем: их ширина 0, иначе запомним нулевой потолок
+      if (!col || HUG_SKIP[col] || h.hidden || h.classList.contains("is-colhidden")) return;
+      if (col === "name" && pinned) return;
+      if (h.classList.contains("an-th--grow")) return;   // растущая колонка сама заберёт остаток
+      if (!h.getBoundingClientRect().width) return;
+      // меряем по видимым строкам, а ширину ставим всем — иначе скрытые строки другой
+      // коллекции всплывут со старой шириной и разъедутся с шапкой
+      var cells = [h], meas = [h];
+      all.forEach(function (r) {
+        var c = r.children[i];
+        if (!c) return;
+        cells.push(c);
+        if (!r.hidden) meas.push(c);
+      });
+      var w0 = h.getAttribute("data-w0");
+      if (w0 === null) { w0 = Math.round(h.getBoundingClientRect().width); h.setAttribute("data-w0", w0); }
+      w0 = +w0;
+      meas.forEach(function (c) { c.style.width = "max-content"; });
+      var need = 0;
+      meas.forEach(function (c) { need = Math.max(need, c.getBoundingClientRect().width); });
+      var w = Math.min(Math.ceil(need) + (HUG_SHRINK[key] ? 2 : 8), w0);   // где ширина в дефиците, запас минимальный
+      cells.forEach(function (c) { c.style.width = w + "px"; });
+      if (!HUG_NOFILL[col]) grown.push({ w: w, cells: cells, col: col });
+    });
+    // колонки уже серфейса — растягиваем их до его ширины (fill), шире — оставляем hug и скролл
+    var wrap = document.querySelector('[data-an-tablewrap="' + key + '"]');
+    if (!wrap || !grown.length) return;
+    var total = 0;
+    heads.forEach(function (h) {
+      if (h.hidden || h.classList.contains("is-colhidden")) return;
+      total += h.getBoundingClientRect().width;
+    });
+    // если в таблице есть растущая колонка — раздачей остатка занимается flex, а не мы
+    if (b.querySelector(".an-th--grow")) return;
+    var avail = wrap.clientWidth - 1;   // 1px запаса: при дробном зуме иначе вылезает мёртвый скролл
+    var extra = Math.floor(avail - total);
+    if (extra <= 0) {
+      if (!HUG_SHRINK[key] || !extra) return;
+      // не хватает ширины: отнимаем пропорционально, но не ниже HUG_MIN
+      var need2 = -extra;
+      for (var pass = 0; pass < 3 && need2 > 0; pass++) {
+        var pool = grown.filter(function (g) { return g.w > HUG_MIN && !HUG_NOSHRINK[g.col]; });
+        if (!pool.length) break;
+        var poolW = pool.reduce(function (s, g) { return s + g.w; }, 0);
+        var cut = 0;
+        pool.forEach(function (g, i) {
+          var take = i === pool.length - 1 ? need2 - cut : Math.floor(need2 * g.w / poolW);
+          var w2 = Math.max(HUG_MIN, g.w - take);
+          cut += g.w - w2;
+          g.w = w2;
+          g.cells.forEach(function (c) { c.style.width = w2 + "px"; });
+        });
+        need2 -= cut;
+      }
+      return;
+    }
+    var base = grown.reduce(function (s, g) { return s + g.w; }, 0);
+    var used = 0;
+    grown.forEach(function (g, i) {
+      var add = i === grown.length - 1 ? extra - used : Math.floor(extra * g.w / base);
+      used += add;
+      var w = g.w + add;
+      g.cells.forEach(function (c) { c.style.width = w + "px"; });
+    });
+  }
+  var hugRetry = {};
+  // вертикальный скроллбар мог появиться после замера — тогда сумма колонок вылезает
+  // за бокс и получается «мёртвая» горизонтальная полоса. Пересчитываем один раз.
+  function tblHugFix(key) {
+    if (hugRetry[key]) return;
+    var wrap = document.querySelector('[data-an-tablewrap="' + key + '"]');
+    var b = tblBody(key);
+    if (!wrap || !b) return;
+    var total = 0;
+    [].slice.call(b.querySelectorAll(".an-thead .an-tr--head > *")).forEach(function (h) {
+      if (h.hidden || h.classList.contains("is-colhidden")) return;
+      total += h.getBoundingClientRect().width;
+    });
+    // пересчитываем и когда вылезли за бокс, и когда после исчезновения скроллбара
+    // осталась заметная пустота справа (замер был сделан в другом состоянии)
+    var avail = wrap.clientWidth - 1;
+    if (total > avail - 4 && total <= avail) return;
+    hugRetry[key] = 1;
+    tblHug(key);
+    delete hugRetry[key];
+  }
+  var HUG_KEYS = ["basic", "deep", "coll", "repm", "repp"];
+  function tblHugAll() {
+    HUG_KEYS.forEach(function (key) { if (tblBody(key)) { tblHug(key); tblHugFix(key); } });
+  }
+  function tblInitAll() {
+    // дефолтная сортировка таблиц каналов — по Views, от большего (первый клик по колонке даёт desc)
+    ["basic", "deep"].forEach(function (key) {
+      if (tblBody(key) && tblColIndex(key, "views") >= 0) tblSort(key, "views");
+    });
+    ["basic", "deep", "coll", "video", "repm", "repp"].forEach(function (key) {
+      if (tblBody(key)) tblApply(key);
+    });
+    tblHugAll();
+    tblFit();
+    colLockFit();
+    // веб-шрифт может примениться после первого замера — тогда текст шире и ячейки обрезаются
+    if (document.fonts && document.fonts.ready && document.fonts.ready.then) {
+      document.fonts.ready.then(function () { tblHugAll(); tblFit(); colLockFit(); });
+    }
+  }
+  // высота скролл-бокса считается от реального положения таблицы, иначе страница
+  // получает свой вертикальный скролл вдобавок к скроллу таблицы
+  function tblFit() {
+    var main = document.querySelector(".main");
+    var reserve = main ? parseFloat(getComputedStyle(main).paddingBottom) || 24 : 24;
+    var fixedFoot = document.querySelector(".ce-footer");   // на странице коллекции футер прибит снизу
+    if (fixedFoot) reserve += Math.round(fixedFoot.getBoundingClientRect().height);
+    [].slice.call(document.querySelectorAll(".an-tablewrap--stick")).forEach(function (w) {
+      if (w.offsetParent === null) return;              // скрытый таб не трогаем
+      var top = w.getBoundingClientRect().top;
+      var own = reserve;
+      var card = w.closest(".rp-card");        // пагинация лежит под скролл-боксом, внутри карты
+      if (card) {
+        var pg = card.querySelector(".rp-pagi");
+        if (pg) own += Math.round(pg.getBoundingClientRect().height) + 2;
+      }
+      var h = Math.max(240, Math.round(window.innerHeight - top - own));
+      w.style.height = h + "px";        // фиксированная высота: пустая таблица не «сдувается»
+      w.style.maxHeight = h + "px";
+    });
+    // высота изменилась → мог появиться вертикальный скроллбар и отнять ширину у колонок
+    HUG_KEYS.forEach(function (key) { if (tblBody(key)) tblHugFix(key); });
+  }
+  var tblFitT = null;
+  // вкладку могли открыть в фоне: там нет раскладки, и высота скролл-бокса считается по
+  // неверным метрикам — таблица выходит короче или длиннее экрана, а прибитая снизу плашка
+  // выбора отрывается от таблицы. Возвращаемся к вкладке — пересчитываем ширины и высоту.
+  // colLockFit в конце: подложка закрытых колонок считается по их итоговым ширинам
+  function tblRefit() { mcToolbarFit(); tblHugAll(); tblFit(); colLockFit(); }
+  document.addEventListener("visibilitychange", function () { if (!document.hidden) tblRefit(); });
+  window.addEventListener("pageshow", tblRefit);
+  window.addEventListener("focus", tblRefit);
+  window.addEventListener("resize", function () {
+    clearTimeout(tblFitT);
+    tblFitT = setTimeout(tblRefit, 100);
+  });
+
+  // ================= P1.9: табы Channels / Videos (?tab=) =================
+  function tabCurrent() {
+    var t = (new URLSearchParams(location.search).get("tab") || "channels").toLowerCase();
+    return t === "videos" ? "videos" : "channels";
+  }
+  function tabInit() {
+    var panels = [].slice.call(document.querySelectorAll("[data-an-tab-panel]"));
+    if (!panels.length) return;
+    var cur = tabCurrent();
+    // во втором варианте таб один — показываем его всегда, что бы ни стояло в ?tab=
+    if (panels.length === 1) panels[0].hidden = false;
+    else panels.forEach(function (p) { p.hidden = p.getAttribute("data-an-tab-panel") !== cur; });
+    if (typeof tblFit === "function") tblFit();
+    [].slice.call(document.querySelectorAll("[data-an-tab]")).forEach(function (a) {
+      a.classList.toggle("is-active", a.getAttribute("data-an-tab") === cur);
+    });
+  }
+
+
+  // ================= P1.13: панель фильтров + P1.2 Growth period =================
+  // Прод-поведение: drawer открыт по умолчанию, применение мгновенное, Apply нет.
+  // Значения читаем прямо из DOM панели — отдельного стора не держим.
+  var FL_TABLE = { basic: "basic", deep: "deep", deepVideos: "video", coll: "coll" };
+  function flPanels() { return [].slice.call(document.querySelectorAll("[data-an-filters]")); }
+  function flActive() {                       // активная панель страницы (у Deep их две — по табу)
+    var list = flPanels();
+    if (!list.length) return null;
+    var tab = (new URLSearchParams(location.search).get("tab") || "channels").toLowerCase();
+    var wanted = list.length > 1 ? (tab === "videos" ? "deepVideos" : "deep") : list[0].getAttribute("data-an-filters");
+    for (var i = 0; i < list.length; i++) if (list[i].getAttribute("data-an-filters") === wanted) return list[i];
+    return list[0];
+  }
+  function flSyncActive() {
+    var act = flActive();
+    flPanels().forEach(function (el) { el.classList.toggle("is-active", el === act); });
+  }
+  function flOpen(open) {
+    if (!open && flPending) { flPending = false; document.body.classList.remove("filters-open"); flApply(); }
+    document.body.classList.toggle("filters-open", !!open);
+    flSyncActive();
+    // контент сужается: заголовок может перенести Growth period на вторую строку,
+    // поэтому высоту скролл-бокса таблицы пересчитываем после перекладки
+    mcToolbarFit();                    // с открытой панелью ширина контента меньше
+    if (typeof tblFit === "function") { tblFit(); requestAnimationFrame(tblFit); }
+  }
+  // список коллекций в поле Collection заполняем динамически: часть создана на клиенте
+  function flFillCollections() {
+    var act = flActive(); if (!act) return;
+    var box = act.querySelector('[data-anf-field="collection"] [data-anf-opts]');
+    if (!box) return;
+    // на Deep data выбирать можно только активированные коллекции — как в селекторе у счётчика
+    var key = FL_TABLE[act.getAttribute("data-an-filters")];
+    var names = csList(key === "deep" ? "deep" : "basic").map(function (c) { return c.name; });
+    box.innerHTML = names.map(function (n) {
+      return '<button class="anf-opt" type="button" role="option" data-anf-opt="' + escHtml(n) + '">' + escHtml(n) + "</button>";
+    }).join("") || '<div class="anf-empty">No collections</div>';
+  }
+  // мультивыбор: выбранные опции — источник правды, подпись поля собирается из них
+  function flMultiVals(fld) {
+    return [].slice.call(fld.querySelectorAll(".anf-opt.is-selected")).map(function (o) { return o.getAttribute("data-anf-opt"); });
+  }
+  function flMultiSync(fld) {
+    var val = fld.querySelector("[data-anf-val]"), vals = flMultiVals(fld);
+    if (!val) return;
+    if (!vals.length) { val.textContent = val.getAttribute("data-anf-ph") || ""; val.classList.add("is-ph"); val.classList.remove("anf-val--tags"); return; }
+    val.innerHTML = vals.map(function (v) {
+      return '<span class="an-topic anf-tag">' + escHtml(v) +
+        '<span class="anf-tag__x" role="button" tabindex="0" data-anf-untag="' + escHtml(v) + '" aria-label="Remove ' + escHtml(v) + '">' + closeIconHtml() + "</span></span>";
+    }).join("");
+    val.classList.remove("is-ph"); val.classList.add("anf-val--tags");
+  }
+  function flMultiSet(fld, name, on) {
+    var opt = [].slice.call(fld.querySelectorAll(".anf-opt")).filter(function (o) { return o.getAttribute("data-anf-opt") === name; })[0];
+    var opts = fld.querySelector("[data-anf-opts]");
+    if (!opt && opts) {
+      opt = document.createElement("button");
+      opt.className = "anf-opt anf-opt--chk"; opt.type = "button";
+      opt.setAttribute("role", "option"); opt.setAttribute("data-anf-opt", name);
+      opt.innerHTML = '<span class="anf-chk" aria-hidden="true">' + checkIconHtml() + '</span><span class="anf-opt__name">' + escHtml(name) + "</span>";
+      opts.appendChild(opt);
+    }
+    if (opt) { opt.classList.toggle("is-selected", !!on); opt.setAttribute("aria-selected", on ? "true" : "false"); }
+    flMultiSync(fld);
+  }
+  // текущие значения панели
+  function flValues() {
+    var act = flActive(), out = {};
+    if (!act) return flSearchMerge(out);
+    [].slice.call(act.querySelectorAll("[data-anf-field]")).forEach(function (f) {
+      var id = f.getAttribute("data-anf-field");
+      if (f.hasAttribute("data-anf-multi")) { var mv = flMultiVals(f); if (mv.length) out[id] = mv; return; }
+      var val = f.querySelector("[data-anf-val]");
+      var txt = f.querySelector("[data-anf-text]");
+      var from = f.querySelector("[data-anf-from]"), to = f.querySelector("[data-anf-to]");
+      var seg = f.querySelector(".anf-seg__btn.is-on");
+      if (val && !val.classList.contains("is-ph")) out[id] = val.textContent.trim();
+      if (txt && txt.value.trim()) out[id] = txt.value.trim();
+      if (from && from.value) out[id + "From"] = parseFloat(from.value);
+      if (to && to.value) out[id + "To"] = parseFloat(to.value);
+      if (seg) out[id] = seg.getAttribute("data-anf-seg");
+    });
+    return flSearchMerge(out);
+  }
+  // поиск живёт отдельной строкой над таблицей, но фильтрует тот же title
+  function flSearch() {
+    var sq = document.querySelector("[data-an-search]");
+    return sq ? String(sq.value || "").trim() : "";
+  }
+  function flSearchMerge(out) {
+    var q = flSearch();
+    if (q) out.title = q;
+    return out;
+  }
+  // непустой фильтр → красная точка на кнопке Filters (как на проде)
+  // ================= бейджи применённых фильтров =================
+  // Рисуются из того же состояния панели, что и сами фильтры: одна правда, без дублей.
+  var FCHIP_LABEL = {
+    collection: "Collection", topic: "Topic", title: "Search", country: "Country", language: "Language",
+    status: "Status", shared: "Shared with", channels: "Channel", ctype: "Type",
+    published: "Published at", vtype: "Video type", video: "Search"
+  };
+  function flChipsHost() {
+    var act = flActive();
+    var key = act ? FL_TABLE[act.getAttribute("data-an-filters")] : null;
+    if (!key) return null;
+    return document.querySelector('[data-an-fchips="' + key + '"]') ||
+           (key === "deep" && tabCurrentSafe() === "videos" ? document.querySelector('[data-an-fchips="video"]') : null);
+  }
+  function tabCurrentSafe() { try { return tabCurrent(); } catch (e) { return "channels"; } }
+  function flChips() {
+    var host = flChipsHost();
+    if (!host) return;
+    var v = flValues(), items = [];
+    var act0 = flActive();
+    var key0 = act0 ? FL_TABLE[act0.getAttribute("data-an-filters")] : null;
+    Object.keys(v).forEach(function (k) {
+      if (k === "highlight" || k === "period") return;              // не фильтры
+      if (k === "title" && document.querySelector("[data-an-search]")) return;   // поиск виден в своей строке
+      if (k === "ctype" && v[k] === "All") return;                   // дефолт сегмента
+      // на Deep и Videos коллекция выбирается пилюлей у счётчика — бейдж дублировал бы её
+      if (k === "collection" && key0 === "deep") return;
+      var base = k.replace(/(From|To)$/, "");
+      if (/(From|To)$/.test(k)) {                                    // диапазон сводим в один бейдж
+        if (items.some(function (i) { return i.id === base; })) return;
+        var from = v[base + "From"], to = v[base + "To"];
+        items.push({ id: base, label: FCHIP_LABEL[base] || base, value: (from != null ? from : "…") + " – " + (to != null ? to : "…") });
+        return;
+      }
+      if (Array.isArray(v[k])) {                                     // мультивыбор — по чипу на значение
+        v[k].forEach(function (x) { items.push({ id: k, label: FCHIP_LABEL[k] || k, value: x, one: x }); });
+        return;
+      }
+      items.push({ id: k, label: FCHIP_LABEL[k] || k, value: v[k] });
+    });
+    host.hidden = !items.length;
+    host.innerHTML = items.map(function (i) {
+      return '<span class="an-fchip"><span class="an-fchip__k">' + escHtml(i.label) + ":</span>" + escHtml(String(i.value)) +
+        '<button class="an-fchip__x" type="button" data-an-fchip-x="' + escHtml(i.id) + '"' +
+          (i.one != null ? ' data-an-fchip-val="' + escHtml(i.one) + '"' : "") + ' aria-label="Remove filter">' + closeIconHtml() + "</button></span>";
+    }).join("") + (items.length > 1 ? '<button class="an-fchips__clear" type="button" data-an-filters-clear>Clear all</button>' : "");
+    if (typeof tblFit === "function") tblFit();   // строка бейджей меняет высоту — пересчитываем скролл-бокс
+  }
+  function checkIconHtml() {
+    return '<svg viewBox="0 0 24 24" fill="none"><path fill-rule="evenodd" clip-rule="evenodd" d="M20.5334 4.285C21.0807 4.72253 21.1578 5.50641 20.7054 6.03585L10.3685 18.1353L10.3653 18.1389C10.1302 18.412 9.83512 18.631 9.50152 18.7798C9.1679 18.9288 8.80418 19.0039 8.43679 18.9998C8.06339 18.9954 7.69473 18.9091 7.36071 18.7475C7.02782 18.5866 6.73682 18.3549 6.50939 18.07C6.50862 18.069 6.50786 18.0681 6.50709 18.0671L3.27113 14.0428C2.83519 13.5007 2.93616 12.7193 3.49666 12.2977C4.05716 11.876 4.86493 11.9737 5.30087 12.5158L8.46828 16.4549L18.7232 4.45145C19.1756 3.92201 19.9861 3.84749 20.5334 4.285Z" fill="currentColor" /></svg>';
+  }
+  // обычный крестик (не в кружке) — им закрываются бейджи применённых фильтров
+  function closeIconHtml() {
+    return '<svg viewBox="0 0 24 24" fill="none"><path d="M19.172 6.42187C19.6126 5.98124 19.6126 5.26874 19.172 4.83281C18.7314 4.39687 18.0189 4.39218 17.583 4.83281L12.0048 10.4109L6.42202 4.82812C5.9814 4.38749 5.2689 4.38749 4.83296 4.82812C4.39702 5.26874 4.39233 5.98124 4.83296 6.41718L10.4111 11.9953L4.82827 17.5781C4.38765 18.0187 4.38765 18.7312 4.82827 19.1672C5.2689 19.6031 5.9814 19.6078 6.41733 19.1672L11.9955 13.5891L17.5783 19.1719C18.0189 19.6125 18.7314 19.6125 19.1673 19.1719C19.6033 18.7312 19.608 18.0187 19.1673 17.5828L13.5892 12.0047L19.172 6.42187Z" fill="currentColor"/></svg>';
+  }
+  // снятие одного фильтра: возвращаем поле в исходное состояние и применяем панель
+  function flChipRemove(id, one) {
+    var act = flActive();
+    if (!act) return;
+    var f = act.querySelector('[data-anf-field="' + id + '"]');
+    if (!f) return;
+    if (one != null && f.hasAttribute("data-anf-multi")) { flMultiSet(f, one, false); flApply(); return; }
+    var val = f.querySelector("[data-anf-val]");
+    if (val) {
+      var ph = val.getAttribute("data-anf-ph");
+      if (ph) val.textContent = ph;
+      val.classList.add("is-ph");
+    }
+    [].slice.call(f.querySelectorAll("[data-anf-text],[data-anf-from],[data-anf-to]")).forEach(function (i) { i.value = ""; });
+    var segs = [].slice.call(f.querySelectorAll(".anf-seg__btn"));
+    if (segs.length) segs.forEach(function (b, i) { b.classList.toggle("is-on", i === 0); });
+    flApply();
+  }
+  function flDot() {
+    var v = flValues(), dirty = false;
+    var act = flActive(), key = act ? FL_TABLE[act.getAttribute("data-an-filters")] : null;
+    for (var k in v) {
+      if (k === "highlight") continue;                       // визуальный элемент
+      if (k === "title" && document.querySelector("[data-an-search]")) continue;  // поиск не в панели
+      if (k === "ctype" && v[k] === "All") continue;          // дефолт сегмента
+      if (k === "period") continue;                           // период всегда заполнен
+      if (k === "collection" && key === "deep") continue;      // на Deep коллекция выбрана всегда
+      dirty = true;
+    }
+    var dot = document.querySelector("[data-an-filters-dot]");
+    if (dot) dot.hidden = !dirty;
+  }
+  // Пока панель открыта, правки полей копятся и применяются по кнопке Apply
+  // (закрытие панели любым способом тоже применяет — иначе изменения потерялись бы).
+  var flPending = false;
+  function flTouch() {
+    if (document.body.classList.contains("filters-open")) { flPending = true; return; }
+    flApply();
+  }
+  function flApply() {
+    var key = null, act = flActive();
+    if (act) key = FL_TABLE[act.getAttribute("data-an-filters")];
+    var v = flValues();
+    if (key === "basic") flApplyBasic(v);
+    else if (key === "coll") flApplyColl(v);
+    else if (key === "deep") flApplyDeep(v);
+    else if (key === "video") vidApply();
+    if (key === "basic") csSyncFromPanel();   // селектор у счётчика показывает тот же фильтр (P1.1)
+    flDot();
+    flChips();
+    if (key && typeof tblApply === "function") { TBL[key].page = 1; tblApply(key); }
+    tblHugAll();
+  }
+  // ================= топики в таблице =================
+  // Как в проде (SSDEV-2292): топик из таблицы применяется сразу, мимо черновика панели;
+  // выбранных топиков может быть несколько, канал проходит по любому из них.
+  var TPOP = null;
+  function topicField() {
+    var act = flActive();
+    return act ? act.querySelector('[data-anf-field="topic"][data-anf-multi]') : null;
+  }
+  function topicSelected() { var f = topicField(); return f ? flMultiVals(f) : []; }
+  function topicToggle(name) {
+    var f = topicField(); if (!f) return;
+    flMultiSet(f, name, topicSelected().indexOf(name) === -1);
+    flApply();
+  }
+  function topicPopToggle(anchor) {
+    if (TPOP && TPOP.anchor === anchor) { topicPopClose(); return; }
+    topicPopClose();
+    var el = document.createElement("div");
+    el.className = "an-topicpop";
+    document.body.appendChild(el);
+    TPOP = { el: el, anchor: anchor, all: (anchor.getAttribute("data-an-topics-more") || "").split("|").filter(Boolean) };
+    anchor.setAttribute("aria-expanded", "true");
+    topicPopRender();
+  }
+  function topicPopRender() {
+    if (!TPOP) return;
+    // строка ушла под фильтр или перерисована — списку не к чему крепиться
+    if (!TPOP.anchor.isConnected || TPOP.anchor.closest("[data-filtered]")) { topicPopClose(); return; }
+    TPOP.el.innerHTML = TPOP.all.map(function (t) {
+      return '<button class="anf-opt" type="button" data-an-topic-pick="' + escHtml(t) + '">' + escHtml(t) + "</button>";
+    }).join("");
+    var r = TPOP.anchor.getBoundingClientRect();
+    TPOP.el.style.top = (r.bottom + 4) + "px";
+    TPOP.el.style.left = Math.max(8, Math.min(r.left, window.innerWidth - TPOP.el.offsetWidth - 8)) + "px";
+  }
+  function topicPopClose() {
+    if (!TPOP) return;
+    TPOP.el.remove();
+    if (TPOP.anchor.isConnected) TPOP.anchor.removeAttribute("aria-expanded");
+    TPOP = null;
+  }
+  document.addEventListener("scroll", topicPopClose, true);
+  window.addEventListener("resize", topicPopClose);
+  function chInfo(name) {                     // справка по каналу из сида
+    var pool = (typeof aiChannelPool === "function" ? aiChannelPool() : []);
+    for (var i = 0; i < pool.length; i++) if (pool[i].name === name) return pool[i];
+    return null;
+  }
+  // ================= A4: календарь диапазона (Custom) =================
+  // «Сегодня» берём из сида, чтобы даты не плыли между сборками. Прирост для
+  // произвольного диапазона масштабируем от 30-дневной базы (dict.growthBase).
+  function drDict() { return window.SUBSUB_DICT || {}; }
+  function drToday() {
+    var t = (drDict().today || "2026-08-03").split("-");
+    return new Date(+t[0], +t[1] - 1, +t[2]);
+  }
+  function drFmt(d) {
+    return ("0" + d.getDate()).slice(-2) + "." + ("0" + (d.getMonth() + 1)).slice(-2) + "." + d.getFullYear();
+  }
+  function drParse(str) {
+    var m = String(str).trim().match(/^(\d{2})\.(\d{2})\.(\d{4})$/);
+    return m ? new Date(+m[3], +m[2] - 1, +m[1]) : null;
+  }
+  function drKey(d) { return d.getFullYear() + "-" + d.getMonth() + "-" + d.getDate(); }
+  function drDays(a, b) { return Math.round((b - a) / 86400000) + 1; }
+  var drFrom = null, drTo = null, drView = null, drPresetName = "";
+  // пресеты слева — считаются от «сегодня»
+  function drPresets() {
+    var t = drToday(), y = t.getFullYear(), m = t.getMonth();
+    function shift(d, n) { var x = new Date(d.getTime()); x.setDate(x.getDate() + n); return x; }
+    function weekStart(d) { var x = new Date(d.getTime()); var wd = (x.getDay() + 6) % 7; x.setDate(x.getDate() - wd); return x; }
+    var ws = weekStart(t), lws = shift(ws, -7);
+    return [
+      { id: "today", label: "Today", from: t, to: t },
+      { id: "yesterday", label: "Yesterday", from: shift(t, -1), to: shift(t, -1) },
+      { id: "thisweek", label: "This week", from: ws, to: t },
+      { id: "lastweek", label: "Last week", from: lws, to: shift(ws, -1) },
+      { id: "thismonth", label: "This month", from: new Date(y, m, 1), to: t },
+      { id: "lastmonth", label: "Last month", from: new Date(y, m - 1, 1), to: new Date(y, m, 0) },
+      { id: "thisyear", label: "This year", from: new Date(y, 0, 1), to: t },
+      { id: "lastyear", label: "Last year", from: new Date(y - 1, 0, 1), to: new Date(y - 1, 11, 31) },
+      { id: "alltime", label: "All time", from: new Date(2005, 0, 1), to: t }
+    ];
+  }
+  function drOpen(open) {
+    var wrap = document.querySelector("[data-an-dr]");
+    if (!wrap) return;
+    var pop = wrap.querySelector("[data-an-dr-pop]");
+    if (open) {
+      // открываем на диапазоне, который сейчас в поле
+      var val = (wrap.querySelector("[data-an-dr-val]") ||
+                 document.querySelector("[data-an-period-val]") || {}).textContent || "";
+      var parts = val.split(/\s*[–-]\s*/);
+      drFrom = drParse(parts[0]) || drToday();
+      drTo = drParse(parts[1]) || drFrom;
+      drView = new Date(drTo.getFullYear(), drTo.getMonth() - 1, 1);
+      drRender();
+    }
+    pop.hidden = !open;
+    wrap.classList.toggle("is-open", !!open);
+  }
+  function drRender() {
+    var wrap = document.querySelector("[data-an-dr]");
+    if (!wrap || !drView) return;
+    var d = drDict(), months = d.months || [], wds = d.weekdays || [];
+    // пресеты
+    var box = wrap.querySelector("[data-an-dr-presets]");
+    box.innerHTML = drPresets().map(function (p) {
+      return '<button class="an-dr__preset' + (p.id === drPresetName ? " is-on" : "") + '" type="button" data-an-dr-preset="' + p.id + '">' + p.label + "</button>";
+    }).join("");
+    // два месяца
+    [0, 1].forEach(function (i) {
+      var mv = new Date(drView.getFullYear(), drView.getMonth() + i, 1);
+      wrap.querySelector('[data-an-dr-mon="' + i + '"]').textContent = (months[mv.getMonth()] || "") + " " + mv.getFullYear();
+      var grid = wrap.querySelector('[data-an-dr-grid="' + i + '"]');
+      var html = wds.map(function (w) { return '<span class="an-dr__wd">' + w + "</span>"; }).join("");
+      var first = new Date(mv.getFullYear(), mv.getMonth(), 1);
+      var lead = (first.getDay() + 6) % 7;                    // неделя с понедельника
+      var startDay = new Date(mv.getFullYear(), mv.getMonth(), 1 - lead);
+      var todayK = drKey(drToday());
+      for (var c = 0; c < 42; c++) {
+        var day = new Date(startDay.getFullYear(), startDay.getMonth(), startDay.getDate() + c);
+        var out = day.getMonth() !== mv.getMonth();
+        var isStart = drFrom && drKey(day) === drKey(drFrom);
+        var isEnd = drTo && drKey(day) === drKey(drTo);
+        var inRange = drFrom && drTo && day > drFrom && day < drTo;
+        var band = drFrom && drTo && drKey(drFrom) !== drKey(drTo);   // полоса рисуется только у диапазона
+        html += '<button class="an-dr__day' + (out ? " an-dr__day--out" : "") +
+          (inRange ? " an-dr__day--in" : "") + (isStart || isEnd ? " an-dr__day--edge" : "") +
+          (band && isStart ? " an-dr__day--start" : "") + (band && isEnd ? " an-dr__day--end" : "") +
+          (drKey(day) === todayK ? " an-dr__day--today" : "") +
+          '" type="button" data-an-dr-day="' + drFmt(day) + '"><span class="an-dr__d">' + day.getDate() + "</span></button>";
+      }
+      grid.innerHTML = html;
+    });
+    wrap.querySelector("[data-an-dr-from]").value = drFrom ? drFmt(drFrom) : "";
+    wrap.querySelector("[data-an-dr-to]").value = drTo ? drFmt(drTo) : "";
+  }
+  function drPickDay(str) {
+    var day = drParse(str);
+    if (!day) return;
+    // первый клик после готового диапазона начинает новый выбор
+    if (!drFrom || (drFrom && drTo)) { drFrom = day; drTo = null; }
+    else if (day < drFrom) { drTo = drFrom; drFrom = day; }
+    else drTo = day;
+    drPresetName = "";
+    drRender();
+  }
+  function drUsePreset(id) {
+    var p = drPresets().filter(function (x) { return x.id === id; })[0];
+    if (!p) return;
+    drFrom = p.from; drTo = p.to; drPresetName = id;
+    drView = new Date(drTo.getFullYear(), drTo.getMonth() - 1, 1);
+    drRender();
+  }
+  function drShift(n) {
+    if (!drView) return;
+    drView = new Date(drView.getFullYear(), drView.getMonth() + n, 1);
+    drRender();
+  }
+  function drApply() {
+    var wrap = document.querySelector("[data-an-dr]");
+    var f = drParse(wrap.querySelector("[data-an-dr-from]").value) || drFrom;
+    var t = drParse(wrap.querySelector("[data-an-dr-to]").value) || drTo || f;
+    if (!f) return;
+    if (t < f) { var sw = f; f = t; t = sw; }
+    drFrom = f; drTo = t;
+    if (document.querySelector("[data-rp-dr]")) repSetPeriod(f, t);   // тот же календарь в модалке отчёта
+    else flSetCustom(f, t);
+    drOpen(false);
+  }
+  // числа за произвольный период: масштаб от 30-дневной базы
+  function jsFmt(n) {
+    n = Number(n) || 0;
+    function s1(v, u) { return (v >= 100 ? Math.round(v) : Math.round(v * 10) / 10) + u; }
+    if (n >= 1e9) return s1(n / 1e9, "bn");
+    if (n >= 1e6) return s1(n / 1e6, "m");
+    if (n >= 1e3) return s1(n / 1e3, "k");
+    return String(Math.round(n));
+  }
+  // Deep data: колонки прироста пересчитываем из 30-дневной базы (data-g30 в ячейке)
+  function flScaleDeep(k) {
+    var body = tblBody("deep");
+    if (!body) return;
+    ["subsg", "viewsg", "pvco"].forEach(function (col) {
+      [].slice.call(body.querySelectorAll('[data-col="' + col + '"][data-g30]')).forEach(function (cell) {
+        var base = parseFloat(cell.getAttribute("data-g30")) || 0;
+        var isAvg = !!cell.closest(".an-tr--avg");
+        // исходные значения (30 дней) — прод-цифры, при возврате показываем их, а не переформатированные
+        if (!cell.hasAttribute("data-orig")) {
+          cell.setAttribute("data-orig", isAvg ? (cell.getAttribute("data-avg") || "") : (cell.textContent || "").trim());
+          if (isAvg) cell.setAttribute("data-origt", cell.getAttribute("data-total") || "");
+        }
+        var val = k === 1 ? cell.getAttribute("data-orig") : "+" + jsFmt(base * k);
+        if (isAvg) {
+          // сводка: пересчитываем и среднее, и сумму, дальше режим выберет gsApply
+          var baseT = parseFloat(cell.getAttribute("data-g30t"));
+          cell.setAttribute("data-avg", val);
+          if (k === 1) cell.setAttribute("data-total", cell.getAttribute("data-origt") || cell.getAttribute("data-total"));
+          else if (!isNaN(baseT)) cell.setAttribute("data-total", "+" + jsFmt(baseT * k));
+          return;
+        }
+        var heat = cell.querySelector(".an-heat");
+        var tag = (heat || cell).querySelector("[class*='an-delta']");
+        if (tag) tag.textContent = val; else (heat || cell).textContent = val;
+      });
+    });
+    if (typeof gsApply === "function") gsApply(gsMode());
+  }
+  function flSetCustom(from, to) {
+    var base = drDict().growthBase || [];
+    var k = drDays(from, to) / 30;
+    flPeriod = "custom";
+    [].slice.call(document.querySelectorAll("[data-an-period-val]")).forEach(function (el) {
+      el.textContent = drFmt(from) + " – " + drFmt(to);
+    });
+    // свой период можно сбросить к 30 дням
+    [].slice.call(document.querySelectorAll("[data-an-period-clear]")).forEach(function (c) { c.hidden = false; });
+    [].slice.call(document.querySelectorAll("[data-an-period-set]")).forEach(function (b) {
+      var on = b.getAttribute("data-an-period-set") === "custom";
+      b.classList.toggle("is-on", on);
+      b.setAttribute("aria-checked", on ? "true" : "false");
+    });
+    var idxByName = {};
+    (window.SUBSUB_CHANNELS || []).forEach(function (c, i) { idxByName[c.name] = i; });
+    var iSubsG = tblColIndex("basic", "subsg"), iViewsG = tblColIndex("basic", "viewsg"), iVps = tblColIndex("basic", "vps");
+    tblAllRows("basic").forEach(function (row) {
+      var nameEl = row.querySelector(".an-chan__name");
+      var i = nameEl ? idxByName[nameEl.textContent.trim()] : undefined;
+      if (i == null || !base[i]) return;
+      var subsG = base[i][0] * k, viewsG = base[i][1] * k;
+      function put(idx, val) {
+        var cell = row.children[idx]; if (!cell) return;
+        var tag = cell.querySelector("[class*='an-delta']");
+        if (tag) tag.textContent = val; else cell.textContent = val;
+      }
+      if (iSubsG >= 0) put(iSubsG, "+" + jsFmt(subsG));
+      if (iViewsG >= 0) put(iViewsG, "+" + jsFmt(viewsG));
+      if (iVps >= 0) put(iVps, jsFmt(viewsG / Math.max(1, subsG)));
+    });
+    flScaleDeep(k);
+  }
+
+  function flApplyBasic(v) {
+    var rows = tblAllRows("basic");
+    var collChannels = null;
+    // поля Collection в панели больше нет — значение берём из пилюли у счётчика
+    var cw = document.querySelector('[data-an-collsel="basic"]');
+    var coll = v.collection || (cw ? csCurrent(cw) : "");
+    if (coll && typeof aiChannelsOf === "function") collChannels = aiChannelsOf(coll);
+    rows.forEach(function (row) {
+      var nameEl = row.querySelector(".an-chan__name");
+      var nm = nameEl ? nameEl.textContent.trim() : "";
+      var info = chInfo(nm) || {};
+      var topics = [].slice.call(row.querySelectorAll("[data-an-topic]")).map(function (t) { return t.getAttribute("data-an-topic"); });
+      if (info.topics) topics = info.topics;                  // включая скрытые под «+N»
+      var ok = true;
+      var want = Array.isArray(v.topic) ? v.topic : v.topic ? [v.topic] : [];
+      if (want.length && !want.some(function (t) { return topics.indexOf(t) !== -1; })) ok = false;
+      if (v.title && nm.toLowerCase().indexOf(v.title.toLowerCase()) === -1) ok = false;
+      if (v.country && info.country !== v.country) ok = false;
+      if (v.language && info.language !== v.language) ok = false;
+      if (collChannels && collChannels.indexOf(nm) === -1) ok = false;
+      if (ok) row.removeAttribute("data-filtered"); else row.setAttribute("data-filtered", "");
+    });
+  }
+  function flApplyDeep(v) {
+    // коллекция задаёт набор строк, остальные поля фильтруют внутри него (P1.1)
+    var w = document.querySelector('[data-an-collsel="deep"]');
+    if (v.collection && w) csSetLabel(w, v.collection);
+    var coll = v.collection || (w ? csCurrent(w) : "");
+    tblAllRows("deep").forEach(function (row) {
+      var mine = !coll || (row.getAttribute("data-coll") || "") === coll;
+      var ok = mine;
+      if (!row.classList.contains("an-tr--avg")) {
+        var t = row.querySelector(".and-chan");
+        var nm = t ? t.textContent.trim() : "";
+        if (v.title && nm.toLowerCase().indexOf(v.title.toLowerCase()) === -1) ok = false;
+      }
+      if (ok) row.removeAttribute("data-filtered"); else row.setAttribute("data-filtered", "");
+    });
+  }
+  // Строка управления на My collections: если поиск + сегмент + фильтры + пагинация
+  // перестают влезать в ширину контента, подписи сегментов сокращаются.
+  function mcToolbarFit() {
+    var t = document.querySelector(".mc-toolbar");
+    if (!t) return;
+    t.classList.remove("is-tight");
+    var gap = parseFloat(getComputedStyle(t).gap) || 16;
+    var kids = [].slice.call(t.children);
+    var need = kids.reduce(function (s, c) { return s + c.getBoundingClientRect().width; }, 0) + gap * (kids.length - 1);
+    if (need > t.clientWidth - 1) t.classList.add("is-tight");
+  }
+  // ---- тип коллекции: сегмент в тулбаре страницы My collections ----
+  var MC_CTYPE_KEY = "subsub_coll_ctype";
+  function mcCtype() {
+    var on = document.querySelector("[data-mc-ctype] .an-ctype__btn.is-on");
+    return on ? on.getAttribute("data-mc-ctype-set") : "All";
+  }
+  function mcCtypeSet(val) {
+    var box = document.querySelector("[data-mc-ctype]");
+    if (!box) return;
+    [].slice.call(box.querySelectorAll(".an-ctype__btn")).forEach(function (btn) {
+      var on = btn.getAttribute("data-mc-ctype-set") === val;
+      btn.classList.toggle("is-on", on);
+      btn.setAttribute("aria-checked", on ? "true" : "false");
+    });
+    try { localStorage.setItem(MC_CTYPE_KEY, val); } catch (e) {}
+    flApply();
+  }
+  function mcCtypeInit() {
+    if (!document.querySelector("[data-mc-ctype]")) return;
+    var saved = null;
+    try { saved = localStorage.getItem(MC_CTYPE_KEY); } catch (e) {}
+    if (saved && saved !== "All") mcCtypeSet(saved);
+  }
+  function flApplyColl(v) {
+    var ctype = mcCtype();                       // сегмент живёт в тулбаре, а не в панели
+    tblAllRows("coll").forEach(function (row) {
+      var nm = row.getAttribute("data-name") || "";
+      var statusEl = row.querySelector(".mc-status__t");
+      var st = statusEl ? statusEl.textContent.trim() : "";
+      var qtyEl = row.querySelectorAll(".an-td")[2];
+      var qty = qtyEl ? parseInt(String(qtyEl.textContent).replace(/\D/g, ""), 10) : NaN;
+      // колонки Includes больше нет — состав каналов лежит в data-channels
+      var chips = (row.getAttribute("data-channels") || "").toLowerCase();
+      var ok = true;
+      // P1.10: Samples — это public-коллекции (владелец не ты), Own — свои
+      // Own — где владелец «You», Shared — расшаренные мне (владелец другой)
+      var mine = mcRowIsOwn(row);
+      if (ctype === "Own" && !mine) ok = false;
+      if (ctype === "Shared" && mine) ok = false;
+      if (v.status && st !== v.status) ok = false;
+      if (v.channels && chips.indexOf(v.channels.toLowerCase()) === -1) ok = false;
+      if (v.qtyFrom != null && !isNaN(qty) && qty < v.qtyFrom) ok = false;
+      if (v.qtyTo != null && !isNaN(qty) && qty > v.qtyTo) ok = false;
+      // P1.12: фильтр по конкретному пользователю из дропдауна
+      if (v.shared) {
+        var shared = (row.getAttribute("data-shared") || "").split("|");
+        if (shared.indexOf(v.shared) === -1) ok = false;
+      }
+      // C3: фильтры панели и поиск живут вместе — храним причины отдельно
+      if (ok) row.removeAttribute("data-filter-off"); else row.setAttribute("data-filter-off", "");
+      if (row.hasAttribute("data-filter-off") || row.hasAttribute("data-search-off")) row.setAttribute("data-filtered", "");
+      else row.removeAttribute("data-filtered");
+      if (!nm) { row.removeAttribute("data-filtered"); row.removeAttribute("data-filter-off"); }
+    });
+  }
+  // ---- Clear all: сбрасываем всё, включая сегменты (в проде Collection type не сбрасывается — баг, не воспроизводим) ----
+  function flClear() {
+    var act = flActive(); if (!act) return;
+    [].slice.call(act.querySelectorAll("[data-anf-val]")).forEach(function (el) {
+      var ph = el.getAttribute("data-anf-ph");
+      if (ph) el.textContent = ph;
+      el.classList.add("is-ph"); el.classList.remove("anf-val--tags");
+    });
+    [].slice.call(act.querySelectorAll("[data-anf-text],[data-anf-from],[data-anf-to],[data-anf-search]")).forEach(function (i) { i.value = ""; });
+    [].slice.call(act.querySelectorAll(".anf-select")).forEach(function (sel) {
+      var menu = sel.querySelector("[data-anf-menu]"); if (menu) menu.hidden = true;
+      sel.classList.remove("is-open");
+      [].slice.call(sel.querySelectorAll(".anf-opt")).forEach(function (o) { o.classList.remove("is-selected"); });
+    });
+    [].slice.call(act.querySelectorAll(".anf-seg")).forEach(function (seg) {
+      var btns = [].slice.call(seg.querySelectorAll(".anf-seg__btn"));
+      btns.forEach(function (b, i) { b.classList.toggle("is-on", i === 0); b.setAttribute("aria-checked", i === 0 ? "true" : "false"); });
+    });
+    flTouch();
+  }
+  // ---- P1.2: Growth period. Подменяет ячейки прироста из window.SUBSUB_GROWTH ----
+  var flPeriod = "30";
+  // C1: на Explorer доступен только период 30 дней — 7 и 90 (и Custom) под тарифом.
+  // Чипы не прячем: видно, что есть, и понятно, за что платить.
+  function periodAllowed(pd) {
+    var list = plan().periods;
+    if (!list) return true;                                  // тариф без ограничений
+    // свой диапазон закрыт только там, где вообще один период (Explorer)
+    if (pd === "custom") return list.length > 1;
+    return list.indexOf(String(pd)) !== -1;
+  }
+  function periodTip() {
+    return "Periods other than 30 days are available on " + (PLAN_NEXT[planId()] || "higher plans") + " and above";
+  }
+  function periodSync() {
+    [].slice.call(document.querySelectorAll("[data-an-period-set]")).forEach(function (b) {
+      var off = !periodAllowed(b.getAttribute("data-an-period-set"));
+      offSet(b, off);
+      tipSet(b, off ? periodTip() : "", off);
+    });
+    // поле-календарь: свой период тоже за пейволом, если тариф ограничен
+    var trig = document.querySelector("[data-an-period-trig]");
+    if (trig) {
+      var offC = !periodAllowed("custom");
+      offSet(trig, offC);
+      tipSet(trig, offC ? periodTip() : "", offC);
+    }
+  }
+  function flSetPeriod(pd) {
+    if (!periodAllowed(pd)) return;             // причина — в тултипе чипа
+    setTimeout(tblHugAll, 0);
+    var G = window.SUBSUB_GROWTH || {};
+    if (!G[pd]) return;
+    flPeriod = pd;
+    // в поле показываем диапазон дат — как на проде (BaseDateRangePicker)
+    var ranges = (window.SUBSUB_DICT || {}).periodRanges || {};
+    var labels = (window.SUBSUB_DICT || {}).periodLabels || {};
+    [].slice.call(document.querySelectorAll("[data-an-period-val]")).forEach(function (el) {
+      // в тулбаре (A4) показываем «Last 30 days», в панели фильтров — диапазон дат
+      var wantLabel = el.hasAttribute("data-an-period-label");
+      el.textContent = (wantLabel ? labels[pd] : ranges[pd]) || labels[pd] || ("Last " + pd + " days");
+    });
+    [].slice.call(document.querySelectorAll("[data-an-period-set]")).forEach(function (b) {
+      b.classList.toggle("is-on", b.getAttribute("data-an-period-set") === pd);
+    });
+    // 30 дней — период по умолчанию: дальше сбрасывать нечего, крестик скрыт
+    [].slice.call(document.querySelectorAll("[data-an-period-clear]")).forEach(function (c) { c.hidden = pd === "30"; });
+    // порядок строк мог измениться сортировкой — сопоставляем по имени канала
+    var idxByName = {};
+    (window.SUBSUB_CHANNELS || []).forEach(function (c, i) { idxByName[c.name] = i; });
+    var iSubsG = tblColIndex("basic", "subsg"), iViewsG = tblColIndex("basic", "viewsg"), iVps = tblColIndex("basic", "vps");
+    tblAllRows("basic").forEach(function (row) {
+      var nameEl = row.querySelector(".an-chan__name");
+      var i = nameEl ? idxByName[nameEl.textContent.trim()] : undefined;
+      if (i == null || !G[pd][i]) return;
+      var g = G[pd][i];
+      function setCell(idx, val, delta) {
+        var cell = row.children[idx]; if (!cell) return;
+        if (delta) {
+          var tag = cell.querySelector("[class*='an-delta']");
+          if (tag) { tag.textContent = val; return; }
+        }
+        cell.textContent = val;
+      }
+      setCell(iSubsG, g[0], true);
+      setCell(iViewsG, g[1], true);
+      setCell(iVps, g[2], false);
+    });
+    flScaleDeep((parseInt(pd, 10) || 30) / 30);   // те же периоды в deep-таблице
+  }
+  function flInit() {
+    if (!flPanels().length) return;
+    flSyncActive();
+    flFillCollections();
+    csSyncToPanel();                           // на Deep поле Collection = текущая коллекция
+    flOpen(false);                             // по умолчанию панель закрыта
+    flDot();
+    flChips();
+  }
+
+  // ================= MY COLLECTIONS: флоу действий =================
+  var mcRow = null;      // строка, для которой открыто меню/диалог
+  var mcMode = "create"; // create | edit
+
+  // 4.4: на каждое действие один вид тоста. Было по 2–4 формулировки на создание,
+  // добавление, удаление и деактивацию — свели к четырём строкам.
+  function toastCreated(name, n) {
+    toast("“" + name + "” created" + (n ? " — " + n + (n === 1 ? " channel added" : " channels added") : ""));
+  }
+  function toastAdded(n, name) {
+    toast(n + (n === 1 ? " channel" : " channels") + " added to “" + name + "”");
+  }
+  function toastRemoved(n, name) {
+    toast(n + (n === 1 ? " channel" : " channels") + " removed from “" + name + "”");
+  }
+  function toast(msg) {
+    var t = document.querySelector("[data-an-toast]");
+    if (!t) return;
+    t.textContent = msg;
+    t.hidden = false;
+    clearTimeout(t._tid);
+    t._tid = setTimeout(function () { t.hidden = true; }, 2600);
+  }
+  function openModal(id) {
+    var m = document.getElementById(id);
+    if (m) { m.classList.add("is-open"); document.body.style.overflow = "hidden"; }
+  }
+  function closeModals() {
+    var open = document.querySelectorAll(".an-modal.is-open");
+    for (var i = 0; i < open.length; i++) closeModal(open[i]);
+  }
+  // закрываем ОДНУ модалку: при вложенности Esc и клик вне гасят только верхнюю,
+  // модалка sourcing под ней сохраняет введённое состояние
+  function closeModal(el) {
+    if (!el) return;
+    el.classList.remove("is-open");
+    if (el.id === "aiModal" && typeof aiTeardown === "function") aiTeardown();
+    if (el.id === "mcModal-create") aiFromSourcing = false;
+    if (!document.querySelector(".an-modal.is-open")) document.body.style.overflow = "";
+  }
+  // верхняя открытая модалка (по z-index)
+  function topModal() {
+    var open = document.querySelectorAll(".an-modal.is-open"), top = null, z = -1;
+    for (var i = 0; i < open.length; i++) {
+      var cz = parseInt(getComputedStyle(open[i]).zIndex, 10) || 0;
+      if (cz >= z) { z = cz; top = open[i]; }
+    }
+    return top;
+  }
+  function closeMcMenu() {
+    var m = document.getElementById("mcMenu");
+    if (m) m.hidden = true;
+  }
+  function rowStatus(row) {
+    var b = row ? row.querySelector("[data-mc-more]") : null;
+    return b ? b.getAttribute("data-status") : null;
+  }
+  // ссылка на страницу открытой коллекции (для AI-коллекций добавляем ai=<id>, чтобы показать Query/фильтры)
+  function mcCollectionUrl(row) {
+    if (!row) return "analytics-collection-edit.html";
+    var url = "analytics-collection-edit.html?name=" + encodeURIComponent(row.getAttribute("data-name") || "");
+    if (row.hasAttribute("data-sample")) url += "&shared=1";   // чужая коллекция: на странице только просмотр и выход
+    var ownr = row.getAttribute("data-owner");
+    if (ownr) url += "&owner=" + encodeURIComponent(ownr);
+    if (row.hasAttribute("data-ai-row")) {
+      var nm = row.getAttribute("data-name");
+      var list = aiLoad();
+      for (var i = 0; i < list.length; i++) if (list[i].name === nm) { url += "&ai=" + encodeURIComponent(list[i].id); break; }
+    }
+    return url;
+  }
+  // пилюля статуса по состоянию (та же разметка, что в билде)
+  // подтверждение активации: списываются лимиты плана, поэтому спрашиваем.
+  // B4: диалог один на три входа — список, страница коллекции и пустое состояние Deep data,
+  // поэтому имя коллекции держим в одном месте, а не выводим из места вызова.
+  var actAskName = "";
+  function collActivateAsk(name) {
+    actAskName = name || "";
+    var txt = document.querySelector("[data-mc-activate-text]");
+    if (txt) txt.textContent = "Deep data will be collected for " + collChans(actAskName) + " channels of “" +
+      actAskName + "”. Collecting takes a few minutes and counts against your plan limits.";
+    openModal("mcModal-activate");
+  }
+  // 2.5: остановка незаконченного сбора — свой диалог: собранное отбрасывается целиком.
+  var deactName = "";
+  function mcDeactAsk(name) {
+    var nm = name || (mcRow ? (mcRow.getAttribute("data-name") || "") : "");
+    deactName = nm;
+    var deep = collState(nm) === "deep";
+    var t = document.querySelector("[data-mc-deact-title]");
+    var x = document.querySelector("[data-mc-deact-text]");
+    var b = document.querySelector("[data-mc-deact-btn]");
+    if (t) t.textContent = deep ? "Stop collecting deep data?" : "Deactivate collection?";
+    if (x) x.textContent = deep
+      ? "Collected data will be discarded. You can start again anytime."
+      : "Deep data of the collection will be deactivated. You can activate it again later.";
+    if (b) b.textContent = deep ? "Stop collecting" : "Deactivate";
+    openModal("mcModal-deactivate");
+  }
+  function mcActivateAsk(row) {
+    mcRow = row;
+    collActivateAsk(row ? (row.getAttribute("data-name") || "") : "");
+  }
+  // пилюля состояния: одна разметка для строк из сборки и для AI-коллекций
+  function collPillHtml(name, opts) {
+    var st = collState(name), ro = !!(opts && opts.readonly);
+    var over = collOverLimit(name);      // B12: сверх лимита плана — действий нет, только апселл
+    var wall = !planDeepOn() || over;    // B2: на тарифе без Deep data ссылка не ведёт никуда
+    var wallTip = over ? collOverLimitTip() : CS_TIP.planDeepShort;
+    if (st === "activated") {
+      // у закрытого действия замок рядом с подписью: тултип виден только по наведению
+      var view = wall
+        ? '<button class="mc-status__link mc-status__link--lock is-off" type="button" aria-disabled="true" data-tip="' +
+          escHtml(wallTip) + '" data-tip-up>View deep data' + AI_ICO.lock + "</button>"
+        : '<a class="mc-status__link" href="analytics-deep-data.html?coll=' +
+          encodeURIComponent(name) + '">View deep data</a>';
+      return '<span class="mc-status mc-status--green">' + AI_ICO.thumb +
+        '<span class="mc-status__t">' + CS_LBL.activated + "</span>" +
+        '<span class="mc-status__sep"></span>' + view + "</span>";
+    }
+    if (st === "sourcing" || st === "deep") {
+      var lbl = st === "sourcing" ? CS_LBL.sourcing : CS_LBL.deep;
+      return '<span class="mc-status mc-status--orange">' + AI_ICO.progress +
+        '<span class="mc-status__t">' + lbl + "</span>" +
+        (ro ? "" : '<span class="mc-status__sep"></span><button class="mc-status__link" type="button" data-mc-cancel="' +
+          escHtml(name) + '">Cancel</button>') + "</span>";
+    }
+    // почему активация недоступна: нет каналов, тариф без Deep data или коллекция сверх лимита
+    var tip = wall ? wallTip
+            : collChans(name) < 1 ? CS_TIP.needChannel : "";
+    var act = ro ? "" : '<span class="mc-status__sep"></span><button class="mc-status__link' +
+      (tip ? " is-off" : "") + (wall ? " mc-status__link--lock" : "") + '" type="button" data-mc-activate' +
+      (tip ? ' aria-disabled="true" data-tip="' + escHtml(tip) + '"' + (wall ? " data-tip-up" : "") : "") +
+      ">Activate deep data" + (wall ? AI_ICO.lock : "") + "</button>";
+    return '<span class="mc-status mc-status--gray">' + AI_ICO.check +
+      '<span class="mc-status__t">' + CS_LBL.created + "</span>" + act + "</span>";
+  }
+  // общее количество коллекций — бейдж у All в переключателе типа
+  // «своя» коллекция — та, где владелец «You»
+  function mcRowIsOwn(row) {
+    var o = row.querySelector(".mc-owner__name");
+    return !o || o.textContent.trim() === "You";
+  }
+  function mcCountSync() {
+    var badges = [].slice.call(document.querySelectorAll("[data-mc-count]"));
+    if (!badges.length) return;
+    var rows = [].slice.call(document.querySelectorAll("[data-mc-row]"));
+    var own = rows.filter(mcRowIsOwn).length;
+    badges.forEach(function (badge) {
+      var kind = badge.getAttribute("data-mc-count");
+      badge.textContent = String(kind === "Own" ? own : kind === "Shared" ? rows.length - own : rows.length);
+    });
+  }
+  function updateCollCount() { mcCountSync(); }
+
+  document.addEventListener("click", function (e) {
+    // ⋮ — открыть меню у строки (пункты по статусу, как на проде)
+    // тот же отсев заблокированных контролов, что в основном обработчике
+    if (e.target.closest && e.target.closest('.is-off[aria-disabled="true"]')) return;
+    var shareBtn = e.target.closest("[data-mc-share-btn]");
+    if (shareBtn) {
+      e.stopPropagation();
+      if (isOff(shareBtn)) return;                 // B12: причина — в тултипе
+      closeMcMenu();
+      mcRow = shareBtn.closest("[data-mc-row]");
+      shareOpen("Share “" + (mcRow ? mcRow.getAttribute("data-name") : "collection") + "”");
+      return;
+    }
+    if (e.target.closest("[data-mc-share-close]")) { shareClose(); return; }
+    var moreBtn = e.target.closest("[data-mc-more]");
+    if (moreBtn) {
+      e.stopPropagation();
+      var menu = document.getElementById("mcMenu");
+      if (!menu) return;
+      mcRow = moreBtn.closest("[data-mc-row]");
+      var st = moreBtn.getAttribute("data-status");
+      var mcNm = mcRow ? (mcRow.getAttribute("data-name") || "") : "";
+      // B12: коллекция сверх лимита плана — из действий остаются просмотр и удаление
+      var mcOver = collOverLimit(mcNm), overTip = collOverLimitTip();
+      var mcWall = !planDeepOn() || mcOver;   // B2: тариф без Deep data гасит оба пункта
+      var wallTip = mcOver ? overTip : CS_TIP.planDeepShort;
+      // View deep data — только у собранной коллекции
+      var viewItem = menu.querySelector('[data-mc-act="view"]');
+      viewItem.hidden = st !== "activated";
+      offSet(viewItem, mcWall);
+      tipSet(viewItem, mcWall ? wallTip : "", mcWall);
+      // активация видна всегда, кроме уже активированной: если нельзя — объясняем тултипом
+      var actItem = menu.querySelector('[data-mc-act="activate"]');
+      actItem.hidden = st === "activated" || st === "deep";
+      var actTip = mcWall ? wallTip
+                 : st === "sourcing" ? CS_TIP.addWaitSourcing
+                 : collChans(mcNm) < 1 ? CS_TIP.needChannel : "";
+      if (actTip) { offSet(actItem, true); tipSet(actItem, actTip, mcWall); }
+      else { offSet(actItem, false); tipSet(actItem, ""); }
+      // переименование тоже под замком: коллекция не работает, пока сверх лимита
+      var renameItem = menu.querySelector('[data-mc-act="rename"]');
+      offSet(renameItem, mcOver);
+      tipSet(renameItem, mcOver ? overTip : "", mcOver);
+      // Deactivate = отмена сбора или возврат активированной коллекции в Created
+      var deact = menu.querySelector('[data-mc-act="deactivate"]');
+      deact.hidden = !(st === "activated" || st === "deep");
+      // 2.6: прервать незаконченный сбор и выключить готовые данные — разные действия
+      var deactLbl = deact.querySelector("[data-mc-deact-lbl]");
+      if (deactLbl) deactLbl.textContent = st === "deep" ? "Stop collecting" : "Deactivate collection";
+      // дубликат снимаем только по завершении процесса: иначе состав копии непредсказуем
+      var dupItem = menu.querySelector('[data-mc-act="duplicate"]');
+      if (dupItem) {
+        var busy = st === "sourcing" || st === "deep";
+        // дубликат — ещё одна коллекция: сверх лимита её создавать некуда
+        offSet(dupItem, busy || mcOver);
+        tipSet(dupItem, busy ? (st === "deep" ? CS_TIP.editWaitDeep : CS_TIP.addWaitSourcing) : mcOver ? overTip : "", mcOver && !busy);
+      }
+      // C1: чужую (sample) коллекцию нельзя менять — остаются просмотр и Duplicate
+      var mine = !(mcRow && mcRow.hasAttribute("data-sample"));
+      menu.querySelector('[data-mc-act="rename"]').hidden = !mine;
+      menu.querySelector('[data-mc-act="delete"]').hidden = !mine;
+      // из чужой коллекции можно только выйти — «Leave» вместо деструктивных пунктов владельца
+      menu.querySelector('[data-mc-act="leave"]').hidden = mine;
+      if (!mine) menu.querySelector('[data-mc-act="activate"]').hidden = true;
+      if (!mine) menu.querySelector('[data-mc-act="deactivate"]').hidden = true;
+      menu.querySelector("[data-mc-note]").hidden = mine;
+      // разделитель прячем, если группа под ним целиком скрыта
+      var sep2 = menu.querySelector('[data-mc-sep="2"]');
+      if (sep2) sep2.hidden = mine && menu.querySelector('[data-mc-act="deactivate"]').hidden &&
+                              menu.querySelector('[data-mc-act="delete"]').hidden;
+      menu.hidden = false;
+      var r = moreBtn.getBoundingClientRect();
+      var mw = menu.offsetWidth || 200;
+      menu.style.top = Math.min(r.bottom + 5, window.innerHeight - menu.offsetHeight - 8) + "px";
+      menu.style.left = Math.max(8, r.right - mw) + "px";
+      return;
+    }
+    // пункт меню
+    var act = e.target.closest("[data-mc-act]");
+    if (act) {
+      if (isOff(act)) return;                        // причина — в тултипе пункта
+      var type = act.getAttribute("data-mc-act");
+      closeMcMenu();
+      if (type === "view") { window.location.href = "analytics-deep-data.html"; return; }
+      if (type === "activate") { mcActivateAsk(mcRow); return; }
+      if (type === "rename") {                     // правится только имя — та же модалка, что и создание
+        mcMode = "edit";
+        var rt = document.querySelector("[data-mc-create-title]");
+        if (rt) rt.textContent = "Rename collection";
+        var ri = document.querySelector("[data-mc-name]");
+        if (ri) ri.value = mcRow ? mcRow.getAttribute("data-name") : "";
+        var rs = document.querySelector("[data-mc-create-submit]");
+        if (rs) rs.textContent = "Save";
+        openModal("mcModal-create");
+        if (ri) { ri.focus(); ri.select(); }
+        return;
+      }
+      if (type === "open") { window.location.href = mcCollectionUrl(mcRow); return; }
+      if (type === "duplicate") { mcDuplicate(mcRow); return; }         // C2
+      if (type === "deactivate") { mcDeactAsk(); return; }
+      if (type === "delete") { openModal("mcModal-delete"); return; }
+      if (type === "leave") {
+        var lt = document.querySelector("[data-mc-leave-text]");
+        if (lt) lt.textContent = "You will lose access to “" + (mcRow ? mcRow.getAttribute("data-name") : "this collection") +
+                                 "”. The owner can invite you again.";
+        openModal("mcModal-leave");
+        return;
+      }
+      return;
+    }
+    // клик вне меню — закрыть
+    if (!e.target.closest("#mcMenu")) closeMcMenu();
+
+    // Create Collection
+    if (e.target.closest("[data-mc-create-open]")) {
+      mcMode = "create"; mcRow = null;
+      var ct = document.querySelector("[data-mc-create-title]"); if (ct) ct.textContent = "Create collection";
+      var ni = document.querySelector("[data-mc-name]"); if (ni) ni.value = "";
+      var cs = document.querySelector("[data-mc-create-submit]"); if (cs) cs.textContent = "Create";
+      openModal("mcModal-create");
+      return;
+    }
+    // submit Create/Save
+    if (e.target.closest("[data-mc-create-submit]")) {
+      // создание со страницы коллекции: в новую коллекцию кладём выбранные каналы
+      if (ceBulkNames && ceBulkNames.length && document.querySelector("[data-ce-title]")) {
+        var newName = ((document.querySelector("[data-mc-name]") || {}).value || "").trim();
+        if (newName) {
+          var extra = aiExtraLoad();
+          extra[newName] = { channels: ceBulkNames.slice() };
+          aiExtraSave(extra);
+          var list = aiLoad();
+          list.push({ id: "cc" + list.length, name: newName, isAi: false, status: "created",
+                      created: aiToday(), channels: ceBulkNames.slice() });
+          aiSave(list);
+          closeModal(document.getElementById("mcModal-create"));
+          toastCreated(newName, ceBulkNames.length);
+          setTimeout(ceSaved, 900);
+          ceBulkNames = [];
+          return;
+        }
+      }
+      var val = (document.querySelector("[data-mc-name]") || {}).value || "";
+      if (mcMode === "edit") {
+        var nv = val.trim();
+        if (!nv) { toast("Name can't be empty"); return; }
+        if (mcRow) {
+          var old = mcRow.getAttribute("data-name");
+          var nmEl = mcRow.querySelector(".mc-name");
+          if (nmEl) nmEl.textContent = nv;
+          mcRow.setAttribute("data-name", nv);
+          var st = aiLoad(), touched = false;
+          st.forEach(function (c) { if (c.name === old) { c.name = nv; touched = true; } });
+          if (touched) aiSave(st);
+          var ex = aiExtraLoad();
+          if (ex[old]) { ex[nv] = ex[old]; delete ex[old]; aiExtraSave(ex); }
+        }
+        closeModals(); toast("Collection renamed");
+        mcMode = "create";
+      } else {
+        var newName = val.trim() || "New collection";
+        aiCreatePlain(newName);                       // коллекция живёт в состоянии, а не только в DOM
+        aiRenderCollections();
+        if (aiFromSourcing) {                         // вызвана из sourcing — выбираем её назначением
+          aiJustCreated = newName;
+          closeModal(document.getElementById("mcModal-create"));
+          aiDestSet(newName);                         // подставляем в дропдаун и в поле имени
+          toastCreated(newName);
+        } else {
+          closeModals(); toastCreated(newName);
+        }
+      }
+      return;
+    }
+    // подтверждения
+    if (e.target.closest("[data-mc-delete-confirm]")) {
+      if (mcRow) {
+        // AI collection живёт в localStorage — иначе строка вернётся после перезагрузки
+        if (mcRow.hasAttribute("data-ai-row")) {
+          var delId = aiIdByName(mcRow.getAttribute("data-name"));
+          if (delId) aiRemove(delId);
+        }
+        mcRow.remove(); mcRow = null; updateCollCount();
+      }
+      closeModals(); toast("Collection deleted successfully");
+      return;
+    }
+    if (e.target.closest("[data-mc-leave-confirm]")) {
+      var leftName = mcRow ? mcRow.getAttribute("data-name") : "";
+      if (mcRow) { mcRow.remove(); mcRow = null; updateCollCount(); }
+      closeModals();
+      toast(leftName ? "You left “" + leftName + "”" : "You left the collection");
+      return;
+    }
+    if (e.target.closest("[data-mc-deactivate-confirm]")) {
+      var deName = deactName || (mcRow ? (mcRow.getAttribute("data-name") || "") : "");
+      closeModals();
+      collCancelDeep(deName);
+      toast("Deep data deactivated — “" + deName + "”");
+      return;
+    }
+    // C4: Activate deep data — сначала подтверждение (это расход лимитов плана)
+    var actBtn = e.target.closest("[data-mc-activate]");
+    if (actBtn) {
+      if (isOff(actBtn)) return;                     // причина — в тултипе
+      mcActivateAsk(actBtn.closest("[data-mc-row]"));
+      return;
+    }
+    if (e.target.closest("[data-mc-activate-confirm]")) {
+      var actName = actAskName;
+      actAskName = "";
+      closeModals();
+      if (collActivateDeep(actName)) toast("Collecting deep data — “" + actName + "”");
+      return;
+    }
+    var mcCancel = e.target.closest("[data-mc-cancel]");
+    if (mcCancel) { collCancel(mcCancel.getAttribute("data-mc-cancel")); return; }
+    // клик по названию коллекции в списке → страница открытой коллекции
+    var nameCell = e.target.closest(".mc-name") || e.target.closest("[data-mc-row] .an-td--grow");
+    if (nameCell && nameCell.closest("[data-mc-row]")) {
+      window.location.href = mcCollectionUrl(nameCell.closest("[data-mc-row]"));
+      return;
+    }
+    // закрытие модалок
+    if (e.target.closest("[data-mc-close]")) { closeModal(e.target.closest(".an-modal")); return; }
+  });
+
+  // C2: дубликат коллекции — копия состава под именем «<имя> (copy)»
+  // имя копии спрашиваем модалкой: дефолт «‹название› expanded», автосбора нет
+  function mcDuplicate(row) {
+    if (!row) return;
+    dupOpen(row.getAttribute("data-name") || "", null);
+  }
+
+  // C3: поиск по списку коллекций (раньше поле было декоративным)
+  function mcSearchApply() {
+    var inp = document.querySelector("[data-mc-search]");
+    if (!inp) return;
+    var q = inp.value.trim().toLowerCase();
+    tblAllRows("coll").forEach(function (row) {
+      var nm = (row.getAttribute("data-name") || "").toLowerCase();
+      if (!nm) return;
+      var chips = (row.getAttribute("data-channels") || "").toLowerCase();
+      var ok = !q || nm.indexOf(q) !== -1 || chips.indexOf(q) !== -1;
+      if (ok) row.removeAttribute("data-search-off"); else row.setAttribute("data-search-off", "");
+      // сводим с фильтрами панели: строка видна, если прошла и поиск, и фильтры
+      if (row.hasAttribute("data-search-off") || row.hasAttribute("data-filter-off")) row.setAttribute("data-filtered", "");
+      else row.removeAttribute("data-filtered");
+    });
+    TBL.coll.page = 1;
+    tblApply("coll");
+    if (typeof tblHug === "function") tblHug("coll");   // новые строки должны получить те же ширины
+  }
+
+  // новая строка коллекции (после Create)
+  function addCollectionRow(name) {
+    var tbody = document.querySelector("[data-mc-tbody]");
+    if (!tbody) return;
+    var sample = tbody.querySelector("[data-mc-row]");
+    if (!sample) return;
+    var row = sample.cloneNode(true);
+    row.setAttribute("data-name", name);
+    var nm = row.querySelector(".mc-name"); if (nm) nm.textContent = name;
+    // статус → created (только что создана)
+    var holder = row.children[1].querySelector(".mc-statuscell");
+    // пилюлю рисует общий хелпер: он же знает про тариф без Deep data (B2)
+    if (holder) holder.innerHTML = collPillHtml(name);
+    var more = row.querySelector("[data-mc-more]");
+    if (more) { more.setAttribute("data-status", "created"); more.setAttribute("data-name", name); }
+    // сбросить прочие поля
+    row.children[2].textContent = "0";
+    row.setAttribute("data-channels", "");
+    row.children[4].textContent = "28.07.2026";
+    var own = row.children[5].querySelector(".mc-owner__name"); if (own) own.textContent = "You";
+    row.children[6].innerHTML = noShareHtml();
+    tbody.insertBefore(row, tbody.firstChild);
+    updateCollCount();
+    row.classList.remove("ml-row--flash"); void row.offsetWidth; row.classList.add("ml-row--flash");
+  }
+
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape") {
+      topicPopClose();
+      closeMcMenu();
+      aiSelectToggle(false);
+      closeModal(topModal());        // закрываем только верхнюю (вложенную) модалку
+    }
+  });
+
+  // ================= AI-КОЛЛЕКЦИЯ (deep sourcing) =================
+  // Мок без бэкенда: состояние в localStorage, «сборка» имитируется таймером (readyAt),
+  // поэтому прогресс не теряется при переходах между страницами прототипа.
+  var AI_KEY = "subsub_ai_collections";
+  // Демо-скорость: с localStorage.subsub_fast = "1" процессы идут в 10 раз быстрее —
+  // это нужно, чтобы показывать состояния на интервью, не ожидая минуты.
+  function demoFast() { try { return localStorage.getItem("subsub_fast") === "1"; } catch (e) { return false; } }
+  var AI_STEP_MS = demoFast() ? 1500 : 15000;   // очередной канал приезжает раз в 15 секунд
+  // Подбор не заканчивается раньше минуты: если подходящие каналы кончились раньше,
+  // коллекция всё равно висит в «Sourcing channels» до конца окна — на проде поиск долгий.
+  var AI_RUN_MS = demoFast() ? 6000 : 60000;
+  window.subsubFast = function (on) {
+    try { if (on === false) localStorage.removeItem("subsub_fast"); else localStorage.setItem("subsub_fast", "1"); } catch (e) {}
+    location.reload();
+  };
+  var AI_ICO = {
+    stars: '<svg viewBox="0 0 16 16" fill="none"><path d="M6.65952 6.11513L7.24284 4.07484C7.46142 3.31113 8.54378 3.31113 8.76236 4.07484L9.34502 6.11513C9.38191 6.2442 9.45108 6.36173 9.54599 6.45665C9.64091 6.55157 9.75845 6.62074 9.88751 6.65763L11.9278 7.24029C12.6915 7.45887 12.6915 8.54123 11.9278 8.75981L9.88751 9.34246C9.75845 9.37935 9.64091 9.44852 9.54599 9.54344C9.45108 9.63836 9.38191 9.7559 9.34502 9.88496L8.76236 11.9253C8.54378 12.689 7.46142 12.689 7.24284 11.9253L6.66018 9.88496C6.62329 9.7559 6.55412 9.63836 6.4592 9.54344C6.36429 9.44852 6.24675 9.37935 6.11768 9.34246L4.07739 8.75981C3.31368 8.54123 3.31368 7.45887 4.07739 7.24029L6.11768 6.65763C6.24675 6.62074 6.36429 6.55157 6.4592 6.45665C6.55412 6.36173 6.62329 6.2442 6.66018 6.11513M12.0213 10.9673C12.2116 10.4123 13.0115 10.4117 13.2011 10.9673L13.2182 11.0246L13.4131 11.8067L14.1952 12.0023C14.8273 12.1603 14.8273 13.057 14.1952 13.215L13.4131 13.4105L13.2182 14.1927C13.0602 14.8241 12.1628 14.8241 12.0048 14.1927L11.8093 13.4105L11.0272 13.215C10.3951 13.057 10.3951 12.1596 11.0272 12.0023L11.8093 11.8067L12.0048 11.0246L12.0213 10.9673ZM2.8041 1.74947C3.0003 1.17603 3.84762 1.19513 4.00102 1.80675L4.1959 2.5889L4.97804 2.78443C5.61008 2.94244 5.61008 3.83914 4.97804 3.99715L4.1959 4.19269L4.00102 4.97483C3.84301 5.60621 2.94565 5.60621 2.78764 4.97483L2.59211 4.19269L1.80996 3.99715C1.17793 3.83914 1.17793 2.94178 1.80996 2.78443L2.59211 2.5889L2.78764 1.80675L2.8041 1.74947Z" fill="currentColor"/></svg>',
+    progress: '<svg viewBox="0 0 24 24" fill="none"><path d="M14.8356 3.24829H9.16564C5.87564 3.24829 5.62189 6.20579 7.39814 7.81579L16.6031 16.1808C18.3794 17.7908 18.1256 20.7483 14.8356 20.7483H9.16564C5.87564 20.7483 5.62189 17.7908 7.39814 16.1808L16.6031 7.81579C18.3794 6.20579 18.1256 3.24829 14.8356 3.24829Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    check: '<svg viewBox="0 0 24 24" fill="none"><path fill-rule="evenodd" clip-rule="evenodd" d="M20.5334 4.285C21.0807 4.72253 21.1578 5.50641 20.7054 6.03585L10.3685 18.1353C10.1302 18.412 9.83512 18.631 9.50152 18.7798C9.1679 18.9288 8.80418 19.0039 8.43679 18.9998C8.06339 18.9954 7.69473 18.9091 7.36071 18.7475C7.02782 18.5866 6.73682 18.3549 6.50939 18.07L3.27113 14.0428C2.83519 13.5007 2.93616 12.7193 3.49666 12.2977C4.05716 11.876 4.86493 11.9737 5.30087 12.5158L8.46828 16.4549L18.7232 4.45145C19.1756 3.92201 19.9861 3.84749 20.5334 4.285Z" fill="currentColor"/></svg>',
+    thumb: '<svg viewBox="0 0 24 24" fill="none"><path fill-rule="evenodd" clip-rule="evenodd" d="M10.3601 3.53447C10.5044 3.20946 10.8263 3 11.1817 3C13.0189 3 14.5083 4.49088 14.5083 6.32998V8.66996H18.4597C19.1962 8.66324 19.8988 8.97979 20.3822 9.53629C20.8668 10.0942 21.0823 10.837 20.9715 11.568L19.8548 18.8579C19.6669 20.0984 18.596 21.0113 17.3431 20.9999L5.79161 20.9997C4.39147 21.0201 3.19594 19.9903 3.00811 18.6004C3.00271 18.5604 3 18.5201 3 18.4797V12.8098C3 12.7694 3.00271 12.7291 3.00811 12.6891C3.18783 11.3591 4.33367 10.179 5.7916 10.2H7.40059L10.3601 3.53447ZM8.84404 11.3809V19.1999L17.3577 19.2C17.7164 19.204 18.0232 18.9429 18.077 18.5879L19.1937 11.2979C19.2253 11.0891 19.1638 10.8768 19.0253 10.7174C18.8868 10.558 18.6854 10.4675 18.4744 10.4699L13.6092 10.47C13.1126 10.47 12.7101 10.067 12.7101 9.56996V6.32998C12.7101 5.67551 12.2996 5.11701 11.7222 4.89844L8.84404 11.3809ZM7.04587 19.1998V12H5.78446C5.34836 11.9924 4.89358 12.3581 4.79817 12.8794V18.4093C4.88522 18.8718 5.29361 19.2083 5.76856 19.1999L7.04587 19.1998Z" fill="currentColor"/></svg>',
+    x: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>',
+    // замок: колонки и пункты навигации, закрытые тарифом
+    lock: '<svg viewBox="0 0 24 24" fill="none"><path d="M7.25 10.5V8a4.75 4.75 0 0 1 9.5 0v2.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><rect x="4.25" y="10.25" width="15.5" height="10.5" rx="3" stroke="currentColor" stroke-width="1.5"/><circle cx="12" cy="15.5" r="1.5" fill="currentColor"/></svg>',
+  };
+  var aiTimers = {};
+
+  function aiLoad() {
+    try { var v = JSON.parse(localStorage.getItem(AI_KEY) || "[]"); return Array.isArray(v) ? v : []; }
+    catch (e) { return []; }
+  }
+  function aiSave(list) {
+    try { localStorage.setItem(AI_KEY, JSON.stringify(list)); } catch (e) { /* прототип: тихо */ }
+  }
+  function aiNum(n) { return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ","); }
+  // чипы применённых фильтров в формате прод-YT Sourcing (нулевые/пустые пропускаем)
+  // Чипы последнего запуска подбора. Диапазон показываем целиком, а «≥» — когда задан только низ.
+  function aiChips(f) {
+    var out = [];
+    [["subs", "subsFrom", "subsTo"], ["videos", "videosFrom", "videosTo"],
+     ["views", "viewsFrom", "viewsTo"], ["avg", "avgFrom", "avgTo"]].forEach(function (r) {
+      var from = f[r[1]] != null ? f[r[1]] : (f[r[0]] > 0 ? f[r[0]] : null);
+      var to = f[r[2]] != null ? f[r[2]] : null;
+      if (from == null && to == null) return;
+      out.push(r[0] + " " + (from != null && to != null ? aiNum(from) + "–" + aiNum(to)
+        : from != null ? "≥ " + aiNum(from) : "≤ " + aiNum(to)));
+    });
+    if (f.lastDays > 0) out.push("last ≤ " + f.lastDays + "d");
+    return out;
+  }
+  function aiById(id) {
+    var l = aiLoad();
+    for (var i = 0; i < l.length; i++) if (String(l[i].id) === String(id)) return l[i];
+    return null;
+  }
+  // отмена сборки / удаление AI-коллекции: гасим таймер и убираем запись из состояния
+  function aiRemove(id) {
+    if (aiTimers[id]) { clearTimeout(aiTimers[id]); delete aiTimers[id]; }
+    aiSave(aiLoad().filter(function (c) { return String(c.id) !== String(id); }));
+    aiRenderPill();
+    aiRenderCollections();
+  }
+  function aiIdByName(name) {
+    var l = aiLoad();
+    for (var i = 0; i < l.length; i++) if (l[i].name === name) return l[i].id;
+    return null;
+  }
+
+  var DD_ICO = {
+    chev: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>',
+    check: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>',
+    x: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>'
+  };
+  var ddOpen = {};
+  function ddAgo(ms) {
+    var s = Math.max(0, Math.round((Date.now() - ms) / 1000));
+    if (s < 60) return "just now";
+    if (s < 3600) return Math.floor(s / 60) + " min ago";
+    if (s < 86400) return Math.floor(s / 3600) + " h ago";
+    return Math.floor(s / 86400) + " d ago";
+  }
+  function ddJobs() {
+    var jobs = [];
+    aiLoad().forEach(function (r) {
+      var active = r.status === "pending";
+      if (!active && !(r.doneAt && !r.dismissed)) return;
+      var end = r.endAt || Date.now(), start = r.startAt || (end - AI_RUN_MS), target = aiSourcingTarget(r);
+      jobs.push({ id: String(r.id), kind: "sourcing", name: target, active: active,
+                  start: start, end: active ? end : (r.doneAt || end), stepEnd: r.readyAt || end,
+                  found: r.found || [], chips: aiChips(r.filters || {}),
+                  href: "analytics-collection-edit.html?name=" + encodeURIComponent(target) });
+    });
+    aiAllColls().forEach(function (c) {
+      if (collDeepState(c.name) !== "collecting") return;
+      var end = collDeepAt(c.name) || (Date.now() + DEEP_MS);
+      jobs.push({ id: "deep:" + c.name, kind: "deep", name: c.name, active: true,
+                  start: end - DEEP_MS, end: end, stepEnd: end, found: [], chips: [],
+                  href: "analytics-deep-data.html?coll=" + encodeURIComponent(c.name) });
+    });
+    jobs.sort(function (a, b) { return b.start - a.start; });
+    return jobs;
+  }
+  // A negative animation-delay puts the bar at the elapsed share of the run, so re-rendering never restarts it.
+  function ddBar(start, end, active) {
+    var total = Math.max(1000, end - start), done = Math.min(total, Math.max(0, Date.now() - start));
+    var st = active
+      ? "animation-duration:" + total + "ms;animation-delay:-" + done + "ms;animation-timing-function:linear"
+      : "animation:none;width:100%";
+    return '<div class="job__bar"><div class="job__fill" style="' + st + '"></div></div>';
+  }
+  function ddJobHtml(job) {
+    var open = !!ddOpen[job.id], n = job.found.length;
+    var foundTxt = job.kind === "deep" ? "Deep data"
+      : n === 0 ? (job.active ? "No channels found yet" : "No new channels found")
+      : n + (n === 1 ? " channel found" : " channels found");
+    var chips = job.chips.slice(0, 3).map(function (c) { return '<span class="job__tag">' + escHtml(c) + "</span>"; });
+    if (job.chips.length > 3) chips.push('<span class="job__tag">+' + (job.chips.length - 3) + "</span>");
+    var acts = '<span class="job__acts">' +
+      (job.active ? '<button class="job__cancel" type="button" data-dd-cancel-coll="' + escHtml(job.name) + '">Cancel</button>' : "") +
+      '<a class="job__goto" href="' + job.href + '">View ' + DD_ICO.chev + "</a></span>";
+    var end = job.active
+      ? '<span class="job__status">' + (job.kind === "deep" ? "Collecting data…" : "Sourcing…") + "</span>"
+      : '<span class="job__end"><span class="job__check" aria-label="Done">' + DD_ICO.check + "</span>" +
+        '<button class="job__dismiss" type="button" data-dd-dismiss="' + escHtml(job.id) + '" aria-label="Dismiss">' + DD_ICO.x + "</button></span>";
+    var sub = "";
+    if (job.kind === "sourcing") {
+      sub = job.found.map(function (nm) {
+        return '<div class="job__subrow"><span class="job__subname">' + escHtml(nm) + '</span><span class="job__check" aria-label="Added">' + DD_ICO.check + "</span></div>";
+      }).join("");
+      if (job.active) sub += '<div class="job__subrow"><span class="job__subname">Next channel…</span>' + ddBar(job.stepEnd - AI_STEP_MS, job.stepEnd, true) + "</div>";
+    }
+    return '<article class="job' + (open ? " is-expanded" : "") + '" data-dd-job="' + escHtml(job.id) + '">' +
+      '<div class="job__row">' +
+        (sub ? '<button class="job__chev" type="button" data-dd-expand aria-label="Expand" aria-expanded="' + open + '">' + DD_ICO.chev + "</button>" : "") +
+        '<span class="job__name">' + escHtml(job.name) + "</span>" +
+        '<span class="job__time">· ' + ddAgo(job.start) + "</span>" + end +
+      "</div>" + ddBar(job.start, job.end, job.active) +
+      '<div class="job__foot"><span>' + foundTxt + "</span>" +
+        (chips.length ? '<span class="job__dot">·</span><span class="job__tags">' + chips.join("") + "</span>" : "") + acts + "</div>" +
+      (sub ? '<div class="job__sub" data-dd-sub' + (open ? "" : " hidden") + ">" + sub + "</div>" : "") +
+      "</article>";
+  }
+  function aiRenderPill() {
+    var dd = document.getElementById("ddProcessing");
+    if (!dd) return;
+    var jobs = ddJobs(), panel = dd.querySelector("[data-dd-panel]"), toggle = dd.querySelector("[data-dd-toggle]");
+    if (!jobs.length) {
+      dd.hidden = true; dd.classList.remove("is-done");
+      if (panel) panel.hidden = true;
+      if (toggle) toggle.setAttribute("aria-expanded", "false");
+      return;
+    }
+    var active = jobs.filter(function (j) { return j.active; }), finished = jobs.length - active.length;
+    dd.hidden = false;
+    dd.classList.toggle("is-done", !active.length);
+    var label = dd.querySelector("[data-dd-label]"), cnt = dd.querySelector("[data-dd-count]");
+    if (label) label.textContent = !active.length ? "Sourcing done"
+      : active.some(function (j) { return j.kind === "sourcing"; }) ? "Sourcing" : "Collecting data";
+    if (cnt) cnt.textContent = String(active.length);
+    var meta = dd.querySelector("[data-dd-meta]"), clear = dd.querySelector("[data-dd-clear]");
+    if (meta) { meta.hidden = !!finished; meta.textContent = active.length + " in progress"; }
+    if (clear) clear.hidden = !finished;
+    var list = dd.querySelector("[data-dd-list]");
+    if (list) list.innerHTML = jobs.map(ddJobHtml).join("");
+  }
+  function ddPanelToggle(open) {
+    var dd = document.getElementById("ddProcessing");
+    var panel = dd && dd.querySelector("[data-dd-panel]"), toggle = dd && dd.querySelector("[data-dd-toggle]");
+    if (!panel) return;
+    panel.hidden = open === undefined ? !panel.hidden : !open;
+    if (toggle) toggle.setAttribute("aria-expanded", String(!panel.hidden));
+  }
+  function ddDismiss(ids) {
+    var list = aiLoad();
+    list.forEach(function (r) { if (ids.indexOf(String(r.id)) !== -1) r.dismissed = true; });
+    aiSave(list);
+    aiRenderPill();
+  }
+  document.addEventListener("click", function (e) {
+    if (!(e.target.closest && e.target.closest("#ddProcessing"))) ddPanelToggle(false);
+  }, true);
+  setInterval(function () {
+    var dd = document.getElementById("ddProcessing");
+    if (dd && !dd.hidden) aiRenderPill();
+  }, 30000);
+  // «Not shared» для строк, которые рисует клиент: иконку копируем из серверной разметки
+  function aiStarsIco() { return AI_ICO.stars; }
+  function noShareHtml() {
+    var proto = document.querySelector(".mc-noshare");
+    return proto ? proto.outerHTML : '<span class="mc-noshare">Not shared</span>';
+  }
+  function escHtml(s) {
+    return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  }
+
+  // --- “сборка” коллекции: каналы приезжают по одному, раз в AI_STEP_MS ---
+  // Подбор в реальности идёт долго, поэтому и в прототипе это не одно мгновенное “готово”:
+  // на каждый шаг приходит один канал, до конца подбора коллекция помечена “Collecting data”.
+  function aiSourcingTarget(rec) { return rec.mode === "append" ? rec.target : rec.name; }
+  function aiFoundLeft(rec) {
+    var target = aiSourcingTarget(rec);
+    var have = aiChannelsOf(target);
+    // удалённый вручную канал — исключение подбора: возвращать его нельзя
+    var out = (typeof aiRemovedLoad === "function" ? aiRemovedLoad()[target] : null) || [];
+    return AI_FOUND.filter(function (n) {
+      return have.indexOf(n) === -1 && out.indexOf(n) === -1;
+    });
+  }
+  function aiTick() {
+    var list = aiLoad(), now = Date.now();
+    list.forEach(function (c) {
+      if (c.status !== "pending" || aiTimers[c.id]) return;
+      aiTimers[c.id] = setTimeout(function () { aiStep(c.id); }, Math.max(300, (c.readyAt || now) - now));
+    });
+    aiRenderPill();
+    ceStateSync();
+  }
+  function aiStep(id) {
+    delete aiTimers[id];
+    var rec = null;
+    aiLoad().forEach(function (x) { if (String(x.id) === String(id)) rec = x; });
+    if (!rec || rec.status !== "pending") return;
+    var target = aiSourcingTarget(rec), left = aiFoundLeft(rec), name = left[0];
+    if (name) aiAppendFound(target, rec, [name]);        // aiAppendFound сам пишет состояние
+    var rest = name ? left.slice(1) : [];
+    var done = !rest.length && (!rec.endAt || Date.now() >= rec.endAt - 500);
+    var added = (rec.added || 0) + (name ? 1 : 0);
+    var l2 = aiLoad();
+    l2.forEach(function (x) {
+      if (String(x.id) !== String(id)) return;
+      x.added = added;
+      if (name) x.found = (x.found || []).concat([name]);
+      x.status = done ? "created" : "pending";
+      x.readyAt = done ? 0 : rest.length ? Date.now() + AI_STEP_MS : x.endAt;
+      if (done) x.doneAt = Date.now();
+    });
+    aiSave(l2);
+    if (name) ceOnSourced(target, name);
+    aiRenderPill(); aiRenderCollections(); ceStateSync(); ddStateSync();
+    if (done) {
+      toast(rec.mode !== "append"
+        ? "Sourcing finished — “" + target + "” is ready"
+        : added
+          ? "Sourcing finished — " + added + " channel" + (added === 1 ? "" : "s") + " added to “" + target + "”"
+          : "Sourcing finished — no new channels matched “" + target + "”");
+    } else aiTick();
+  }
+
+  // ================= тарифы (subsub.io/pricing) =================
+  // Переключение для проверки состояний: localStorage.subsub_plan = 'explorer'|'pro'|'business'|'enterprise'
+  // links — сколько ссылок можно вставить за один раз (лимит вставки, не вместимость коллекции)
+  // cols — колонки Basic data, закрытые тарифом (состав с dev-стенда)
+  // colsOff — колонок вовсе нет на этом тарифе: не закрыты замком, а убраны из таблицы
+  var EXPLORER_COLS = ["topics", "viewsg", "vps", "avv", "lastupd"];
+  var EXPLORER_COLS_OFF = ["created", "added"];
+  var PLANS = {
+    explorer:   { label: "Explorer",   colls: 3,        chans: 10,       links: 10,       deep: false, periods: ["30"], cols: EXPLORER_COLS, colsOff: EXPLORER_COLS_OFF },
+    pro:        { label: "Pro",        colls: 5,        chans: 25,       links: 25,       deep: true,  periods: ["7", "30", "90"], cols: null, colsOff: null },
+    business:   { label: "Business",   colls: 15,       chans: 100,      links: 100,      deep: true,  periods: null, cols: null },
+    enterprise: { label: "Enterprise", colls: Infinity, chans: Infinity, links: Infinity, deep: true,  periods: null, cols: null }
+  };
+  var PLAN_NEXT = { explorer: "Pro", pro: "Business", business: "Enterprise", enterprise: null };
+  var PLAN_URL = (function () {
+    try { return new URLSearchParams(location.search).get("plan"); } catch (e) { return null; }
+  })();
+  // ---- демо-режимы: порт помечает <body data-demo="…"> ----
+  // new — новичок на бесплатном тарифе: пустые состояния и всё, что сверх Explorer, закрыто.
+  // empty — те же пустые состояния, но тариф платный: проверяем сами состояния, без пейволов.
+  function demoMode() {
+    var v = document.body ? document.body.getAttribute("data-demo") : "";
+    if (!v) { try { v = new URLSearchParams(location.search).get("demo"); } catch (e) { v = ""; } }
+    return v === "new" || v === "empty" ? v : "";
+  }
+  function demoNew() { return demoMode() === "new"; }
+  // страница показывает пустые состояния в обоих демо-режимах, тариф от этого не зависит
+  function demoBlank() { return demoMode() !== ""; }
+  // В режиме empty нет вообще ничего, даже сэмплов: он нужен, чтобы увидеть пустые
+  // состояния всех страниц. У новичка сэмплы остаются — они выданы всем.
+  function demoNoColls() { return demoMode() === "empty"; }
+  // Демо-версия новичка: статические строки — это данные “взрослого” аккаунта,
+  // поэтому их убираем, а вместо содержимого страницы показываем пустое состояние.
+  function demoStrip() {
+    function rm(el) { if (el && el.parentNode) el.parentNode.removeChild(el); }
+    // свои коллекции убираем, сэмплы оставляем: они выданы всем.
+    // В режиме empty убираем и сэмплы — там проверяются сами пустые состояния.
+    var noColls = demoNoColls();
+    [].slice.call(document.querySelectorAll("[data-mc-row]")).forEach(function (r) {
+      if (noColls || (!r.hasAttribute("data-ai-row") && !r.hasAttribute("data-sample"))) rm(r);
+    });
+    // строки Deep data в сборке есть только у сэмплов: в режиме empty их тоже нет
+    if (noColls) [].slice.call(document.querySelectorAll("[data-an-table-body] .an-tbody .an-tr[data-coll]")).forEach(rm);
+    [].slice.call(document.querySelectorAll("[data-rep-row]")).forEach(rm);
+    // счётчики в табах отчётов тоже обнуляем: отчётов нет
+    [].slice.call(document.querySelectorAll("[data-rep-count]")).forEach(function (b) { b.textContent = "0"; });
+  }
+  function demoBlanks() {
+    if (!demoBlank()) return;
+    var blank = document.querySelector("[data-an-blank]");
+    if (!blank) return;
+    var key = blank.getAttribute("data-an-blank"), colls = aiAllColls();
+    var own = colls.filter(function (c) { return !collIsSample(c.name); });
+    // На My collections полностью пустого списка не бывает — сэмплы выданы всем.
+    // Поэтому там не пустое состояние, а промо-блок “создайте свою” над списком.
+    // в режиме empty коллекций нет совсем — там показываем обычное пустое состояние ниже
+    if (key === "coll" && colls.length) {
+      var promo = !own.length;
+      blank.hidden = !promo;
+      blank.classList.toggle("an-blank--promo", promo);
+      var t = blank.querySelector(".an-blank__title"), x = blank.querySelector(".an-blank__text");
+      if (promo && t) t.textContent = "Create your first collection";
+      if (promo && x) x.textContent = "Sample collections below show how it works. Build your own to track " +
+        "the channels you care about.";
+      return;                              // список сэмплов остаётся на месте
+    }
+    var empty = key === "rep" ? !document.querySelectorAll("[data-rep-row]").length
+      : key === "coll" ? !colls.length
+      : !colls.some(function (c) { return collState(c.name) === "activated"; });
+    blank.hidden = !empty;
+    // прячем всё, кроме шапки и самого пустого состояния
+    [].slice.call(blank.parentNode.children).forEach(function (el) {
+      if (el === blank || el.tagName === "HEADER") return;
+      el.style.display = empty ? "none" : "";
+    });
+  }
+  function demoInit() {
+    if (!demoBlank()) return;
+    demoStrip();
+    demoBlanks();
+    // B14: бейджи считались до вычистки демо-строк — “All collections 4” при двух видимых
+    if (typeof mcCountSync === "function") mcCountSync();
+  }
+  function planId() {
+    // ?plan=explorer живёт только в своей табе и не перебивает соседние
+    if (PLANS[PLAN_URL]) return PLAN_URL;
+    var p;
+    try { p = localStorage.getItem("subsub_plan"); } catch (e) { p = null; }
+    if (PLANS[p]) return p;
+    return demoNew() ? "explorer" : "pro";  // новичок — на бесплатном плане, иначе Pro
+  }
+  function plan() { return PLANS[planId()]; }
+  function planFmt(n) { return n === Infinity ? "unlimited" : String(n); }
+  // сколько коллекций уже есть у пользователя (свои, без семплов)
+  // sample-коллекции выданы всем и в лимит плана не считаются
+  function collIsSample(name) {
+    var base = (typeof aiBaseColls === "function" ? aiBaseColls() : []);
+    for (var i = 0; i < base.length; i++) if (base[i].name === name) return !!base[i].sample;
+    return false;
+  }
+  // свои коллекции в порядке появления: сначала из сборки, потом созданные на клиенте
+  function planOwnNames() {
+    var base = (typeof aiBaseColls === "function" ? aiBaseColls() : []).filter(function (c) { return !c.sample; });
+    var own = aiLoad().filter(function (c) { return c.mode !== "append"; });
+    return base.map(function (c) { return c.name; })
+      .concat(own.map(function (c) { return c.name; }));
+  }
+  function planCollCount() { return planOwnNames().length; }
+  // B12: даунгрейд ничего не удаляет — коллекции сверх нового лимита уходят в режим
+  // “over limit”: внутри можно только удалять каналы и саму коллекцию, остальное
+  // заблокировано с апселлом. Лишние — те, что появились последними.
+  function collOverLimit(name) {
+    var cap = plan().colls;
+    if (cap === Infinity || collIsSample(name)) return false;
+    var i = planOwnNames().indexOf(name);
+    return i !== -1 && i >= cap;
+  }
+  function collOverLimitTip() {
+    return "Over the " + plan().label + " limit of " + planFmt(plan().colls) +
+      " collections — upgrade to use it again";
+  }
+  function planCollsLeft() { return Math.max(0, plan().colls - planCollCount()); }
+  // сколько каналов ещё влезет в коллекцию (для новой — вся вместимость)
+  function planChansLeft(collName) {
+    var cap = plan().chans;
+    if (cap === Infinity) return Infinity;
+    var used = collName ? aiChannelsOf(collName).length : 0;
+    return Math.max(0, cap - used);
+  }
+
+  // ================= P1.4: модалка “New channels” (Add to base) =================
+  // Коллекции не выбраны → каналы уходят только в базу (на проде это addChannelsToBase).
+  // Выбраны → те же ссылки дописываются в каждую выбранную коллекцию.
+  // B11: лимит вставки ссылок за один раз задаёт тариф (было зашито 30).
+  // Это отдельное ограничение от вместимости коллекции: сколько строк примет поле сразу.
+  function ncMax() { return plan().links; }
+  // “N/25” рядом со счётчиком; у Enterprise предела нет — показываем просто N
+  function ncMaxSync() {
+    var max = ncMax();
+    [].slice.call(document.querySelectorAll("[data-nc-max]")).forEach(function (el) {
+      el.textContent = max === Infinity ? "" : "/" + max;   // старая форма «N/25», если где-то осталась
+    });
+    // 4.3: «Paste up to N links at once» — у Enterprise предела нет
+    [].slice.call(document.querySelectorAll("[data-nc-maxn]")).forEach(function (el) {
+      el.textContent = max === Infinity ? "any number of" : planFmt(max);
+    });
+    [].slice.call(document.querySelectorAll("[data-nc-maxn]")).forEach(function (el) {
+      el.textContent = planFmt(max);
+    });
+  }
+  // выбор канала/коллекции в модалках — обычный чекбокс (DS BaseCheckbox)
+  var NC_CHECK_ICO = '<svg viewBox="0 0 24 24" fill="none"><path fill-rule="evenodd" clip-rule="evenodd" d="M20.5334 4.285C21.0807 4.72253 21.1578 5.50641 20.7054 6.03585L10.3685 18.1353L10.3653 18.1389C10.1302 18.412 9.83512 18.631 9.50152 18.7798C9.1679 18.9288 8.80418 19.0039 8.43679 18.9998C8.06339 18.9954 7.69473 18.9091 7.36071 18.7475C7.02782 18.5866 6.73682 18.3549 6.50939 18.07C6.50862 18.069 6.50786 18.0681 6.50709 18.0671L3.27113 14.0428C2.83519 13.5007 2.93616 12.7193 3.49666 12.2977C4.05716 11.876 4.86493 11.9737 5.30087 12.5158L8.46828 16.4549L18.7232 4.45145C19.1756 3.92201 19.9861 3.84749 20.5334 4.285Z" fill="currentColor" /></svg>';
+  function ncCheck(on) { return '<span class="an-check' + (on ? " is-checked" : "") + '" aria-hidden="true">' + NC_CHECK_ICO + "</span>"; }
+  var ncSel = {};            // выбранные коллекции: name → true
+  function ncEl(sel) { var m = document.getElementById("ncModal"); return m ? m.querySelector(sel) : null; }
+  // ссылки: одна строка = один канал; имя канала берём из хэндла или последнего сегмента
+  function ncLinks() {
+    var ta = ncEl("[data-nc-links]");
+    if (!ta) return [];
+    return ta.value.split(/[\s,]+/).map(function (s) { return s.trim(); }).filter(Boolean);
+  }
+  function ncNameFromLink(url) {
+    var m = String(url).match(/@([^/?#]+)/);
+    if (m) return "@" + m[1];
+    var parts = String(url).replace(/[?#].*$/, "").replace(/\/+$/, "").split("/");
+    return parts[parts.length - 1] || url;
+  }
+  function ncRender() {
+    var box = ncEl("[data-nc-items]");
+    if (!box) return;
+    var q = (ncEl("[data-nc-search]") || {}).value || "";
+    var all = (typeof aiAllColls === "function" ? aiAllColls() : []);
+    var wrap = ncEl("[data-nc-search-wrap]");
+    if (wrap) wrap.hidden = all.length < 10;      // поиск появляется от 10 коллекций (как на проде)
+    var list = all.filter(function (c) { return !q || c.name.toLowerCase().indexOf(q.toLowerCase()) !== -1; });
+    var want = ncTab === "base" ? Object.keys(ncBaseSel).length : ncLinks().length;
+    box.innerHTML = list.map(function (c) {
+      var on = !!ncSel[c.name];
+      return collItemHtml("nc", c.name, on, want, aiChannelsOf(c.name).length + (on ? want : 0));
+    }).join("") || '<div class="nc-empty">You have no collection yet.</div>';
+  }
+  // строка выбора коллекции-получателя: одна разметка для обеих модалок.
+  // Причина блокировки (чужая, сверх лимита, идёт процесс, не хватает мест) — в тултипе.
+  function collItemHtml(ns, name, on, want, qty) {
+    var tip = collAddBlockTip(name) || collFitTip(name, want);
+    var up = tip === collOverLimitTip() || tip.indexOf(plan().label) !== -1;
+    return '<button class="nc-item' + (on ? " is-on" : "") + (tip ? " is-off" : "") +
+      '" type="button" data-' + ns + '-item="' + escHtml(name) + '"' +
+      (tip ? ' aria-disabled="true" data-tip="' + escHtml(tip) + '"' + (up ? " data-tip-up" : "") : "") + ">" +
+      ncCheck(on) +
+      '<span class="nc-item__name">' + escHtml(name) + "</span>" +
+      '<span class="nc-item__qty">Channels in collection:&nbsp;' + qty + "</span>" +
+    "</button>";
+  }
+  // D2: второй вход — поиск канала в базе (те же каналы, что в каталоге страницы)
+  var ncBaseSel = {}, ncTab = "links";
+  function ncBaseRender() {
+    var box = ncEl("[data-nc-base]");
+    if (!box) return;
+    var q = ((ncEl("[data-nc-base-search]") || {}).value || "").trim().toLowerCase();
+    var pool = (typeof aiChannelPool === "function" ? aiChannelPool() : []);
+    var list = pool.filter(function (c) { return !q || c.name.toLowerCase().indexOf(q) !== -1; }).slice(0, 40);
+    box.innerHTML = list.map(function (c) {
+      var on = !!ncBaseSel[c.name];
+      return '<button class="nc-baseitem' + (on ? " is-on" : "") + '" type="button" data-nc-base-item="' + escHtml(c.name) + '">' +
+        ncCheck(on) +
+        '<span class="mc-ava nc-baseava" style="background:var(' + (c.color || "--color-avatar-3") + ')">' + escHtml(c.initial || c.name.charAt(0)) + "</span>" +
+        '<span class="nc-item__name">' + escHtml(c.name) + "</span>" +
+        '<span class="nc-subs mc-status mc-status--gray mc-status--sm">' + escHtml(c.subs || "") + " subs</span>" +
+      "</button>";
+    }).join("") || '<div class="nc-empty">' + TBL_NOTHING + "</div>";   // B10: один текст на пустой поиск
+    var cnt = ncEl("[data-nc-base-count]");
+    if (cnt) cnt.textContent = String(Object.keys(ncBaseSel).length);
+    ncSync();
+  }
+  function ncBaseCount() {
+    var cnt = ncEl("[data-nc-base-count]");
+    if (cnt) cnt.textContent = String(Object.keys(ncBaseSel).length);
+    ncSync();
+  }
+  // ---- третий вход: расширение коллекции ИИ-поиском ----
+  // промпт собираем из текущего состояния коллекции: её каналы и (если была) исходная заявка
+  function ncAiPrompt() {
+    var ta = ncEl("[data-nc-ai-prompt]");
+    return ta ? ta.value.trim() : "";
+  }
+  function ncAiDraft() {
+    var coll = ncPageColl(), chans = ncAiRefs();
+    if (!chans.length) return "Channels for “" + coll + "” — same niche, format and audience language. " +
+      "Mid-size creators publishing regularly; exclude compilations and reuploads.";
+    var head = "More channels like " + chans.slice(0, 3).join(", ") +
+      (chans.length > 3 ? " and " + (chans.length - 3) + " more from “" + coll + "”" : "");
+    // 3.4: черновик не тянет предыдущий запрос — иначе промпт склеивается с каждым прогоном
+    return head + " — same niche, format and audience language. " +
+      "Mid-size creators publishing regularly with steady growth; exclude compilations and reuploads.";
+  }
+  function ncAiRefs() {
+    // референс — то, что реально в открытой коллекции: строки таблицы, иначе состояние
+    var out = [].slice.call(document.querySelectorAll("[data-ce-row] .ce-chan__name")).map(function (n) {
+      return n.textContent.trim();
+    });
+    if (out.length) return out;
+    return (typeof aiChannelsOf === "function" ? aiChannelsOf(ncPageColl()) : []);
+  }
+  function ncAiRefsRender() {
+    var box = ncEl("[data-nc-ai-refs]"), cnt = ncEl("[data-nc-ai-cnt]");
+    if (!box) return;
+    var list = ncAiRefs(), pool = (typeof aiChannelPool === "function" ? aiChannelPool() : []);
+    if (cnt) cnt.textContent = String(list.length);
+    var shown = list.slice(0, 8);
+    box.innerHTML = shown.map(function (n) {
+      var meta = null;
+      for (var i = 0; i < pool.length; i++) if (pool[i].name === n) meta = pool[i];
+      var ava = '<span class="mc-ava" style="background:var(' + ((meta && meta.color) || "--color-avatar-3") + ')">' +
+        escHtml((meta && meta.initial) || n.charAt(0)) + "</span>";
+      return '<span class="nc-ai__chip">' + ava + escHtml(n) + "</span>";
+    }).join("") + (list.length > shown.length
+      ? '<span class="nc-ai__chip nc-ai__chip--more">+' + (list.length - shown.length) + " more</span>" : "");
+  }
+  // открытие таба: референсы и черновик промпта (правки пользователя не перетираем)
+  function ncAiPrepare() {
+    ncAiRefsRender();
+    var ta = ncEl("[data-nc-ai-prompt]");
+    if (ta && !ta.value.trim()) ta.value = ncAiDraft();
+  }
+  var ncAiRegenT = null;
+  function ncAiRegen() {
+    var btn = ncEl("[data-nc-ai-regen]"), ta = ncEl("[data-nc-ai-prompt]");
+    if (!btn || !ta || ncAiRegenT) return;
+    var was = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = "Reading the collection…";
+    ta.value = "";
+    ta.placeholder = "Reading the collection…";
+    ncSync();
+    ncAiRegenT = setTimeout(function () {
+      ncAiRegenT = null;
+      btn.disabled = false;
+      btn.innerHTML = was;
+      ta.placeholder = "Describe the channels you want to add";
+      ta.value = ncAiDraft();
+      ncAiRefsRender();
+      ncSync();
+      toast("Prompt rebuilt from the collection — edit it before starting");
+    }, 1400);
+  }
+  // B13: фильтры берём из общей модели шага 2 — той же, что у модалки создания
+  function ncAiFilters() {
+    ffHost("ncModal");
+    return aiFormFilters();
+  }
+  // запуск: та же очередь sourcing, что у AI-коллекции, только в режиме “дописать в коллекцию”
+  function ncAiStart() {
+    var coll = ncPageColl(), query = ncAiPrompt();
+    if (!coll || !query) { toast("Describe the channels you're looking for"); return; }
+    var tip = collSourceBlockTip(coll);
+    if (tip) { toast(tip); return; }                 // подбор или сбор уже идёт
+    // активированная коллекция: сначала диалог Deactivate / Duplicate
+    if (collState(coll) === "activated") {
+      awAsk([], [coll], function () { ncAiRun(coll, query); });
+      return;
+    }
+    ncAiRun(coll, query);
+  }
+  function ncAiRun(coll, query) {
+    ffHost("ncModal");
+    var now = Date.now(), d = new Date(now);
+    var list = aiLoad();
+    list.push({ id: "ai" + now, mode: "append", target: coll, name: coll, isAi: false,
+                query: query, seed: "", filters: ncAiFilters(), status: "pending",
+                startAt: now, readyAt: now + AI_STEP_MS, endAt: now + AI_RUN_MS,
+                created: ("0" + d.getDate()).slice(-2) + "." + ("0" + (d.getMonth() + 1)).slice(-2) + "." + d.getFullYear() });
+    // параметры запуска пишем сразу: из них рисуется блок “Last sourcing” на странице
+    var extra = aiExtraLoad();
+    extra[coll] = extra[coll] || { channels: [] };
+    extra[coll].sourcing = { query: query, filters: ncAiFilters() };
+    aiExtraSave(extra);
+    aiSave(list);
+    closeModal(document.getElementById("ncModal"));
+    toast("Sourcing started — new channels will be added to “" + coll + "”");
+    aiTick();
+    // страница должна показать состояние сразу, а не после перезагрузки: плашка
+    // “Sourcing channels”, скелетоны, блок последнего подбора и заблокированные кнопки
+    collSurfaces();
+    aiRenderCollectionView();
+  }
+  function ncSetTab(tab) {
+    ncTab = tab;
+    [].slice.call(document.querySelectorAll("[data-nc-tab]")).forEach(function (b) {
+      b.classList.toggle("is-active", b.getAttribute("data-nc-tab") === tab);
+    });
+    [].slice.call(document.querySelectorAll("[data-nc-pane]")).forEach(function (pane) {
+      pane.hidden = pane.getAttribute("data-nc-pane") !== tab;
+    });
+    var selw = document.querySelector("[data-nc-selwrap]");
+    if (selw) selw.hidden = tab !== "base";
+    var sb = ncEl("[data-nc-submit]");
+    if (sb) sb.textContent = tab === "ai" ? "Start sourcing" : "Add channels";
+    if (tab === "ai") ncAiPrepare();
+    ncSync();
+    ffHost("ncModal");
+    ffBtnSync();                             // “Set filters” видно только на табе с промптом
+  }
+  function ncSync() {
+    if (ncTab === "ai") {
+      var sbAi = ncEl("[data-nc-submit]");
+      if (sbAi) sbAi.disabled = !ncAiPrompt();
+      return;
+    }
+    var n = ncTab === "base" ? Object.keys(ncBaseSel).length : ncLinks().length;
+    var cnt = ncEl("[data-nc-count]"); if (cnt) cnt.textContent = String(ncLinks().length);
+    ncMaxSync();
+    var lim = ncEl("[data-nc-limit]"); if (lim) lim.hidden = ncLinks().length <= ncMax();
+    var sub = ncEl("[data-nc-submit]"); if (sub) sub.disabled = n === 0 || n > ncMax();
+    ncRender();
+  }
+  // на странице коллекции цель одна — сама коллекция, списка выбора нет (P1.11)
+  function ncCollPage() {
+    var m = document.getElementById("ncModal");
+    return !!(m && m.hasAttribute("data-nc-collpage"));
+  }
+  function ncPageColl() {
+    var n = document.querySelector("[data-ce-title]");   // имя коллекции теперь в H1, а не в поле
+    return n ? (n.textContent || "").trim() : "";
+  }
+  function ncOpen() {
+    ncSel = {};
+    var ta = ncEl("[data-nc-links]"); if (ta) ta.value = "";
+    var sq = ncEl("[data-nc-search]"); if (sq) sq.value = "";
+    if (ncCollPage()) {
+      var t = ncEl("[data-nc-title]"), nm = ncPageColl();
+      if (t) t.textContent = nm ? "Add channels to " + nm : "Add channels";
+    }
+    ncNewForm(false);
+    ncBaseSel = {};
+    var bq = ncEl("[data-nc-base-search]"); if (bq) bq.value = "";
+    var aiTa2 = ncEl("[data-nc-ai-prompt]");
+    if (aiTa2) aiTa2.value = "";                 // промпт пересобираем от текущего состояния коллекции
+    // B13: фильтры подбора здесь такие же, как в модалке создания — второй шаг, а не аккордеон
+    ffHost("ncModal");
+    ffReset();
+    if (document.querySelector("[data-nc-tab]")) {
+      // открываемся на первом табе: на странице коллекции это ИИ-расширение
+      ncSetTab(document.querySelector('[data-nc-tab="ai"]') ? "ai" : "links");
+      ncBaseRender();
+    }
+    ncSync();
+    ffStep(1, ncAiPrompt());                     // всегда открываемся на форме, не на фильтрах
+    openModal("ncModal");
+    var focusEl = ncTab === "ai" ? ncEl("[data-nc-ai-prompt]") : ta;
+    if (focusEl) focusEl.focus();
+  }
+  function ncNewForm(open) {
+    var f = ncEl("[data-nc-new-form]"), b = ncEl("[data-nc-new-open]");
+    if (f) f.hidden = !open;
+    if (b) b.hidden = !!open;
+    var i = ncEl("[data-nc-new-name]");
+    if (i) { i.value = ""; if (open) i.focus(); }
+  }
+  function ncCreate() {
+    var i = ncEl("[data-nc-new-name]");
+    var name = i ? i.value.trim() : "";
+    if (!name) return;
+    if (aiAllColls().some(function (c) { return c.name === name; })) { toast("Collection with this name already exists"); return; }
+    aiCreatePlain(name);
+    ncSel[name] = true;                            // созданную сразу считаем выбранной
+    ncNewForm(false);
+    ncSync();
+    toast("Collection created successfully");
+  }
+  // допись произвольных каналов (не из sourcing) в коллекцию
+  function ncAppend(target, names) {
+    var have = aiChannelsOf(target), extra = aiExtraLoad();
+    var slot = extra[target] || { channels: [] };
+    names.forEach(function (n) {
+      if (have.indexOf(n) === -1 && slot.channels.indexOf(n) === -1) slot.channels.push(n);
+    });
+    extra[target] = slot;
+    aiExtraSave(extra);
+    var list = aiLoad(), touched = false;
+    list.forEach(function (x) {
+      if (x.mode !== "append" && x.name === target) { x.channels = aiChannelsOf(target); touched = true; }
+    });
+    if (touched) aiSave(list);
+  }
+  function ncSubmit() {
+    if (ncTab === "ai") { ncAiStart(); return; }
+    // D2: из таба “Find in base” берём выбранные каналы, иначе — разобранные ссылки
+    var names;
+    if (ncTab === "base") {
+      names = Object.keys(ncBaseSel).filter(function (n) { return ncBaseSel[n]; });
+      if (!names.length) return;
+    } else {
+      var links = ncLinks();
+      if (!links.length || links.length > ncMax()) return;
+      names = links.map(ncNameFromLink);
+    }
+    // на странице коллекции добавляем в неё же и дорисовываем строки таблицы
+    if (ncCollPage()) {
+      // за лимит плана коллекцию не наполняем
+      if (document.querySelector("[data-ce-limit]") && names.length > ceLimitLeft()) {
+        var left = ceLimitLeft();
+        toast(left
+          ? "Only " + left + (left === 1 ? " more channel fits" : " more channels fit") + " on " + plan().label
+          : collFullTip());
+        return;
+      }
+      var coll = ncPageColl();
+      ncBaseSel = {};
+      closeModal(document.getElementById("ncModal"));
+      awAsk(names, coll ? [coll] : [], function () {
+        if (coll) ncAppend(coll, names);
+        ceAddRows(names);
+        toastAdded(names.length, coll || ceName());
+      });
+      return;
+    }
+    var targets = Object.keys(ncSel).filter(function (n) { return ncSel[n]; });
+    // повторное открытие — с чистого листа
+    ncBaseSel = {};
+    closeModal(document.getElementById("ncModal"));
+    awAsk(names, targets, function () {
+      targets.forEach(function (t) { ncAppend(t, names); });
+      toast(targets.length
+        ? "Channels added successfully"
+        : names.length + (names.length === 1 ? " channel" : " channels") + " sent to base");
+      if (typeof aiRenderCollections === "function") aiRenderCollections();
+    });
+  }
+
+  // ================= A8: “Add N channels to collection” из футера выбора =================
+  var acSel = {};
+  function acEl(sel) { var m = document.getElementById("acModal"); return m ? m.querySelector(sel) : null; }
+  // имя канала в строке верстается по-разному: Basic — .an-chan__name, Deep и Videos — .and-chan,
+  // страница коллекции — .ce-chan__name. Иначе выбор на Deep data приходил пустым.
+  // порядок важен: на Deep data .and-chan — обёртка с буквой аватара, имя лежит в ссылке внутри
+  var AC_NAME_SEL = [".an-chan__name", ".and-chan__link", ".ce-chan__name", ".and-chan"];
+  function acRowName(row) {
+    for (var i = 0; i < AC_NAME_SEL.length; i++) {
+      var el = row.querySelector(AC_NAME_SEL[i]);
+      if (el) return el.textContent.trim();
+    }
+    return "";
+  }
+  function acChecked() {
+    return [].slice.call(document.querySelectorAll("[data-an-check].is-checked")).map(function (b) {
+      var row = b.closest(".an-tr");
+      return row ? acRowName(row) : "";
+    }).filter(Boolean);
+  }
+  function acRender() {
+    var box = acEl("[data-ac-items]");
+    if (!box) return;
+    var picked = acChecked().length;
+    var q = (acEl("[data-ac-search]") || {}).value || "";
+    var all = (typeof aiAllColls === "function" ? aiAllColls() : []);
+    var wrap = acEl("[data-ac-search-wrap]");
+    if (wrap) wrap.hidden = all.length < 10;
+    var list = all.filter(function (c) { return !q || c.name.toLowerCase().indexOf(q.toLowerCase()) !== -1; });
+    box.innerHTML = list.map(function (c) {
+      var on = !!acSel[c.name];
+      return collItemHtml("ac", c.name, on, picked, aiChannelsOf(c.name).length + (on ? picked : 0));
+    }).join("") || '<div class="nc-empty">You have no collection yet.</div>';
+    var sub = acEl("[data-ac-submit]");
+    if (sub) {
+      var n = Object.keys(acSel).length;
+      sub.disabled = !n || !picked;
+      sub.textContent = picked ? "Add " + picked + (picked === 1 ? " channel" : " channels") : "Add channels";
+    }
+  }
+  function acNewForm(open) {
+    var f = acEl("[data-ac-new-form]"), b = acEl("[data-ac-new-open]");
+    if (f) f.hidden = !open;
+    if (b) b.hidden = !!open;
+    var i = acEl("[data-ac-new-name]");
+    if (i) { i.value = ""; if (open) i.focus(); }
+  }
+  function acCreate() {
+    var i = acEl("[data-ac-new-name]"), name = i ? i.value.trim() : "";
+    if (!name) return;
+    if (aiAllColls().some(function (c) { return c.name === name; })) { toast("Collection with this name already exists"); return; }
+    aiCreatePlain(name);
+    acSel[name] = true;
+    acNewForm(false);
+    acRender();
+    toast("Collection created successfully");
+  }
+  function acOpen() {
+    var picked = acChecked();
+    if (!picked.length) return;
+    acSel = {};
+    var t = acEl("[data-ac-title]");
+    if (t) t.textContent = "Add " + picked.length + (picked.length === 1 ? " channel" : " channels") + " to collection";
+    var sq = acEl("[data-ac-search]"); if (sq) sq.value = "";
+    acNewForm(false);
+    acRender();
+    openModal("acModal");
+  }
+  function acSubmit() {
+    var picked = acChecked();
+    var targets = Object.keys(acSel).filter(function (n) { return acSel[n]; });
+    if (!picked.length || !targets.length) return;
+    awAsk(picked, targets, function () { acApply(picked, targets); });
+  }
+  function acApply(picked, targets) {
+    targets.forEach(function (t) { ncAppend(t, picked); });
+    closeModal(document.getElementById("acModal"));
+    // выбор снимаем — как на проде после успешного добавления
+    [].slice.call(document.querySelectorAll("[data-an-check], [data-an-check-all]")).forEach(function (b) { b.classList.remove("is-checked"); });
+    markSelected();
+    updateFooter();
+    if (typeof dpFooter === "function") dpFooter();
+    if (typeof aiRenderCollections === "function") aiRenderCollections();
+    toastAdded(picked.length,
+          (targets.length === 1 ? targets[0] : targets.length + " collections"));
+  }
+
+  // допись найденных каналов в существующую коллекцию: дубликаты не добавляем
+  function aiAppendFound(target, rec, names) {
+    var have = aiChannelsOf(target), added = [], skipped = 0;
+    (names || AI_FOUND).forEach(function (n) {
+      if (have.indexOf(n) === -1 && added.indexOf(n) === -1) added.push(n);
+      else skipped++;
+    });
+    var extra = aiExtraLoad();
+    var slot = extra[target] || { channels: [] };
+    added.forEach(function (n) { if (slot.channels.indexOf(n) === -1) slot.channels.push(n); });
+    // источник добавленных каналов — показываем в представлении коллекции
+    slot.sourcing = { query: rec.query, filters: rec.filters };
+    extra[target] = slot;
+    aiExtraSave(extra);
+    // если целевая коллекция живёт в состоянии — синхронизируем её каналы
+    var list = aiLoad(), touched = false;
+    list.forEach(function (x) {
+      if (x.mode !== "append" && x.name === target) {
+        x.channels = aiChannelsOf(target);
+        if (!x.query) x.query = rec.query;
+        touched = true;
+      }
+    });
+    if (touched) aiSave(list);
+    return { added: added.length, skipped: skipped, names: added };
+  }
+
+  // --- My collections: строки AI-коллекций (сверху списка) ---
+  // чипы Includes: до 2 каналов + “+N”
+  function aiChipsHtml(c) {
+    if (c.status === "pending") return '<span class="an-muted">—</span>';
+    var ch = c.channels || [];
+    if (!ch.length) return '<span class="an-muted">No channels yet</span>';
+    var out = '<span class="mc-chips__list">' +
+      ch.slice(0, 2).map(function (n) { return '<span class="mc-chip">' + escHtml(n) + '</span>'; }).join("") + '</span>';
+    if (ch.length > 2) out += '<span class="mc-chip mc-chip--more" title="' + (ch.length - 2) + ' more channels">+' + (ch.length - 2) + '</span>';
+    return out;
+  }
+  // существующие коллекции, в которые сейчас идёт подбор: временно показываем “Sourcing…”,
+  // после завершения возвращаем исходный статус и обновляем Quantity/Includes
+  // состояние в списке всегда считаем из модели: и для строк сборки, и для AI-коллекций
+  function mcPaintStates() {
+    var rows = document.querySelectorAll("[data-mc-row]");
+    for (var i = 0; i < rows.length; i++) {
+      var row = rows[i], nm = row.getAttribute("data-name") || "";
+      var holder = row.children[1] ? row.children[1].querySelector(".mc-statuscell") : null;
+      if (!holder || !nm) continue;
+      holder.innerHTML = collPillHtml(nm, { readonly: row.hasAttribute("data-sample") });
+      var more = row.querySelector("[data-mc-more]");
+      if (more) more.setAttribute("data-status", collState(nm));
+      mcOverBadge(row, nm);
+    }
+  }
+  // B12: пометка “сверх лимита” в строке списка — рядом с названием
+  function mcOverBadge(row, nm) {
+    var cell = row.children[0];
+    if (!cell) return;
+    var badge = cell.querySelector("[data-mc-over]");
+    var over = collOverLimit(nm);
+    row.classList.toggle("is-overlimit", over);
+    // шеринг — отдельная иконка в строке, её тоже гасим
+    var sh = row.querySelector("[data-mc-share-btn]");
+    if (sh) { offSet(sh, over); tipSet(sh, over ? collOverLimitTip() : "", over); }
+    if (!over) { if (badge) badge.parentNode.removeChild(badge); return; }
+    if (!badge) {
+      badge = document.createElement("span");
+      badge.className = "mc-over";
+      badge.setAttribute("data-mc-over", "");
+      badge.setAttribute("data-tip-up", "");
+      badge.textContent = "Over plan limit";
+      cell.appendChild(badge);
+    }
+    badge.setAttribute("data-tip", collOverLimitTip());
+  }
+  function aiPaintTargets() {
+    var busy = aiSourcingNames(), rows = document.querySelectorAll("[data-mc-row]");
+    for (var i = 0; i < rows.length; i++) {
+      var row = rows[i];
+      if (row.hasAttribute("data-ai-row")) continue;           // AI-строки рисует aiRenderCollections
+      var nm = row.getAttribute("data-name");
+      var holder = row.children[1] ? row.children[1].querySelector(".mc-statuscell") : null;
+      if (!holder) continue;
+      if (busy[nm]) {
+        if (row._origStatus == null) row._origStatus = holder.innerHTML;
+        holder.innerHTML = collPillHtml(nm);
+      } else if (row._origStatus != null) {
+        holder.innerHTML = row._origStatus;
+        row._origStatus = null;
+      }
+      // Quantity/Includes для дописанных коллекций пересчитываем ВСЕГДА (в т.ч. после перезагрузки),
+      // иначе строка показывала бы прежние числа
+      if (!busy[nm]) aiPaintAppended(row, nm);
+    }
+  }
+  // базовый размер коллекции (из сида билда) + дописанные подбором каналы
+  function aiPaintAppended(row, nm) {
+    var extra = aiExtraLoad()[nm];
+    if (!extra || !extra.channels || !extra.channels.length) return;
+    var base = null;
+    aiBaseColls().forEach(function (c) { if (c.name === nm) base = c; });
+    var tds = row.querySelectorAll(".an-td");
+    var total = (base ? base.qty : 0) + extra.channels.length;
+    if (tds[2]) tds[2].textContent = String(total);
+    var chips = null;                       // ячейки Includes больше нет
+    if (chips) {
+      var head = (base ? base.channels : []).slice(0, 2);
+      chips.innerHTML = '<span class="mc-chips__list">' +
+        head.map(function (n) { return '<span class="mc-chip">' + escHtml(n) + '</span>'; }).join("") + '</span>' +
+        (total > head.length ? '<span class="mc-chip mc-chip--more" title="' + (total - head.length) +
+          ' more channels">+' + (total - head.length) + '</span>' : "");
+    }
+  }
+
+  function aiRenderCollections() {
+    var tbody = document.querySelector("[data-mc-tbody]");
+    if (!tbody) return;
+    var old = tbody.querySelectorAll("[data-ai-row]");
+    for (var i = 0; i < old.length; i++) old[i].remove();
+    var list = aiLoad();
+    // идём от старых к новым и вставляем каждую строку в начало → новые оказываются сверху
+    for (var j = 0; j < list.length; j++) {
+      var c = list[j];
+      if (c.mode === "append") continue;          // допись в существующую — своей строки нет
+      var row = document.createElement("div");
+      row.className = "an-tr";
+      row.setAttribute("data-mc-row", "");
+      row.setAttribute("data-ai-row", "");
+      row.setAttribute("data-name", c.name);
+      row.innerHTML =
+        // AI-коллекции видно в списке: состав собран подбором, а не руками
+        '<div class="an-td an-td--grow" style="width:240px">' +
+          '<span class="mc-name">' + escHtml(c.name) + '</span>' +
+          (c.isAi ? '<span class="ai-badge ai-badge--sm" title="Channels found by AI sourcing">' +
+            aiStarsIco() + "AI</span>" : "") + '</div>' +
+        '<div class="an-td" style="width:320px"><div class="mc-statuscell">' + collPillHtml(c.name) + '</div></div>' +
+        '<div class="an-td" style="width:120px">' + String(aiChannelsOf(c.name).length) + '</div>' +
+
+        '<div class="an-td" style="width:140px">' + escHtml(c.created) + '</div>' +
+        '<div class="an-td" style="width:160px"><span class="mc-owner"><span class="mc-ava" style="background:var(--color-avatar-1)">Y</span><span class="mc-owner__name">You</span></span></div>' +
+        // “Not shared” — как в сборке: иконку берём из уже отрисованной строки
+        '<div class="an-td" style="width:150px">' + noShareHtml() + '</div>' +
+        '<div class="an-td mc-acts" style="width:120px">' +
+          '<button class="mc-more" type="button" aria-label="Share collection" title="Share" data-mc-share-btn>' +
+            (document.querySelector("[data-mc-share-btn]") ? document.querySelector("[data-mc-share-btn]").innerHTML : "") + '</button>' +
+          '<button class="mc-more" type="button" aria-label="Actions" data-mc-more data-status="' +
+            escHtml(c.status) + '" data-name="' + escHtml(c.name) + '">' +
+            (document.querySelector("[data-mc-more]") ? document.querySelector("[data-mc-more]").innerHTML : "") + '</button>' +
+        '</div>';
+      tbody.insertBefore(row, tbody.firstChild);
+    }
+    mcPaintStates();
+    demoBlanks();
+    if (typeof tblApply === "function" && tblBody("coll")) { tblApply("coll"); tblHug("coll"); }
+    mcCountSync();
+  }
+
+  // --- Deep data: блок Query + фильтры + бейдж (только для AI-коллекций) ---
+  function aiRenderCollectionView() {
+    var block = document.querySelector("[data-ai-block]");
+    var badge = document.querySelector("[data-ai-badge]");
+    if (!block && !badge) return;
+    var qs = new URLSearchParams(window.location.search);
+    var id = qs.get("ai"), nameParam = qs.get("name");
+    // на странице коллекции имя берём из заголовка: ссылка может быть без параметров
+    if (!nameParam && document.querySelector("[data-ce-title]")) nameParam = ceName();
+    var c = id ? aiById(id) : null;
+    var isAiColl = !!c && c.isAi !== false;
+    if (!c && nameParam) {                       // коллекция, в которую подбирали каналы
+      var extra = aiExtraLoad()[nameParam];
+      var own = aiCollByName(nameParam);
+      var src = (extra && extra.sourcing) || (own && own.query ? { query: own.query, filters: own.filters } : null);
+      if (src && src.query) {
+        c = { name: nameParam, query: src.query, filters: src.filters || {} };
+        isAiColl = !!(own && own.isAi);
+      }
+    }
+    if (!c) { if (block) block.hidden = true; if (badge) badge.hidden = true; return; }
+    if (badge) badge.hidden = !isAiColl;         // бейдж только у коллекций, созданных автоподбором
+    var nameEl = document.querySelector("[data-ai-collname]");
+    if (nameEl) nameEl.textContent = c.name;
+    if (block) {
+      block.hidden = false;
+      var q = block.querySelector("[data-ai-block-query]");
+      if (q) q.textContent = c.query;
+      var chips = block.querySelector("[data-ai-block-chips]");
+      if (chips) {
+        var arr = aiChips(c.filters || {});
+        chips.innerHTML = arr.length
+          ? arr.map(function (t) { return '<span class="ai-chip">' + escHtml(t) + '</span>'; }).join("")
+          : '<span class="ai-chip">no filters</span>';
+      }
+    }
+  }
+
+  // --- модалка ---
+  function aiEl(sel) { return document.querySelector(sel); }
+  function aiTxt(sel) { var e = aiEl(sel); return e ? String(e.value || "").trim() : ""; }
+
+  // ===== поле описания: 4 состояния (покой → фокус/ввод → генерация → готово) =====
+  // Примеры и “думающие” сообщения показываем ТОЛЬКО как placeholder/вспомогательный текст,
+  // чтобы пользователь не мог их случайно стереть (в value они не попадают).
+  var AI_PH_IDLE = [
+    "e.g. Fortnite gamers — US",
+    "e.g. Turkish TV series",
+    "e.g. Thai food cooking",
+    "e.g. budget-phone reviews"
+  ];
+  var AI_PH_THINK = ["Reading the channel…", "Finding similar creators…", "Picking examples…", "Almost there…"];
+  var aiPhTimer = null, aiThinkTimer = null, aiGenTimer = null;
+  var aiPhIdx = 0, aiThinkIdx = 0, aiGenBusy = false;
+
+  function aiTa() { return aiEl("[data-ai-query]"); }
+
+  // ===== REFERENCE CHANNELS — единый контейнер примеров =====
+  // Питает описание: как только есть хотя бы один референс, запускается тот же подбор
+  // (лоадер + “думающие” сообщения). Добавление/удаление перезапускает подбор.
+  var aiRefs = [];
+  var AI_REF_COLORS = ["--color-avatar-1", "--color-avatar-3", "--color-avatar-5"];
+  function aiRefKey(n) { return String(n).trim().toLowerCase(); }
+  function aiRefAdd(name, initial, color) {
+    var nm = String(name || "").trim();
+    if (!nm) return false;
+    for (var i = 0; i < aiRefs.length; i++) if (aiRefKey(aiRefs[i].name) === aiRefKey(nm)) return false; // без дублей
+    aiRefs.push({
+      name: nm,
+      initial: (initial || nm.replace(/^@/, "").charAt(0) || "?").toUpperCase(),
+      color: color || AI_REF_COLORS[aiRefs.length % AI_REF_COLORS.length]
+    });
+    return true;
+  }
+  // поле ввода референса: раскрыть / свернуть обратно в кнопку
+  function aiRefFormToggle(open) {
+    var btn = aiEl("[data-ai-ref-open]"), form = aiEl("[data-ai-ref-form]"), inp = aiEl("[data-ai-refseed]");
+    if (!btn || !form) return;
+    form.hidden = !open;
+    btn.hidden = !!open;
+    if (open && inp) { inp.value = ""; inp.focus(); }
+    var emptyHint = aiEl("[data-ai-refs-empty]");
+    if (emptyHint) emptyHint.hidden = !!open || aiRefs.length > 0;   // при открытом поле подсказка лишняя
+    if (!open && inp) inp.value = "";
+    aiSync();
+  }
+  // каналы для подсказок (те же, что в таблице Basic data — их отдаёт билд)
+  function aiChannelPool() {
+    var c = window.SUBSUB_CHANNELS;
+    return Object.prototype.toString.call(c) === "[object Array]" ? c : [];
+  }
+  // Ввод названия → выпадающий список каналов; ввод ссылки → просто активная кнопка “Add”.
+  function aiRefSuggest() {
+    var inp = aiEl("[data-ai-refseed]"), box = aiEl("[data-ai-ref-sug]");
+    if (!inp || !box) return;
+    var v = String(inp.value || "").trim();
+    if (!v || aiSeedIsUrl(v)) { box.hidden = true; box.innerHTML = ""; return; }   // ссылка — подсказки не нужны
+    var q = v.toLowerCase();
+    var hits = aiChannelPool().filter(function (c) {
+      if (c.name.toLowerCase().indexOf(q) === -1) return false;
+      for (var i = 0; i < aiRefs.length; i++) if (aiRefKey(aiRefs[i].name) === aiRefKey(c.name)) return false; // уже добавлен
+      return true;
+    }).slice(0, 6);
+    if (!hits.length) {
+      box.innerHTML = '<div class="ai-refs__sugempty">' + TBL_NOTHING + "</div>";
+      box.hidden = false;
+      return;
+    }
+    box.innerHTML = hits.map(function (c) {
+      return '<button class="ai-refs__sugopt" type="button" role="option" data-ai-ref-pick="' + escHtml(c.name) + '"' +
+             ' data-initial="' + escHtml(c.initial || "") + '" data-color="' + escHtml(c.color || "") + '">' +
+             '<span class="ai-ref__ava" style="background:var(' + (c.color || "--color-avatar-1") + ')">' + escHtml(c.initial || "?") + '</span>' +
+             '<span>' + escHtml(c.name) + '</span></button>';
+    }).join("");
+    box.hidden = false;
+    if (inp) inp.setAttribute("aria-expanded", "true");
+  }
+  function aiRefSugHide() {
+    var box = aiEl("[data-ai-ref-sug]");
+    if (box) { box.hidden = true; box.innerHTML = ""; }
+    var i2 = aiEl("[data-ai-refseed]"); if (i2) i2.setAttribute("aria-expanded", "false");
+  }
+  function aiRenderRefs() {
+    var box = aiEl("[data-ai-refs-list]"), empty = aiEl("[data-ai-refs-empty]");
+    if (!box) return;
+    box.innerHTML = aiRefs.map(function (r, i) {
+      return '<span class="ai-ref">' +
+        '<span class="ai-ref__ava" style="background:var(' + r.color + ')">' + escHtml(r.initial) + '</span>' +
+        '<span class="ai-ref__name">' + escHtml(r.name) + '</span>' +
+        '<button class="ai-ref__x" type="button" data-ai-ref-del="' + i + '" aria-label="Remove ' + escHtml(r.name) + '">' + AI_ICO.x + '</button>' +
+      '</span>';
+    }).join("");
+    if (empty) empty.hidden = aiRefs.length > 0;
+  }
+  // черновик описания по набору референсов
+  // режим модалки: single (ссылка + Auto-fill) / refs (секция Reference channels)
+  function aiMode() {
+    var m = document.getElementById("aiModal");
+    return (m && m.getAttribute("data-ai-mode")) || "single";
+  }
+  function aiSetMode(mode) {
+    var m = document.getElementById("aiModal");
+    if (m) m.setAttribute("data-ai-mode", mode);
+  }
+  // Одна модалка, два входа: “Create Collection” и “Find similar channels” из выбора в таблице.
+  // У поиска похожих своя шапка и своя кнопка — как было до объединения модалок.
+  var AI_COPY = {
+    create: {
+      title: "Create collection",
+      sub: "Describe what you need and we'll find it, or paste channel links you already have.",
+      submit: "Create collection"
+    },
+    similar: {
+      title: "Set up collection sourcing",
+      sub: "Describe the channels you want — we'll find and collect them for you.",
+      submit: "Start sourcing"
+    },
+    pick: {
+      title: "Create collection",
+      sub: "The channels you selected will go into the new collection.",
+      submit: "Create collection"
+    }
+  };
+  var ccModeName = "create";
+  // Второй шаг живёт только у таба “Describe with AI”: у вставки ссылок фильтровать нечего.
+  // Сам переход общий для обеих модалок — см. ffStep.
+  function ccStep(n) {
+    ffHost("aiModal");
+    ffStep(n, aiTxt("[data-ai-query]"));
+  }
+  function ccMode(mode) {
+    var m = document.getElementById("aiModal");
+    if (!m) return;
+    ccModeName = AI_COPY[mode] ? mode : "create";
+    var c = AI_COPY[mode] || AI_COPY.create;
+    var ttl = m.querySelector(".ai-title"), sub = m.querySelector(".ai-sub");
+    var sbm = m.querySelector("[data-ai-submit]");
+    if (ttl) ttl.textContent = c.title;
+    if (sub) sub.textContent = c.sub;
+    if (sbm) sbm.textContent = c.submit;
+    // у поиска похожих нет вставки ссылок: каналы-референсы уже выбраны в таблице,
+    // а у коллекции из выбора нет ни промпта, ни ссылок — только имя и список каналов
+    var tabs = m.querySelector("[data-cc-tabs]");
+    if (tabs) tabs.hidden = mode !== "create";
+    if (mode === "similar") ccSetTab("ai");
+    ccSubmitLbl();
+    if (mode === "pick") {
+      [].slice.call(m.querySelectorAll("[data-cc-pane]")).forEach(function (pane) { pane.hidden = true; });
+    }
+    ccStep(1);
+    ccFiltersBtnSync();
+    var body = m.querySelector(".ai-form");
+    if (body) body.classList.toggle("ai-form--steps", mode !== "pick");
+    ccLimitSync();
+    aiRenderDest();
+  }
+  // черновик по одной ссылке (режим single) — варьируем по домену/хендлу
+  function aiDraftFromSeed(seed) {
+    var handle = (seed.match(/@([\w.\-]+)/) || [])[1] || "";
+    var host = (seed.match(/^(?:https?:\/\/)?(?:www\.)?([^\/\s]+)/i) || [])[1] || "";
+    var who = handle ? "@" + handle : (host || "this channel");
+    if (/twitch|tiktok|instagram/i.test(host)) {
+      return "Creators like " + who + " — same format and audience, cross-posting to YouTube. " +
+             "Regular uploads, engaged comments; skip clip-farm and reupload accounts.";
+    }
+    return "Channels similar to " + who + " — same niche, format and audience language. " +
+           "Mid-size creators publishing regularly with steady growth; exclude compilations and reuploads.";
+  }
+  function aiDraftFromRefs() {
+    if (!aiRefs.length) return "";
+    var names = aiRefs.map(function (r) { return r.name; });
+    var head = names.length === 1
+      ? "Channels similar to " + names[0]
+      : "Channels similar to " + names.slice(0, 3).join(", ") + (names.length > 3 ? " and " + (names.length - 3) + " more" : "");
+    return head + " — same niche, format and audience language. " +
+           "Mid-size creators publishing regularly with steady growth; exclude compilations and reuploads.";
+  }
+  // изменение набора референсов → перезапуск подбора описания
+  function aiRefsChanged() {
+    aiRenderRefs();
+    aiSync();
+    if (aiRefs.length) aiGenStart();
+    else if (aiGenBusy) aiGenCancel();
+  }
+  function aiGenCancel() {
+    if (aiThinkTimer) { clearInterval(aiThinkTimer); aiThinkTimer = null; }
+    if (aiGenTimer) { clearTimeout(aiGenTimer); aiGenTimer = null; }
+    aiPhFadeCancel();
+    aiGenBusy = false;
+    var foot = aiEl("[data-ai-foot]"), row = aiEl("[data-ai-genrow]");
+    if (foot) foot.classList.remove("is-gen");
+    if (row) { row.hidden = true; row.setAttribute("aria-busy", "false"); }
+    if (foot) foot.hidden = true;
+    aiPhIdle();
+  }
+  function aiSeedIsUrl(v) {
+    if (!v) return false;
+    return /^https?:\/\/\S+$/i.test(v) || /\.[a-z]{2,}(\/|$)/i.test(v) || /^@[\w.\-]{2,}$/.test(v);
+  }
+  // мягкая смена плейсхолдера: fade out → подмена текста → fade in.
+  // Отложенную запись держим в переменной, иначе она приземлится уже после
+  // остановки ротации и перетрёт актуальный плейсхолдер.
+  var aiPhFadeTimer = null;
+  function aiPhFadeCancel() {
+    if (aiPhFadeTimer) { clearTimeout(aiPhFadeTimer); aiPhFadeTimer = null; }
+    var ta = aiTa();
+    if (ta) ta.classList.remove("ph-out");
+  }
+  function aiPhSet(text) {
+    var ta = aiTa();
+    if (!ta) return;
+    if (aiPhFadeTimer) clearTimeout(aiPhFadeTimer);
+    ta.classList.add("ph-out");
+    aiPhFadeTimer = setTimeout(function () {
+      aiPhFadeTimer = null;
+      ta.placeholder = text;
+      ta.classList.remove("ph-out");
+    }, 250);
+  }
+  function aiPhStop() { if (aiPhTimer) { clearTimeout(aiPhTimer); aiPhTimer = null; } aiPhFadeCancel(); }
+
+  // Состояние 1 — покой: примеры ПРОПЕЧАТЫВАЮТСЯ (typewriter) с мигающей кареткой,
+  // держатся, стираются и уступают место следующему. Всё это только placeholder,
+  // в value не попадает. Цепочка на setTimeout — никаких висящих интервалов.
+  var AI_TYPE_CHAR = 42, AI_TYPE_ERASE = 22, AI_TYPE_HOLD = 1800, AI_BLINK = 450, AI_CARET = "|";
+  function aiPhFull() { return AI_PH_IDLE[aiPhIdx % AI_PH_IDLE.length]; }
+  // печатаем, только пока модалка открыта, поле пустое и не в фокусе, генерации нет
+  function aiPhAlive() {
+    var ta = aiTa(), m = document.getElementById("aiModal");
+    if (!ta || !m || !m.classList.contains("is-open")) return false;
+    if (aiGenBusy) return false;
+    if (ta.value.trim()) { ta.placeholder = ""; return false; }
+    if (document.activeElement === ta) {          // фокус: не оставляем обрывок с кареткой
+      ta.placeholder = aiPhFull();
+      return false;
+    }
+    return true;
+  }
+  function aiPhType() {
+    var full = aiPhFull(), i = 0;
+    (function step() {
+      if (!aiPhAlive()) return;
+      i++;
+      aiTa().placeholder = full.slice(0, i) + AI_CARET;
+      if (i < full.length) { aiPhTimer = setTimeout(step, AI_TYPE_CHAR); return; }
+      aiPhHold(full);
+    })();
+  }
+  function aiPhHold(full) {
+    var on = true, waited = 0;
+    (function blink() {
+      if (!aiPhAlive()) return;
+      on = !on;
+      aiTa().placeholder = full + (on ? AI_CARET : " ");
+      waited += AI_BLINK;
+      if (waited < AI_TYPE_HOLD) { aiPhTimer = setTimeout(blink, AI_BLINK); return; }
+      aiPhErase(full);
+    })();
+  }
+  function aiPhErase(full) {
+    var i = full.length;
+    (function step() {
+      if (!aiPhAlive()) return;
+      i--;
+      aiTa().placeholder = full.slice(0, i) + AI_CARET;
+      if (i > 0) { aiPhTimer = setTimeout(step, AI_TYPE_ERASE); return; }
+      aiPhIdx++;
+      aiPhTimer = setTimeout(aiPhType, 260);       // короткая пауза перед следующим примером
+    })();
+  }
+  function aiPhIdle() {
+    aiPhStop();
+    var ta = aiTa();
+    if (!ta || aiGenBusy) return;
+    if (ta.value.trim()) { ta.placeholder = ""; return; }   // текст введён — плейсхолдер не нужен
+    aiPhType();
+  }
+  // фокус на пустом поле — оставляем один статичный пример (без полупечатанного обрывка)
+  function aiPhFreeze() {
+    aiPhStop();
+    var ta = aiTa();
+    if (ta && !ta.value.trim()) ta.placeholder = aiPhFull();
+  }
+  // состояние 3 — генерация: “думающие” сообщения + свёрнутая строка автозаполнения
+  function aiGenStart() {
+    var ta = aiTa(), foot = aiEl("[data-ai-foot]"), row = aiEl("[data-ai-genrow]"), st = aiEl("[data-ai-genstatus]");
+    if (!ta || !foot || !row) return;
+    aiGenBusy = true;
+    aiPhStop();
+    aiThinkIdx = 0;
+    ta.placeholder = AI_PH_THINK[0];
+    if (st) st.textContent = AI_PH_THINK[0];
+    aiThinkTimer = setInterval(function () {                 // ~1.2с
+      aiThinkIdx++;
+      var msg = AI_PH_THINK[aiThinkIdx % AI_PH_THINK.length];
+      aiPhSet(msg);
+      if (st) st.textContent = msg;
+    }, 1200);
+    foot.hidden = false;                          // в refs строка-лоадер появляется только на время подбора
+    row.hidden = false;
+    row.setAttribute("aria-busy", "true");
+    void row.offsetHeight;                        // reflow: чтобы transition стартовал с opacity 0
+    foot.classList.add("is-gen");
+    aiGenTimer = setTimeout(aiGenDone, 4000 + Math.round(Math.random() * 2000)); // 4–6с
+  }
+  // состояние 4 — готово: черновик в textarea, строка автозаполнения возвращается
+  function aiGenDone() {
+    var ta = aiTa(), foot = aiEl("[data-ai-foot]"), row = aiEl("[data-ai-genrow]");
+    if (aiThinkTimer) { clearInterval(aiThinkTimer); aiThinkTimer = null; }
+    aiPhFadeCancel();            // снимаем отложенную запись “думающего” сообщения
+    aiGenTimer = null;
+    aiGenBusy = false;
+    if (ta) {
+      ta.value = aiMode() === "refs" ? aiDraftFromRefs() : aiDraftFromSeed(aiTxt("[data-ai-seed]"));
+      ta.placeholder = "";
+    }
+    if (foot) foot.classList.remove("is-gen");
+    if (row) {
+      row.setAttribute("aria-busy", "false");
+      setTimeout(function () {
+        row.hidden = true;
+        if (foot && aiMode() === "refs") foot.hidden = true;   // в single строка ссылки остаётся
+      }, 260);
+    }
+    aiSync();                                                // ссылка сохранена — можно перегенерировать
+    toast("Description auto-filled — edit it before starting");
+  }
+  // черновик: два варианта, слегка варьируем по домену/хендлу ссылки
+  function aiDraft(seed) {
+    var handle = (seed.match(/@([\w.\-]+)/) || [])[1] || "";
+    var host = (seed.match(/^(?:https?:\/\/)?(?:www\.)?([^\/\s]+)/i) || [])[1] || "";
+    var who = handle ? "@" + handle : (host || "this channel");
+    if (/twitch|tiktok|instagram/i.test(host)) {
+      return "Creators like " + who + " — same format and audience, cross-posting to YouTube. " +
+             "Regular uploads, engaged comments; skip clip-farm and reupload accounts.";
+    }
+    return "Channels similar to " + who + " — same niche, format and audience language. " +
+           "Mid-size creators publishing regularly with steady growth; exclude compilations and reuploads.";
+  }
+  // закрытие модалки: гасим все таймеры и возвращаем строку автозаполнения в покой
+  function aiTeardown() {
+    aiPhStop();
+    if (aiThinkTimer) { clearInterval(aiThinkTimer); aiThinkTimer = null; }
+    if (aiGenTimer) { clearTimeout(aiGenTimer); aiGenTimer = null; }
+    aiGenBusy = false;
+    var foot = aiEl("[data-ai-foot]"), row = aiEl("[data-ai-genrow]");
+    if (foot) foot.classList.remove("is-gen");
+    if (row) { row.hidden = true; row.setAttribute("aria-busy", "false"); }
+  }
+  // остановка ротации при фокусе/вводе (состояние 2) и возврат к покою на blur
+  // Enter в поле референса добавляет ссылку, Esc — сворачивает поле обратно в кнопку
+  document.addEventListener("keydown", function (e) {
+    if (!e.target.closest || !e.target.closest("[data-ai-refseed]")) return;
+    if (e.key === "Enter") {
+      e.preventDefault();
+      var addBtn = aiEl("[data-ai-ref-add]");
+      if (addBtn && !addBtn.disabled) addBtn.click();
+      return;
+    }
+    if (e.key === "Escape") {
+      e.stopPropagation();                          // не закрываем всю модалку
+      aiRefSugHide();
+      aiRefFormToggle(false);
+    }
+  });
+
+  document.addEventListener("focusin", function (e) {
+    if (e.target.closest("[data-ai-query]")) aiPhFreeze();   // ничего не печатается во время набора
+  });
+  document.addEventListener("focusout", function (e) {
+    if (e.target.closest("[data-ai-query]") && !aiGenBusy) aiPhIdle();
+  });
+
+  // “Start sourcing” активна при заполненном имени И (описание ИЛИ reference-ссылка).
+  // Auto-fill активна только когда ссылка непустая И похожа на URL.
+  function aiSync() {
+    var submit = aiEl("[data-ai-submit]");
+    var auto = aiEl("[data-ai-ref-add]");
+    if (!submit && !auto) return;
+    var name = aiTxt("[data-ai-name]");
+    var query = aiTxt("[data-ai-query]");
+    var seed = aiTxt("[data-ai-seed]");
+    // 1.1: “Source more channels” открывает эту же модалку с подставленным именем,
+    // поэтому лимит числа коллекций проверяем только когда получатель — новая коллекция.
+    var isNewDest = !!name && !aiCollByName(name);
+    var destOk = !!name && (!isNewDest || planCollsLeft() > 0);
+    // single: описание ИЛИ ссылка; refs: описание ИЛИ хотя бы один референс
+    var hasSource = aiMode() === "refs" ? !!aiRefs.length : !!seed;
+    // имени достаточно: пустую коллекцию наполняют потом, на её странице
+    // Полный текст — в тултипе кнопки, в футере короткая строка: длинная фраза
+    // сминалась в столбик по слову.
+    var why = "", whyShort = "";
+    if (!name) {
+      why = aiDestPickOn() ? "Select a destination collection" : "Name the collection to continue";
+    } else if (isNewDest && planCollsLeft() <= 0) {
+      why = "All " + planFmt(plan().colls) + " collections used on " + plan().label +
+        " — upgrade or add to an existing one";
+      whyShort = "Collection limit reached on " + plan().label +
+        " (" + planCollCount() + "/" + planFmt(plan().colls) + ")";
+    } else if (!isNewDest && planChansLeft(name) === 0) {
+      why = collFullTip();
+      whyShort = collFullTip(true);
+    } else if (ccLinks().length > ncMax()) {
+      // B11: лимит вставки за один раз — тарифный, как и в модалке добавления
+      why = "Paste up to " + planFmt(ncMax()) + " links at once on " + plan().label;
+      whyShort = "The limit has been reached: " + planFmt(ncMax());
+    }
+    if (submit) {
+      submit.disabled = !!why;
+      if (why) submit.title = why; else submit.removeAttribute("title");
+    }
+    var whyEl = ccEl("[data-cc-why]");
+    if (whyEl) {
+      // про имя не пишем: поле и так на виду, подсказка была бы шумом
+      var show = !!whyShort;
+      whyEl.hidden = !show;
+      var whyTxt = whyEl.querySelector("[data-cc-why-txt]");
+      if (whyTxt) whyTxt.textContent = show ? whyShort : "";
+    }
+    var cnt2 = ccEl("[data-cc-links-count]");
+    if (cnt2) cnt2.textContent = String(ccLinks().length);
+    ncMaxSync();
+    ccLimitSync();
+    // refs: “Add” активна только для ссылки (имя выбирается из подсказок)
+    if (auto) auto.disabled = !aiSeedIsUrl(aiTxt("[data-ai-refseed]"));
+    // single: “Auto-fill” активна при похожей на URL ссылке
+    var detect = aiEl("[data-ai-detect]");
+    if (detect && !aiGenBusy) detect.disabled = !aiSeedIsUrl(seed);
+    aiAdvSummary();
+  }
+  // мини-сводка не-дефолтных фильтров у свёрнутой секции
+  function aiAdvSummary() {
+    var box = aiEl("[data-ai-advsum]");
+    if (!box) return;
+    var f = aiFormFilters();
+    var parts = [];
+    if (f.subs !== 10000) parts.push("Min subs " + aiNum(f.subs));
+    else if (f.subs > 0) parts.push(null);            // дефолт — не показываем
+    if (f.videos > 0) parts.push("Videos ≥ " + aiNum(f.videos));
+    if (f.views > 0) parts.push("Views ≥ " + aiNum(f.views));
+    if (f.avg > 0) parts.push("Avg ≥ " + aiNum(f.avg));
+    if (f.lastDays > 0) parts.push("Last ≤ " + f.lastDays + "d");
+    parts = parts.filter(Boolean);
+    box.textContent = parts.length ? parts.join(" · ") : "";
+    box.hidden = !parts.length;
+  }
+
+  // ===== НАЗНАЧЕНИЕ: куда попадут найденные каналы =====
+  // Источник списка — те же коллекции, что в My collections: базовые (из window, их отдаёт билд)
+  // + созданные на клиенте (в localStorage, с флагом isAi).
+  var AI_EXTRA_KEY = "subsub_coll_extra";     // допись каналов и мета sourcing по имени коллекции
+  var AI_FOUND = ["Fortnite Focus", "ProGamer UA", "24 Канал", "Clutch Moments", "Squad Highlights", "Battle Royale Daily"];
+  var aiDest = null;            // выбранная коллекция-назначение
+  var aiJustCreated = null;     // создана через вложенную модалку в этом сеансе → считаем новой
+  var aiFromSourcing = false;   // модалка создания открыта поверх sourcing
+
+  function aiExtraLoad() { try { return JSON.parse(localStorage.getItem(AI_EXTRA_KEY) || "{}") || {}; } catch (e) { return {}; } }
+  function aiExtraSave(o) { try { localStorage.setItem(AI_EXTRA_KEY, JSON.stringify(o)); } catch (e) {} }
+  function aiToday() {
+    var d = new Date();
+    return ("0" + d.getDate()).slice(-2) + "." + ("0" + (d.getMonth() + 1)).slice(-2) + "." + d.getFullYear();
+  }
+  function aiBaseColls() {
+    var b = window.SUBSUB_BASE_COLLECTIONS;
+    var list = Object.prototype.toString.call(b) === "[object Array]" ? b : [];
+    // пустой аккаунт: своих коллекций нет, но сэмплы выданы всем; в режиме empty нет и их
+    if (demoNoColls()) return [];
+    return demoBlank() ? list.filter(function (c) { return c.sample; }) : list;
+  }
+  // обычная (не-AI) коллекция, созданная пользователем
+  function aiCreatePlain(name) {
+    var list = aiLoad();
+    list.push({ id: "c" + Date.now(), name: name, isAi: false, mode: "new", status: "created",
+                channels: [], created: aiToday(), query: "", filters: { subs: 10000, videos: 0, views: 0, avg: 0, lastDays: 0 } });
+    aiSave(list);
+  }
+  // полный список коллекций для дропдауна (записи “допись в существующую” отдельной коллекцией не считаем)
+  function aiAllColls() {
+    var out = aiBaseColls().map(function (c) {
+      return { name: c.name, status: c.status, isAi: false, base: true, qty: c.qty || 0, channels: (c.channels || []).slice() };
+    });
+    aiLoad().forEach(function (r) {
+      if (r.mode === "append") return;
+      out.push({ name: r.name, status: r.status, isAi: r.isAi !== false, base: false,
+                 qty: (r.channels || []).length, channels: (r.channels || []).slice() });
+    });
+    // адресация дописи идёт по имени, поэтому одинаковые имена в списке недопустимы
+    var seen = {};
+    return out.filter(function (c) {
+      if (seen[c.name]) return false;
+      seen[c.name] = true;
+      return true;
+    });
+  }
+  function aiCollByName(name) {
+    var l = aiAllColls();
+    for (var i = 0; i < l.length; i++) if (l[i].name === name) return l[i];
+    return null;
+  }
+  // коллекции, в которые ПРЯМО СЕЙЧАС идёт подбор → в списке дизейблим
+  function aiSourcingNames() {
+    var names = {};
+    aiLoad().forEach(function (r) {
+      if (r.status !== "pending") return;
+      names[r.mode === "append" ? r.target : r.name] = true;
+    });
+    return names;
+  }
+  // актуальные каналы коллекции: базовые + дописанные
+  function aiChannelsOf(name) {
+    var c = aiCollByName(name), extra = aiExtraLoad()[name];
+    var list = c ? c.channels.slice() : [];
+    if (extra && extra.channels) extra.channels.forEach(function (n) { if (list.indexOf(n) === -1) list.push(n); });
+    // B2/D1: удалённые из коллекции каналы не возвращаем
+    var removed = (typeof aiRemovedLoad === "function" ? aiRemovedLoad()[name] : null) || [];
+    return removed.length ? list.filter(function (n) { return removed.indexOf(n) === -1; }) : list;
+  }
+
+  // случай 1 (коллекций нет) — поле имени; случай 2 — дропдаун
+  // получатели дропдауна — только свои коллекции: сэмплы и расшаренные read-only
+  function aiDestList() {
+    return aiAllColls().filter(function (c) { return !collIsSample(c.name); });
+  }
+  // короткая причина, почему в эту коллекцию сейчас нельзя положить найденное
+  function aiDestNote(name) {
+    if (collOverLimit(name)) return "Over plan limit";
+    var s = collState(name);
+    if (s === "sourcing") return "Sourcing…";
+    if (s === "deep") return "Collecting data…";
+    if (planChansLeft(name) === 0) return "Full";
+    return "";
+  }
+  // виден ли дропдаун получателя (а не поле имени новой коллекции)
+  function aiDestPickOn() {
+    var pick = aiEl("[data-ai-dest-pick]");
+    return !!pick && !pick.hidden;
+  }
+  // дропдаун и поле имени адресуют одно и то же: получателя aiSubmit читает из [data-ai-name]
+  function aiDestSet(name) {
+    aiDest = name || null;
+    var inp = aiEl("[data-ai-name]");
+    if (inp) inp.value = name || "";
+    aiRenderDest();
+    aiSync();
+  }
+  function aiRenderDest() {
+    var pick = aiEl("[data-ai-dest-pick]"), neu = aiEl("[data-ai-dest-new]");
+    if (!pick || !neu) return;
+    // Вход из мультиселекта: найденное можно положить и в существующую коллекцию —
+    // показываем дропдаун своих коллекций. В “Create collection” получатель всегда
+    // новый: там только поле имени. Его же показываем, когда коллекций ещё нет.
+    var list = ccModeName === "similar" ? aiDestList() : [];
+    var usePick = !!list.length;
+    pick.hidden = !usePick;
+    neu.hidden = usePick;
+    if (!usePick) { aiSelectToggle(false); return; }
+    var q = aiTxt("[data-ai-select-search]").toLowerCase();
+    var box = aiEl("[data-ai-select-list]");
+    if (box) {
+      var shown = list.filter(function (c) { return !q || c.name.toLowerCase().indexOf(q) !== -1; });
+      box.innerHTML = shown.length
+        ? '<div class="ai-select__grp">Collection</div>' + shown.map(function (c) {
+            var note = aiDestNote(c.name), sel = aiDest === c.name;
+            return '<button class="ai-select__opt' + (sel ? " is-selected" : "") + '" type="button" role="option"' +
+                   ' aria-selected="' + sel + '" data-ai-opt="' + escHtml(c.name) + '"' + (note ? " disabled" : "") + '>' +
+                   '<span>' + escHtml(c.name) + '</span>' +
+                   (note ? '<span class="ai-select__note">' + escHtml(note) + '</span>' : "") + '</button>';
+          }).join("")
+        : '<div class="ai-select__empty">Nothing found</div>';
+    }
+    var val = aiEl("[data-ai-select-val]");
+    if (val) {
+      if (aiDest) { val.textContent = aiDest; val.classList.remove("is-ph"); }
+      else { val.textContent = "Select collection"; val.classList.add("is-ph"); }
+    }
+  }
+  // клик мимо дропдауна назначения закрывает его: иначе список висит поверх формы
+  document.addEventListener("click", function (e) {
+    var root = aiEl("[data-ai-select]");
+    if (!root || !root.classList.contains("is-open")) return;
+    if (e.target.closest && e.target.closest("[data-ai-select]")) return;
+    aiSelectToggle(false);
+  });
+  function aiSelectToggle(open) {
+    var root = aiEl("[data-ai-select]"), menu = aiEl("[data-ai-select-menu]"), trig = aiEl("[data-ai-select-trig]");
+    if (!root || !menu) return;
+    var willOpen = (open === undefined) ? menu.hidden : !!open;
+    menu.hidden = !willOpen;
+    root.classList.toggle("is-open", willOpen);
+    if (trig) trig.setAttribute("aria-expanded", willOpen ? "true" : "false");
+  }
+
+  // ===================== фильтры подбора: отдельный шаг модалки =====================
+  // Пустое поле = фильтр не применён (плейсхолдер Any), ноль — легальное значение.
+  // Раньше 0 значил “выключено”, и “мне всё равно” было не отличить от “ровно ноль”.
+  var FF_KEYS = ["subsFrom", "subsTo", "viewsFrom", "viewsTo", "videosFrom", "videosTo", "avgFrom", "avgTo", "lastDays"];
+  var FF_DEFAULT = { subsFrom: 10000 };   // единственный дефолт, остальное пусто
+  var FF_PAIRS = [
+    { id: "subs", from: "subsFrom", to: "subsTo", label: "subs" },
+    { id: "views", from: "viewsFrom", to: "viewsTo", label: "views" },
+    { id: "videos", from: "videosFrom", to: "videosTo", label: "videos" },
+    { id: "avg", from: "avgFrom", to: "avgTo", label: "avg views" }
+  ];
+  var ffState = {};
+  // “10k”, “1.5m”, “10 000” → число; пусто → null
+  function ffParse(str) {
+    var s = String(str == null ? "" : str).trim().toLowerCase().replace(/[\s,]/g, "");
+    if (!s) return null;
+    var m = s.match(/^(\d+(?:\.\d+)?)([kmb])?$/);
+    if (!m) return null;
+    var n = parseFloat(m[1]);
+    if (m[2] === "k") n *= 1e3;
+    else if (m[2] === "m") n *= 1e6;
+    else if (m[2] === "b") n *= 1e9;
+    return Math.round(n);
+  }
+  function ffFmt(n) { return n == null ? "" : Number(n).toLocaleString("en-US"); }
+  // короткая запись для чипов: 10k, 1.5m
+  function ffShort(n) {
+    if (n == null) return "";
+    if (n >= 1e9) return (n / 1e9).toFixed(n % 1e9 ? 1 : 0) + "b";
+    if (n >= 1e6) return (n / 1e6).toFixed(n % 1e6 ? 1 : 0) + "m";
+    if (n >= 1e3) return (n / 1e3).toFixed(n % 1e3 ? 1 : 0) + "k";
+    return String(n);
+  }
+  // B13: поля фильтров живут в двух модалках — Create collection и Add channels to “X”.
+  // Область поиска задаётся хостом, иначе модель работала бы только внутри #aiModal.
+  var ffHostId = "aiModal";
+  var FF_HOSTS = {                        // когда у хоста есть промпт и кнопка “Set filters”
+    aiModal: function () { return ccModeName !== "pick" && ccTab === "ai"; },
+    ncModal: function () { return ncTab === "ai"; }
+  };
+  function ffHost(id) {
+    if (id) ffHostId = id;
+    return document.getElementById(ffHostId);
+  }
+  function ffEl(sel) { var m = ffHost(); return m ? m.querySelector(sel) : null; }
+  function ffAll(sel) {
+    var m = ffHost();
+    return m ? [].slice.call(m.querySelectorAll(sel)) : [];
+  }
+  function ffCanFilter() { var f = FF_HOSTS[ffHostId]; return !!f && f(); }
+  // шаги хоста: 1 — форма, 2 — фильтры. Кнопки футера помечены data-ff-foot
+  function ffStep(n, promptText) {
+    var m = ffHost();
+    if (!m) return;
+    [].slice.call(m.querySelectorAll("[data-ff-step]")).forEach(function (s) {
+      s.hidden = s.getAttribute("data-ff-step") !== String(n);
+    });
+    [].slice.call(m.querySelectorAll("[data-ff-foot]")).forEach(function (b) {
+      b.hidden = b.getAttribute("data-ff-foot") !== String(n);
+    });
+    if (n === 2) {
+      var ro = ffEl("[data-ff-prompt-txt]");
+      if (ro) ro.textContent = promptText || "No description yet — sourcing will rely on filters only";
+      ffSync();
+    } else ffChipsRender();
+    ffBtnSync();
+  }
+  function ffStepNow() {
+    var s2 = ffEl('[data-ff-step="2"]');
+    return s2 && !s2.hidden ? 2 : 1;
+  }
+  // кнопка “Set filters” есть только там, где есть промпт
+  function ffBtnSync() {
+    var btn = ffEl("[data-ff-open]");
+    if (!btn) return;
+    var show = ffCanFilter() && ffStepNow() === 1;
+    btn.hidden = !show;
+    var chips = ffEl("[data-ff-chips]");
+    if (chips) chips.style.display = show ? "" : "none";   // на втором шаге поля рядом, дублировать нечего
+  }
+  function ffReset() {
+    ffState = {};
+    Object.keys(FF_DEFAULT).forEach(function (k) { ffState[k] = FF_DEFAULT[k]; });
+    ffWrite();
+  }
+  // поля ← состояние
+  function ffWrite() {
+    FF_KEYS.forEach(function (k) {
+      var el = ffEl('[data-ff="' + k + '"]');
+      if (el) el.value = ffFmt(ffState[k]);
+    });
+    var sel = ffEl("[data-ff-last]");
+    if (sel) {
+      var d = ffState.lastDays;
+      ffLastSet(sel, d == null ? "" : (d === 7 || d === 30 || d === 90) ? String(d) : "custom");
+    }
+    ffPresetsSync();
+  }
+  // состояние ← поля
+  function ffRead() {
+    FF_KEYS.forEach(function (k) {
+      if (k === "lastDays") return;
+      var el = ffEl('[data-ff="' + k + '"]');
+      if (el) ffState[k] = ffParse(el.value);
+    });
+    var sel = ffEl("[data-ff-last]");
+    if (sel) {
+      var v = sel.getAttribute("data-value") || "";
+      if (v === "custom") ffState.lastDays = ffParse((ffEl('[data-ff="lastDays"]') || {}).value);
+      else ffState.lastDays = v ? parseInt(v, 10) : null;
+    }
+  }
+  // “Last upload”: свой дропдаун вместо нативного select — значение живёт в data-value
+  function ffLastSet(sel, v) {
+    sel.setAttribute("data-value", v);
+    var opt = sel.querySelector('[data-ff-last-opt="' + v + '"]');
+    var lbl = sel.querySelector("[data-ff-last-val]");
+    if (lbl && opt) lbl.textContent = opt.textContent;
+    [].slice.call(sel.querySelectorAll("[data-ff-last-opt]")).forEach(function (o) {
+      if (o === opt) o.setAttribute("data-selected", ""); else o.removeAttribute("data-selected");
+    });
+    var cu = ffEl("[data-ff-custom]");
+    if (cu) cu.hidden = v !== "custom";
+  }
+  function ffLastOpen(sel, open) {
+    var m = sel.querySelector("[data-ff-last-menu]"), t = sel.querySelector("[data-ff-last-trig]");
+    if (m) m.hidden = !open;
+    sel.classList.toggle("is-open", open);
+    if (t) t.setAttribute("aria-expanded", open ? "true" : "false");
+  }
+  function ffPresetsSync() {
+    ffAll("[data-ff-preset]").forEach(function (b) {
+      var v = b.getAttribute("data-ff-preset").split(":");
+      var from = v[0] ? parseInt(v[0], 10) : null, to = v[1] ? parseInt(v[1], 10) : null;
+      b.classList.toggle("is-on", ffState.subsFrom === from && (ffState.subsTo || null) === to);
+    });
+  }
+  function ffActive() { return FF_KEYS.some(function (k) { return ffState[k] != null; }); }
+  // отличается ли набор от дефолтного (только subs from = 10 000)
+  function ffTouched() {
+    return FF_KEYS.some(function (k) {
+      var def = FF_DEFAULT[k] == null ? null : FF_DEFAULT[k];
+      return (ffState[k] == null ? null : ffState[k]) !== def;
+    });
+  }
+  // чипы: описывают запуск подбора, а не состав коллекции
+  function ffChips() {
+    var out = [];
+    if (!ffTouched()) return out;          // дефолтный набор чипами не показываем
+    FF_PAIRS.forEach(function (p) {
+      var a = ffState[p.from], b = ffState[p.to];
+      if (a == null && b == null) return;
+      var val = a != null && b != null ? ffShort(a) + "–" + ffShort(b)
+              : a != null ? ffShort(a) + "+"
+              : "up to " + ffShort(b);
+      out.push({ id: p.id, text: p.label + " " + val });
+    });
+    if (ffState.lastDays != null) out.push({ id: "last", text: "last " + ffState.lastDays + "d" });
+    return out;
+  }
+  function ffChipsRender() {
+    var box = ffEl("[data-ff-chips]");
+    if (!box) return;
+    box.innerHTML = ffChips().map(function (c) {
+      return '<span class="ff-chip">' + escHtml(c.text) +
+        '<button class="ff-chip__x" type="button" data-ff-chip-x="' + c.id + '" aria-label="Clear filter">' +
+        closeIconHtml() + "</button></span>";
+    }).join("");
+    var lbl = ffEl("[data-ff-lbl]");
+    if (lbl) lbl.textContent = ffTouched() ? "Edit filters" : "Set filters";
+  }
+  function ffChipClear(id) {
+    if (id === "last") ffState.lastDays = null;
+    else FF_PAIRS.forEach(function (p) { if (p.id === id) { ffState[p.from] = null; ffState[p.to] = null; } });
+    ffWrite();
+    ffSync();
+  }
+  // B6: подсчёт “≈ N каналов подходит” (ffFits/ffMetric) убран вместе с предпросмотром —
+  // число считалось по мокам каталога и обещало то, чего подбор не гарантирует.
+  // Перевёрнутый диапазон не считаем ошибкой пользователя: пара молча меняется местами
+  // по выходу из поля. Раньше это была ошибка с блокировкой запуска — тупик, из которого
+  // человек должен был выбираться сам, хотя намерение очевидно.
+  function ffNormalize() {
+    FF_PAIRS.forEach(function (p) {
+      var a = ffState[p.from], b = ffState[p.to];
+      if (a != null && b != null && a > b) { ffState[p.from] = b; ffState[p.to] = a; }
+    });
+  }
+  // мягкое предупреждение: промпт про небольшие каналы против высокого порога
+  var FF_SMALL = /\b(small|micro|nano|tiny)\b|небольш|маленьк|микро/i;
+  // описание подбора берём у хоста: в модалке создания это промпт шага 1,
+  // в “Add channels” — промпт таба Expand with AI
+  function ffPromptText() {
+    return ffHostId === "ncModal" ? ncAiPrompt() : aiTxt("[data-ai-query]");
+  }
+  function ffWarnText() {
+    var q = ffPromptText();
+    if (q && FF_SMALL.test(q) && ffState.subsFrom != null && ffState.subsFrom >= 1e6) {
+      return "Your description asks for small channels, but the subscriber floor is " +
+        ffShort(ffState.subsFrom) + " — sourcing may come back empty.";
+    }
+    return "";
+  }
+  function ffSync() {
+    var warn = ffEl("[data-ff-warn]"), wt = ffWarnText();
+    if (warn) { warn.hidden = !wt; warn.textContent = wt; }
+    // B6: полоса внизу шага нужна только когда есть что сказать — предпросмотра больше нет
+    var msgs = ffEl("[data-ff-msgs]");
+    if (msgs) msgs.hidden = !wt;
+    ffChipsRender();
+    if (ffHostId === "ncModal") ncSync(); else aiSync();
+  }
+  // запись в коллекцию: старые ключи оставляем, чтобы чипы “последнего подбора” не переписывать
+  function aiFormFilters() {
+    ffRead();
+    ffNormalize();        // запуск идёт по осмысленному диапазону, даже если поля заполнили наоборот
+    var f = {};
+    FF_KEYS.forEach(function (k) { if (ffState[k] != null) f[k] = ffState[k]; });
+    f.subs = ffState.subsFrom;
+    f.views = ffState.viewsFrom;
+    f.videos = ffState.videosFrom;
+    f.avg = ffState.avgFrom;
+    return f;
+  }
+
+  // ---- три входа модалки Create collection: ссылки, база, промпт ----
+  var ccTab = "ai";                       // первый вход — описание для ИИ
+  var ccPicked = [];                      // каналы вручную: выбор в таблице + поиск по базе                       // первый вход — описание для ИИ
+  function ccEl(sel) { var m = document.getElementById("aiModal"); return m ? m.querySelector(sel) : null; }
+  function ccLinks() {
+    var ta = ccEl("[data-cc-links]");
+    if (!ta) return [];
+    return String(ta.value || "").split(/[\n,;]+/).map(function (s) { return s.trim(); }).filter(Boolean);
+  }
+  // каналы для новой коллекции: добавленные вручную + вставленные ссылки, без повторов
+  function ccManual() {
+    var out = ccPicked.slice();
+    ccLinks().map(ncNameFromLink).forEach(function (n) { if (out.indexOf(n) === -1) out.push(n); });
+    return out;
+  }
+  function ccChanMeta(name) {
+    var pool = (typeof aiChannelPool === "function" ? aiChannelPool() : []);
+    for (var i = 0; i < pool.length; i++) if (pool[i].name === name) return pool[i];
+    return null;
+  }
+  function ccPickedRender() {
+    var box = ccEl("[data-cc-picked]"), list = ccEl("[data-cc-picked-list]"), cnt = ccEl("[data-cc-picked-count]");
+    if (!box || !list) return;
+    box.hidden = !ccPicked.length;
+    if (cnt) cnt.textContent = String(ccPicked.length);
+    var xIco = (typeof AI_ICO === "object" && AI_ICO.x) || "";
+    list.innerHTML = ccPicked.map(function (n) {
+      var meta = ccChanMeta(n);
+      var ava = '<span class="mc-ava" style="background:var(' + ((meta && meta.color) || "--color-avatar-3") + ')">' +
+        escHtml((meta && meta.initial) || n.charAt(0)) + "</span>";
+      return '<button class="cc-chip" type="button" data-cc-unpick="' + escHtml(n) + '" title="Remove">' +
+        ava + escHtml(n) + xIco + "</button>";
+    }).join("");
+  }
+  function ccPick(name) {                 // канал добавили вручную
+    if (!name || ccPicked.indexOf(name) !== -1) return;
+    ccPicked.push(name);
+    ccPickedRender();
+    aiSync();
+  }
+  function ccUnpick(name) {
+    ccPicked = ccPicked.filter(function (n) { return n !== name; });
+    ccPickedRender();
+    aiSync();
+  }
+  // “Create collection from N channels” из плашки выбора
+  function ccFromSelection() {
+    var names = (typeof acChecked === "function" ? acChecked() : []).filter(Boolean);
+    if (!names.length) return;
+    aiOpen();
+    ccMode("pick");                       // только имя и выбранные каналы
+    ccPicked = names.slice();
+    ccPickedRender();
+    var nm = ccEl("[data-ai-name]");
+    if (nm && !nm.value) nm.value = names[0] + (names.length > 1 ? " +" + (names.length - 1) : "");
+    aiSync();
+  }
+  // На табе с промптом основное действие — запустить подбор, а не “создать коллекцию”.
+  function ccSubmitLbl() {
+    var sbm = ccEl("[data-ai-submit]");
+    if (!sbm) return;
+    var c = AI_COPY[ccModeName] || AI_COPY.create;
+    sbm.textContent = (ccModeName === "create" && ccTab === "ai") ? "Start sourcing" : c.submit;
+  }
+  function ccFiltersBtnSync() { ffHost("aiModal"); ffBtnSync(); }
+  function ccSetTab(tab) {
+    ccTab = tab;
+    setTimeout(function () { ccFiltersBtnSync(); ccSubmitLbl(); }, 0);
+    [].slice.call(document.querySelectorAll("[data-cc-tab]")).forEach(function (b) {
+      b.classList.toggle("is-active", b.getAttribute("data-cc-tab") === tab);
+    });
+    [].slice.call(document.querySelectorAll("[data-cc-pane]")).forEach(function (p) {
+      p.hidden = p.getAttribute("data-cc-pane") !== tab;
+    });
+    if (tab === "ai") aiPhIdle();
+    ccLimitSync();
+  }
+  // подсказка про лимит тарифа + инлайн-апселл
+  function ccLimitSync() {
+    var box = ccEl("[data-cc-limit]"), txt = ccEl("[data-cc-limit-text]");
+    var up = ccEl("[data-cc-upgrade]");
+    if (!box || !txt) return;
+    var p = plan(), next = PLAN_NEXT[planId()];
+    var dest = aiDest || null;
+    // вход “коллекция из выбранных каналов”: подбора нет, поэтому и плашки нет —
+    // показываем её только когда выбранное не влезает в коллекцию на этом тарифе
+    if (ccModeName === "pick") {
+      var cap = planChansLeft(null), got = ccPicked.length;
+      if (cap !== Infinity && got > cap) {
+        txt.innerHTML = "<b>" + p.label + "</b> plan: only <b>" + cap + "</b> of " + got + " channels will be added.";
+        box.hidden = false;
+        if (up) up.hidden = !next;
+      } else box.hidden = true;
+      return;
+    }
+    var picked = ccManual().length;                 // уже набранные каналы тоже занимают места
+    var left = planChansLeft(dest);
+    var avail = left === Infinity ? Infinity : Math.max(0, left - picked);
+    // Баннер сверху говорит только про вместимость коллекции. Про лимит числа коллекций
+    // сообщает строка у кнопки запуска — иначе два разных ограничения сливаются в одно.
+    var msg = "";
+    if (left === Infinity) {
+      msg = "";
+    } else if (ccTab === "ai") {
+      // “up to 25 channels” для пустой коллекции; “up to 5 of 25 left”, когда места заняты
+      msg = picked || dest
+        ? "<b>" + p.label + "</b> plan: up to <b>" + avail + "</b> of " + planFmt(p.chans) + " left" +
+          (dest ? " in “" + dest + "”" : "") + "."
+        : "<b>" + p.label + "</b> plan: up to <b>" + planFmt(p.chans) + "</b> channels in a collection.";
+    } else {
+      msg = picked > left
+        ? "<b>" + p.label + "</b> plan: only <b>" + left + "</b> of " + picked + " channels will be added."
+        : "<b>" + p.label + "</b> plan: <b>" + avail + "</b> of " + planFmt(p.chans) +
+          " spots left in this collection.";
+    }
+    box.hidden = !msg;
+    txt.innerHTML = msg;
+    if (up) up.hidden = !next;
+  }
+  // Досорсинг: повторяем последний подбор по этой коллекции с предзаполненными полями —
+  // чаще всего нужно то же самое с небольшой правкой.
+  function aiResource() {
+    var nm = ceName();
+    var tip = collSourceBlockTip(nm);
+    if (tip) { toast(tip); return; }
+    var extra = aiExtraLoad()[nm], own = aiCollByName(nm);
+    var src = (extra && extra.sourcing) || (own ? { query: own.query, filters: own.filters } : null);
+    aiOpen();
+    var nmInp = aiEl("[data-ai-name]");
+    if (nmInp) nmInp.value = nm;
+    var ta = aiTa();
+    if (ta && src && src.query) ta.value = src.query;
+    if (src && src.filters) aiFillFilters(src.filters);
+    aiSync();
+  }
+  // фильтры последнего запуска обратно в поля Advanced filters
+  function aiFillFilters(f) {
+    var map = { subs: "[data-ai-subs]", videos: "[data-ai-videos]", views: "[data-ai-views]",
+                avg: "[data-ai-avg]", lastDays: "[data-ai-last]" };
+    Object.keys(map).forEach(function (k) {
+      var el = aiEl(map[k]);
+      if (el && f[k] != null) el.value = String(f[k]);
+    });
+  }
+  function aiOpen() {
+    var m = document.getElementById("aiModal");
+    if (!m) return;
+    m.classList.add("is-open");
+    document.body.style.overflow = "hidden";
+    aiDest = null; aiJustCreated = null;
+    aiRefs = [];
+    aiSetMode("single");                      // по умолчанию — вариант с полем ссылки
+    aiRefFormToggle(false);
+    var seed0 = aiEl("[data-ai-seed]"); if (seed0) seed0.value = "";
+    var ta0 = aiTa(); if (ta0) ta0.value = "";
+    aiRenderRefs();
+    aiRenderDest();
+    ccPicked = [];
+    ccPickedRender();
+    // сброс входа “Ссылки”
+    var ccTa = ccEl("[data-cc-links]"); if (ccTa) ccTa.value = "";
+    var ccC = ccEl("[data-cc-links-count]"); if (ccC) ccC.textContent = "0";
+    var nm0 = m.querySelector("[data-ai-name]"); if (nm0) nm0.value = "";
+    ffHost("aiModal");                    // поля фильтров ищем в этой модалке (B13)
+    ffReset();                            // фильтры к дефолту: только subs from = 10 000
+    ccSetTab("ai");                       // всегда открываемся на “Describe with AI”
+    ccMode("create");
+    aiSetMode("single");                  // без референсов: под промптом снова поле ссылки
+    aiSync();
+    aiPhIdle();                                  // состояние 1 — ротация примеров
+    var n = m.querySelector("[data-ai-name]"); if (n) n.focus();
+  }
+  // P1.13: панель фильтров применяется без кнопки Apply. Отдельный слушатель —
+  // раньше это лежало внутри обработчика AI-модалки и не срабатывало вне неё.
+  document.addEventListener("input", function (e) {
+    if (e.target.closest("[data-anf-text],[data-anf-from],[data-anf-to]")) { flTouch(); return; }
+    if (e.target.closest("[data-ai-select-search]")) { aiRenderDest(); return; }
+    if (e.target.closest("[data-cc-links]")) { aiSync(); return; }
+    var ffIn = e.target.closest("[data-ff]");
+    if (ffIn) {
+      var ffMod = ffIn.closest(".an-modal");
+      if (ffMod) ffHost(ffMod.id);          // поля есть в обеих модалках с промптом (B13)
+      ffRead();
+      ffSync();
+      return;
+    }
+    if (e.target.closest("[data-ce-search]")) { ceSearchApply(); return; }
+    if (e.target.closest("[data-ce-share-search]")) { ceShareSuggest(e.target.value); return; }
+    if (e.target.closest("[data-rp-search]")) { repTargetFill(e.target.value); return; }
+    var fSearch = e.target.closest("[data-anf-search]");
+    if (fSearch) {
+      var q = fSearch.value.trim().toLowerCase();
+      var menu = fSearch.closest("[data-anf-menu]");
+      var opts = menu ? menu.querySelectorAll(".anf-opt") : [];
+      for (var oi = 0; oi < opts.length; oi++) {
+        var t = opts[oi].textContent.toLowerCase();
+        opts[oi].hidden = !!q && t.indexOf(q) === -1;
+      }
+    }
+  });
+  // любое изменение полей модалки пересчитывает состояния кнопок и сводку
+  document.addEventListener("input", function (e) {
+    if (!e.target.closest("#aiModal")) return;
+    // состояние 2 — набор в описании: ротацию гасим сразу
+    if (e.target.closest("[data-ai-refseed]")) aiRefSuggest();
+    if (e.target.closest("[data-ai-query]")) {
+      aiPhStop();
+      if (e.target.value.trim()) e.target.placeholder = "";
+    }
+    aiSync();
+  });
+  function aiVal(sel, def) {
+    var el = document.querySelector(sel);
+    if (!el) return def;
+    var v = parseInt(el.value, 10);
+    return isNaN(v) || v < 0 ? 0 : v;
+  }
+  // вход в подбор по коллекции: одно правило для всех точек запуска
+  function collSourceGuard(name) {
+    var tip = collSourceBlockTip(name);
+    if (tip) { toast(tip); return false; }
+    return true;
+  }
+  function aiSubmit() {
+    var query = aiTxt("[data-ai-query]");
+    var seedVal = aiTxt("[data-ai-seed]");
+    var manual = ccManual();
+    var wantsSourcing = !!query || (aiMode() === "refs" ? !!aiRefs.length : !!seedVal);
+    // получатель: новая коллекция либо существующая (досорсинг с её страницы)
+    var target = aiTxt("[data-ai-name]");
+    if (!target) { toast(aiDestPickOn() ? "Select a destination collection" : "Name the collection first"); return; }
+    var isNew = !aiCollByName(target);
+    if (isNew && !planCollsLeft()) {
+      toast("Collection limit reached on the " + plan().label + " plan — upgrade to create more");
+      return;
+    }
+    if (!isNew && planChansLeft(target) === 0) { toast(collFullTip()); return; }
+    // A11: получателем выбрали активированную коллекцию — состав меняем только через
+    // диалог (Deactivate или Duplicate), после Deactivate возвращаемся сюда же.
+    if (!isNew && collState(target) === "activated") { awAsk(manual, [target], aiSubmit); return; }
+    if (isNew) aiCreatePlain(target);
+    // лимит тарифа: добавляем столько, сколько влезает
+    var left = planChansLeft(isNew ? null : target);
+    var added = left === Infinity ? manual : manual.slice(0, left);
+    var skipped = manual.length - added.length;
+    if (added.length) ncAppend(target, added);
+    var now = Date.now(), d = new Date(now);
+    if (wantsSourcing) {
+      var list = aiLoad();
+      list.push({
+        id: "ai" + now, mode: "append", target: target, name: target, isAi: true,
+        query: query || (aiMode() === "refs" && aiRefs.length
+          ? "Channels similar to " + aiRefs.map(function (r) { return r.name; }).join(", ")
+          : "Channels similar to " + seedVal),
+        seed: seedVal, filters: aiFormFilters(), status: "pending",
+        startAt: now, readyAt: now + AI_STEP_MS, endAt: now + AI_RUN_MS,
+        created: ("0" + d.getDate()).slice(-2) + "." + ("0" + (d.getMonth() + 1)).slice(-2) + "." + d.getFullYear()
+      });
+      aiSave(list);
+      // промпт и фильтры нужны сразу: по ним страница коллекции объясняет подбор
+      var exSrc = aiExtraLoad();
+      exSrc[target] = exSrc[target] || { channels: [] };
+      exSrc[target].sourcing = { query: list[list.length - 1].query, filters: aiFormFilters() };
+      aiExtraSave(exSrc);
+    }
+    closeModal(document.getElementById("aiModal"));
+    // 4.4: один тост на действие. Если часть каналов не влезла — вместо него причина:
+    // молча терять каналы нельзя, а склеивать два сообщения в одно больше не хотим.
+    if (skipped) toast(collFitTip(target, manual.length) || collFullTip());
+    else if (wantsSourcing) toast("Sourcing started — new channels will be added to “" + target + "”");
+    else if (isNew) toastCreated(target, added.length);
+    else if (added.length) toastAdded(added.length, target);
+    if (wantsSourcing) aiTick();               // пилюля подбора в шапке
+    aiRenderCollections();
+    // всегда открываем страницу коллекции в новой табе — там продолжают наполнение
+    window.open("analytics-collection-edit.html?name=" + encodeURIComponent(target), "_blank");
+  }
+  document.addEventListener("click", function (e) {
+    // отмена подбора из попапа “Sourcing in progress”
+    // тот же отсев заблокированных контролов, что в основном обработчике
+    if (e.target.closest && e.target.closest('.is-off[aria-disabled="true"]')) return;
+    var ccUn = e.target.closest("[data-cc-unpick]");
+    if (ccUn) { ccUnpick(ccUn.getAttribute("data-cc-unpick")); return; }
+    var ccT = e.target.closest("[data-cc-tab]");
+    if (ccT) { ccSetTab(ccT.getAttribute("data-cc-tab")); return; }
+    if (e.target.closest("[data-cc-upgrade]") || e.target.closest("[data-an-tip-up]")) {
+      tipHide(true);
+      toast("Upgrade request sent — our team will contact you");
+      return;
+    }
+    // шаг фильтров общий для обеих модалок: хост определяем по тому, где нажали
+    var ffGo = e.target.closest("[data-ff-open]") || e.target.closest("[data-ff-back]");
+    if (ffGo) {
+      var ffM = ffGo.closest(".an-modal");
+      ffHost(ffM ? ffM.id : "aiModal");
+      ffRead();
+      ffStep(e.target.closest("[data-ff-open]") ? 2 : 1, ffPromptText());
+      return;
+    }
+    // свой дропдаун “Last upload” на шаге фильтров
+    var ffLastT = e.target.closest("[data-ff-last-trig]");
+    if (ffLastT) {
+      var lsel = ffLastT.closest("[data-ff-last]");
+      var lm = lsel.querySelector("[data-ff-last-menu]");
+      ffLastOpen(lsel, lm ? lm.hidden : true);
+      return;
+    }
+    var ffLastO = e.target.closest("[data-ff-last-opt]");
+    if (ffLastO) {
+      var lsel2 = ffLastO.closest("[data-ff-last]");
+      var lmod = ffLastO.closest(".an-modal");
+      if (lmod) ffHost(lmod.id);
+      ffLastSet(lsel2, ffLastO.getAttribute("data-ff-last-opt"));
+      ffLastOpen(lsel2, false);
+      ffRead();
+      ffSync();
+      return;
+    }
+    if (!e.target.closest("[data-ff-last]")) {
+      [].slice.call(document.querySelectorAll("[data-ff-last].is-open")).forEach(function (s) { ffLastOpen(s, false); });
+    }
+    var ffPre = e.target.closest("[data-ff-preset]");
+    if (ffPre) {
+      var pv = ffPre.getAttribute("data-ff-preset").split(":");
+      var preM = ffPre.closest(".an-modal");
+      if (preM) ffHost(preM.id);
+      ffRead();
+      var same = ffPre.classList.contains("is-on");
+      ffState.subsFrom = same ? null : (pv[0] ? parseInt(pv[0], 10) : null);
+      ffState.subsTo = same ? null : (pv[1] ? parseInt(pv[1], 10) : null);
+      ffWrite();
+      ffSync();
+      return;
+    }
+    var ffX = e.target.closest("[data-ff-chip-x]");
+    if (ffX) {
+      var xM = ffX.closest(".an-modal");
+      if (xM) ffHost(xM.id);
+      ffRead();
+      ffChipClear(ffX.getAttribute("data-ff-chip-x"));
+      return;
+    }
+    if (e.target.closest("[data-ai-open]")) { aiOpen(); return; }
+    if (e.target.closest("[data-ai-resource]")) { aiResource(); return; }
+    // второй вход: “Find similar channels” из панели массовых действий Basic data —
+    // та же модалка, но референсы предзаполнены выбранными в таблице каналами
+    if (e.target.closest("[data-ai-similar]")) {
+      var picked = [];
+      var boxes = document.querySelectorAll("[data-an-check].is-checked");
+      for (var pi = 0; pi < boxes.length; pi++) {
+        var row = boxes[pi].closest(".an-tr");
+        if (!row) continue;
+        var nmEl = row.querySelector(".an-chan__name") || row.querySelector(".ce-chan__name");
+        var avEl = row.querySelector(".an-chan__ava") || row.querySelector(".ce-ava");
+        if (!nmEl) continue;
+        picked.push({
+          name: nmEl.textContent.trim(),
+          initial: avEl ? avEl.textContent.trim() : "",
+          color: avEl ? (avEl.getAttribute("style") || "").replace(/.*var\(([^)]+)\).*/, "$1") : ""
+        });
+      }
+      if (!picked.length) return;
+      aiOpen();
+      ccMode("similar");                      // своя шапка и кнопка “Start sourcing”
+      aiSetMode("refs");                      // вход с выбранными каналами — секция референсов
+      picked.forEach(function (p) { aiRefAdd(p.name, p.initial, p.color || null); });
+      aiRenderRefs();
+      // получатель: дропдаун своих коллекций, а если их нет — поле имени с подсказкой
+      var nameInp = aiEl("[data-ai-name]");
+      if (nameInp) nameInp.value = aiDestPickOn()
+        ? ""                                  // выбор за пользователем: своя коллекция или новая
+        : "Similar to " + picked[0].name + (picked.length > 1 ? " +" + (picked.length - 1) : "");
+      aiSync();
+      if (aiRefs.length) aiGenStart();          // описание подбирается сразу из референсов
+      return;
+    }
+    // дропдаун назначения
+    if (e.target.closest("[data-ai-select-trig]")) { aiSelectToggle(); return; }
+    var opt = e.target.closest("[data-ai-opt]");
+    if (opt) {
+      if (opt.disabled) return;                       // идёт процесс или нет мест — выбрать нельзя
+      aiSelectToggle(false);
+      aiDestSet(opt.getAttribute("data-ai-opt"));
+      return;
+    }
+    // “Create new collection” (пункт списка и чёрная кнопка “+”) → вложенная модалка
+    if (e.target.closest("[data-ai-newcoll]")) {
+      aiSelectToggle(false);
+      aiFromSourcing = true;
+      mcMode = "create";
+      var ct = document.querySelector("[data-mc-create-title]"); if (ct) ct.textContent = "Create collection";
+      var cn = document.querySelector("[data-mc-name]");
+      // подсказка имени из референсов (пользователь может переписать)
+      if (cn) cn.value = aiRefs.length
+        ? "Similar to " + aiRefs[0].name + (aiRefs.length > 1 ? " +" + (aiRefs.length - 1) : "")
+        : "";
+      var cb = document.querySelector("[data-mc-create-submit]"); if (cb) cb.textContent = "Create";
+      openModal("mcModal-create");
+      var f = document.querySelector("[data-mc-name]"); if (f) f.focus();
+      return;
+    }
+    // клик вне дропдауна — закрыть
+    if (!e.target.closest("[data-ai-select]")) aiSelectToggle(false);
+    // клик вне поля добавления референса — убрать подсказки, пустое поле свернуть
+    if (!e.target.closest("[data-ai-ref-form]") && !e.target.closest("[data-ai-ref-open]")) {
+      aiRefSugHide();
+      var formEl = aiEl("[data-ai-ref-form]"), seedEl = aiEl("[data-ai-refseed]");
+      if (formEl && !formEl.hidden && seedEl && !String(seedEl.value || "").trim()) aiRefFormToggle(false);
+    }
+    if (e.target.closest("[data-ai-close]")) { closeModal(e.target.closest(".an-modal")); return; }
+    if (e.target.closest("[data-ai-submit]")) { aiSubmit(); return; }
+    // Auto-fill (режим single): подбор описания по вставленной ссылке
+    var detectBtn = e.target.closest("[data-ai-detect]");
+    if (detectBtn) {
+      if (detectBtn.disabled || aiGenBusy) return;
+      if (!aiSeedIsUrl(aiTxt("[data-ai-seed]"))) return;
+      aiGenStart();
+      return;
+    }
+    // “Add channel” — раскрыть поле ввода (в покое видна только кнопка)
+    if (e.target.closest("[data-ai-ref-open]")) {
+      aiRefFormToggle(true);
+      return;
+    }
+    // выбор канала из подсказок
+    var pick = e.target.closest("[data-ai-ref-pick]");
+    if (pick) {
+      var okPick = aiRefAdd(pick.getAttribute("data-ai-ref-pick"), pick.getAttribute("data-initial"), pick.getAttribute("data-color") || null);
+      aiRefSugHide();
+      aiRefFormToggle(false);
+      if (okPick) aiRefsChanged();
+      return;
+    }
+    // добавить референс-канал (ссылка или имя) → перезапуск подбора описания
+    if (e.target.closest("[data-ai-ref-add]")) {
+      var raw = aiTxt("[data-ai-refseed]");
+      if (!raw) return;
+      var nm = (raw.match(/@([\w.\-]+)/) || [])[1];
+      if (!nm && /^https?:\/\//i.test(raw)) nm = (raw.split("?")[0].split("/").filter(Boolean).pop() || raw);
+      var added = aiRefAdd(nm ? "@" + String(nm).replace(/^@/, "") : raw);
+      aiRefSugHide();
+      aiRefFormToggle(false);                       // возвращаемся к кнопке “Add channel”
+      if (added) aiRefsChanged(); else { aiSync(); toast("This channel is already in references"); }
+      return;
+    }
+    // удалить референс → тоже перезапуск подбора
+    var refDel = e.target.closest("[data-ai-ref-del]");
+    if (refDel) {
+      aiRefs.splice(parseInt(refDel.getAttribute("data-ai-ref-del"), 10), 1);
+      aiRefsChanged();
+      return;
+    }
+  });
+
+  // страница открытой коллекции: имя из ?name= (заголовок формы)
+  // P1.11: строки для добавленных каналов — цифр по ним нет, ставим “—”
+  // копия коллекции: тот же состав плюс каналы, которые в неё собирались добавить
+  function collDuplicate(src, extraNames, asName) {
+    var base = asName || (src + " (copy)"), name = base, i = 2;
+    while (aiAllColls().some(function (c) { return c.name === name; })) { name = base + " " + i; i++; }
+    var chans = aiChannelsOf(src);
+    if (!chans.length && ceName() === src) chans = ceRowNames();
+    (extraNames || []).forEach(function (n) { if (chans.indexOf(n) === -1) chans.push(n); });
+    var list = aiLoad();
+    list.push({ id: "c" + list.length + "d", name: name, isAi: false, mode: "new", status: "created",
+                channels: chans, created: aiToday(), query: "",
+                filters: { subs: 0, videos: 0, views: 0, avg: 0, lastDays: 0 } });
+    aiSave(list);
+    var extra = aiExtraLoad();
+    extra[name] = { channels: chans.slice() };
+    aiExtraSave(extra);
+    return name;
+  }
+  // ---- добавление в активированную коллекцию: данные пойдут со дня добавления ----
+  var awPending = null;
+  function awAsk(names, targets, apply) {
+    // пока по коллекции идёт процесс, состав не меняем
+    var locked = targets.filter(function (t) { return !collCanAdd(t); });
+    if (locked.length) { toast(collAddBlockTip(locked[0])); return; }
+    // C2: последний рубеж по вместимости — сюда сходятся все входы добавления
+    var full = targets.filter(function (t) { return collFitTip(t, (names || []).length); });
+    if (full.length) { toast("“" + full[0] + "”: " + collFitTip(full[0], names.length)); return; }
+    var hot = targets.filter(function (t) { return collState(t) === "activated"; });
+    if (!hot.length || !document.getElementById("awModal")) { apply(); return; }
+    awPending = { names: names, targets: targets, hot: hot, apply: apply };
+    closeModals();
+    var txt = document.querySelector("[data-aw-text]");
+    if (txt) txt.textContent = "Channels can't be added while deep data is active. Deactivate “" +
+      hot.join("”, “") + "” to change its channels, or duplicate it and build a wider set — " +
+      "history stays with the original.";
+    openModal("awModal");
+  }
+  // Deactivate: выключаем Deep data и сразу добавляем то, что хотели добавить.
+  function awDeactivate() {
+    var p = awPending;
+    awPending = null;
+    closeModals();
+    if (!p) return;
+    p.hot.forEach(function (nm) { collCancelDeep(nm); });
+    p.apply();
+    toast("Deep data deactivated — “" + p.hot.join("”, “") + "”");
+  }
+  // Duplicate из диалога: имя спрашиваем модалкой, автосбора Deep data нет.
+  function awDup() {
+    var p = awPending;
+    awPending = null;
+    closeModals();
+    if (!p) return;
+    dupOpen(p.hot[0], p.names);
+  }
+  // ---- модалка дубликата ----
+  var dupSrc = null, dupExtra = null;
+  function dupOpen(src, extraNames) {
+    if (!src || !document.getElementById("dupModal")) return;
+    dupSrc = src;
+    dupExtra = extraNames || null;
+    var inp = document.querySelector("[data-dup-name]");
+    if (inp) inp.value = src + " expanded";      // чаще всего копию делают, чтобы расширить набор
+    openModal("dupModal");
+    if (inp) setTimeout(function () { inp.focus(); inp.select(); }, 30);
+  }
+  function dupSubmit() {
+    var inp = document.querySelector("[data-dup-name]");
+    var name = inp ? String(inp.value || "").trim() : "";
+    if (!name) { toast("Name can't be empty"); return; }
+    if (aiAllColls().some(function (c) { return c.name === name; })) {
+      toast("Collection with this name already exists");
+      return;
+    }
+    var made = collDuplicate(dupSrc, dupExtra, name);
+    closeModals();
+    dupSrc = null;
+    dupExtra = null;
+    collSurfaces();
+    toast("Collection duplicated as “" + made + "”");
+  }
+  // ---- пока идёт подбор: одна полоса состояния под строками, тот же прогон, что в топбаре ----
+  var CE_SRC_PHRASES = ["Looking for the next channel…", "Checking channel relevance…", "Reading channel stats…"];
+  var ceSrcTimer = null, ceSrcIdx = 0;
+  function ceProto() {
+    return document.querySelector("[data-ce-row]") || document.querySelector("[data-ce-proto]");
+  }
+  function ceSourcingRec() {
+    var nm = ceName(), rec = null;
+    aiLoad().forEach(function (r) { if (r.status === "pending" && aiSourcingTarget(r) === nm) rec = r; });
+    return rec;
+  }
+  function ceSrcBand() { return document.querySelector("[data-ce-src]"); }
+  function ceSrcRotate(on) {
+    if (!on) { if (ceSrcTimer) { clearInterval(ceSrcTimer); ceSrcTimer = null; } return; }
+    if (ceSrcTimer) return;
+    ceSrcIdx = 0;
+    ceSrcTimer = setInterval(function () {
+      var t = document.querySelector("[data-ce-src-txt]");
+      if (!t) { ceSrcRotate(false); return; }
+      t.classList.remove("is-in");
+      t.classList.add("is-out");
+      setTimeout(function () {
+        ceSrcIdx = (ceSrcIdx + 1) % CE_SRC_PHRASES.length;
+        t.textContent = CE_SRC_PHRASES[ceSrcIdx];
+        t.classList.remove("is-out");
+        t.classList.add("is-in");
+      }, 240);
+    }, 2400);
+  }
+  function ceSrcSync(rec) {
+    var body = document.querySelector("[data-ce-tbody]"), tbl = document.querySelector(".ce-table");
+    if (!body) return;
+    var band = ceSrcBand();
+    if (tbl) tbl.classList.toggle("is-sourcing", !!rec);
+    if (!rec) {
+      if (band && band.parentNode) band.parentNode.removeChild(band);
+      ceSrcRotate(false);
+      if (ceDone) ceMoreDone();
+      return;
+    }
+    var mode = (rec.found || []).length ? "next" : "scan";
+    if (!band) {
+      band = document.createElement("div");
+      band.setAttribute("role", "status");
+      band.setAttribute("aria-live", "polite");
+    }
+    if (band.getAttribute("data-ce-src") !== mode) {
+      band.setAttribute("data-ce-src", mode);
+      band.className = "ce-src ce-src--" + mode;
+      band.innerHTML = mode === "scan"
+        ? '<span class="ce-src__ico">' + AI_ICO.stars + "</span>" +
+          '<span class="ce-src__txt"><b class="ce-src__t">Scanning YouTube for channels that match your query…</b>' +
+          '<span class="ce-src__d">This usually takes a few minutes.</span>' +
+          '<span class="ce-src__d">You can leave this page — we\'ll keep sourcing and notify you when it\'s done.</span></span>'
+        : '<span class="ce-src__dot" aria-hidden="true"></span><span class="ce-src__t" data-ce-src-txt>' + CE_SRC_PHRASES[0] + "</span>";
+    }
+    body.insertBefore(band, body.firstChild);
+    ceSrcRotate(mode === "next");
+  }
+  // страница коллекции: плашка состояния, скелетоны подбора и доступность кнопок
+  // Коллекция без каналов: строки из сборки убираем и показываем состояние.
+  // Касается только коллекций, которые живут в состоянии (созданных в прототипе),
+  // у демо-коллекций из сборки состав нарисован в разметке.
+  function ceKnown(name) {
+    return !!(aiCollByName(name) || aiExtraLoad()[name]);
+  }
+  // строки из сборки — демо-состав. Для коллекции, которая живёт в состоянии,
+  // держим только её каналы: один скрытый шаблон плюс реальные строки.
+  function ceRenderOwn() {
+    var nm = ceName();
+    if (!ceKnown(nm) || !document.querySelector("[data-ce-tbody]")) return;
+    var want = aiChannelsOf(nm);
+    var have = ceRowNames();
+    var extra = have.filter(function (n) { return want.indexOf(n) === -1; });
+    if (!extra.length && have.length === want.length) return;   // всё уже на месте
+    // чужие строки убираем, одну оставляем скрытым шаблоном для скелетонов и дорисовки
+    ceRows().forEach(function (r, i) {
+      var n = r.querySelector(".ce-chan__name");
+      var mine = n && want.indexOf(n.textContent.trim()) !== -1;
+      if (mine) return;
+      if (!document.querySelector("[data-ce-proto]")) {
+        r.removeAttribute("data-ce-row");
+        r.setAttribute("data-ce-proto", "");
+        r.style.display = "none";
+        return;
+      }
+      if (r.parentNode) r.parentNode.removeChild(r);
+    });
+    var now = ceRowNames();
+    var add = want.filter(function (n) { return now.indexOf(n) === -1; });
+    if (add.length) ceAddRows(add);
+    ceLimitSync();
+  }
+  function ceEmptySync() {
+    var blank = document.querySelector("[data-ce-blank]");
+    if (!blank) return;
+    var nm = ceName();
+    ceRenderOwn();
+    var empty = ceKnown(nm) && aiChannelsOf(nm).length === 0;
+    if (empty) {
+      // одну строку оставляем скрытым шаблоном: по ней рисуются скелетоны и приезжающие каналы
+      ceRows().forEach(function (r, i) {
+        if (i === 0 && !document.querySelector("[data-ce-proto]")) {
+          r.removeAttribute("data-ce-row");
+          r.setAttribute("data-ce-proto", "");
+          r.style.display = "none";
+          return;
+        }
+        if (r.parentNode) r.parentNode.removeChild(r);
+      });
+      ceLimitSync();                             // счётчик считался до удаления строк
+    }
+    // AI-коллекция в подборе: вместо “нет каналов” показываем скелетоны, каналы приезжают по одному
+    var sourcing = collState(nm) === "sourcing";
+    var blankOn = empty && !sourcing;
+    blank.hidden = !blankOn;
+    var tbl = document.querySelector("[data-ce-scroll]");
+    if (tbl) tbl.style.display = blankOn ? "none" : "";
+    var srch = document.querySelector("[data-ce-search]");
+    var srow = srch ? srch.closest(".ce-search") : null;
+    if (srow) srow.style.display = empty ? "none" : "";
+    var lim = document.querySelector("[data-ce-limit]");
+    if (lim) lim.hidden = empty;                 // “0 of 30” пустой коллекции ничего не говорит
+  }
+  function ceStateSync() {
+    ceEmptySync();
+    var badge = document.querySelector("[data-ce-state]");
+    if (!badge) return;                               // это не страница коллекции
+    var nm = ceName(), st = collState(nm), rec = ceSourcingRec();
+    badge.hidden = !(st === "sourcing" || st === "deep");
+    var t = badge.querySelector("[data-ce-state-t]");
+    if (t) t.textContent = st === "sourcing" ? CS_LBL.sourcing : CS_LBL.deep;
+    ceSrcSync(rec);
+    // под собирающимся датасетом состав не меняем
+    var edit = collCanEdit(nm);
+    var canAdd = collCanAdd(nm);
+    // 2.4: чужую (sample) коллекцию наполняет только владелец — действия нет вовсе,
+    // кнопку не показываем: заблокированная кнопка обещала бы то, чего не будет.
+    var foreign = collIsSample(nm);
+    [].slice.call(document.querySelectorAll("[data-nc-open]")).forEach(function (add) {
+      add.hidden = foreign;
+      if (foreign) return;
+      offSet(add, !canAdd);
+      tipSet(add, canAdd ? "" : collAddBlockTip(nm));
+    });
+    // досорсинг — тот же вход добавления: чужую коллекцию им тоже не наполнить
+    var canSrc = collCanSource(nm);
+    [].slice.call(document.querySelectorAll("[data-ai-resource]")).forEach(function (b) {
+      offSet(b, !canSrc);
+      tipSet(b, canSrc ? "" : collSourceBlockTip(nm));
+    });
+    ceLimitSync();                        // вместимость может добавить свою блокировку
+    [].slice.call(document.querySelectorAll("[data-ce-remove]")).forEach(function (b) {
+      offSet(b, !edit);
+      tipSet(b, edit ? "" : CS_TIP.editWaitDeep);
+    });
+    var dea = document.querySelector("[data-ce-deactivate]");
+    if (dea) {
+      dea.hidden = !(st === "activated" || st === "deep");
+      // прервать незаконченный сбор и выключить готовые данные — разные действия
+      var deaLbl = dea.querySelector("[data-ce-deactivate-lbl]");
+      if (deaLbl) deaLbl.textContent = st === "deep" ? "Stop collecting" : "Deactivate collection";
+    }
+    var dup = document.querySelector("[data-ce-duplicate]");
+    if (dup) {
+      var busyProc = st === "sourcing" || st === "deep";
+      // 3.2: disabled не отдаёт события наведения — блокируем через .is-off
+      offSet(dup, busyProc);
+      tipSet(dup, busyProc ? (st === "deep" ? CS_TIP.editWaitDeep : CS_TIP.addWaitSourcing) : "");
+    }
+    ceDeepSync();
+    ceAiSync();
+    ceOverSync();                         // B12: перекрывает остальные блокировки
+    ceForeignSync();                      // чужая коллекция — последним словом: read-only
+  }
+  // B12: режим over limit на странице коллекции — плашка сверху и заблокированные действия.
+  // Удаление каналов и самой коллекции остаются: это единственный путь обратно в лимит.
+  function ceOverSync() {
+    var box = document.querySelector("[data-ce-over]");
+    if (!box) return;
+    var nm = ceName(), over = collOverLimit(nm), tip = collOverLimitTip();
+    box.hidden = !over;
+    if (over) {
+      var txt = box.querySelector("[data-ce-over-text]");
+      if (txt) txt.textContent = "You have " + planCollCount() + " collections on " + plan().label +
+        ", which allows " + planFmt(plan().colls) + ". Nothing is deleted — remove channels or delete " +
+        "the collection, and everything unlocks after an upgrade.";
+    }
+    ["[data-nc-open]", "[data-ce-deep]", "[data-ce-share-trig]", "[data-ce-rename]",
+     "[data-ce-duplicate]", "[data-ai-resource]", "[data-ce-bulk-new]", "[data-ce-bulk-similar]"
+    ].forEach(function (sel) {
+      [].slice.call(document.querySelectorAll(sel)).forEach(function (el) {
+        if (!over && !el.hasAttribute("data-over-off")) return;   // не трогаем чужие блокировки
+        if (over) el.setAttribute("data-over-off", ""); else el.removeAttribute("data-over-off");
+        offSet(el, over);
+        tipSet(el, over ? tip : "", over);
+        if (el.disabled != null) el.disabled = false;
+      });
+    });
+  }
+  // очередной подобранный канал: заглушка уступает место реальной строке
+  function ceOnSourced(target, name) {
+    if (ceName() !== target) return;
+    ceAddRows([name], true);
+  }
+  // ячейка метрики: значение из базы либо заглушка “считаем”
+  function ceNumCell(cell, val) {
+    if (val) { cell.textContent = val; cell.removeAttribute("data-ce-num-wait"); return; }
+    cell.setAttribute("data-ce-num-wait", "");
+    cell.innerHTML = '<span class="ce-skel__bar" style="width:70%"></span>';
+  }
+  function ceAddRows(names, fresh) {
+    var proto = ceProto();
+    if (!proto) return;
+    var body = proto.parentNode;
+    var pool = (typeof aiChannelPool === "function" ? aiChannelPool() : []);
+    names.forEach(function (nm) {
+      var info = null;
+      for (var i = 0; i < pool.length; i++) if (pool[i].name === nm) info = pool[i];
+      var ini = (info && info.initial) || nm.replace(/^@/, "").charAt(0).toUpperCase();
+      var col = (info && info.color) || "--color-avatar-3";
+      var url = ceUrl(nm);
+      var row = proto.cloneNode(true);        // разметка строки живёт в билде — не дублируем её здесь
+      row.removeAttribute("data-ce-proto");
+      row.setAttribute("data-ce-row", "");
+      row.style.display = "";
+      row.classList.remove("is-selected");
+      var chk = row.querySelector("[data-an-check]");
+      if (chk) chk.classList.remove("is-checked");
+      var ava = row.querySelector(".ce-ava");
+      if (ava) { ava.textContent = ini; ava.setAttribute("style", "background:var(" + col + ")"); }
+      var nmEl = row.querySelector(".ce-chan__name");
+      if (nmEl) {
+        nmEl.textContent = nm;
+        if (nmEl.tagName === "A") nmEl.setAttribute("href", "analytics-channel.html?name=" + encodeURIComponent(nm));
+      }
+      var yt = row.querySelector(".ce-view");
+      if (yt) { yt.setAttribute("href", url); yt.setAttribute("title", url); yt.textContent = url.replace(/^https?:\/\/(www\.)?/, ""); }
+      var cp = row.querySelector("[data-ce-copy]");
+      if (cp) cp.setAttribute("data-ce-copy", url);
+      var ad = row.querySelector(".ce-added");
+      if (ad) ad.textContent = (typeof aiToday === "function" ? aiToday() : "");   // добавлен только что
+      var tp = row.querySelector(".an-td--topics");
+      if (tp) tp.innerHTML = ceTopicsHtml(info && info.topics);
+      // метрики нового канала подтягиваются не сразу: показываем заглушку вместо прочерка
+      var nums = row.querySelectorAll(".ce-num");
+      if (nums[0]) ceNumCell(nums[0], info && info.views);
+      if (nums[1]) ceNumCell(nums[1], info && info.subs);
+      if (fresh) {
+        row.classList.add("is-new");
+        setTimeout(function () { row.classList.remove("is-new"); }, 1600);
+      }
+      var first = body.querySelector("[data-ce-row]");
+      if (first) body.insertBefore(row, first); else body.appendChild(row);
+    });
+    var band = ceSrcBand();
+    if (band) body.insertBefore(band, body.firstChild);
+    ceSortApply();
+    ceLimitSync();
+    if (typeof ceFooter === "function") ceFooter();
+  }
+  // ================= D1/D3: массовые действия и футер страницы коллекции =================
+  function ceRows() { return [].slice.call(document.querySelectorAll("[data-ce-row]")); }
+  function ceChecked() {
+    return ceRows().filter(function (r) {
+      var b = r.querySelector("[data-an-check]");
+      return b && b.classList.contains("is-checked");
+    });
+  }
+  function ceFooter() {
+    var footer = document.querySelector("[data-an-footer]");
+    if (!footer) return;
+    var n = ceChecked().length;
+    footer.hidden = !n;
+    var cnt = footer.querySelector("[data-ce-bulk-count]");
+    if (cnt) cnt.textContent = n + " selected";
+    var allBtn = document.querySelector("[data-an-check-all]");
+    if (allBtn) allBtn.classList.toggle("is-checked", ceRows().length > 0 && n === ceRows().length);
+  }
+  var ceAsk = null;            // что подтверждаем: remove | delete | deactivate
+
+  // ================= Analytics → Reports =================
+  // Два таба (Market insights / My performance) со своими таблицами. Отчёт создаётся
+  // со статусом In progress, через мок-задержку становится Created — и ровно в этот
+  // момент файл появляется в Media Library (папка Analytics), как у Converting/Transcribing.
+  var REP_NOTE_KEY = "subsub_rep_note";
+  var REP_ML_KEY = "subsub_ml_files";       // мост в Media Library: файлы, созданные из аналитики
+  var REP_BUILD_MS = 4000;
+  var repSeq = 1;
+
+  function repMode() {
+    var t = (new URLSearchParams(location.search).get("tab") || "market").toLowerCase();
+    return t === "performance" ? "performance" : "market";
+  }
+  function repIsMarket() { return repMode() === "market"; }
+  function repKey() { return repIsMarket() ? "repm" : "repp"; }
+  function repInit() {
+    if (!document.querySelector("[data-rep-tabs]")) return;
+    var cur = repMode();
+    [].slice.call(document.querySelectorAll("[data-rep-panel]")).forEach(function (p) {
+      p.hidden = p.getAttribute("data-rep-panel") !== cur;
+    });
+    [].slice.call(document.querySelectorAll("[data-rep-tab]")).forEach(function (a) {
+      a.classList.toggle("is-active", a.getAttribute("data-rep-tab") === cur);
+    });
+    // подсказка про Media Library закрывается навсегда
+    var note = document.querySelector("[data-rep-note]");
+    try { if (note && localStorage.getItem(REP_NOTE_KEY) === "off") note.hidden = true; } catch (e) {}
+    var m = document.getElementById("repModal");
+    if (m) m.setAttribute("data-rep-mode", cur);
+    repTargetFill();
+    repCountSync();
+    if (typeof tblHugAll === "function") tblHugAll();   // колонки по содержимому + добор ширины
+    if (typeof tblFit === "function") tblFit();
+  }
+  // числа в табах: считаем строки в каждой таблице
+  function repCountSync() {
+    [["market", "repm"], ["performance", "repp"]].forEach(function (p) {
+      var badge = document.querySelector('[data-rep-count="' + p[0] + '"]');
+      var body = tblBody(p[1]);
+      if (!badge || !body) return;
+      badge.textContent = String(body.querySelectorAll(".an-tbody .an-tr").length);
+    });
+  }
+  // список в поле Collection / Channel — по табу
+  function repTargetList() {
+    if (repIsMarket()) return (typeof aiAllColls === "function" ? aiAllColls() : []).map(function (c) { return c.name; });
+    var d = window.SUBSUB_DICT || {};
+    return d.ownChannels || [];
+  }
+  function repTargetFill(q) {
+    var box = document.querySelector("[data-rp-target-opts]");
+    if (!box) return;
+    var lbl = document.querySelector("[data-rp-target-lbl]");
+    var ph = document.querySelector('[data-rp-sel="target"] [data-rp-val]');
+    if (lbl) lbl.textContent = repIsMarket() ? "Collection" : "Channel";
+    if (ph && ph.classList.contains("is-ph")) {
+      ph.textContent = repIsMarket() ? "Select collection" : "Select channel";
+      ph.setAttribute("data-rp-ph", ph.textContent);
+    }
+    var s = (q || "").trim().toLowerCase();
+    var list = repTargetList().filter(function (n) { return !s || n.toLowerCase().indexOf(s) !== -1; });
+    box.innerHTML = list.map(function (n) {
+      return '<button class="anf-opt" type="button" role="option" data-rp-opt-target="' + escHtml(n) + '">' + escHtml(n) + "</button>";
+    }).join("") || '<div class="anf-empty">Nothing found</div>';
+  }
+  function repSelVal(sel) {
+    var el = document.querySelector('[data-rp-sel="' + sel + '"] [data-rp-val]');
+    return el && !el.classList.contains("is-ph") ? el.textContent.trim() : "";
+  }
+  function repSetSel(sel, val) {
+    var el = document.querySelector('[data-rp-sel="' + sel + '"] [data-rp-val]');
+    if (!el) return;
+    el.textContent = val;
+    el.classList.remove("is-ph");
+    repSync();
+  }
+  function repMenu(sel, open) {
+    var root = document.querySelector('[data-rp-sel="' + sel + '"]');
+    if (!root) return;
+    var menu = root.querySelector("[data-rp-menu]"), trig = root.querySelector("[data-rp-trig]");
+    if (menu) menu.hidden = !open;
+    if (trig) trig.setAttribute("aria-expanded", open ? "true" : "false");
+  }
+  function repMenusClose() { repMenu("type", false); repMenu("target", false); }
+  // период доступен только после выбора коллекции/канала
+  // имя не вводят руками: оно складывается из выбранных полей
+  function repTypeWord(type) {
+    if (type.indexOf("Deep") === 0) return "Deep";
+    if (type.indexOf("Videos") === 0) return "Videos";
+    return "Basic";
+  }
+  // период в имени — коротко, месяцами: “July 2026”, “January – June 2026”
+  function repPeriodShort(from, to) {
+    var d = (window.SUBSUB_DICT || {}), ms = d.months || [];
+    var mf = ms[from.getMonth()] || "", mt = ms[to.getMonth()] || "";
+    var yf = from.getFullYear(), yt = to.getFullYear();
+    if (yf === yt && from.getMonth() === to.getMonth()) return mf + " " + yf;
+    if (yf === yt) return mf + " – " + mt + " " + yf;
+    return mf + " " + yf + " – " + mt + " " + yt;
+  }
+  function repAutoName() {
+    var type = repSelVal("type"), target = repSelVal("target");
+    if (!type || !target || !rpRange.from || !rpRange.to) return "";
+    return target + " " + repTypeWord(type) + " " + repPeriodShort(rpRange.from, rpRange.to);
+  }
+  function repSync() {
+    var target = repSelVal("target");
+    var calTrig = document.querySelector("[data-rp-cal-trig]");
+    if (calTrig) calTrig.disabled = !target;
+    var name = repAutoName();
+    var prev = document.querySelector("[data-rp-preview]");
+    if (prev) {
+      prev.hidden = !name;
+      var pv = prev.querySelector("[data-rp-preview-v]");
+      if (pv) pv.textContent = name;
+    }
+    var btn = document.querySelector("[data-rp-submit]");
+    if (btn) btn.disabled = !name;
+  }
+  function repOpen() {
+    rpRange = { from: null, to: null };
+    var m = document.getElementById("repModal");
+    if (!m) return;
+    m.setAttribute("data-rep-mode", repMode());
+    ["type", "target"].forEach(function (sel) {
+      var el = document.querySelector('[data-rp-sel="' + sel + '"] [data-rp-val]');
+      if (!el) return;
+      el.classList.add("is-ph");
+      el.textContent = sel === "type" ? "Select report type" : (repIsMarket() ? "Select collection" : "Select channel");
+    });
+    var cv = document.querySelector("[data-rp-cal-val]");
+    if (cv) { cv.textContent = "Select period"; cv.classList.add("is-ph"); }
+    repMenusClose();
+    drOpen(false);
+    repTargetFill();
+    repSync();
+    openModal("repModal");
+  }
+
+  // ---- календарь периода: слева быстрый переход по месяцам, справа сетка дней ----
+  var rpRange = { from: null, to: null }, rpMonth = null;
+  function repSetPeriod(from, to) {
+    rpRange = { from: from, to: to };
+    var v = document.querySelector("[data-rp-cal-val]");
+    if (v) { v.textContent = rpFmt(from) + " - " + rpFmt(to); v.classList.remove("is-ph"); }
+    repSync();
+  }
+  function rpDict() { return window.SUBSUB_DICT || {}; }
+  function rpToday() {
+    var t = (rpDict().today || "2026-08-03").split("-");
+    return new Date(+t[0], +t[1] - 1, +t[2]);
+  }
+  function rpFmt(d) {
+    return ("0" + d.getDate()).slice(-2) + "." + ("0" + (d.getMonth() + 1)).slice(-2) + "." + d.getFullYear();
+  }
+  function rpKey(d) { return d.getFullYear() * 10000 + d.getMonth() * 100 + d.getDate(); }
+  function rpCalOpen(open) {
+    var pop = document.querySelector("[data-rp-cal-pop]"), trig = document.querySelector("[data-rp-cal-trig]");
+    if (!pop) return;
+    pop.hidden = !open;
+    if (trig) trig.setAttribute("aria-expanded", open ? "true" : "false");
+    if (open) {
+      if (!rpMonth) rpMonth = new Date(rpToday().getFullYear(), rpToday().getMonth(), 1);
+      rpCalRender();
+    }
+  }
+  function rpCalClose() { rpCalOpen(false); }
+  function rpCalRender() {
+    var months = rpDict().months || [];
+    var grid = document.querySelector("[data-rp-cal-grid]");
+    var title = document.querySelector("[data-rp-cal-title]");
+    var side = document.querySelector("[data-rp-cal-months]");
+    var note = document.querySelector("[data-rp-cal-note]");
+    if (!grid) return;
+    if (title) title.textContent = months[rpMonth.getMonth()] + " " + rpMonth.getFullYear();
+    if (note) {
+      var since = rpDict().firstChannelAdded || "19.05.2023";
+      note.textContent = "The 1st channel in this collection was added on " + since +
+        ". Therefore growth period is available by year and month starting from " + since + ".";
+    }
+    // левая колонка: месяцы двух последних лет, быстрый переход
+    if (side) {
+      var y0 = rpToday().getFullYear();
+      var html = "";
+      [y0 - 1, y0].forEach(function (y) {
+        html += '<div class="rp-cal__year">' + y + "</div>";
+        months.forEach(function (mn, mi) {
+          var on = rpMonth.getFullYear() === y && rpMonth.getMonth() === mi;
+          html += '<button class="rp-cal__mbtn' + (on ? " is-on" : "") + '" type="button" data-rp-cal-jump="' +
+            y + "-" + mi + '">' + mn + "</button>";
+        });
+      });
+      side.innerHTML = html;
+      // прокручиваем только сам список месяцев: scrollIntoView увёл бы и тело модалки
+      var onBtn = side.querySelector(".rp-cal__mbtn.is-on");
+      if (onBtn) side.scrollTop = Math.max(0, onBtn.offsetTop - side.clientHeight / 2);
+    }
+    // сетка дней
+    var wd = rpDict().weekdays || ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"];
+    var cells = wd.map(function (w) { return '<span class="an-dr__wd">' + w + "</span>"; }).join("");
+    var first = new Date(rpMonth.getFullYear(), rpMonth.getMonth(), 1);
+    var shift = (first.getDay() + 6) % 7;                       // неделя с понедельника
+    var days = new Date(rpMonth.getFullYear(), rpMonth.getMonth() + 1, 0).getDate();
+    for (var i = 0; i < shift; i++) cells += '<span class="an-dr__day an-dr__day--out"></span>';
+    var a = rpRange.from ? rpKey(rpRange.from) : null, bb = rpRange.to ? rpKey(rpRange.to) : null;
+    for (var d = 1; d <= days; d++) {
+      var cur = new Date(rpMonth.getFullYear(), rpMonth.getMonth(), d), k = rpKey(cur);
+      var cls = "an-dr__day";
+      if (a && bb && k > a && k < bb) cls += " an-dr__day--in";
+      if (a && k === a) cls += " an-dr__day--edge" + (bb ? " an-dr__day--start" : "");
+      if (bb && k === bb) cls += " an-dr__day--edge an-dr__day--end";
+      cells += '<button class="' + cls + '" type="button" data-rp-cal-day="' + cur.getFullYear() + "-" +
+        cur.getMonth() + "-" + d + '"><span class="an-dr__d">' + d + "</span></button>";
+    }
+    grid.innerHTML = cells;
+  }
+  function rpPickDay(val) {
+    var p = val.split("-");
+    var d = new Date(+p[0], +p[1], +p[2]);
+    if (!rpRange.from || (rpRange.from && rpRange.to)) { rpRange = { from: d, to: null }; }
+    else if (rpKey(d) < rpKey(rpRange.from)) { rpRange = { from: d, to: rpRange.from }; }
+    else { rpRange.to = d; }
+    rpCalRender();
+  }
+  function rpCalApply() {
+    if (!rpRange.from || !rpRange.to) { toast("Pick the period start and end"); return; }
+    var val = document.querySelector("[data-rp-cal-val]");
+    if (val) { val.textContent = rpFmt(rpRange.from) + " - " + rpFmt(rpRange.to); val.classList.remove("is-ph"); }
+    rpCalClose();
+    repSync();
+  }
+  function rpCalClear() {
+    rpRange = { from: null, to: null };
+    var val = document.querySelector("[data-rp-cal-val]");
+    if (val) { val.textContent = "Select period"; val.classList.add("is-ph"); }
+    rpCalRender();
+    repSync();
+  }
+
+  // ---- создание отчёта ----
+  function repSlug(s) {
+    return String(s).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "report";
+  }
+  function repFileName(target, type) {
+    return repSlug(target) + "-" + repTypeWord(type).toLowerCase() + "-report-" + (repSeq++) + ".xlsx";
+  }
+  function repMlAdd(file) {
+    // мост в Media Library: файл появляется в папке Analytics (её создаёт media.js)
+    try {
+      var list = JSON.parse(localStorage.getItem(REP_ML_KEY) || "[]");
+      if (!Array.isArray(list)) list = [];
+      list.push({ folder: "analytics", name: file, kind: "spreadsheet", src: "revenue-report.xlsx",
+                  created: rpFmt(rpToday()), size: "92.15 KB" });
+      localStorage.setItem(REP_ML_KEY, JSON.stringify(list));
+    } catch (e) {}
+  }
+  function repSubmit() {
+    var type = repSelVal("type"), target = repSelVal("target");
+    var name = repAutoName();
+    if (!type || !target || !name || !rpRange.from || !rpRange.to) return;
+    var key = repKey();
+    var body = tblBody(key);
+    if (!body) return;
+    var tbody = body.querySelector(".an-tbody");
+    var file = repFileName(target, type);
+    var period = rpFmt(rpRange.from) + " - " + rpFmt(rpRange.to);
+    var row = document.createElement("div");
+    row.className = "an-tr";
+    row.setAttribute("data-rep-row", "");
+    row.setAttribute("data-file", file);
+    var cells = [
+      '<div class="an-td an-td--plain rep-name" style="width:300px" data-col="name">' + escHtml(name) + "</div>",
+      '<div class="an-td an-td--plain" style="width:140px" data-col="created">' + rpFmt(rpToday()) + "</div>",
+      '<div class="an-td an-td--plain" style="width:240px" data-col="period">' + escHtml(period) + "</div>",
+      '<div class="an-td an-td--plain" style="width:220px" data-col="' + (repIsMarket() ? "collection" : "channel") + '">' +
+        (repIsMarket()
+          ? '<a class="rep-collink" href="analytics-collection-edit.html?name=' + encodeURIComponent(target) + '">' + escHtml(target) + "</a>"
+          : escHtml(target)) + "</div>"
+    ];
+    if (repIsMarket()) cells.push('<div class="an-td an-td--plain" style="width:120px" data-col="type"><span class="rep-cell">' +
+      escHtml(repTypeWord(type)) + "</span></div>");
+    cells.push('<div class="an-td" style="width:160px" data-col="status">' + repStatusHtml("progress") + "</div>");
+    cells.push('<div class="an-td" style="width:140px" data-col="actions">' + repActsHtml(false, file) + "</div>");
+    row.innerHTML = cells.join("");
+    tbody.insertBefore(row, tbody.firstChild);
+    closeModal(document.getElementById("repModal"));
+    toast("Preparing the report");
+    if (typeof tblApply === "function") tblApply(key);
+    if (typeof tblHug === "function") tblHug(key);   // новая строка получает те же ширины
+    repCountSync();
+    setTimeout(function () {
+      var st = row.querySelector('[data-col="status"]');
+      if (st) st.innerHTML = repStatusHtml("created");
+      var act = row.querySelector('[data-col="actions"]');
+      if (act) act.innerHTML = repActsHtml(true, file);
+      repMlAdd(file);                      // файл появляется в Media Library ровно сейчас
+      repReady(name, file);
+    }, REP_BUILD_MS);
+  }
+  // разметку статуса и действий копируем из уже отрисованной строки, чтобы не дублировать SVG
+  function repStatusHtml(kind) {
+    var proto = document.querySelector('[data-rep-row] [data-col="status"] .mc-status');
+    var green = kind === "created";
+    if (!proto) return green ? "Created" : "In progress";
+    var clone = proto.cloneNode(true);
+    clone.classList.toggle("mc-status--green", green);
+    clone.classList.toggle("mc-status--orange", !green);
+    var t = clone.querySelector(".mc-status__t");
+    if (t) t.textContent = green ? "Created" : "In progress";
+    return clone.outerHTML;
+  }
+  function repActsHtml(ready, file) {
+    var proto = document.querySelector('[data-rep-row] [data-col="actions"] .rep-acts');
+    if (!proto) return "";
+    var clone = proto.cloneNode(true);
+    var inml = clone.querySelector("[data-rep-inml]");
+    if (inml) inml.setAttribute("data-rep-inml", file || "");
+    // пока репорт готовится, недоступны все три действия (как в проде)
+    [].slice.call(clone.querySelectorAll("button")).forEach(function (btn) {
+      if (ready) btn.removeAttribute("disabled"); else btn.setAttribute("disabled", "");
+    });
+    return clone.outerHTML;
+  }
+  function repReady(name, file) {
+    var card = document.querySelector("[data-rep-ready]");
+    if (!card) { toast("Report ready"); return; }
+    var n = card.querySelector("[data-rep-ready-name]");
+    if (n) n.textContent = name;
+    card.setAttribute("data-file", file || "");
+    card.hidden = false;
+  }
+  function repOpenInMl(file) {
+    var url = "media-library-files.html?folder=analytics";
+    if (file) url += "&file=" + encodeURIComponent(file);
+    location.href = url;
+  }
+  // меню строки отчёта: позиционируем у кнопки, как меню строки в списке коллекций
+  var repMenuRow = null;
+  function repMenuClose() {
+    var m = document.getElementById("repMenu");
+    if (m) m.hidden = true;
+  }
+  function repMenuOpen(btn) {
+    var m = document.getElementById("repMenu");
+    if (!m) return;
+    repMenuRow = btn.closest("[data-rep-row]");
+    m.hidden = false;
+    var r = btn.getBoundingClientRect(), mw = m.offsetWidth || 200, mh = m.offsetHeight || 180;
+    m.style.top = Math.min(r.bottom + 6, window.innerHeight - mh - 8) + "px";
+    m.style.left = Math.max(8, r.right - mw) + "px";
+  }
+  function repMenuAct(type) {
+    var row = repMenuRow;
+    repMenuClose();
+    if (!row) return;
+    var file = row.getAttribute("data-file") || "";
+    if (type === "rename") { repRenameAsk(row); return; }
+    if (type === "delete") { repDelAsk(row); return; }
+    // Шеринг открывается на месте: уводить в Media Library ради попапа — лишний переход,
+    // человек теряет список отчётов и возвращается назад руками.
+    if (type === "share") { repShareOpen(row); return; }
+    if (type === "link") {
+      var url = "https://app.subsub.io/media/analytics/" + file;
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(url).then(function () { toast("Link copied"); }, function () { toast("Failed to copy link"); });
+      } else toast("Failed to copy link");
+      return;
+    }
+  }
+  // Шеринг отчёта: тот же попап, что у коллекции в списке — состав участников,
+  // поиск и Invite общие, отличается только заголовок.
+  function repShareOpen(row) {
+    var nmEl = row.querySelector('[data-col="name"]');
+    shareOpen("Share “" + (nmEl ? nmEl.textContent.trim() : "report") + "”");
+  }
+  // Переименование отчёта: правится только имя записи в списке. Файл в Media Library
+  // остаётся под своим именем — расшаренная ссылка не должна поехать.
+  var repRenameRow = null;
+  function repRenameAsk(row) {
+    repRenameRow = row;
+    var nm = row.querySelector('[data-col="name"]');
+    var inp = document.querySelector("[data-rep-rn-input]");
+    if (inp) inp.value = nm ? nm.textContent.trim() : "";
+    openModal("repRename");
+    if (inp) { inp.focus(); inp.select(); }
+  }
+  function repRenameSave() {
+    var inp = document.querySelector("[data-rep-rn-input]");
+    var val = inp ? inp.value.trim() : "";
+    if (!val) { toast("Name can't be empty"); return; }
+    if (repRenameRow) {
+      var cell = repRenameRow.querySelector('[data-col="name"]');
+      // имя лежит в обёртке .rep-cell (она обрезает длинный текст многоточием)
+      var host = cell ? (cell.querySelector(".rep-cell") || cell) : null;
+      if (host) host.textContent = val;
+    }
+    repRenameRow = null;
+    closeModal(document.getElementById("repRename"));
+    toast("Report renamed");
+  }
+  function repDelAsk(row) {
+    repDelRow = row;
+    var nm = row.querySelector('[data-col="name"]');
+    var t = document.querySelector("[data-rep-c-text]");
+    if (t) t.textContent = "“" + (nm ? nm.textContent.trim() : "This report") + "” will be deleted. This can't be undone.";
+    openModal("repConfirm");
+  }
+  var repDelRow = null;
+  function repDel() {
+    if (repDelRow) {
+      var key = repKey();
+      repDelRow.remove();
+      repDelRow = null;
+      if (typeof tblApply === "function") tblApply(key);
+      repCountSync();
+    }
+    closeModal(document.getElementById("repConfirm"));
+    toast("Report deleted");
+  }
+
+
+  // ================= страница коллекции: мгновенные действия =================
+  // Страница — не форма с сохранением: имя правится в модалке Rename, всё остальное
+  // (добавить/убрать канал, шеринг, деактивация, удаление) применяется сразу,
+  // после каждого действия — тост об автосохранении.
+  function ceName() {
+    var h = document.querySelector("[data-ce-title]");
+    return h ? h.textContent.trim() : "collection";
+  }
+  function ceSaved() { toast("Changes saved automatically"); }
+  function ceStatus() { return collState(ceName()); }
+  // AI-коллекция: состав собран подбором, а не руками
+  // Чужая коллекция: sample или пришли из «Shared with me». Владельца мы не контролируем,
+  // поэтому страница read-only целиком — лишнее скрыто, а не заблокировано тултипом.
+  function ceForeign() {
+    if (!document.querySelector("[data-ce-title]")) return false;
+    var qs = new URLSearchParams(window.location.search);
+    if (qs.get("shared") === "1") return true;
+    if ((qs.get("owner") || "You").trim() !== "You") return true;
+    return collIsSample(ceName());
+  }
+  var CE_RO_HIDE = ["[data-ce-limit]", "[data-nc-open]", "[data-ce-share-trig]",
+    "[data-ce-blacklist]", "[data-ai-block]", "[data-ai-resource]", "[data-ce-rename]",
+    "[data-ce-deactivate]", "[data-ce-delete]", "[data-an-footer]"];
+  function ceForeignSync() {
+    if (!document.querySelector("[data-ce-title]")) return;
+    var ro = ceForeign();
+    document.body.classList.toggle("ce-ro", ro);
+    if (!ro) return;
+    CE_RO_HIDE.forEach(function (sel) {
+      [].slice.call(document.querySelectorAll(sel)).forEach(function (el) { el.hidden = true; });
+    });
+    // в ⋮ остаются Duplicate и Leave — делить их разделителем нечего
+    var lv = document.querySelector("[data-ce-leave]");
+    if (lv) lv.hidden = false;
+    [].slice.call(document.querySelectorAll(".ce-menu__sep")).forEach(function (s) { s.hidden = true; });
+  }
+  function ceAiSync() {
+    var b = document.querySelector("[data-ce-aibadge]");
+    if (b) {
+      var c = aiCollByName(ceName());
+      b.hidden = !(c && c.isAi);
+    }
+    var s = document.querySelector("[data-ce-sample]");
+    if (s) s.hidden = !collIsSample(ceName());
+  }
+  function ceDeactivate() {
+    collCancelDeep(ceName());
+    toast("Deep data deactivated — “" + ceName() + "”");
+  }
+  function ceSetStatus(status) {
+    var nm = ceName(), list = aiLoad(), isAi = false;
+    list.forEach(function (x) { if (x.mode !== "append" && x.name === nm) { x.status = status; isAi = true; } });
+    if (isAi) aiSave(list);
+    else {
+      var extra = aiExtraLoad();
+      extra[nm] = extra[nm] || { channels: [] };
+      extra[nm].status = status;
+      aiExtraSave(extra);
+    }
+    ceDeepSync();
+  }
+  // кнопка Deep data: смотреть, активировать или объяснить, почему сейчас нельзя
+  function ceDeepSync() {
+    var btn = document.querySelector("[data-ce-deep]");
+    if (!btn) return;
+    var lbl = btn.querySelector("[data-ce-deep-lbl]") || btn;
+    var nm = ceName(), st = collState(nm);
+    offSet(btn, false);
+    tipSet(btn, "");
+    // B2: тариф без Deep data закрывает кнопку по любой коллекции, включая sample
+    if (!planDeepOn()) {
+      lbl.textContent = st === "activated" ? "View deep data" : "Activate deep data";
+      offSet(btn, true);
+      tipSet(btn, CS_TIP.planDeepShort, true);
+      return;
+    }
+    if (st === "activated") { lbl.textContent = "View deep data"; return; }
+    if (st === "deep") {
+      lbl.textContent = CS_LBL.deep;
+      offSet(btn, true);
+      tipSet(btn, "Deep data is being collected — open Deep data to see progress");
+      return;
+    }
+    lbl.textContent = "Activate deep data";
+    if (st === "sourcing") { offSet(btn, true); tipSet(btn, CS_TIP.addWaitSourcing); return; }
+    if (collChans(nm) < 1) { offSet(btn, true); tipSet(btn, CS_TIP.needChannel); }
+  }
+  function ceActivateAsk() { collActivateAsk(ceName()); }
+  // ---- «⋮»-меню страницы ----
+  function ceMenu(open) {
+    var pop = document.querySelector("[data-ce-menu-pop]"), trig = document.querySelector("[data-ce-menu-trig]");
+    if (!pop) return;
+    pop.hidden = !open;
+    if (trig) trig.setAttribute("aria-expanded", open ? "true" : "false");
+  }
+  // ---- переименование ----
+  function ceRenameOpen() {
+    ceMenu(false);
+    var inp = document.querySelector("[data-ce-rename-input]");
+    if (inp) inp.value = ceName();
+    openModal("ceRename");
+    if (inp) inp.focus();
+  }
+  // копия коллекции с теми же каналами — как «Duplicate collection» в списке
+  function ceDuplicate() { dupOpen(ceName(), null); }
+  // имена каналов из таблицы — на случай семпловой коллекции, которой нет в состоянии
+  function ceRowNames() {
+    return [].slice.call(document.querySelectorAll("[data-ce-row] .ce-chan__name")).map(function (n) {
+      return n.textContent.trim();
+    });
+  }
+  function ceRenameSave() {
+    var inp = document.querySelector("[data-ce-rename-input]");
+    var val = inp ? inp.value.trim() : "";
+    if (!val) { toast("Name can't be empty"); return; }
+    var h = document.querySelector("[data-ce-title]");
+    if (h) h.textContent = val;
+    closeModal(document.getElementById("ceRename"));
+    ceSaved();
+  }
+  // ---- AI blacklist: каналы, исключённые из расширения коллекции ----
+  // Удалённый вручную канал подбор больше не предлагает (ceRemember пишет его
+  // в subsub_coll_removed). Раньше список был невидим и необратим — теперь его видно.
+  function blList() {
+    var store = (typeof aiRemovedLoad === "function" ? aiRemovedLoad() : {});
+    return (store[ceName()] || []).slice();
+  }
+  function blOpen() {
+    ceMenu(false);
+    var q = document.querySelector("[data-bl-search]");
+    if (q) q.value = "";
+    blRender();
+    var m = document.getElementById("blModal");
+    if (m) { m.classList.add("is-open"); m.hidden = false; }
+    if (q) q.focus();
+  }
+  function blClose() {
+    var m = document.getElementById("blModal");
+    if (m) { m.classList.remove("is-open"); m.hidden = true; }
+  }
+  function blRender() {
+    var box = document.querySelector("[data-bl-list]");
+    if (!box) return;
+    var all = blList();
+    var q = ((document.querySelector("[data-bl-search]") || {}).value || "").trim().toLowerCase();
+    var list = all.filter(function (n) { return !q || n.toLowerCase().indexOf(q) !== -1; });
+    var pool = (typeof aiChannelPool === "function" ? aiChannelPool() : []);
+    function meta(n) {
+      for (var i = 0; i < pool.length; i++) if (pool[i].name === n) return pool[i];
+      return null;
+    }
+    // строка как в шеринге: аватар, две строки текста, действие у правого края —
+    // поэтому кнопка стоит на месте независимо от того, есть ли у канала подписчики
+    box.innerHTML = list.map(function (n) {
+      var m = meta(n);
+      return '<div class="ml-share__acc">' +
+        '<span class="ml-share__avatar mc-ava" style="background:var(' + ((m && m.color) || "--color-avatar-3") + ')">' +
+          escHtml((m && m.initial) || n.charAt(0)) + "</span>" +
+        '<div class="ml-share__acc-info"><span class="ml-share__acc-name">' + escHtml(n) + "</span>" +
+          '<span class="ml-share__acc-email">' + (m && m.subs ? escHtml(m.subs) + " subs" : "excluded from AI sourcing") + "</span></div>" +
+        '<button class="ml-share__revoke bl-allow" type="button" data-bl-allow="' + escHtml(n) + '">Allow again</button>' +
+      "</div>";
+    }).join("") || '<div class="ml-share__noresults">' + (all.length ? TBL_NOTHING : "No excluded channels yet") + "</div>";
+    var note = document.querySelector("[data-bl-note]");
+    if (note) note.textContent = all.length
+      ? all.length + (all.length === 1 ? " channel is" : " channels are") + " excluded from AI expansion of “" +
+        ceName() + "”. Allow a channel to let sourcing suggest it again."
+      : "Channels you remove from “" + ceName() + "” land here — AI expansion stops suggesting them.";
+  }
+  // вернуть канал в подбор: убираем из исключений этой коллекции
+  function blAllow(name) {
+    if (typeof aiRemovedLoad !== "function") return;
+    var nm = ceName(), store = aiRemovedLoad();
+    store[nm] = (store[nm] || []).filter(function (n) { return n !== name; });
+    if (!store[nm].length) delete store[nm];
+    aiRemovedSave(store);
+    blRender();
+    toast("“" + name + "” is back in AI sourcing");
+  }
+
+  // ---- шеринг ----
+  // Одна модалка на все входы: страница коллекции, строка списка коллекций, строка отчёта.
+  // Раньше на странице был свой попап в шапке, а в списках — другой; теперь композиция одна,
+  // взятая у шеринга Media Library.
+  function shareOpen(title) {
+    var m = document.getElementById("shareModal");
+    if (!m) return;
+    var t = m.querySelector("[data-mc-sharepop-title]");
+    if (t) t.textContent = title || "Share";
+    m.classList.add("is-open");
+    m.hidden = false;
+    var s = m.querySelector("[data-ce-share-search]");
+    if (s) { s.value = ""; s.focus(); }
+    ceShareSuggest("");
+  }
+  function shareClose() {
+    var m = document.getElementById("shareModal");
+    if (m) { m.classList.remove("is-open"); m.hidden = true; }
+  }
+  function shareTitleNow() {
+    var t = document.querySelector("[data-mc-sharepop-title]");
+    return t ? t.textContent : "shared";
+  }
+  // ссылка-заглушка: стабильная для одного и того же объекта, как файловая в Media Library
+  function hashStr(s) {
+    var h = 0;
+    for (var i = 0; i < s.length; i++) { h = (h * 31 + s.charCodeAt(i)) | 0; }
+    return h;
+  }
+  function ceShareOpen(open) {
+    if (open) shareOpen("Share “" + ceName() + "”"); else shareClose();
+  }
+  function ceShareMembers() {
+    var d = window.SUBSUB_DICT || {};
+    return d.orgMembers || [];
+  }
+  function ceShareHas(email) {
+    return !!document.querySelector('[data-ce-acc="' + email + '"]');
+  }
+  function ceShareCount() {
+    return document.querySelectorAll("[data-ce-acc]").length;
+  }
+  // подпись кнопки статична — просто «Share», количество видно в самом попапе
+  function ceShareLabel() {}
+  function ceShareSuggest(q) {
+    var box = document.querySelector("[data-ce-share-results]");
+    if (!box) return;
+    var s = (q || "").trim().toLowerCase();
+    var btn = document.querySelector("[data-ce-invite]");
+    var isMail = /^[^@\s]+@[^@\s]+\.[a-z]{2,}$/i.test(s);
+    if (btn) btn.disabled = !isMail || ceShareHas(s);
+    if (!s) { box.hidden = true; box.innerHTML = ""; return; }
+    var hits = ceShareMembers().filter(function (m) {
+      return m.name.toLowerCase().indexOf(s) !== -1 || m.email.toLowerCase().indexOf(s) !== -1;
+    });
+    // разметка подсказки — из шеринга Media Library, чтобы не держать второй набор стилей
+    box.innerHTML = hits.length
+      ? hits.map(function (m) {
+          var added = ceShareHas(m.email);
+          return '<button class="ml-share__result' + (added ? " is-added" : "") + '" type="button" data-ce-share-pick="' +
+            escHtml(m.email) + '" data-name="' + escHtml(m.name) + '" data-color="' + escHtml(m.c) + '"' +
+            (added ? " disabled" : "") + '>' +
+            '<span class="ml-share__result-ava mc-ava" style="background:var(' + escHtml(m.c) + ')">' + escHtml(m.name.charAt(0)) + '</span>' +
+            '<span class="ml-share__result-meta"><span class="nm">' + escHtml(m.name) + '</span>' +
+              '<span class="em">' + escHtml(m.email) + '</span></span>' +
+            '<span class="ml-share__result-added">Already added</span>' +
+          '</button>';
+        }).join("")
+      : '<div class="ml-share__noresults">Nothing found</div>';
+    box.hidden = false;
+  }
+  function ceShareAdd(name, email, color) {
+    if (!email || ceShareHas(email)) return;
+    var list = document.querySelector("[data-ce-share-list]");
+    if (!list) return;
+    var row = document.createElement("div");
+    row.className = "ml-share__acc";
+    row.setAttribute("data-ce-acc", email);
+    row.innerHTML =
+      '<span class="ml-share__avatar mc-ava" style="background:var(' + (color || "--color-avatar-3") + ')">' +
+        escHtml((name || email).charAt(0).toUpperCase()) + '</span>' +
+      '<div class="ml-share__acc-info"><span class="ml-share__acc-name">' + escHtml(name || email) + '</span>' +
+        '<span class="ml-share__acc-email">' + escHtml(email) + '</span></div>' +
+      '<button class="ml-share__revoke" type="button" data-ce-revoke>Revoke</button>';
+    list.appendChild(row);
+    ceShareLabel();
+    ceShareSuggest((document.querySelector("[data-ce-share-search]") || {}).value || "");
+    ceSaved();
+  }
+  var ceRevokeRow = null;
+  var ceRowToRemove = null;
+  // новая коллекция из выбранных каналов — через обычную модалку создания
+  function ceBulkNew() {
+    var picked = ceChecked();
+    if (!picked.length) return;
+    ceBulkNames = picked.map(function (r) { return (r.querySelector(".ce-chan__name") || {}).textContent.trim(); });
+    mcMode = "create";
+    var t = document.querySelector("[data-mc-create-title]");
+    if (t) t.textContent = "Create collection";
+    var nm = document.querySelector("[data-mc-name]");
+    if (nm) nm.value = ceBulkNames.length === 1 ? ceBulkNames[0] : ceBulkNames[0] + " +" + (ceBulkNames.length - 1);
+    var sb = document.querySelector("[data-mc-create-submit]");
+    if (sb) sb.textContent = "Create";
+    openModal("mcModal-create");
+    if (nm) nm.focus();
+  }
+  var ceBulkNames = [];
+  // подбор похожих: те же выбранные каналы становятся референсами
+  function ceBulkSimilar() {
+    var picked = ceChecked();
+    if (!picked.length) return;
+    aiOpen();
+    aiSetMode("refs");
+    picked.forEach(function (r) {
+      var nmEl = r.querySelector(".ce-chan__name"), avEl = r.querySelector(".ce-ava");
+      if (!nmEl) return;
+      var color = avEl ? (avEl.getAttribute("style") || "").replace(/.*var\(([^)]+)\).*/, "$1") : null;
+      aiRefAdd(nmEl.textContent.trim(), avEl ? avEl.textContent.trim() : "", color);
+    });
+    aiRenderRefs();
+    var nameInp = aiEl("[data-ai-name]");
+    if (nameInp && !nameInp.value) {
+      var first = (picked[0].querySelector(".ce-chan__name") || {}).textContent.trim();
+      nameInp.value = "Similar to " + first + (picked.length > 1 ? " +" + (picked.length - 1) : "");
+    }
+    aiSync();
+    if (aiRefs.length) aiGenStart();
+  }
+  // удалённый вручную канал не должен возвращаться ни после перезагрузки, ни подбором
+  function ceRemember(names) {
+    if (!names || !names.length || typeof aiRemovedLoad !== "function") return;
+    var nm = ceName(), store = aiRemovedLoad();
+    var list = (store[nm] || []).slice();
+    names.forEach(function (n) { if (n && list.indexOf(n) === -1) list.push(n); });
+    store[nm] = list;
+    if (typeof aiRemovedSave === "function") aiRemovedSave(store);
+  }
+  function ceRemoveOneAsk(row) {
+    if (!row) return;
+    ceRowToRemove = row;
+    ceAsk = "remove-one";
+    var nm = (row.querySelector(".ce-chan__name") || {}).textContent || "this channel";
+    var t = document.querySelector("[data-ce-c-title]"), x = document.querySelector("[data-ce-c-text]");
+    var btn = document.querySelector("[data-ce-c-confirm]");
+    if (t) t.textContent = "Remove channel from collection?";
+    // 3.1: один текст на все входы удаления — короткий и без пересказа блэклиста
+    if (x) x.textContent = "The channel will be removed from “" + ceName() +
+      "”. AI won't suggest it again, but you can add it manually.";
+    if (btn) btn.textContent = "Remove";
+    openModal("ceConfirm");
+  }
+  function ceRevokeAsk(row) {
+    ceRevokeRow = row;
+    var nm = row.querySelector(".ml-share__acc-name");
+    var t = document.querySelector("[data-ce-c-title]"), x = document.querySelector("[data-ce-c-text]");
+    var btn = document.querySelector("[data-ce-c-confirm]");
+    ceAsk = "revoke";
+    if (t) t.textContent = "Remove " + (nm ? nm.textContent.trim() : "this person") + "?";
+    if (x) x.textContent = "They will lose access to “" + ceName() + "”.";
+    if (btn) btn.textContent = "Remove";
+    openModal("ceConfirm");
+  }
+  // ---- фильтр по добавленным каналам ----
+  function ceSearchApply() {
+    var inp = document.querySelector("[data-ce-search]");
+    var q = inp ? inp.value.trim().toLowerCase() : "";
+    var rows = [].slice.call(document.querySelectorAll("[data-ce-row]"));
+    var shown = 0;
+    rows.forEach(function (r) {
+      var nm = (r.querySelector(".ce-chan__name") || {}).textContent || "";
+      var yt = (r.querySelector(".ce-view") || {}).textContent || "";   // поиск и по ссылке канала
+      var ok = !q || (nm + " " + yt).toLowerCase().indexOf(q) !== -1;
+      r.hidden = !ok;
+      if (ok) shown++;
+    });
+    var empty = document.querySelector("[data-ce-empty]");
+    if (empty) empty.hidden = shown > 0;
+    var more = document.querySelector("[data-ce-more]");
+    if (more && q) more.hidden = true;             // при поиске догрузка не нужна
+  }
+
+  // ================= страница коллекции: догрузка каналов по скроллу =================
+  // В прототипе список берём из того же пула каналов, что и Basic data: сервер отдаёт
+  // первую порцию, остальное дописываем батчами по 10, пока пул не закончится.
+  var CE_BATCH = 10, ceLoading = false, ceDone = false;
+  function ceRowNames() {
+    return [].slice.call(document.querySelectorAll("[data-ce-row] .ce-chan__name")).map(function (e) { return e.textContent.trim(); });
+  }
+  // тот же вид ссылки, что в сборке
+  function ceUrl(name) {
+    var slug = String(name).toLowerCase().replace(/[^a-z0-9]+/g, "");
+    return slug ? "https://www.youtube.com/@" + slug : "https://www.youtube.com/channel/UC" + String(name).length + "prototype000000000";
+  }
+  // топики канала — те же баджи, что в Basic data
+  // размер коллекции ограничен планом: 30 каналов, дальше — апгрейд
+  // Вместимость коллекции — тарифная: Explorer 10, Pro 25, Business 100, Enterprise без лимита.
+  // Лимит вставки за один раз (30 ссылок) живёт отдельно, внутри модалки добавления.
+  function ceCap() { return plan().chans; }
+  function ceLimitSync() {
+    ceHeadCount();
+    var box = document.querySelector("[data-ce-limit]");
+    if (!box) return;
+    // лимиты вместимости — про свои коллекции; в чужой апселлить не к чему
+    if (ceForeign()) { box.hidden = true; return; }
+    var used = ceRows().length;
+    var cap = ceCap();
+    // без лимита пустой прогресс-бар и апселл выглядят недоделкой — прячем плашку целиком
+    if (cap === Infinity) { box.hidden = true; return; }
+    var full = used >= cap;
+    var capEl = box.querySelector("[data-ce-limit-cap]");
+    if (capEl) capEl.textContent = String(cap);
+    var u = box.querySelector("[data-ce-limit-used]");
+    if (u) u.textContent = String(used);
+    var fill = box.querySelector("[data-ce-limit-fill]");
+    if (fill) fill.style.width = Math.min(100, Math.round(used / cap * 100)) + "%";
+    box.classList.toggle("is-full", full);
+    var up = box.querySelector("[data-ce-upgrade]");
+    tipSet(up, full ? collFullTip(true) : "Upgrade the plan for a bigger collection");
+    // добавлять некуда, пока план не расширили: причина и апгрейд — в тултипе
+    var add = document.querySelector("[data-nc-open]");
+    if (add && full) {
+      offSet(add, true);
+      tipSet(add, collFullTip(), true);
+    }
+  }
+  function ceLimitLeft() {
+    var cap = ceCap();
+    return cap === Infinity ? Infinity : Math.max(0, cap - ceRows().length);
+  }
+  // сортировка таблицы коллекции: она живёт вне общего движка таблиц (тут инфинайт-скролл),
+  // поэтому свой маленький сорт по трём колонкам с тем же парсером значений
+  var ceSortState = null;
+  function ceSortIdx(col) {
+    var heads = [].slice.call(document.querySelectorAll(".ce-table .an-tr--head > *"));
+    for (var i = 0; i < heads.length; i++) {
+      var s = heads[i].querySelector("[data-ce-sort]");
+      if (s && s.getAttribute("data-ce-sort") === col) return i;
+    }
+    return -1;
+  }
+  function ceMarkSort() {
+    [].slice.call(document.querySelectorAll("[data-ce-sort]")).forEach(function (el) {
+      var on = ceSortState && ceSortState.col === el.getAttribute("data-ce-sort");
+      el.classList.toggle("is-sorted", !!on);
+      el.classList.toggle("is-asc", !!on && ceSortState.dir === "asc");
+      el.setAttribute("aria-sort", on ? (ceSortState.dir === "asc" ? "ascending" : "descending") : "none");
+    });
+  }
+  function ceSortApply() {
+    if (!ceSortState) return;
+    var idx = ceSortIdx(ceSortState.col);
+    var body = document.querySelector("[data-ce-tbody]");
+    if (idx < 0 || !body) return;
+    var dir = ceSortState.dir === "asc" ? 1 : -1;
+    ceRows().map(function (r, i) { return { r: r, i: i, v: tblVal(r, idx) }; })
+      .sort(function (a, b) {
+        if (a.v === b.v) return a.i - b.i;
+        if (typeof a.v === "string" || typeof b.v === "string")
+          return String(a.v).localeCompare(String(b.v)) * dir;
+        return (a.v > b.v ? 1 : -1) * dir;
+      })
+      .forEach(function (o) { body.appendChild(o.r); });
+    var band = ceSrcBand();
+    if (band) body.insertBefore(band, body.firstChild);
+  }
+  function ceSort(col) {
+    ceSortState = (ceSortState && ceSortState.col === col)
+      ? { col: col, dir: ceSortState.dir === "desc" ? "asc" : "desc" }
+      : { col: col, dir: "desc" };            // первый клик — по убыванию, как в остальных таблицах
+    ceSortApply();
+    ceMarkSort();
+  }
+  function ceTopicsHtml(topics) {
+    var tops = Object.prototype.toString.call(topics) === "[object Array]" ? topics : (topics ? [topics] : []);
+    if (!tops.length) return '<span class="an-topics"><span class="an-muted">—</span></span>';
+    return '<span class="an-topics"><span class="an-topic" data-an-topic="' + escHtml(tops[0]) + '">' + escHtml(tops[0]) + '</span>' +
+      (tops.length > 1 ? '<button class="an-topic__more" type="button" aria-haspopup="listbox" data-an-topics-more="' + escHtml(tops.join("|")) + '">+' +
+        (tops.length - 1) + '</button>' : "") + '</span>';
+  }
+  // Состав коллекции фиксирован: скролл ничего не добавляет, а лишь дорисовывает каналы,
+  // которые уже есть в коллекции (пришли подбором или вручную), если страницу открыли позже.
+  function ceMoreDone() {
+    var more = document.querySelector("[data-ce-more]");
+    if (more) more.hidden = true;
+    ceHeadCount();
+  }
+  function ceHeadCount() {
+    var el = document.querySelector("[data-ce-count]");
+    if (!el) return;
+    var n = ceRows().length;
+    el.textContent = String(n);
+    el.hidden = !n;
+  }
+  function ceLoadMore() {
+    if (ceLoading || ceDone) return;
+    var body = document.querySelector("[data-ce-tbody]");
+    if (!body) return;
+    var have = ceRowNames();
+    var left = aiChannelsOf(ceName()).filter(function (n) { return have.indexOf(n) === -1; }).slice(0, ceLimitLeft());
+    if (!left.length) { ceDone = true; ceMoreDone(); return; }
+    ceLoading = true;
+    var more = document.querySelector("[data-ce-more]");
+    if (more) more.hidden = false;
+    setTimeout(function () {
+      ceAddRows(left.slice(0, CE_BATCH));
+      ceLoading = false;
+      if (left.length <= CE_BATCH) { ceDone = true; ceMoreDone(); }
+      else if (more) more.hidden = true;
+    }, 400);
+  }
+  function ceScrollInit() {
+    var box = document.querySelector("[data-ce-scroll]");
+    if (!box) return;
+    box.addEventListener("scroll", function () {
+      if (box.scrollTop + box.clientHeight >= box.scrollHeight - 120) ceLoadMore();
+    });
+    // основной триггер — наблюдатель за концом списка: срабатывает и без события scroll
+    var sentinel = document.querySelector("[data-ce-sentinel]");
+    if (sentinel && typeof IntersectionObserver === "function") {
+      new IntersectionObserver(function (entries) {
+        for (var i = 0; i < entries.length; i++) if (entries[i].isIntersecting) { ceLoadMore(); break; }
+      }, { root: box, rootMargin: "120px" }).observe(sentinel);
+    } else if (box.scrollHeight <= box.clientHeight + 8) ceLoadMore();
+  }
+
+  function ceConfirm(kind) {
+    var t = document.querySelector("[data-ce-c-title]"), x = document.querySelector("[data-ce-c-text]");
+    var btn = document.querySelector("[data-ce-c-confirm]");
+    var nm = ceName();
+    ceAsk = kind;
+    if (kind === "remove") {
+      var picked = ceChecked();
+      if (!picked.length) return;
+      if (t) t.textContent = picked.length === 1 ? "Remove channel from collection?" : "Remove channels from collection?";
+      if (x) x.textContent = picked.length === 1
+        ? "The channel will be removed from “" + nm + "”. AI won't suggest it again, " +
+          "but you can add it manually."
+        : "The channels will be removed from “" + nm + "”. AI won't suggest them again, " +
+          "but you can add them manually.";
+      if (btn) btn.textContent = "Remove";
+    } else if (kind === "leave") {
+      if (t) t.textContent = "Leave collection?";
+      if (x) x.textContent = "You will lose access to “" + nm + "”. The owner can invite you again.";
+      if (btn) btn.textContent = "Leave";
+    } else if (kind === "delete") {
+      // B9: тексты те же, что в диалогах списка и в каталоге — одна формулировка на действие
+      if (t) t.textContent = "Delete collection?";
+      if (x) x.textContent = "This action cannot be undone. The collection and its settings will be removed.";
+      if (btn) btn.textContent = "Delete";
+    } else {
+      // 2.5: сбор ещё идёт — предупреждаем, что собранное отбрасывается целиком
+      var deepNow = collState(nm) === "deep";
+      if (t) t.textContent = deepNow ? "Stop collecting deep data?" : "Deactivate collection?";
+      if (x) x.textContent = deepNow
+        ? "Collected data will be discarded. You can start again anytime."
+        : "Deep data of the collection will be deactivated. You can activate it again later.";
+      if (btn) btn.textContent = deepNow ? "Stop collecting" : "Deactivate";
+    }
+    openModal("ceConfirm");
+  }
+  function ceDoConfirm() {
+    if (ceAsk === "deactivate") { closeModals(); ceDeactivate(); return; }
+    var nm = ceName();
+    // отзыв доступа
+    if (ceAsk === "revoke") {
+      if (ceRevokeRow) { ceRevokeRow.remove(); ceRevokeRow = null; }
+      ceShareLabel();
+      closeModal(document.getElementById("ceConfirm"));
+      ceSaved();
+      return;
+    }
+    // удаление одного канала из строки таблицы
+    if (ceAsk === "remove-one") {
+      if (ceRowToRemove) {
+        var oneName = (ceRowToRemove.querySelector(".ce-chan__name") || {}).textContent || "";
+        ceRemember([oneName.trim()]);        // канал исключён и после перезагрузки, и для подбора
+        ceRowToRemove.remove();
+        ceRowToRemove = null;
+        ceFooter();
+        ceLimitSync();
+        ceSearchApply();
+        toastRemoved(1, ceName());
+        setTimeout(ceSaved, 900);
+      }
+      closeModal(document.getElementById("ceConfirm"));
+      return;
+    }
+    if (ceAsk === "remove") {
+      var picked = ceChecked();
+      var names = picked.map(function (r) { return r.querySelector(".ce-chan__name").textContent.trim(); });
+      ceRemember(names);
+      picked.forEach(function (r) { r.remove(); });
+      if (nm) {
+        var extra = aiExtraLoad();
+        if (extra[nm] && extra[nm].channels) {
+          extra[nm].channels = extra[nm].channels.filter(function (n) { return names.indexOf(n) === -1; });
+          aiExtraSave(extra);
+        }
+        var removed = aiRemovedLoad();
+        removed[nm] = (removed[nm] || []).concat(names);
+        aiRemovedSave(removed);
+      }
+      closeModal(document.getElementById("ceConfirm"));
+      ceFooter();
+      ceLimitSync();
+      ceSearchApply();
+      toastRemoved(names.length, ceName());
+      setTimeout(ceSaved, 900);            // один паттерн автосохранения на все действия
+      return;
+    }
+    if (ceAsk === "leave") {
+      closeModal(document.getElementById("ceConfirm"));
+      toast("You left “" + nm + "”");
+      setTimeout(function () { window.location.href = "analytics-collections.html"; }, 600);
+      return;
+    }
+    if (ceAsk === "delete") {
+      var list = aiLoad().filter(function (c) { return c.name !== nm; });
+      aiSave(list);
+      closeModal(document.getElementById("ceConfirm"));
+      toast("Collection deleted successfully");
+      setTimeout(function () { window.location.href = "analytics-collections.html"; }, 600);
+      return;
+    }
+    // deactivate
+    var l2 = aiLoad();
+    l2.forEach(function (c) { if (c.name === nm) c.status = "inactive"; });
+    aiSave(l2);
+    closeModal(document.getElementById("ceConfirm"));
+    toast("Deep data deactivated — “" + nm + "”");
+  }
+  // ?state=sourcing на странице коллекции: демонстрационный подбор, как Start sourcing из модалки, но без конца —
+  // окно прогона две недели (дольше нельзя: setTimeout переполняется и срабатывает сразу), после исчерпания пула
+  // каналов страница остаётся в «Looking for the next channel…». Параметр снимается из адреса, чтобы F5 не перезапускал.
+  function ceDemoSourcing(nm) {
+    var qs = new URLSearchParams(window.location.search);
+    if (qs.get("state") !== "sourcing" || !nm) return;
+    collCancelSourcing(nm);
+    var pool = AI_FOUND, now = Date.now();
+    var extra = aiExtraLoad(), slot = extra[nm] || { channels: [] };
+    slot.channels = (slot.channels || []).filter(function (n) { return pool.indexOf(n) === -1; });
+    slot.sourcing = { query: "Racing sim channels", filters: { subsFrom: 10000 } };
+    extra[nm] = slot;
+    aiExtraSave(extra);
+    var removed = aiRemovedLoad();
+    if (removed[nm]) { removed[nm] = removed[nm].filter(function (n) { return pool.indexOf(n) === -1; }); aiRemovedSave(removed); }
+    var list = aiLoad();
+    list.push({ id: "ai" + now, mode: "append", target: nm, name: nm, isAi: true, query: slot.sourcing.query, seed: "",
+      filters: slot.sourcing.filters, status: "pending", startAt: now, readyAt: now + AI_STEP_MS,
+      endAt: now + 14 * 24 * 3600e3, created: aiToday() });
+    aiSave(list);
+    qs.delete("state");
+    var rest = qs.toString();
+    history.replaceState(null, "", window.location.pathname + (rest ? "?" + rest : ""));
+    aiTick();
+  }
+  function ceInit() {
+    var title = document.querySelector("[data-ce-title]");
+    if (!title) return;                 // поля имени больше нет — ориентируемся на заголовок
+    var qs = new URLSearchParams(window.location.search);
+    var nm = qs.get("name");
+    if (nm) title.textContent = nm;
+    ceDemoSourcing(nm);
+    // владелец: из ссылки, по умолчанию — «You»
+    var own = (qs.get("owner") || "You").trim() || "You";
+    var oName = document.querySelector("[data-ce-owner-name]");
+    if (oName) oName.textContent = own;
+    var oAva = document.querySelector("[data-ce-owner-ava]");
+    if (oAva) {
+      oAva.textContent = own.charAt(0).toUpperCase();
+      oAva.setAttribute("style", "background:var(--color-avatar-" + (own === "You" ? 1 : (own.charCodeAt(0) % 5) + 1) + ")");
+    }
+    // по умолчанию коллекция отсортирована по дате добавления, свежие сверху
+    if (document.querySelector('[data-ce-sort="added"]')) {
+      ceSortState = { col: "added", dir: "desc" };
+      ceSortApply();
+      ceMarkSort();
+    }
+    ceLimitSync();
+    ceStateSync();
+    ceLoadMore();                       // добавленные в коллекцию каналы — сразу, без скролла
+    ceForeignSync();                    // чужая коллекция: страница только для чтения
+    // удаление канала из коллекции (мок)
+    document.addEventListener("click", function (e) {
+      var rm = e.target.closest("[data-ce-remove]");
+      if (!rm) return;
+      // удаление канала теперь с подтверждением, как массовое
+      ceRemoveOneAsk(rm.closest("[data-ce-row]"));
+    });
+  }
+
+  aiTick();
+  aiRenderCollections();
+  ncMaxSync();                       // B11: «N/лимит» вставки ссылок — по тарифу, а не из разметки
+  periodSync();                      // C1: чипы 7/90 и Custom на Explorer под пейволом
+  colOrderSync();                    // на бесплатном порядок колонок как на проде
+  colLockSync();                     // колонки Basic data, закрытые тарифом
+  navLockSync();                     // пункты навигации, закрытые тарифом
+  // бейджи в селекторах коллекции: на старте значение уже в разметке, счётчик проставляем здесь
+  [].slice.call(document.querySelectorAll("[data-an-collsel]")).forEach(function (w) { csSetLabel(w, csCurrent(w)); });
+  tabInit();                         // P1.9: активный таб из ?tab=
+  tblInitAll();                      // P1.5: первая отрисовка страниц + сортировка по умолчанию
+  if (tblBody("deep") || tblBody("basic")) dpApplyPins();  // закреплённые каналы наверху — уже после сортировки
+  cvInit();                          // P1.7: видимость колонок из localStorage
+  slInit();                          // P1.6: выбранные срезы по типу контента
+  mcCtypeInit();                     // тип коллекции на My collections из localStorage
+  mcToolbarFit();                    // подписи сегментов по доступной ширине
+  ceScrollInit();                    // страница коллекции: догрузка каналов по скроллу
+  if (document.querySelector("[data-ce-share-list]")) ceShareLabel();
+  repInit();                         // Reports: активный таб, подсказка, списки в модалке
+  gsInit();                          // P1.8: режим сводной строки
+  flInit();                          // P1.13: панель открыта по умолчанию
+  aiRenderCollectionView();
+  ceInit();
+  deepTick();                        // сбор Deep data продолжается между страницами
+  ddStateSync();
+  mcPaintStates();
+  demoInit();                        // версия новичка: пустые состояния вместо демо-данных
+  // B14: бейджи переключателя типа приходят из сборки и считают строки, которых
+  // на странице может уже не быть (демо-версия новичка убирает свои коллекции).
+  // Пересчитываем по факту — последним, когда список окончательно собран.
+  mcCountSync();
+})();
