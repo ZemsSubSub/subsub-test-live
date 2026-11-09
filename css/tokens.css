@@ -247,4 +247,6 @@
   /* Ставятся из JS — здесь дефолт, чтобы ссылка разрешалась */
   --lv-hour: 44px;
   --lvlines: 2;
+  /* initial keeps each queue grid on its own fallback width until a 360° file widens the resolution column */
+  --lv-qr-res: initial;
 }

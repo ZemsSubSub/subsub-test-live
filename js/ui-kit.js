@@ -255,9 +255,16 @@
     });
     document.body.style.overflow = "";
   };
+  UI.closeModal = function (id) {
+    var m = typeof id === "string" ? document.getElementById(id) : id;
+    if (m) m.classList.remove("is-open");
+    if (!document.querySelector(".an-modal.is-open")) document.body.style.overflow = "";
+  };
+  // закрывается та модалка, где нажали: редактор очереди остаётся открытым, когда над ним закрыли пикер
   document.addEventListener("click", function (e) {
     if (e.target.closest && (e.target.closest("[data-lv-close]") || e.target.closest(".an-modal__overlay"))) {
-      UI.closeModals();
+      var host = e.target.closest(".an-modal");
+      if (host) UI.closeModal(host); else UI.closeModals();
     }
   });
   document.addEventListener("keydown", function (e) {
@@ -323,7 +330,7 @@
 
   // ============================================================ тумблер
   // Нет в дизайн-системе прототипа, а нужен в шести местах: файл вкл/выкл, Loop, Shuffle,
-  // Backup stream, матрица уведомлений. Роль switch + aria-checked.
+  // матрица уведомлений. Роль switch + aria-checked.
   UI.switchHtml = function (attrs, on, label, off, reason) {
     return '<button class="lv-sw' + (on ? " is-on" : "") + (off ? " is-off" : "") +
       '" type="button" role="switch" aria-checked="' + (on ? "true" : "false") + '"' +
